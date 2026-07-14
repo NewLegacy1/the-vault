@@ -3,8 +3,19 @@ import path from "path";
 import { parseCalendarCsv, CalendarEvent } from "@/lib/economic-calendar";
 import { normalizeTradeDate, dateSpan, countOverlap } from "@/lib/normalize-date";
 
-const CAL_DIR = path.join(process.cwd(), "..", "data", "calendar");
+function calendarDir(): string {
+  const inApp = path.join(process.cwd(), "data", "calendar");
+  const inRepo = path.join(process.cwd(), "..", "data", "calendar");
+  if (fs.existsSync(inApp)) return inApp;
+  return inRepo;
+}
+
+const CAL_DIR = calendarDir();
 const ACTIVE = path.join(CAL_DIR, "vault_calendar.json");
+
+export function calendarActivePath(): string {
+  return ACTIVE;
+}
 
 export interface StoredCalendar {
   source: string;

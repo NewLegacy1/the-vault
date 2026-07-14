@@ -3,6 +3,7 @@ import {
   loadServerCalendar,
   writeStoredCalendar,
   slimEventsForUpload,
+  calendarActivePath,
 } from "@/lib/calendar-server";
 import { parseCalendarCsv } from "@/lib/economic-calendar";
 
@@ -65,8 +66,7 @@ export async function POST(req: NextRequest) {
 export async function DELETE() {
   try {
     const fs = await import("fs");
-    const path = await import("path");
-    const active = path.join(process.cwd(), "..", "data", "calendar", "vault_calendar.json");
+    const active = calendarActivePath();
     if (fs.existsSync(active)) fs.unlinkSync(active);
     return NextResponse.json({ ok: true });
   } catch (e) {

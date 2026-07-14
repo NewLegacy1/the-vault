@@ -1,10 +1,13 @@
 import { mkdir, readdir, readFile, writeFile } from "fs/promises";
+import fs from "fs";
 import path from "path";
 import { buildCohortMarkdown, cohortFilename, CohortSaveInput, parseCohortMeta, CohortRecord } from "@/lib/cohort";
 
 function cohortsDir(): string {
-  // vault-app/ → The Vault/strategies/cohorts (Obsidian-readable)
-  return path.join(process.cwd(), "..", "strategies", "cohorts");
+  const inApp = path.join(process.cwd(), "data", "cohorts");
+  const inRepo = path.join(process.cwd(), "..", "strategies", "cohorts");
+  if (fs.existsSync(inApp)) return inApp;
+  return inRepo;
 }
 
 export async function ensureCohortsDir(): Promise<string> {
