@@ -3,7 +3,8 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useLocal, fmtUsd } from "@/lib/store";
 import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
-import { parseLabLedger, tradesPerWeek } from "@/lib/csv";
+import { parseLabLedger, tradesPerWeek, type ParsedTrade } from "@/lib/csv";
+import { applyMacroMatrixFilter, isDerivedMacroPreset, macroBranchFromPreset } from "@/lib/macro-matrix";
 import { ALL_SEED_TRADES, TRADES_DEC_MAR, TRADES_APR_JUL } from "@/lib/prb-data";
 import { TRADES_YTD_FULL, TRADES_YTD_MAY17 } from "@/lib/prb-ytd-data";
 import { TRADES_BE2R_PDH_12MO } from "@/lib/prb-be2r-data";
@@ -989,7 +990,9 @@ export default function LabPage() {
   const [ruleId, setRuleId, ruleReady] = useLocal<string>("vault.lab.ruleId", PROP_RULES[0].id);
   const [sims, setSims, simsReady] = useLocal<number>("vault.lab.sims", 2000);
   const [maxTrades, setMaxTrades, maxTradesReady] = useLocal<number>("vault.lab.maxTrades", 80);
-  const [payoutBuffer, setPayoutBuffer, payoutReady] = useLocal<number>("vault.lab.payoutBuffer", 1000);
+  const [payoutBuffer, setPayoutBuffer, payoutReady] = useLocal<number>("vault.lab.payoutBuffer", 2000);
+  const [macroB0Csv, setMacroB0Csv] = useLocal<string>("vault.lab.macroB0Csv", "");
+  const [macroB0Name, setMacroB0Name] = useLocal<string>("vault.lab.macroB0Name", "");
   const [res, setRes] = useState<McResult | null>(null);
   const [study, setStudy, studyHydrated] = useLocal<LabStudy>("vault.lab.study", DEFAULT_STUDY);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "ok" | "err">("idle");
@@ -1218,34 +1221,93 @@ export default function LabPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const installDataset = (
+    parsed: ParsedTrade[],
+    presetId: string,
+    sourceName: string,
+    sourceNote?: string
+  ) => {
+    const preset = presetById(presetId);
+    const branch = preset?.matrixBranch ?? "custom";
+    const id = "u" + Date.now();
+    const dataset = buildDatasetFromParsed(id, sourceName, parsed, presetId, branch);
+    if (sourceNote) dataset.sources = [sourceNote];
+    setUploads([dataset]);
+    setDatasetAliases({ [id]: dataset.label ?? sourceName });
+    setDsId(id);
+    setRes(null);
+    setScorecardComparison(null);
+  };
+
+  const deriveMacroFromB0 = (presetId: string): boolean => {
+    const branch = macroBranchFromPreset(presetId);
+    if (!branch || !macroB0Csv) return false;
+    const parsed = parseLabLedger(macroB0Csv);
+    const filtered = applyMacroMatrixFilter(parsed, branch);
+    if (filtered.length === 0) return false;
+    const preset = presetById(presetId);
+    const label = `${macroB0Name || "B0"} → ${preset?.matrixBranch ?? branch}`;
+    installDataset(filtered, presetId, label, `${label} (auto-derived)`);
+    return true;
+  };
+
+  const tryActivatePreset = (presetId: string, opts?: { fromUrl?: boolean }) => {
+    const preset = presetById(presetId);
+    if (!preset) return;
+    const changed = presetId !== study.presetId;
+    if (changed) {
+      setStudy({
+        ...study,
+        presetId,
+        regimes: preset.defaultRegimes ?? study.regimes,
+        hypothesis: preset.defaultHypothesis ?? study.hypothesis,
+      });
+      setSaveStatus("idle");
+    }
+    if (isDerivedMacroPreset(presetId)) {
+      if (!deriveMacroFromB0(presetId)) {
+        if (changed) clearDataset();
+      }
+      return;
+    }
+    if (changed && !opts?.fromUrl) clearDataset();
+  };
+
   const onFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
 
     const preset = presetById(study.presetId);
-    const branch = preset?.matrixBranch ?? "custom";
 
     const reader = new FileReader();
     reader.onload = () => {
-      const parsed = parseLabLedger(String(reader.result));
+      const text = String(reader.result);
+      const parsed = parseLabLedger(text);
       if (parsed.length === 0) {
         alert("No trades parsed — export TradingView Strategy Tester as 'List of trades' CSV.");
         return;
       }
-      const id = "u" + Date.now();
-      const dataset = buildDatasetFromParsed(
-        id,
-        file.name,
-        parsed,
-        study.presetId,
-        branch
-      );
-      setUploads([dataset]);
-      setDatasetAliases({ [id]: dataset.label ?? file.name });
-      setDsId(id);
-      setRes(null);
-      setScorecardComparison(null);
+      if (
+        study.presetId === "matrix-b0" ||
+        (preset?.family === "macro" && preset.dataSource !== "derived-b0")
+      ) {
+        setMacroB0Csv(text);
+        setMacroB0Name(file.name);
+      }
+      if (isDerivedMacroPreset(study.presetId)) {
+        const branch = macroBranchFromPreset(study.presetId);
+        const b0Text = study.presetId === "matrix-b0" ? text : macroB0Csv;
+        if (b0Text && branch) {
+          const filtered = applyMacroMatrixFilter(parseLabLedger(b0Text), branch);
+          if (filtered.length > 0) {
+            const label = `${macroB0Name || file.name} → ${preset?.matrixBranch ?? branch}`;
+            installDataset(filtered, study.presetId, label, `${label} (auto-derived)`);
+            return;
+          }
+        }
+      }
+      installDataset(parsed, study.presetId, file.name);
     };
     reader.readAsText(file);
   };
@@ -1274,20 +1336,16 @@ export default function LabPage() {
     setDisplayName(ds.id, suggestDatasetName(ds.dates, activePreset.matrixBranch));
   };
 
-  const applyPreset = (presetId: string) => {
-    const preset = presetById(presetId);
-    if (!preset) return;
-    if (presetId !== study.presetId) {
-      clearDataset();
-      setStudy({
-        ...study,
-        presetId,
-        regimes: preset.defaultRegimes ?? study.regimes,
-        hypothesis: preset.defaultHypothesis ?? study.hypothesis,
-      });
-      setSaveStatus("idle");
+  const applyPreset = (presetId: string) => tryActivatePreset(presetId);
+
+  useEffect(() => {
+    if (!studyHydrated || typeof window === "undefined") return;
+    const q = new URLSearchParams(window.location.search).get("preset");
+    if (q && presetById(q) && q !== study.presetId) {
+      tryActivatePreset(q, { fromUrl: true });
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on hydrate + URL
+  }, [studyHydrated]);
 
   const toggleRegime = (r: string) => {
     setStudy({
@@ -1443,6 +1501,19 @@ export default function LabPage() {
         </div>
       </div>
 
+      <div className="panel" style={{ marginBottom: 14 }}>
+        <div className="panel-title">
+          Firm rules
+          <span className="sub">{rule.name} · pass / DD / consistency</span>
+        </div>
+        <div className="panel-body">
+          <FirmRulesCard rule={rule} />
+          <p className="small dim" style={{ marginTop: 10, marginBottom: 0 }}>
+            Payout buffer ${payoutBuffer} · {sims.toLocaleString()} sims — change in Advanced below step 3.
+          </p>
+        </div>
+      </div>
+
       <div className="panel lab-workflow">
         <div className="panel-title">
           Run a study
@@ -1537,6 +1608,18 @@ export default function LabPage() {
                   )}
                 </div>
               </div>
+
+              {activePreset?.dataSource === "derived-b0" && (
+                <p className="small" style={{ marginTop: 8, marginBottom: 0 }}>
+                  {macroB0Name ? (
+                    <span className="pos">B0 loaded: {macroB0Name} — {matrixBranch} filters automatically.</span>
+                  ) : (
+                    <span className="warn">
+                      Upload B0 Macro CSV first (select B0 in matrix), then click {matrixBranch} again — or upload a pre-filtered CSV.
+                    </span>
+                  )}
+                </p>
+              )}
 
               {datasetMismatch && (
                 <p className="small warn" style={{ marginTop: 8, marginBottom: 0 }}>
@@ -1888,41 +1971,36 @@ export default function LabPage() {
         />
       </CollapsiblePanel>
 
-      <CollapsiblePanel title="Firm rules & replay" sub="rules detail · actual equity · consistency" defaultOpen={false}>
-        <div className="lab-ref-section">
-          <div className="lab-ref-heading">Firm rules — {rule.name}</div>
-          <FirmRulesCard rule={rule} />
-        </div>
-        {activeDs.trades.length > 0 && (
-          <>
-            <hr className="hr" />
-            <div className="lab-ref-section">
-              <div className="lab-ref-heading">Actual replay — {stats.n} trades · {fmtUsd(equity.net, true)}</div>
-              <div className="stat-strip" style={{ marginBottom: 14 }}>
-                <div className="stat">
-                  <div className="k">Win rate</div>
-                  <div className="v cyan">{stats.n ? ((stats.wins / stats.n) * 100).toFixed(0) : 0}%</div>
-                  <div className="d">{stats.wins}W / {stats.losses}L</div>
-                </div>
-                <div className="stat">
-                  <div className="k">Max DD</div>
-                  <div className="v neg">{fmtUsd(Math.round(equity.maxDd))}</div>
-                  <div className="d">vs {fmtUsd(rule.trailingDD)} trail</div>
-                </div>
+      <CollapsiblePanel title="Firm rules & replay" sub="actual equity · consistency detail" defaultOpen={false}>
+        {activeDs.trades.length > 0 ? (
+          <div className="lab-ref-section">
+            <div className="lab-ref-heading">Actual replay — {stats.n} trades · {fmtUsd(equity.net, true)}</div>
+            <div className="stat-strip" style={{ marginBottom: 14 }}>
+              <div className="stat">
+                <div className="k">Win rate</div>
+                <div className="v cyan">{stats.n ? ((stats.wins / stats.n) * 100).toFixed(0) : 0}%</div>
+                <div className="d">{stats.wins}W / {stats.losses}L</div>
               </div>
-              <EquityCurveChart curve={equity} passAt={rule.passAt} trailingDd={rule.trailingDD} />
-              {rule.consistencyPct > 0 && (
-                <>
-                  <hr className="hr" />
-                  <EvalConsistencyCard
-                    report={consistency}
-                    winCapUsd={winCapUsd}
-                    onWinCapChange={setWinCapUsd}
-                  />
-                </>
-              )}
+              <div className="stat">
+                <div className="k">Max DD</div>
+                <div className="v neg">{fmtUsd(Math.round(equity.maxDd))}</div>
+                <div className="d">vs {fmtUsd(rule.trailingDD)} trail</div>
+              </div>
             </div>
-          </>
+            <EquityCurveChart curve={equity} passAt={rule.passAt} trailingDd={rule.trailingDD} />
+            {rule.consistencyPct > 0 && (
+              <>
+                <hr className="hr" />
+                <EvalConsistencyCard
+                  report={consistency}
+                  winCapUsd={winCapUsd}
+                  onWinCapChange={setWinCapUsd}
+                />
+              </>
+            )}
+          </div>
+        ) : (
+          <p className="small dim">Upload a dataset to see actual replay equity and consistency.</p>
         )}
       </CollapsiblePanel>
     </>
