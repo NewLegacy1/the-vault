@@ -25,7 +25,6 @@ import {
   type FindingFamily,
   analyzeBeRetest,
 } from "@/lib/lab-findings";
-import { FirmRulesCard } from "@/components/firm-rules-card";
 import { NewsDayPanel } from "@/components/news-day-panel";
 import Link from "next/link";
 import {
@@ -34,7 +33,8 @@ import {
   type PresetLedgerStore,
 } from "@/lib/lab-ledger";
 import { isDerivedMacroPreset } from "@/lib/macro-matrix";
-import { compareFirmsForTrades, firmSnapshotsToCohortMc } from "@/lib/firm-matrix-compare";
+import { compareFirmsForTrades, firmSnapshotsToCohortMc, MATRIX_REFERENCE_FIRM_ID, type FirmMcSnapshot } from "@/lib/firm-matrix-compare";
+import { MatrixFirmCompare } from "@/components/matrix-firm-compare";
 
 interface Dataset {
   id: string;
@@ -943,13 +943,13 @@ export default function LabPage() {
   const [datasetAliases, setDatasetAliases] = useLocal<Record<string, string>>("vault.lab.datasetAliases", {});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dateFilters, setDateFilters] = useLocal<Record<string, DateFilter>>("vault.lab.dateFilters", {});
-  const [ruleId, setRuleId, ruleReady] = useLocal<string>("vault.lab.ruleId", PROP_RULES[0].id);
   const [sims, setSims, simsReady] = useLocal<number>("vault.lab.sims", 2000);
   const [maxTrades, setMaxTrades, maxTradesReady] = useLocal<number>("vault.lab.maxTrades", 80);
   const [payoutBuffer, setPayoutBuffer, payoutReady] = useLocal<number>("vault.lab.payoutBuffer", 2000);
   const [macroB0Csv, setMacroB0Csv] = useLocal<string>("vault.lab.macroB0Csv", "");
   const [macroB0Name, setMacroB0Name] = useLocal<string>("vault.lab.macroB0Name", "");
   const [res, setRes] = useState<McResult | null>(null);
+  const [firmSnapshots, setFirmSnapshots] = useState<FirmMcSnapshot[] | null>(null);
   const [study, setStudy, studyHydrated] = useLocal<LabStudy>("vault.lab.study", DEFAULT_STUDY);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "ok" | "err">("idle");
   const [saveMsg, setSaveMsg] = useState("");
@@ -998,9 +998,20 @@ export default function LabPage() {
   );
   const dateFilterActive = Boolean(dateFilter.from || dateFilter.to);
   const displayName = ds ? datasetDisplayName(ds, datasetAliases) : "";
-  const rule = ruleById(typeof ruleId === "string" ? ruleId : PROP_RULES[0].id) ?? PROP_RULES[0];
+  const rule = ruleById(MATRIX_REFERENCE_FIRM_ID) ?? PROP_RULES[0];
   const canRun = studyReady(study) && activeDs.trades.length > 0;
-  const storageReady = dsReady && ruleReady && simsReady && maxTradesReady && payoutReady && studyHydrated && ledgersReady;
+  const storageReady = dsReady && simsReady && maxTradesReady && payoutReady && studyHydrated && ledgersReady;
+
+  const mcFirmParams = useMemo(
+    () => ({
+      trades: activeDs.trades,
+      dates: activeDs.dates,
+      sims: Number(sims) || 2000,
+      maxTrades: Number(maxTrades) || 80,
+      payoutBuffer: Number(payoutBuffer) || 1000,
+    }),
+    [activeDs, sims, maxTrades, payoutBuffer]
+  );
 
   const runKey = useMemo(
     () =>
@@ -1009,7 +1020,7 @@ export default function LabPage() {
         presetId: study.presetId,
         customLabel: study.customLabel,
         hypothesis: study.hypothesis,
-        ruleId: typeof ruleId === "string" ? ruleId : PROP_RULES[0].id,
+        ruleId: MATRIX_REFERENCE_FIRM_ID,
         sims: Number(sims) || 2000,
         maxTrades: Number(maxTrades) || 80,
         payoutBuffer: Number(payoutBuffer) || 1000,
@@ -1017,7 +1028,7 @@ export default function LabPage() {
         dateFrom: dateFilter.from,
         dateTo: dateFilter.to,
       }),
-    [dataKey, study, ruleId, sims, maxTrades, payoutBuffer, winCapUsd, dateFilter]
+    [dataKey, study, sims, maxTrades, payoutBuffer, winCapUsd, dateFilter]
   );
 
   const equity = useMemo(() => buildEquityCurve(activeDs.trades, activeDs.dates), [activeDs]);
@@ -1103,6 +1114,7 @@ export default function LabPage() {
     const cached = loadLabRunCache(runKey);
     if (!cached?.hasRun || !canRun) {
       setRes(null);
+      setFirmSnapshots(null);
       setScorecardComparison(null);
       setSaveStatus("idle");
       setSaveMsg("");
@@ -1111,6 +1123,7 @@ export default function LabPage() {
     try {
       const { mcResult, comparison } = computeMcRun();
       setRes(mcResult);
+      setFirmSnapshots(compareFirmsForTrades(mcFirmParams));
       setScorecardComparison(comparison);
       if (cached.cohortSaved) {
         setSaveStatus("ok");
@@ -1121,11 +1134,12 @@ export default function LabPage() {
       }
     } catch {
       setRes(null);
+      setFirmSnapshots(null);
       setScorecardComparison(null);
       setSaveStatus("idle");
       setSaveMsg("");
     }
-  }, [runKey, storageReady, canRun, computeMcRun]);
+  }, [runKey, storageReady, canRun, computeMcRun, mcFirmParams]);
 
   const ghostReport = useMemo(
     () => analyzeGhostAutopsy(parseGhostAutopsyPaste(ghostPaste), ghostPaste, ghostKind),
@@ -1178,6 +1192,7 @@ export default function LabPage() {
     });
     setUploads([]);
     setRes(null);
+    setFirmSnapshots(null);
     setScorecardComparison(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -1212,6 +1227,7 @@ export default function LabPage() {
       setLedgers((prev) => saveLedgerEntry(prev, study.presetId, file.name, text));
       setUploads([]);
       setRes(null);
+      setFirmSnapshots(null);
       setScorecardComparison(null);
     };
     reader.readAsText(file);
@@ -1259,7 +1275,7 @@ export default function LabPage() {
   const persistCohort = async (
     mcResult: McResult,
     comparison?: ScorecardComparison | null,
-    opts?: { allowDownload?: boolean; force?: boolean }
+    opts?: { allowDownload?: boolean; force?: boolean; firmSnapshots?: FirmMcSnapshot[] }
   ) => {
     if (!studyReady(study)) return;
     if (!opts?.force && isLabRunCohortSaved(runKey)) {
@@ -1270,13 +1286,15 @@ export default function LabPage() {
     }
     setSaveStatus("saving");
     const preset = presetById(study.presetId);
-    const firmSnapshots = compareFirmsForTrades({
-      trades: activeDs.trades,
-      dates: activeDs.dates,
-      sims: Number(sims) || 2000,
-      maxTrades: Number(maxTrades) || 80,
-      payoutBuffer: Number(payoutBuffer) || 1000,
-    });
+    const snapshots =
+      opts?.firmSnapshots ??
+      compareFirmsForTrades({
+        trades: activeDs.trades,
+        dates: activeDs.dates,
+        sims: Number(sims) || 2000,
+        maxTrades: Number(maxTrades) || 80,
+        payoutBuffer: Number(payoutBuffer) || 1000,
+      });
     const payload: CohortSaveInput = {
       variant: variantName,
       strategyPreset: study.presetId,
@@ -1294,7 +1312,7 @@ export default function LabPage() {
           ? [...ds.sources, `Date filter: ${stats.n} of ${stats.fullN} trades`]
           : ds.sources
         : [],
-      firm: rule.name,
+      firm: `${rule.name} (reference) · multi-firm matrix`,
       trades: stats.n,
       netPnl: stats.net,
       wins: stats.wins,
@@ -1309,7 +1327,7 @@ export default function LabPage() {
       maxTrades,
       payoutBuffer,
       mc: mcToSummary(mcResult),
-      firmMc: firmSnapshotsToCohortMc(firmSnapshots),
+      firmMc: firmSnapshotsToCohortMc(snapshots),
       tradePnls: activeDs.trades,
       tradeDates: activeDs.dates,
     };
@@ -1355,7 +1373,9 @@ export default function LabPage() {
     if (!canRun) return;
     setSaveStatus("idle");
     const { mcResult, comparison } = computeMcRun();
+    const snapshots = compareFirmsForTrades(mcFirmParams);
     setRes(mcResult);
+    setFirmSnapshots(snapshots);
     setScorecardComparison(comparison);
     const entry: ScorecardRunEntry = {
       id: `${Date.now()}-${study.presetId}`,
@@ -1383,7 +1403,7 @@ export default function LabPage() {
         setSaveStatus("ok");
         setSaveMsg(prevCache?.saveMsg || "Already saved for this dataset + variant — skipped re-commit");
       } else {
-        void persistCohort(mcResult, comparison);
+        void persistCohort(mcResult, comparison, { firmSnapshots: snapshots });
       }
     }
   };
@@ -1404,23 +1424,10 @@ export default function LabPage() {
         .
       </div>
 
-      <div className="panel" style={{ marginBottom: 14 }}>
-        <div className="panel-title">
-          Firm rules
-          <span className="sub">{rule.name} · pass / DD / consistency</span>
-        </div>
-        <div className="panel-body">
-          <FirmRulesCard rule={rule} />
-          <p className="small dim" style={{ marginTop: 10, marginBottom: 0 }}>
-            Payout buffer ${payoutBuffer} · {sims.toLocaleString()} sims — change in Advanced below step 3.
-          </p>
-        </div>
-      </div>
-
       <div className="panel lab-workflow">
         <div className="panel-title">
           Run a study
-          <span className="sub">strategy · data · firm</span>
+          <span className="sub">strategy · data · run</span>
         </div>
         <div className="panel-body">
           <div className="lab-step">
@@ -1571,26 +1578,17 @@ export default function LabPage() {
           <div className="lab-step lab-step-run">
             <span className="lab-step-num">3</span>
             <div className="lab-step-body">
-              <div className="frm-row">
-                <label className="fld" style={{ minWidth: 220 }}>
-                  Firm preset
-                  <select value={ruleId} onChange={(e) => setRuleId(e.target.value)}>
-                    {PROP_RULES.map((r) => (
-                      <option key={r.id} value={r.id}>{r.name}</option>
-                    ))}
-                  </select>
-                </label>
+              <div className="frm-row" style={{ alignItems: "center", gap: 12 }}>
                 <button className="btn" onClick={run} disabled={!canRun} title={!canRun ? "Set strategy version and load data for this preset first" : ""}>
                   RUN Monte Carlo
                 </button>
-              </div>
-              <div className="small dim" style={{ marginTop: 6 }}>
-                {rule.name}: pass {fmtUsd(rule.passAt)} · DD {fmtUsd(rule.trailingDD)}
-                {rule.consistencyPct > 0 ? ` · ${rule.consistencyPct}% consistency` : ""}
+                <span className="small dim">
+                  One run → TPT, Alpha Zero, Alpha Premium, Apex on the same trades
+                </span>
               </div>
               {!res && (
                 <p className="small dim" style={{ marginTop: 6, marginBottom: 0 }}>
-                  Pass %, fan chart, and scorecard appear below after RUN.
+                  Firm comparison, fan chart (TPT reference), and scorecard appear below after RUN.
                 </p>
               )}
             </div>
@@ -1737,9 +1735,20 @@ export default function LabPage() {
             </div>
           </div>
 
+          {firmSnapshots && firmSnapshots.length > 0 && (
+            <MatrixFirmCompare
+              presetId={study.presetId}
+              initialSnapshots={firmSnapshots}
+              sims={Number(sims) || 2000}
+              maxTrades={Number(maxTrades) || 80}
+              payoutBuffer={Number(payoutBuffer) || 1000}
+              embeddedInLab
+            />
+          )}
+
           <div className="stat-strip">
             <div className="stat">
-              <div className="k">Pass probability</div>
+              <div className="k">Pass probability · TPT</div>
               <div className={"v " + (res.passRate >= 0.7 ? "pos" : res.passRate >= 0.4 ? "warn" : "neg")}>
                 {(res.passRate * 100).toFixed(1)}%
               </div>
@@ -1809,7 +1818,7 @@ export default function LabPage() {
             <div className="panel-title">
               Monte Carlo simulation
               <span className="sub">
-                {res.sims.toLocaleString()} paths · {res.bootstrap}-block bootstrap
+                {rule.name} reference · {res.sims.toLocaleString()} paths · {res.bootstrap}-block bootstrap
                 {res.consistencyAware ? " · consistency-aware" : ""}
               </span>
             </div>

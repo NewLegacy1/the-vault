@@ -68,9 +68,24 @@ function FirmPassChart({ rows }: { rows: FirmMcSnapshot[] }) {
 export interface MatrixFirmCompareProps {
   presetId: string;
   cohort?: CohortRecord;
+  /** Pre-computed from Lab RUN — avoids duplicate MC work. */
+  initialSnapshots?: FirmMcSnapshot[];
+  sims?: number;
+  maxTrades?: number;
+  payoutBuffer?: number;
+  /** Lab embed: hide empty-state prompts. */
+  embeddedInLab?: boolean;
 }
 
-export function MatrixFirmCompare({ presetId, cohort }: MatrixFirmCompareProps) {
+export function MatrixFirmCompare({
+  presetId,
+  cohort,
+  initialSnapshots,
+  sims: simsProp,
+  maxTrades: maxTradesProp,
+  payoutBuffer: payoutBufferProp,
+  embeddedInLab = false,
+}: MatrixFirmCompareProps) {
   const [ledgers] = useLocal<PresetLedgerStore>("vault.lab.ledgers", {});
   const [selectedFirm, setSelectedFirm] = useState<MatrixCompareFirmId>("tpt50");
   const [computed, setComputed] = useState<FirmMcSnapshot[] | null>(null);
@@ -83,12 +98,18 @@ export function MatrixFirmCompare({ presetId, cohort }: MatrixFirmCompareProps) 
     [presetId, ledgers, cohort]
   );
 
-  const sims = cohort?.mcSims ?? 2000;
-  const maxTrades = cohort?.mcMaxTrades ?? 80;
-  const payoutBuffer = cohort?.payoutBuffer ?? 2000;
+  const sims = simsProp ?? cohort?.mcSims ?? 2000;
+  const maxTrades = maxTradesProp ?? cohort?.mcMaxTrades ?? 80;
+  const payoutBuffer = payoutBufferProp ?? cohort?.payoutBuffer ?? 2000;
 
   useEffect(() => {
     if (!presetId) return;
+    if (initialSnapshots?.length) {
+      setComputed(initialSnapshots);
+      setComputeSource("ledger");
+      setComputing(false);
+      return;
+    }
     if (resolved?.trades.length) {
       setComputing(true);
       const snaps = compareFirmsForTrades({
@@ -120,7 +141,7 @@ export function MatrixFirmCompare({ presetId, cohort }: MatrixFirmCompareProps) 
 
     setComputed(null);
     setComputeSource("none");
-  }, [presetId, resolved, cohort, sims, maxTrades, payoutBuffer]);
+  }, [presetId, resolved, cohort, sims, maxTrades, payoutBuffer, initialSnapshots]);
 
   const rows = computed ?? [];
   const best = rows.length
@@ -143,7 +164,7 @@ export function MatrixFirmCompare({ presetId, cohort }: MatrixFirmCompareProps) 
         <div className="panel-body">
           {computing && <p className="small dim">Running Monte Carlo across firms…</p>}
 
-          {!computing && computeSource === "none" && !cohort && (
+          {!computing && !embeddedInLab && computeSource === "none" && !cohort && (
             <p className="small warn">
               Select a matrix row above, or run this branch in{" "}
               <Link href={`/lab?preset=${presetId}`} className="accent">
@@ -153,7 +174,7 @@ export function MatrixFirmCompare({ presetId, cohort }: MatrixFirmCompareProps) 
             </p>
           )}
 
-          {!computing && computeSource === "none" && cohort && (
+          {!computing && !embeddedInLab && computeSource === "none" && cohort && (
             <p className="small warn">
               Trade data not stored for this cohort yet. Open Lab with your CSV still in browser (auto-computes), or
               re-RUN once to save trades + all firms permanently.
@@ -165,19 +186,29 @@ export function MatrixFirmCompare({ presetId, cohort }: MatrixFirmCompareProps) 
 
           {computeSource !== "none" && (
             <p className="small dim" style={{ marginTop: 0, lineHeight: 1.55 }}>
-              {computeSource === "ledger" && (
+              {embeddedInLab && (
+                <>
+                  <span className="accent">All firms</span> from one RUN — same trades, each prop&apos;s pass line / DD /
+                  consistency. Fan chart below uses TPT as reference. Full matrix view on{" "}
+                  <Link href="/results" className="accent">
+                    F8 Results
+                  </Link>
+                  .
+                </>
+              )}
+              {!embeddedInLab && computeSource === "ledger" && (
                 <>
                   <span className="accent">Auto-computed</span> from your Lab CSV in this browser — same trades, each
                   firm&apos;s pass/DD/consistency rules. No re-run needed.
                 </>
               )}
-              {computeSource === "cohort" && (
+              {!embeddedInLab && computeSource === "cohort" && (
                 <>
                   <span className="accent">Auto-computed</span> from saved trade series in the cohort note — all firms
                   from one MC run.
                 </>
               )}
-              {computeSource === "saved" && resolved == null && (
+              {!embeddedInLab && computeSource === "saved" && resolved == null && (
                 <>
                   Showing saved firm snapshots. Re-RUN in Lab once to store trades and refresh all tabs automatically.
                 </>

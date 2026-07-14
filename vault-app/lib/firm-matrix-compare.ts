@@ -10,6 +10,9 @@ export const MATRIX_COMPARE_FIRM_IDS = [
   "apex50-eod",
 ] as const;
 
+/** Reference firm for Lab fan chart, scorecard, and TPT consistency panel. */
+export const MATRIX_REFERENCE_FIRM_ID = "tpt50" as const;
+
 export type MatrixCompareFirmId = (typeof MATRIX_COMPARE_FIRM_IDS)[number];
 
 /** MC passRate/bustRate are 0–1; UI and cohort notes use 0–100 percent. */
