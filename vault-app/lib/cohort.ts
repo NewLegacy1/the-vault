@@ -84,6 +84,8 @@ export interface CohortRecord {
   filename: string;
   relativePath: string;
   variant: string;
+  /** Lab preset id — e.g. matrix-a0a, datahl-v0-cisd */
+  strategyPreset: string;
   strategyFamily: string;
   phase: string;
   regimes: string[];
@@ -287,6 +289,7 @@ export function parseCohortMeta(content: string, filename: string, relativePath?
     filename,
     relativePath: relativePath ?? filename,
     variant: get("variant"),
+    strategyPreset: preset,
     strategyFamily: family,
     phase: get("phase") || "research",
     regimes,

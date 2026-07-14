@@ -53,6 +53,21 @@ export async function ensureCohortsDir(): Promise<string> {
   return dir;
 }
 
+function bundledCohortIndexPath(): string {
+  return path.join(process.cwd(), "data", "cohorts-index.json");
+}
+
+function loadBundledCohorts(): CohortRecord[] {
+  const fp = bundledCohortIndexPath();
+  if (!fs.existsSync(fp)) return [];
+  try {
+    const raw = JSON.parse(fs.readFileSync(fp, "utf8")) as { cohorts?: CohortRecord[] };
+    return raw.cohorts ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function listCohorts(): Promise<CohortRecord[]> {
   const dir = await ensureCohortsDir();
   const files = await walkMdFiles(dir, "");
@@ -76,7 +91,10 @@ export async function listCohorts(): Promise<CohortRecord[]> {
   } catch {
     /* ignore */
   }
-  return records.sort((a, b) => b.created.localeCompare(a.created));
+  if (records.length > 0) {
+    return records.sort((a, b) => b.created.localeCompare(a.created));
+  }
+  return loadBundledCohorts().sort((a, b) => b.created.localeCompare(a.created));
 }
 
 export type CohortSaveResult = {

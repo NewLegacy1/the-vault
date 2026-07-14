@@ -65,6 +65,34 @@ function fmtPct(n: number): string {
   return `${n >= 0 ? "+" : ""}${n.toFixed(0)}%`;
 }
 
+/** Performance split: red-folder vs quiet — any strategy family */
+export type NewsDayAnalysis = PrbRedFolderAnalysis;
+
+export function analyzeNewsDayPerformance(
+  joined: TradeWithNews[],
+  strategyLabel?: string
+): NewsDayAnalysis {
+  const base = analyzePrbRedFolderDays(joined);
+  const name = strategyLabel?.trim() || "This strategy";
+  if (base.inCalendar >= 5 && base.red.trades > 0 && base.red.netPnl < -200 && base.quiet.netPnl > 0) {
+    return {
+      ...base,
+      verdict: `${name} loses on red-folder days (${fmtUsd(base.red.netPnl)}) but profits on quiet days (${fmtUsd(base.quiet.netPnl)}). Consider skipping news sessions or a dedicated news-window model.`,
+    };
+  }
+  if (base.inCalendar >= 5 && base.red.trades > 0 && base.red.netPnl > 200) {
+    return {
+      ...base,
+      verdict: `${name} is profitable on red-folder days (${fmtUsd(base.red.netPnl)} on ${base.red.trades} trades). News days are not a drag in this window.`,
+    };
+  }
+  return {
+    ...base,
+    verdict: base.verdict.replace(/PRB/g, name),
+    headline: base.headline.replace(/PRB/g, name),
+  };
+}
+
 /** PRB performance split: red-folder vs quiet — answers "is news-day edge missing from live PRB?" */
 export function analyzePrbRedFolderDays(joined: TradeWithNews[]): PrbRedFolderAnalysis {
   const inCalendar = joined.filter((j) => j.profile !== null);

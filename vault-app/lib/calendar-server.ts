@@ -12,6 +12,16 @@ function calendarDir(): string {
 
 const CAL_DIR = calendarDir();
 const ACTIVE = path.join(CAL_DIR, "vault_calendar.json");
+const BUNDLE = path.join(process.cwd(), "data", "calendar-bundle.json");
+
+function loadBundledCalendar(): StoredCalendar | null {
+  if (!fs.existsSync(BUNDLE)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(BUNDLE, "utf8")) as StoredCalendar;
+  } catch {
+    return null;
+  }
+}
 
 export function calendarActivePath(): string {
   return ACTIVE;
@@ -67,10 +77,13 @@ function mergeEvents(lists: CalendarEvent[][]): CalendarEvent[] {
   return out.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
 }
 
-/** Load active JSON or merge all forexfactory_*.csv in data/calendar. */
+/** Load active JSON, bundled build artifact, or merge forexfactory_*.csv. */
 export function loadServerCalendar(): StoredCalendar | null {
   const active = readStoredCalendar();
   if (active?.events?.length) return active;
+
+  const bundled = loadBundledCalendar();
+  if (bundled?.events?.length) return bundled;
 
   if (!fs.existsSync(CAL_DIR)) return null;
   const csvs = fs

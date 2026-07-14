@@ -26,7 +26,8 @@ import {
   type FindingFamily,
   analyzeBeRetest,
 } from "@/lib/lab-findings";
-import { StrategyDevPanel } from "@/components/strategy-dev-panel";
+import { MatrixResults } from "@/components/matrix-results";
+import { NewsDayPanel } from "@/components/news-day-panel";
 
 interface Dataset {
   id: string;
@@ -219,7 +220,7 @@ import {
   DEFAULT_STUDY,
   LabStudy,
   REGIME_PRESETS,
-  LAB_STRATEGY_PRESETS,
+  labDropdownPresets,
   isLabPresetId,
   presetById,
   studyReady,
@@ -993,6 +994,7 @@ export default function LabPage() {
   const [study, setStudy, studyHydrated] = useLocal<LabStudy>("vault.lab.study", DEFAULT_STUDY);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "ok" | "err">("idle");
   const [saveMsg, setSaveMsg] = useState("");
+  const [cohortRefreshKey, setCohortRefreshKey] = useState(0);
   const [autoSave, setAutoSave] = useLocal<boolean>("vault.lab.autosave", true);
   const [winCapUsd, setWinCapUsd] = useLocal<number>("vault.lab.winCapUsd", 1490);
   const [ghostKind, setGhostKind] = useLocal<"prb" | "macro">("vault.lab.ghostKind", "prb");
@@ -1273,16 +1275,18 @@ export default function LabPage() {
   };
 
   const applyPreset = (presetId: string) => {
-    if (presetId === study.presetId) return;
     const preset = presetById(presetId);
-    clearDataset();
-    setStudy({
-      ...study,
-      presetId,
-      regimes: preset?.defaultRegimes ?? study.regimes,
-      hypothesis: preset?.defaultHypothesis ?? study.hypothesis,
-    });
-    setSaveStatus("idle");
+    if (!preset) return;
+    if (presetId !== study.presetId) {
+      clearDataset();
+      setStudy({
+        ...study,
+        presetId,
+        regimes: preset.defaultRegimes ?? study.regimes,
+        hypothesis: preset.defaultHypothesis ?? study.hypothesis,
+      });
+      setSaveStatus("idle");
+    }
   };
 
   const toggleRegime = (r: string) => {
@@ -1357,6 +1361,7 @@ export default function LabPage() {
             : `Saved → strategies/cohorts/${data.filename}`;
       setSaveStatus("ok");
       setSaveMsg(okMsg);
+      setCohortRefreshKey((k) => k + 1);
       markLabRunCohortSaved(runKey, okMsg);
       saveLabRunCache(runKey, {
         cohortSaved: true,
@@ -1421,8 +1426,21 @@ export default function LabPage() {
   return (
     <>
       <div className="lab-intro">
-        Pick a strategy version, upload its TradingView CSV, then <span className="accent">RUN</span>.
-        One file = one dataset — named automatically from branch + date span.
+        Matrix at top shows saved runs. Pick a row, upload CSV, <span className="accent">RUN</span> — cohorts save to Obsidian via GitHub when configured.
+      </div>
+
+      <div className="panel" style={{ marginBottom: 14 }}>
+        <div className="panel-title">
+          Matrix results
+          <span className="sub">premium 365d + experimental · click to load study</span>
+        </div>
+        <div className="panel-body">
+          <MatrixResults
+            activePresetId={study.presetId}
+            onSelectPreset={applyPreset}
+            refreshKey={cohortRefreshKey}
+          />
+        </div>
       </div>
 
       <div className="panel lab-workflow">
@@ -1439,12 +1457,17 @@ export default function LabPage() {
                   Strategy version
                   <select value={study.presetId} onChange={(e) => applyPreset(e.target.value)}>
                     <optgroup label="Eval">
-                      {LAB_STRATEGY_PRESETS.filter((p) => p.phase === "eval").map((p) => (
+                      {labDropdownPresets().filter((p) => p.phase === "eval").map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
                     <optgroup label="Funded">
-                      {LAB_STRATEGY_PRESETS.filter((p) => p.phase === "funded").map((p) => (
+                      {labDropdownPresets().filter((p) => p.phase === "funded").map((p) => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Experimental">
+                      {labDropdownPresets().filter((p) => p.phase === "research" || p.phase === "combined").map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
@@ -1464,7 +1487,10 @@ export default function LabPage() {
                   <span className="cyan">Pine {activePreset.version}</span> · {activePreset.config}
                   {activePreset.uploadHint && (
                     <div className="accent" style={{ marginTop: 4 }}>
-                      Upload: {activePreset.uploadHint}
+                      {activePreset.dataSource === "derived-b0"
+                        ? "Derived from B0 Macro export — not a separate TV run. "
+                        : ""}
+                      {activePreset.uploadHint}
                     </div>
                   )}
                 </div>
@@ -1802,6 +1828,14 @@ export default function LabPage() {
             </div>
           </div>
 
+          <CollapsiblePanel title="News-day performance" sub="red-folder vs quiet · from F7 calendar" defaultOpen={false}>
+            <NewsDayPanel
+              trades={activeDs.trades}
+              dates={activeDs.dates}
+              strategyLabel={variantName}
+            />
+          </CollapsiblePanel>
+
           <CollapsiblePanel title="Fee breakdown" sub="median pass path">
             <div className="small subtext">
               <div className="kv">
@@ -1821,29 +1855,6 @@ export default function LabPage() {
       )}
 
       <CollapsiblePanel
-        title="Strategy development"
-        sub="compare all MC cohorts · eval / funded / hybrid"
-        defaultOpen={true}
-      >
-        <StrategyDevPanel
-          activeFamily={activePreset?.family}
-          activeVariant={variantName}
-          defaultFilter={activePreset?.family ?? "all"}
-          currentRun={
-            res
-              ? {
-                  variant: variantName,
-                  trades: stats.n,
-                  netPnl: stats.net,
-                  mcPassPct: res.passRate * 100,
-                  maxDd: equity.maxDd,
-                }
-              : null
-          }
-        />
-      </CollapsiblePanel>
-
-      <CollapsiblePanel
         title="Settled findings"
         sub={`${findingsFamily.toUpperCase()} — do not re-litigate without new data`}
         defaultOpen={false}
@@ -1853,7 +1864,7 @@ export default function LabPage() {
 
       <CollapsiblePanel
         title="Missed-trade autopsy"
-        sub="paste Pine ghost tables · PRB or Macro"
+        sub="replay only — paste Pine ghost tables · not available in deep backtest"
         badge={ghostReport.rows.length > 0 ? `${ghostReport.totalN} ghosts` : undefined}
         defaultOpen={false}
       >

@@ -1,6 +1,8 @@
 /** Strategy family and prop-firm phase for Obsidian cohort organization. */
 export type StrategyFamily = "prb" | "macro" | "datahl" | "hybrid" | "custom";
 export type StrategyPhase = "eval" | "funded" | "combined" | "research";
+/** premium365 = current matrix; experimental = new strategies under test */
+export type MatrixTrack = "premium365" | "experimental";
 
 export interface StrategyPreset {
   id: string;
@@ -11,6 +13,11 @@ export interface StrategyPreset {
   family: StrategyFamily;
   phase: StrategyPhase;
   matrixBranch?: string;
+  /** Show in Lab matrix grid */
+  inMatrix?: boolean;
+  matrixTrack?: MatrixTrack;
+  /** tv-export = separate TradingView run; derived-b0 = filter from Macro B0 */
+  dataSource?: "tv-export" | "derived-b0";
   uploadHint?: string;
   defaultHypothesis?: string;
 }
@@ -28,6 +35,9 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "eval",
     uploadHint: "Your A0a TV CSV (one file).",
     defaultHypothesis: "Premium 365d eval baseline",
+    inMatrix: true,
+    matrixTrack: "premium365",
+    dataSource: "tv-export",
   },
   {
     id: "matrix-a0b",
@@ -76,6 +86,7 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "funded",
     uploadHint: "Your B0 Macro TV CSV (one file).",
     defaultHypothesis: "Macro v1.4 premium 365d full",
+    dataSource: "tv-export",
   },
   {
     id: "matrix-b1a",
@@ -86,8 +97,9 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
-    uploadHint: "macro-matrix-b1a.csv or your A-tier filter.",
+    uploadHint: "macro-matrix-b1a.csv or filter from B0.",
     defaultHypothesis: "Funded primary — A-tier only",
+    dataSource: "derived-b0",
   },
   {
     id: "matrix-b1b",
@@ -98,8 +110,9 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
-    uploadHint: "macro-matrix-b1b.csv",
+    uploadHint: "macro-matrix-b1b.csv or filter from B0.",
     defaultHypothesis: "Drop A+ — keep A and H",
+    dataSource: "derived-b0",
   },
   {
     id: "matrix-b1c",
@@ -110,8 +123,9 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
-    uploadHint: "macro-matrix-b1c.csv",
+    uploadHint: "macro-matrix-b1c.csv or filter from B0.",
     defaultHypothesis: "Isolate A+ tier",
+    dataSource: "derived-b0",
   },
   {
     id: "matrix-b3a",
@@ -122,8 +136,9 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
-    uploadHint: "macro-matrix-b3a.csv",
+    uploadHint: "macro-matrix-b3a.csv or filter from B0.",
     defaultHypothesis: "Halved risk on A-tier",
+    dataSource: "derived-b0",
   },
   {
     id: "matrix-b3b",
@@ -134,8 +149,43 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
-    uploadHint: "macro-matrix-b3b.csv",
+    uploadHint: "macro-matrix-b3b.csv or filter from B0.",
     defaultHypothesis: "Halved risk full book",
+    dataSource: "derived-b0",
+  },
+];
+
+/** New strategies under development — add rows here; they appear in matrix + dropdown. */
+export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
+  {
+    id: "datahl-v0-cisd",
+    label: "X0a · Data H/L v0",
+    version: "v0",
+    matrixBranch: "X0a",
+    config: "8:30 CISD · manual replay days",
+    defaultRegimes: ["news"],
+    family: "datahl",
+    phase: "research",
+    inMatrix: true,
+    matrixTrack: "experimental",
+    dataSource: "tv-export",
+    uploadHint: "Data H/L replay CSV (F7 tags CPI/NFP days first).",
+    defaultHypothesis: "News-window edge vs PRB 10am",
+  },
+  {
+    id: "custom",
+    label: "Custom experiment",
+    version: "custom",
+    matrixBranch: "custom",
+    config: "User-defined Pine variant",
+    defaultRegimes: [],
+    family: "custom",
+    phase: "research",
+    inMatrix: true,
+    matrixTrack: "experimental",
+    dataSource: "tv-export",
+    uploadHint: "Any TV export — name in hypothesis.",
+    defaultHypothesis: "",
   },
 ];
 
@@ -214,15 +264,6 @@ const LEGACY_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "eval",
   },
   {
-    id: "datahl-v0-cisd",
-    label: "Data H/L v0",
-    version: "v0",
-    config: "legacy",
-    defaultRegimes: ["news"],
-    family: "datahl",
-    phase: "research",
-  },
-  {
     id: "macro-v0-journal",
     label: "Macro v0 journal",
     version: "v0",
@@ -249,20 +290,12 @@ const LEGACY_STRATEGY_PRESETS: StrategyPreset[] = [
     family: "macro",
     phase: "funded",
   },
-  {
-    id: "custom",
-    label: "Custom experiment",
-    version: "custom",
-    config: "User-defined",
-    defaultRegimes: [],
-    family: "custom",
-    phase: "research",
-  },
 ];
 
 /** All presets (Lab + legacy) for cohort resolution. */
 export const STRATEGY_PRESETS: StrategyPreset[] = [
   ...LAB_STRATEGY_PRESETS,
+  ...EXPERIMENTAL_STRATEGY_PRESETS,
   ...LEGACY_STRATEGY_PRESETS,
 ];
 
@@ -284,8 +317,20 @@ export function isMatrixPreset(id: string): boolean {
   return id.startsWith("matrix-");
 }
 
+/** All presets shown in F4 LAB strategy dropdown. */
+export function labDropdownPresets(): StrategyPreset[] {
+  return [...LAB_STRATEGY_PRESETS, ...EXPERIMENTAL_STRATEGY_PRESETS];
+}
+
+/** Rows for the matrix results grid at top of Lab. */
+export function matrixPresets(): StrategyPreset[] {
+  return [...LAB_STRATEGY_PRESETS, ...EXPERIMENTAL_STRATEGY_PRESETS].filter(
+    (p) => p.inMatrix !== false && Boolean(p.matrixBranch)
+  );
+}
+
 export function isLabPresetId(id: string): boolean {
-  return LAB_STRATEGY_PRESETS.some((p) => p.id === id);
+  return labDropdownPresets().some((p) => p.id === id);
 }
 
 export function presetById(id: string): StrategyPreset | undefined {
