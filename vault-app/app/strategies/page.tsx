@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocal } from "@/lib/store";
+import { StrategyDevPanel } from "@/components/strategy-dev-panel";
 import {
   STRATEGY_VARIANTS,
   DEFAULT_VARIANT_ID,
@@ -420,6 +421,20 @@ export default function StrategiesPage() {
       </div>
 
       {isPrb ? <PrbStrategiesPage /> : <DataHlPanel variant={variant} />}
+
+      <div className="panel" style={{ marginTop: 14 }}>
+        <div className="panel-title">
+          Strategy development
+          <span className="sub">compare all Monte Carlo cohorts</span>
+        </div>
+        <div className="panel-body">
+          <StrategyDevPanel
+            defaultFilter={isPrb ? "prb" : "all"}
+            activeFamily={isPrb ? "prb" : "datahl"}
+            compact
+          />
+        </div>
+      </div>
     </>
   );
 }

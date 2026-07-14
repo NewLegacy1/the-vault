@@ -32,8 +32,8 @@ export const VERIFIED_BASELINE = {
   span: "Dec 9 2025 – Jul 1 2026",
 };
 
-/** Settled A/B + verified replay — do not re-litigate without new data. */
-export const CHART_FINDINGS: ChartFinding[] = [
+/** Settled A/B + verified replay — PRB only. */
+export const CHART_FINDINGS_PRB: ChartFinding[] = [
   {
     id: "be-only",
     area: "Risk — BE +1R",
@@ -119,6 +119,126 @@ export const CHART_FINDINGS: ChartFinding[] = [
     action: "Watch funnel give-back counter; toggle only when ≥ threshold, then re-export month.",
   },
 ];
+
+/** @deprecated use CHART_FINDINGS_PRB or getChartFindings() */
+export const CHART_FINDINGS = CHART_FINDINGS_PRB;
+
+/** Settled Macro Model findings — from v1.2→v1.4 cohort work. */
+export const CHART_FINDINGS_MACRO: ChartFinding[] = [
+  {
+    id: "ce-confirm",
+    area: "Entry — CE tap + lift",
+    verdict: "keep",
+    summary: "Best entry mode tested; limit retest and signal-market underperformed.",
+    action: "Keep CE confirm as default for Macro v1.4+.",
+  },
+  {
+    id: "ts-required",
+    area: "Filter — turtle soup required",
+    verdict: "keep",
+    summary: "Optional TS did nothing; requiring SMT always lost trades.",
+    action: "TS required in macro window; SMT boosts TP only, does not gate.",
+  },
+  {
+    id: "tier-a",
+    area: "Tier — A only (TS, 40pt TP)",
+    verdict: "keep",
+    summary: "v1.4 year: A-tier +$4,966 on 14 trades — carries entire book.",
+    action: "Funded candidate: filter ledger to tier=A before next MC.",
+  },
+  {
+    id: "tier-ap",
+    area: "Tier — A+ (TS+SMT, 50pt TP)",
+    verdict: "watch",
+    summary: "8 trades, 2W/6L, −$2,410. Large MFE before reversal — overshoots 40pt.",
+    action: "Test A+ with 40pt TP (same as A) — roadmap 2.1.",
+  },
+  {
+    id: "tier-h",
+    area: "Tier — H half risk",
+    verdict: "watch",
+    summary: "4 trades, 2W/2L, −$208 — low sample; wick 56–80 half-risk logic unproven.",
+    action: "Keep until more year data; do not promote to primary funded path.",
+  },
+  {
+    id: "pivot-5",
+    area: "Structure — pivot 5 vs 10",
+    verdict: "reject",
+    summary: "Marginal +1 trade in mixed export — not a meaningful lever.",
+    action: "Default pivot 5; do not A/B pivot unless staging logic changes.",
+  },
+  {
+    id: "macro-volume",
+    area: "Frequency — v1.2 high volume",
+    verdict: "reject",
+    summary: "229 trades, 30.5% pass — symmetric $800 W/L busts $2k trail.",
+    action: "Do not return to v1.2 trade count without halving risk or fixing loss asymmetry.",
+  },
+  {
+    id: "macro-v13-filter",
+    area: "Filters — v1.3 over-tight",
+    verdict: "reject",
+    summary: "25 trades/year, 42% pass but −89% trade count vs v1.2.",
+    action: "v1.4 architecture (TS req, SMT optional) is the right middle ground.",
+  },
+  {
+    id: "macro-eval",
+    area: "Phase — Macro for eval",
+    verdict: "watch",
+    summary: "v1.4 pass 33% vs PRB 55% — Macro not eval-primary today.",
+    action: "Use Macro for funded weekly edge; PRB for eval pass (see hybrid playbook).",
+  },
+  {
+    id: "ghost-confluence",
+    area: "Autopsy — CONFLUENCE table",
+    verdict: "keep",
+    summary: "Ghost confluence ≠ executed trades; use for filter tuning only.",
+    action: "Paste MISSED + CONFLUENCE after replay; compare to CSV tier breakdown.",
+  },
+];
+
+export type FindingFamily = "prb" | "macro" | "datahl" | "hybrid" | "custom";
+
+export function getChartFindings(family: FindingFamily): ChartFinding[] {
+  switch (family) {
+    case "macro":
+      return CHART_FINDINGS_MACRO;
+    case "prb":
+      return CHART_FINDINGS_PRB;
+    case "datahl":
+    case "hybrid":
+    case "custom":
+      return [];
+    default: {
+      const _exhaustive: never = family;
+      return _exhaustive;
+    }
+  }
+}
+
+export const MACRO_VERIFIED_BASELINE = {
+  trades: 26,
+  wins: 13,
+  fullLosses: 13,
+  netUsd: 2348,
+  winRatePct: 50,
+  avgWinUsd: 926,
+  span: "Jul 28 2025 – Jul 10 2026",
+  note: "Macro v1.4 premium 365d — tier A net +$4,966",
+};
+
+export function verifiedBaselineForFamily(
+  family: FindingFamily
+): typeof VERIFIED_BASELINE | typeof MACRO_VERIFIED_BASELINE | null {
+  switch (family) {
+    case "prb":
+      return VERIFIED_BASELINE;
+    case "macro":
+      return MACRO_VERIFIED_BASELINE;
+    default:
+      return null;
+  }
+}
 
 export const EVAL_VS_FUNDED = {
   headline: "Two profiles — same PRB entries, different exit economics",

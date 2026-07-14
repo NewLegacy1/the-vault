@@ -238,8 +238,12 @@ export function parseBeRetestAudit(text: string): BeRetestAudit | null {
   };
 }
 
-export function analyzeGhostAutopsy(rows: GhostReasonRow[], fullPaste = ""): GhostAutopsyReport {
-  const kind = detectStrategyKind(fullPaste);
+export function analyzeGhostAutopsy(
+  rows: GhostReasonRow[],
+  fullPaste = "",
+  forceKind?: "prb" | "macro"
+): GhostAutopsyReport {
+  const kind = forceKind ?? detectStrategyKind(fullPaste);
   const hints = kind === "macro" ? { ...MACRO_MISSED_HINTS, ...MACRO_CONFLUENCE_HINTS } : PRB_PINE_HINTS;
   const confluenceNames = new Set(MACRO_CONFLUENCE_LABELS.slice(1));
 

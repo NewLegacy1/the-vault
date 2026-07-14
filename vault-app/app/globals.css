@@ -305,6 +305,9 @@ button.btn.danger { background: transparent; color: var(--red); border: 1px soli
 }
 .upload-list li input[type="text"]::placeholder { color: var(--dim); }
 
+.strategy-dev-panel table { width: 100%; }
+.strategy-dev-panel .chip.active-acct { border-color: var(--matrix); }
+
 /* ── F4 LAB workflow ────────────────────────────────── */
 .lab-intro {
   margin-bottom: 12px; padding: 8px 12px;

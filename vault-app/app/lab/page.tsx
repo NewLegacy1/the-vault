@@ -21,10 +21,12 @@ import {
   GhostAutopsyReport,
 } from "@/lib/ghost-autopsy";
 import {
-  CHART_FINDINGS,
-  VERIFIED_BASELINE,
+  getChartFindings,
+  verifiedBaselineForFamily,
+  type FindingFamily,
   analyzeBeRetest,
 } from "@/lib/lab-findings";
+import { StrategyDevPanel } from "@/components/strategy-dev-panel";
 
 interface Dataset {
   id: string;
@@ -687,16 +689,30 @@ function EvalConsistencyCard({
   );
 }
 
-function ChartFindingsCard() {
+function ChartFindingsCard({ family }: { family: FindingFamily }) {
   const verdictClass = (v: string) =>
     v === "keep" ? "pos" : v === "reject" ? "neg" : v === "try" ? "cyan" : "warn";
+  const findings = getChartFindings(family);
+  const baseline = verifiedBaselineForFamily(family);
+
+  if (findings.length === 0) {
+    return (
+      <p className="small dim" style={{ marginTop: 0 }}>
+        No settled chart findings for <span className="accent">{family}</span> yet. Run cohorts and update{" "}
+        <code className="inline">strategies/strategy-dev/findings-{family === "macro" ? "macro" : "prb"}.md</code>.
+      </p>
+    );
+  }
 
   return (
     <>
-      <p className="small dim" style={{ marginTop: 0, lineHeight: 1.6 }}>
-        Verified baseline: {VERIFIED_BASELINE.trades} trades · {fmtUsd(VERIFIED_BASELINE.netUsd, true)} ·{" "}
-        ~{VERIFIED_BASELINE.winRatePct}% WR · {VERIFIED_BASELINE.span}. Full graveyard lives in F3 Strategies.
-      </p>
+      {baseline && (
+        <p className="small dim" style={{ marginTop: 0, lineHeight: 1.6 }}>
+          Verified baseline ({family}): {baseline.trades} trades · {fmtUsd(baseline.netUsd, true)} · ~
+          {baseline.winRatePct}% WR · {baseline.span}.
+          {"note" in baseline && baseline.note ? ` ${baseline.note}.` : ""}
+        </p>
+      )}
       <table>
         <thead>
           <tr>
@@ -706,7 +722,7 @@ function ChartFindingsCard() {
           </tr>
         </thead>
         <tbody>
-          {CHART_FINDINGS.map((f) => (
+          {findings.map((f) => (
             <tr key={f.id}>
               <td className="small">{f.area}</td>
               <td className={"small " + verdictClass(f.verdict)}>{f.verdict.toUpperCase()}</td>
@@ -726,6 +742,8 @@ function GhostAutopsyCard({
   onLoadTemplate,
   screenshotName,
   onScreenshot,
+  ghostKind,
+  onGhostKindChange,
 }: {
   report: GhostAutopsyReport;
   paste: string;
@@ -733,24 +751,39 @@ function GhostAutopsyCard({
   onLoadTemplate: () => void;
   screenshotName: string | null;
   onScreenshot: (file: File | null) => void;
+  ghostKind: "prb" | "macro";
+  onGhostKindChange: (k: "prb" | "macro") => void;
 }) {
   const beVerdict = report.beAudit ? analyzeBeRetest(report.beAudit) : null;
+  const isPrb = ghostKind === "prb";
 
   return (
     <>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        <span className="small dim">Strategy:</span>
+        {(["prb", "macro"] as const).map((k) => (
+          <button
+            key={k}
+            type="button"
+            className={"chip" + (ghostKind === k ? " active-acct" : "")}
+            style={{ cursor: "pointer", background: ghostKind === k ? undefined : "transparent" }}
+            onClick={() => onGhostKindChange(k)}
+          >
+            {k === "prb" ? "PRB" : "Macro Model"}
+          </button>
+        ))}
+      </div>
       <p className="small dim" style={{ marginTop: 0, lineHeight: 1.6 }}>
-        {report.strategyKind === "macro" ? (
+        {isPrb ? (
           <>
-            Copy <b>MISSED (1 filter)</b> and <b>CONFLUENCE</b> tables from Macro Model v1 Pine (bottom-right + middle-right).
-            Confluence rows show which TS/SMT combos worked on core setups — TS and SMT are optional per SOP.
+            Copy the <b>MISSED (failed 1 filter)</b> table (bottom-right) and <b>BE +1R retest</b> table (bottom-center) from PRB Pine.
           </>
         ) : (
           <>
-            Copy the <b>MISSED (failed 1 filter)</b> table (bottom-right) and <b>BE +1R retest</b> table (bottom-center) from Pine.
-            Paste both below — screenshot upload is for your reference only (no OCR yet).
+            Copy <b>MISSED (1 filter)</b> and <b>CONFLUENCE</b> tables from Macro Model Pine (bottom-right + middle-right).
           </>
         )}{" "}
-        Green ghost rows = filters blocking net-positive trades; this panel maps them to Pine inputs to A/B.
+        Green ghost rows = filters blocking net-positive trades.
       </p>
       <div className="frm-row">
         <label className="fld" style={{ flex: 1 }}>
@@ -771,9 +804,13 @@ function GhostAutopsyCard({
         onChange={(e) => onPasteChange(e.target.value)}
         rows={8}
         style={{ width: "100%", fontFamily: "monospace", fontSize: 12, marginTop: 8 }}
-        placeholder="Paste MISSED filter rows + BE +1R retest block (Ghosts / Real fills / TOTAL)"
+        placeholder={
+          isPrb
+            ? "Paste MISSED filter rows + BE +1R retest block (Ghosts / Real fills / TOTAL)"
+            : "Paste MISSED + CONFLUENCE rows from Macro replay"
+        }
       />
-      {report.beAudit && (
+      {isPrb && report.beAudit && (
         <>
           <div className="small accent mt" style={{ marginBottom: 6 }}>BE +1R retest audit (paste bottom-center table)</div>
           <table>
@@ -813,7 +850,7 @@ function GhostAutopsyCard({
           )}
         </>
       )}
-      {report.beAudit && (
+      {isPrb && report.beAudit && (
         <div className="stat-strip mt">
           <div className="stat">
             <div className="k">BE scratches</div>
@@ -963,7 +1000,13 @@ export default function LabPage() {
   const [saveMsg, setSaveMsg] = useState("");
   const [autoSave, setAutoSave] = useLocal<boolean>("vault.lab.autosave", true);
   const [winCapUsd, setWinCapUsd] = useLocal<number>("vault.lab.winCapUsd", 1490);
-  const [ghostPaste, setGhostPaste] = useLocal<string>("vault.lab.ghostPaste", "");
+  const [ghostKind, setGhostKind] = useLocal<"prb" | "macro">("vault.lab.ghostKind", "prb");
+  const [ghostPasteByKind, setGhostPasteByKind] = useLocal<Record<string, string>>("vault.lab.ghostPasteByKind", {
+    prb: "",
+    macro: "",
+  });
+  const ghostPaste = ghostPasteByKind[ghostKind] ?? "";
+  const setGhostPaste = (v: string) => setGhostPasteByKind({ ...ghostPasteByKind, [ghostKind]: v });
   const [ghostScreenshot, setGhostScreenshot] = useState<string | null>(null);
   const [scorecardComparison, setScorecardComparison] = useState<ScorecardComparison | null>(null);
   const [scorecardHistory, setScorecardHistory] = useLocal<ScorecardRunEntry[]>("vault.lab.scorecardHistory", []);
@@ -1111,9 +1154,21 @@ export default function LabPage() {
   }, [runKey, storageReady, canRun, computeMcRun]);
 
   const ghostReport = useMemo(
-    () => analyzeGhostAutopsy(parseGhostAutopsyPaste(ghostPaste), ghostPaste),
-    [ghostPaste]
+    () => analyzeGhostAutopsy(parseGhostAutopsyPaste(ghostPaste), ghostPaste, ghostKind),
+    [ghostPaste, ghostKind]
   );
+
+  const findingsFamily: FindingFamily =
+    activePreset?.family === "macro" || activePreset?.family === "prb"
+      ? activePreset.family
+      : study.presetId.startsWith("macro")
+        ? "macro"
+        : "prb";
+
+  useEffect(() => {
+    const fam = activePreset?.family;
+    if (fam === "macro" || fam === "prb") setGhostKind(fam);
+  }, [study.presetId, activePreset?.family, setGhostKind]);
 
   useEffect(() => {
     fetch("/api/cohorts")
@@ -1825,84 +1880,99 @@ export default function LabPage() {
         </div>
       )}
 
-      {activeDs.trades.length > 0 && (
-        <CollapsiblePanel
-          title="Actual replay"
-          sub="real P&L · equity curve · consistency"
-          badge={`${stats.n} tr · ${fmtUsd(equity.net, true)}`}
-          defaultOpen={false}
-        >
-          <div className="stat-strip" style={{ marginBottom: 14 }}>
-            <div className="stat">
-              <div className="k">Actual net P&L</div>
-              <div className={"v " + (equity.net >= 0 ? "pos" : "neg")}>{fmtUsd(equity.net, true)}</div>
-              <div className="d">{stats.n} trades · {stats.span}</div>
-            </div>
-            <div className="stat">
-              <div className="k">Win rate</div>
-              <div className="v cyan">{stats.n ? ((stats.wins / stats.n) * 100).toFixed(0) : 0}%</div>
-              <div className="d">{stats.wins}W / {stats.losses}L / {stats.scr}scr</div>
-            </div>
-            <div className="stat">
-              <div className="k">Peak equity</div>
-              <div className="v pos">{fmtUsd(Math.round(equity.peak))}</div>
-              <div className="d">highest cumulative point</div>
-            </div>
-            <div className="stat">
-              <div className="k">Max drawdown</div>
-              <div className="v neg">{fmtUsd(Math.round(equity.maxDd))}</div>
-              <div className="d">vs {fmtUsd(rule.trailingDD)} firm trail</div>
-            </div>
-            <div className="stat">
-              <div className="k">Avg / trade</div>
-              <div className={"v " + (stats.avg >= 0 ? "pos" : "neg")}>{fmtUsd(Math.round(stats.avg), true)}</div>
-              <div className="d">~{stats.tpw} trades per week</div>
-            </div>
-          </div>
-          <EquityCurveChart curve={equity} passAt={rule.passAt} trailingDd={rule.trailingDD} />
-          {rule.consistencyPct > 0 && (
-            <>
-              <hr className="hr" />
-              <EvalConsistencyCard
-                report={consistency}
-                winCapUsd={winCapUsd}
-                onWinCapChange={setWinCapUsd}
-              />
-            </>
-          )}
-        </CollapsiblePanel>
-      )}
+      <CollapsiblePanel
+        title="Strategy development"
+        sub="compare all MC cohorts · eval / funded / hybrid"
+        defaultOpen={true}
+      >
+        <StrategyDevPanel
+          activeFamily={activePreset?.family}
+          activeVariant={variantName}
+          defaultFilter={activePreset?.family ?? "all"}
+          currentRun={
+            res
+              ? {
+                  variant: variantName,
+                  trades: stats.n,
+                  netPnl: stats.net,
+                  mcPassPct: res.passRate * 100,
+                  maxDd: equity.maxDd,
+                }
+              : null
+          }
+        />
+      </CollapsiblePanel>
 
-      <CollapsiblePanel title="Reference & tools" sub="firm rules · chart findings · ghost autopsy" defaultOpen={false}>
+      <CollapsiblePanel
+        title="Settled findings"
+        sub={`${findingsFamily.toUpperCase()} — do not re-litigate without new data`}
+        defaultOpen={false}
+      >
+        <ChartFindingsCard family={findingsFamily} />
+      </CollapsiblePanel>
+
+      <CollapsiblePanel
+        title="Missed-trade autopsy"
+        sub="paste Pine ghost tables · PRB or Macro"
+        badge={ghostReport.rows.length > 0 ? `${ghostReport.totalN} ghosts` : undefined}
+        defaultOpen={false}
+      >
+        <GhostAutopsyCard
+          report={ghostReport}
+          paste={ghostPaste}
+          onPasteChange={setGhostPaste}
+          ghostKind={ghostKind}
+          onGhostKindChange={setGhostKind}
+          onLoadTemplate={() =>
+            setGhostPaste(ghostKind === "macro" ? MACRO_GHOST_PASTE_TEMPLATE : GHOST_PASTE_TEMPLATE)
+          }
+          screenshotName={ghostScreenshot}
+          onScreenshot={(file) => {
+            if (!file) {
+              setGhostScreenshot(null);
+              return;
+            }
+            setGhostScreenshot(file.name);
+          }}
+        />
+      </CollapsiblePanel>
+
+      <CollapsiblePanel title="Firm rules & replay" sub="rules detail · actual equity · consistency" defaultOpen={false}>
         <div className="lab-ref-section">
           <div className="lab-ref-heading">Firm rules — {rule.name}</div>
           <FirmRulesCard rule={rule} />
         </div>
-        <hr className="hr" />
-        <div className="lab-ref-section">
-          <div className="lab-ref-heading">Settled chart findings</div>
-          <ChartFindingsCard />
-        </div>
-        <hr className="hr" />
-        <div className="lab-ref-section">
-          <div className="lab-ref-heading">Missed-trade autopsy + BE retest</div>
-          <GhostAutopsyCard
-            report={ghostReport}
-            paste={ghostPaste}
-            onPasteChange={setGhostPaste}
-            onLoadTemplate={() =>
-              setGhostPaste(study.presetId.startsWith("macro") ? MACRO_GHOST_PASTE_TEMPLATE : GHOST_PASTE_TEMPLATE)
-            }
-            screenshotName={ghostScreenshot}
-            onScreenshot={(file) => {
-              if (!file) {
-                setGhostScreenshot(null);
-                return;
-              }
-              setGhostScreenshot(file.name);
-            }}
-          />
-        </div>
+        {activeDs.trades.length > 0 && (
+          <>
+            <hr className="hr" />
+            <div className="lab-ref-section">
+              <div className="lab-ref-heading">Actual replay — {stats.n} trades · {fmtUsd(equity.net, true)}</div>
+              <div className="stat-strip" style={{ marginBottom: 14 }}>
+                <div className="stat">
+                  <div className="k">Win rate</div>
+                  <div className="v cyan">{stats.n ? ((stats.wins / stats.n) * 100).toFixed(0) : 0}%</div>
+                  <div className="d">{stats.wins}W / {stats.losses}L</div>
+                </div>
+                <div className="stat">
+                  <div className="k">Max DD</div>
+                  <div className="v neg">{fmtUsd(Math.round(equity.maxDd))}</div>
+                  <div className="d">vs {fmtUsd(rule.trailingDD)} trail</div>
+                </div>
+              </div>
+              <EquityCurveChart curve={equity} passAt={rule.passAt} trailingDd={rule.trailingDD} />
+              {rule.consistencyPct > 0 && (
+                <>
+                  <hr className="hr" />
+                  <EvalConsistencyCard
+                    report={consistency}
+                    winCapUsd={winCapUsd}
+                    onWinCapChange={setWinCapUsd}
+                  />
+                </>
+              )}
+            </div>
+          </>
+        )}
       </CollapsiblePanel>
     </>
   );
