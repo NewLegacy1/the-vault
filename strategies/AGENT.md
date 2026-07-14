@@ -25,6 +25,16 @@ In Cursor chat, say something like:
 
 The agent reads the markdown files in this repo — same files Obsidian shows.
 
+## Strategy development agent
+
+For strategy R&D work (improving expectancy, eval/funded split, PRB×Macro hybrids), start at:
+
+- [[strategy-dev/STRATEGY_DEV_AGENT]] — agent charter, workflow loop, data inventory
+- [[strategy-dev/findings-prb]] — PRB winning formula + settled A/Bs
+- [[strategy-dev/findings-macro]] — Macro formula + tier breakdown
+- [[strategy-dev/prop-firm-math]] — TPT rules, MC methodology, leaderboard
+- [[strategy-dev/roadmap]] — prioritized experiment backlog
+
 ## Key strategy docs
 
 - [[Powell_Rejection_Block_SOP]] — Powell/PRB live playbook
