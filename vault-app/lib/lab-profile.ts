@@ -1,10 +1,16 @@
-/** Strategy variants for Lab studies — define BEFORE running Monte Carlo. */
+/** Strategy family and prop-firm phase for Obsidian cohort organization. */
+export type StrategyFamily = "prb" | "macro" | "datahl" | "hybrid" | "custom";
+export type StrategyPhase = "eval" | "funded" | "combined" | "research";
+
 export interface StrategyPreset {
   id: string;
   label: string;
   version: string;
   config: string;
   defaultRegimes: string[];
+  family: StrategyFamily;
+  /** Primary optimization target for this preset. */
+  phase: StrategyPhase;
 }
 
 export const STRATEGY_PRESETS: StrategyPreset[] = [
@@ -14,6 +20,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.10",
     config: "BE +1R retest audit · MNQ sizing · Both bias · $400 risk · BE-only · ghost autopsy",
     defaultRegimes: ["baseline", "be-only"],
+    family: "prb",
+    phase: "eval",
   },
   {
     id: "prb-v15-12mo-control",
@@ -21,6 +29,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.5",
     config: "Locked live profile · Both bias · $400 risk · BE +1R · 5m MNQ full year replay",
     defaultRegimes: ["baseline", "be-only"],
+    family: "prb",
+    phase: "eval",
   },
   {
     id: "prb-v15-be2r-pdh",
@@ -28,6 +38,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.5",
     config: "BE at +2R (was +1R) · Direction filter Auto PDH/PDL draw · $400 risk · skip Mon",
     defaultRegimes: ["baseline", "be-only"],
+    family: "prb",
+    phase: "eval",
   },
   {
     id: "prb-v15-be-live",
@@ -35,6 +47,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.5",
     config: "BE +1R · trail OFF · limit retest · 1/day · skip Mon · Both bias manual",
     defaultRegimes: ["baseline", "be-only"],
+    family: "prb",
+    phase: "eval",
   },
   {
     id: "prb-v15-trail",
@@ -42,6 +56,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.5",
     config: "Give-back regime trail toggle ON · otherwise locked v1.5",
     defaultRegimes: ["trail-on", "give-back"],
+    family: "prb",
+    phase: "funded",
   },
   {
     id: "prb-v15-bias-long",
@@ -49,6 +65,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.5",
     config: "Direction filter Long only · BE-only · trail OFF",
     defaultRegimes: ["be-only"],
+    family: "prb",
+    phase: "research",
   },
   {
     id: "prb-v15-bias-short",
@@ -56,6 +74,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.5",
     config: "Direction filter Short only · BE-only · trail OFF",
     defaultRegimes: ["be-only"],
+    family: "prb",
+    phase: "research",
   },
   {
     id: "prb-v14-be",
@@ -63,6 +83,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.4",
     config: "v1.4 pine · BE +1R · trail OFF",
     defaultRegimes: ["be-only"],
+    family: "prb",
+    phase: "eval",
   },
   {
     id: "datahl-v0-cisd",
@@ -70,6 +92,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v0",
     config: "8:30 formation · first soup → opposing pool · CISD trigger · BE +1R",
     defaultRegimes: ["news", "be-only"],
+    family: "datahl",
+    phase: "research",
   },
   {
     id: "macro-v0-journal",
@@ -77,6 +101,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v0",
     config: "ICT macros 9:50–10:10 · DOL sweep 9:30–9:45 · BISI/SIBI · 30–50 pt · HALF/FULL tiers",
     defaultRegimes: ["baseline", "news"],
+    family: "macro",
+    phase: "funded",
   },
   {
     id: "macro-v0-pine",
@@ -84,6 +110,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.3",
     config: "A+/A/B tiers · Vault TS · SMT at sweep · CE confirm · ghost autopsy",
     defaultRegimes: ["baseline", "be-only"],
+    family: "macro",
+    phase: "funded",
   },
   {
     id: "macro-v14-ce",
@@ -91,6 +119,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "v1.4",
     config: "TS required · SMT boosts TP · wick 56–80 half risk · CE tap+lift · $800 risk",
     defaultRegimes: ["baseline", "be-only"],
+    family: "macro",
+    phase: "funded",
   },
   {
     id: "custom",
@@ -98,6 +128,8 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     version: "custom",
     config: "User-defined variant — describe in hypothesis field",
     defaultRegimes: [],
+    family: "custom",
+    phase: "research",
   },
 ];
 

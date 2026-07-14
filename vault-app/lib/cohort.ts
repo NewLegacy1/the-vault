@@ -1,4 +1,58 @@
 import { McEconomics, McResult } from "./monte-carlo";
+import type { StrategyFamily, StrategyPhase } from "./lab-profile";
+
+export type { StrategyFamily, StrategyPhase };
+
+/** Obsidian subfolder under strategies/cohorts/ */
+export function cohortPhaseDir(phase: StrategyPhase): string {
+  switch (phase) {
+    case "eval":
+      return "eval";
+    case "funded":
+      return "funded";
+    case "combined":
+      return "combined";
+    case "research":
+      return "research";
+    default: {
+      const _exhaustive: never = phase;
+      return _exhaustive;
+    }
+  }
+}
+
+export function inferFamilyFromPreset(presetId: string): StrategyFamily {
+  if (presetId.startsWith("prb")) return "prb";
+  if (presetId.startsWith("macro")) return "macro";
+  if (presetId.startsWith("datahl")) return "datahl";
+  if (presetId.includes("hybrid") || presetId.includes("combined")) return "hybrid";
+  return "custom";
+}
+
+export function cohortWikiLinks(family: StrategyFamily): string {
+  switch (family) {
+    case "prb":
+      return `- [[Powell_Rejection_Block_SOP]]
+- [[PRB_Trade_Checklist]]
+- [[strategy-dev/findings-prb]]`;
+    case "macro":
+      return `- [[Macro_Model_SOP]]
+- [[Macro_Trade_Checklist]]
+- [[strategy-dev/findings-macro]]`;
+    case "hybrid":
+      return `- [[strategy-dev/hybrid-playbook]]
+- [[Powell_Rejection_Block_SOP]]
+- [[Macro_Model_SOP]]`;
+    case "datahl":
+      return `- [[strategy-dev/roadmap]]`;
+    case "custom":
+      return `- [[strategy-dev/STRATEGY_DEV_AGENT]]`;
+    default: {
+      const _exhaustive: never = family;
+      return _exhaustive;
+    }
+  }
+}
 
 /** Slim MC snapshot for Obsidian notes — no band/path arrays. */
 export interface McSummary {
@@ -28,7 +82,10 @@ export function mcToSummary(mc: McResult): McSummary {
 export interface CohortRecord {
   id: string;
   filename: string;
+  relativePath: string;
   variant: string;
+  strategyFamily: string;
+  phase: string;
   regimes: string[];
   notes: string;
   datasetName: string;
@@ -59,6 +116,8 @@ export interface CohortSaveInput {
   strategyPreset: string;
   strategyVersion: string;
   strategyConfig: string;
+  strategyFamily: StrategyFamily;
+  phase: StrategyPhase;
   hypothesis: string;
   regimes: string[];
   notes: string;
@@ -98,6 +157,11 @@ export function cohortFilename(input: CohortSaveInput): string {
   return `${date}_${hms}${ms}_${slug(input.variant)}.md`;
 }
 
+export function cohortRelativePath(input: CohortSaveInput): string {
+  const filename = cohortFilename(input);
+  return `${cohortPhaseDir(input.phase)}/${filename}`;
+}
+
 export function buildCohortMarkdown(input: CohortSaveInput): string {
   const eco = input.mc.economics;
   const regimesYaml = input.regimes.length ? `[${input.regimes.map((r) => `"${r}"`).join(", ")}]` : "[]";
@@ -108,6 +172,8 @@ export function buildCohortMarkdown(input: CohortSaveInput): string {
   const frontmatter = `---
 variant: "${input.variant.replace(/"/g, '\\"')}"
 strategy_preset: "${input.strategyPreset.replace(/"/g, '\\"')}"
+strategy_family: "${input.strategyFamily}"
+phase: "${input.phase}"
 strategy_version: "${input.strategyVersion.replace(/"/g, '\\"')}"
 strategy_config: "${input.strategyConfig.replace(/"/g, '\\"')}"
 hypothesis: "${input.hypothesis.replace(/"/g, '\\"')}"
@@ -132,7 +198,7 @@ mc_sims: ${input.sims}
 weeks_to_pass_p50: ${eco.weeksToPassP50 ?? "null"}
 weeks_to_payout_p50: ${eco.weeksToPayoutP50 ?? "null"}
 expected_accounts: ${Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "null"}
-tags: [cohort, prb, monte-carlo, lab]
+tags: [cohort, ${input.strategyFamily}, ${input.phase}, monte-carlo, lab]
 created: "${new Date().toISOString()}"
 dataset: "${input.datasetName.replace(/"/g, '\\"')}"
 ---`;
@@ -148,6 +214,8 @@ dataset: "${input.datasetName.replace(/"/g, '\\"')}"
 | Field | Value |
 |-------|-------|
 | Variant | ${input.variant} |
+| Family | ${input.strategyFamily} |
+| Phase | ${input.phase} |
 | Pine version | ${input.strategyVersion} |
 | Preset ID | \`${input.strategyPreset}\` |
 | Config | ${input.strategyConfig} |
@@ -194,14 +262,15 @@ _Compare pass rate and net P&L against baseline cohorts in this folder. Promotio
 
 ## Links
 
-- [[Powell_Rejection_Block_SOP]]
-- [[PRB_Trade_Checklist]]
+${cohortWikiLinks(input.strategyFamily)}
+- [[strategy-dev/prop-firm-math]]
+- [[strategy-dev/roadmap]]
 `;
 
   return frontmatter + body;
 }
 
-export function parseCohortMeta(content: string, filename: string): CohortRecord | null {
+export function parseCohortMeta(content: string, filename: string, relativePath?: string): CohortRecord | null {
   const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!m) return null;
   const fm = m[1];
@@ -210,11 +279,16 @@ export function parseCohortMeta(content: string, filename: string): CohortRecord
     return line?.[1]?.replace(/^"|"$/g, "") ?? "";
   };
   const regimes = fm.match(/^regimes:\s*\[(.*)\]/m)?.[1]?.split(",").map((s) => s.trim().replace(/"/g, "")).filter(Boolean) ?? [];
+  const preset = get("strategy_preset");
+  const family = get("strategy_family") || inferFamilyFromPreset(preset);
 
   return {
     id: filename.replace(/\.md$/, ""),
     filename,
+    relativePath: relativePath ?? filename,
     variant: get("variant"),
+    strategyFamily: family,
+    phase: get("phase") || "research",
     regimes,
     notes: "",
     datasetName: get("dataset"),

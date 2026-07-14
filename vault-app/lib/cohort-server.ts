@@ -1,41 +1,87 @@
 import { mkdir, readdir, readFile, writeFile } from "fs/promises";
 import fs from "fs";
 import path from "path";
-import { buildCohortMarkdown, cohortFilename, CohortSaveInput, parseCohortMeta, CohortRecord } from "@/lib/cohort";
+import {
+  buildCohortMarkdown,
+  cohortRelativePath,
+  CohortSaveInput,
+  parseCohortMeta,
+  CohortRecord,
+} from "@/lib/cohort";
 import { commitCohortToGitHub, githubCohortConfigured } from "@/lib/github-cohort";
 
-function cohortsDir(): string {
-  const inApp = path.join(process.cwd(), "data", "cohorts");
+/** Canonical Obsidian path — always prefer strategies/cohorts when repo layout exists. */
+function cohortsRoot(): string {
   const inRepo = path.join(process.cwd(), "..", "strategies", "cohorts");
-  if (fs.existsSync(inApp)) return inApp;
-  return inRepo;
+  const inApp = path.join(process.cwd(), "data", "cohorts");
+  if (fs.existsSync(path.join(process.cwd(), "..", "strategies"))) return inRepo;
+  return fs.existsSync(inApp) ? inApp : inRepo;
+}
+
+async function walkMdFiles(dir: string, base: string): Promise<{ rel: string; abs: string }[]> {
+  let names: string[];
+  try {
+    names = await readdir(dir);
+  } catch {
+    return [];
+  }
+
+  const out: { rel: string; abs: string }[] = [];
+  for (const name of names) {
+    const abs = path.join(dir, name);
+    let stat: fs.Stats;
+    try {
+      stat = await fs.promises.stat(abs);
+    } catch {
+      continue;
+    }
+    if (stat.isDirectory()) {
+      out.push(...(await walkMdFiles(abs, path.join(base, name))));
+    } else if (name.endsWith(".md") && !name.startsWith("_")) {
+      out.push({ rel: path.join(base, name).replace(/\\/g, "/"), abs });
+    }
+  }
+  return out;
 }
 
 export async function ensureCohortsDir(): Promise<string> {
-  const dir = cohortsDir();
+  const dir = cohortsRoot();
   await mkdir(dir, { recursive: true });
+  for (const sub of ["eval", "funded", "combined", "research"]) {
+    await mkdir(path.join(dir, sub), { recursive: true });
+  }
   return dir;
 }
 
 export async function listCohorts(): Promise<CohortRecord[]> {
   const dir = await ensureCohortsDir();
-  let files: string[];
-  try {
-    files = await readdir(dir);
-  } catch {
-    return [];
-  }
+  const files = await walkMdFiles(dir, "");
   const records: CohortRecord[] = [];
-  for (const f of files.filter((x) => x.endsWith(".md") && !x.startsWith("_"))) {
-    const content = await readFile(path.join(dir, f), "utf-8");
-    const meta = parseCohortMeta(content, f);
+  for (const { rel, abs } of files) {
+    const content = await readFile(abs, "utf-8");
+    const meta = parseCohortMeta(content, path.basename(rel), rel);
     if (meta) records.push(meta);
+  }
+  // Legacy flat files at cohorts root
+  try {
+    const rootEntries = await readdir(dir);
+    for (const f of rootEntries.filter((x) => x.endsWith(".md") && !x.startsWith("_"))) {
+      const abs = path.join(dir, f);
+      if ((await fs.promises.stat(abs)).isFile()) {
+        const content = await readFile(abs, "utf-8");
+        const meta = parseCohortMeta(content, f, f);
+        if (meta && !records.some((r) => r.filename === f)) records.push(meta);
+      }
+    }
+  } catch {
+    /* ignore */
   }
   return records.sort((a, b) => b.created.localeCompare(a.created));
 }
 
 export type CohortSaveResult = {
   filename: string;
+  relativePath: string;
   markdown: string;
   mode: "written" | "github" | "download";
   path?: string;
@@ -49,10 +95,11 @@ function isReadOnlyFsError(e: unknown): boolean {
   return code === "EROFS" || code === "EACCES";
 }
 
-async function saveCohortToGitHub(filename: string, markdown: string): Promise<CohortSaveResult> {
-  const gh = await commitCohortToGitHub(filename, markdown);
+async function saveCohortToGitHub(relativePath: string, markdown: string): Promise<CohortSaveResult> {
+  const gh = await commitCohortToGitHub(relativePath, markdown);
   return {
-    filename,
+    filename: path.basename(relativePath),
+    relativePath,
     markdown,
     mode: "github",
     repoPath: gh.repoPath,
@@ -61,39 +108,41 @@ async function saveCohortToGitHub(filename: string, markdown: string): Promise<C
 }
 
 export async function saveCohort(input: CohortSaveInput): Promise<CohortSaveResult> {
-  const filename = cohortFilename(input);
+  const relativePath = cohortRelativePath(input);
   const markdown = buildCohortMarkdown(input);
+  const filename = path.basename(relativePath);
 
   if (process.env.VERCEL === "1") {
     if (githubCohortConfigured()) {
       try {
-        return await saveCohortToGitHub(filename, markdown);
+        return await saveCohortToGitHub(relativePath, markdown);
       } catch (e) {
         const githubError = e instanceof Error ? e.message : String(e);
         console.error("GitHub cohort commit failed:", githubError);
-        return { filename, markdown, mode: "download", githubError };
+        return { filename, relativePath, markdown, mode: "download", githubError };
       }
     }
-    return { filename, markdown, mode: "download" };
+    return { filename, relativePath, markdown, mode: "download" };
   }
 
   try {
     const dir = await ensureCohortsDir();
-    const filepath = path.join(dir, filename);
+    const filepath = path.join(dir, relativePath);
+    await mkdir(path.dirname(filepath), { recursive: true });
     await writeFile(filepath, markdown, "utf-8");
-    return { filename, markdown, path: filepath, mode: "written" };
+    return { filename, relativePath, markdown, path: filepath, mode: "written" };
   } catch (e) {
     if (isReadOnlyFsError(e) && githubCohortConfigured()) {
       try {
-        return await saveCohortToGitHub(filename, markdown);
+        return await saveCohortToGitHub(relativePath, markdown);
       } catch (ghErr) {
         const githubError = ghErr instanceof Error ? ghErr.message : String(ghErr);
         console.error("GitHub cohort commit failed:", githubError);
-        return { filename, markdown, mode: "download", githubError };
+        return { filename, relativePath, markdown, mode: "download", githubError };
       }
     }
     if (isReadOnlyFsError(e)) {
-      return { filename, markdown, mode: "download", githubError: "read-only filesystem" };
+      return { filename, relativePath, markdown, mode: "download", githubError: "read-only filesystem" };
     }
     throw e;
   }

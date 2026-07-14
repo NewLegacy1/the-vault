@@ -1,0 +1,22 @@
+---
+description: Strategy development agent — prop-firm math, eval/funded split, PRB×Macro R&D
+globs: strategies/**,pine/Macro*.pine,vault-app/lib/lab*.ts,vault-app/lib/cohort*.ts,vault-app/data/tv-exports/**
+alwaysApply: false
+---
+
+# Strategy development mode
+
+When working under `strategies/` or running Macro/PRB experiments:
+
+1. **Read first:** `strategies/strategy-dev/STRATEGY_DEV_AGENT.md`
+2. **Prop math over raw P&L** — optimize `mc_pass_pct` and `expected_accounts` for eval; weekly edge for funded.
+3. **Never edit** `pine/Powell_Rejection_Block_v1.pine` (locked live). New variants = new files.
+4. **Every promotion needs a cohort** in `strategies/cohorts/{eval|funded|combined|research}/`.
+5. **Update findings** after settled tests: `findings-prb.md` or `findings-macro.md`.
+6. **One variable per experiment** — no mixed-input exports.
+7. **Phase playbooks:**
+   - Eval → `strategy-dev/eval-playbook.md`
+   - Funded → `strategy-dev/funded-playbook.md`
+   - Hybrid → `strategy-dev/hybrid-playbook.md`
+
+Raw evidence: `vault-app/data/tv-exports/*.csv` and `*-mc-report.json`.

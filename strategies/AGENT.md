@@ -5,35 +5,25 @@ This folder is the **Obsidian vault** and the **Cursor workspace**. The agent ca
 ## Where Lab Monte Carlo results live
 
 ```
-strategies/cohorts/*.md
+strategies/cohorts/
+├── eval/       ← pass-rate experiments (PRB)
+├── funded/     ← weekly-edge experiments (Macro)
+├── combined/   ← hybrid / portfolio MC
+└── research/   ← exploratory
 ```
 
-Each file is created automatically when you **RUN** in F4 LAB (if auto-save is on). YAML frontmatter includes:
-
-- `variant`, `strategy_version`, `strategy_preset`
-- `regimes`, `hypothesis`
-- `net_pnl`, `trades`, `mc_pass_pct`, `mc_bust_pct`, `mc_payout_pct`
-- `date_start`, `date_end`, `firm`
-
-## How to ask the agent for strategy analysis
-
-In Cursor chat, say something like:
-
-- *"Review all cohorts in strategies/cohorts and compare BE-only vs trail variants"*
-- *"Which regime tags have the best MC pass rate?"*
-- *"Should we promote trail-on for give-back months based on saved cohorts?"*
-
-The agent reads the markdown files in this repo — same files Obsidian shows.
+Each file is created when you **RUN** in F4 LAB (auto-save on). YAML includes `phase`, `strategy_family`, `mc_pass_pct`, `hypothesis`, etc. See [[cohorts/_index]].
 
 ## Strategy development agent
 
-For strategy R&D work (improving expectancy, eval/funded split, PRB×Macro hybrids), start at:
+Dedicated R&D agent — start here:
 
-- [[strategy-dev/STRATEGY_DEV_AGENT]] — agent charter, workflow loop, data inventory
-- [[strategy-dev/findings-prb]] — PRB winning formula + settled A/Bs
-- [[strategy-dev/findings-macro]] — Macro formula + tier breakdown
-- [[strategy-dev/prop-firm-math]] — TPT rules, MC methodology, leaderboard
-- [[strategy-dev/roadmap]] — prioritized experiment backlog
+- [[strategy-dev/STRATEGY_DEV_AGENT]] — charter, workflow loop, promotion rule
+- [[strategy-dev/eval-playbook]] — eval-phase (TPT pass optimization)
+- [[strategy-dev/funded-playbook]] — funded-phase (weekly edge)
+- [[strategy-dev/hybrid-playbook]] — PRB×Macro combination
+- [[strategy-dev/findings-prb]] · [[strategy-dev/findings-macro]] — settled formulas
+- [[strategy-dev/prop-firm-math]] · [[strategy-dev/roadmap]]
 
 ## Key strategy docs
 

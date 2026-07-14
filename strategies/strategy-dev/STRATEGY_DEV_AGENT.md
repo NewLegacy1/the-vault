@@ -30,7 +30,14 @@ See [[prop-firm-math]] for full rules and current MC standings.
 - [[findings-macro]] — Macro Model winning trade formula + tier data
 - [[prop-firm-math]] — TPT rules, MC methodology, current leaderboard
 - [[roadmap]] — eval/funded split plan + PRB×Macro hybrid backlog
-- `strategies/cohorts/` — every saved MC run (YAML frontmatter, Dataview-queryable)
+- [[eval-playbook]] — eval-phase development (pass rate, consistency)
+- [[funded-playbook]] — funded-phase development (weekly edge)
+- [[hybrid-playbook]] — PRB×Macro combination tracks
+- `strategies/cohorts/` — MC runs organized by phase:
+  - `cohorts/eval/` — pass-rate experiments (PRB primary)
+  - `cohorts/funded/` — expectancy experiments (Macro primary)
+  - `cohorts/combined/` — portfolio / hybrid MC
+  - `cohorts/research/` — exploratory
 - `strategies/Powell_Rejection_Block_SOP.md`, `strategies/Macro_Model_SOP.md` — live playbooks
 
 ## Data inventory (raw evidence)

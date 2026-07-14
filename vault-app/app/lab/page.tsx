@@ -1314,6 +1314,8 @@ export default function LabPage() {
       strategyPreset: study.presetId,
       strategyVersion: preset?.version ?? "custom",
       strategyConfig: preset?.config ?? "",
+      strategyFamily: preset?.family ?? "custom",
+      phase: preset?.phase ?? "research",
       hypothesis: study.hypothesis,
       regimes: study.regimes,
       notes: study.hypothesis,

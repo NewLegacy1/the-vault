@@ -39,7 +39,7 @@ async function getFileSha(
 }
 
 export async function commitCohortToGitHub(
-  filename: string,
+  relativePath: string,
   markdown: string
 ): Promise<GitHubCohortCommit> {
   const { token, owner, repo, branch } = githubConfig();
@@ -47,8 +47,8 @@ export async function commitCohortToGitHub(
     throw new Error("GITHUB_TOKEN is not configured");
   }
 
-  const repoPath = `strategies/cohorts/${filename}`;
-  const label = filename.replace(/\.md$/, "");
+  const repoPath = `strategies/cohorts/${relativePath.replace(/\\/g, "/")}`;
+  const label = relativePath.replace(/\.md$/, "").replace(/[/\\]/g, " / ");
   const message = `[vercel skip] F4 LAB cohort: ${label}`;
 
   const put = async (sha?: string) =>
