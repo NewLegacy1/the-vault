@@ -1,0 +1,287 @@
+{
+  "generatedAt": "2026-07-14T17:17:05.538Z",
+  "strategy": "Macro Model v1.4 — premium 365d deep backtest",
+  "sourceFile": "Macro_v1_CME_MINI_MNQ1!_2026-07-14.csv",
+  "span": "2025-07-28 → 2026-07-10",
+  "trades": 26,
+  "wins": 13,
+  "losses": 13,
+  "winRatePct": 50,
+  "netPnlUsd": 2347.76,
+  "maxDdUsd": 2623,
+  "avgWinUsd": 926,
+  "avgLossUsd": -745,
+  "monteCarlo": {
+    "firm": "TPT $50K Test → PRO",
+    "sims": 2000,
+    "passRatePct": 33,
+    "bustRatePct": 67,
+    "timeoutRatePct": 0,
+    "tradesToPassP50": 11,
+    "tradesToPassP90": 20,
+    "expectedAccounts": 3,
+    "accountsFor90Pct": 6
+  },
+  "evalConsistency": {
+    "passRequestReady": false,
+    "bestDayPctOfTotal": 60,
+    "bestDayDate": "2025-12-31",
+    "recommendation": "Need $1652 more to pass line ($4,000). Cap wins ~$1490 → plan 3+ winning days."
+  },
+  "byTier": {
+    "A+": {
+      "n": 8,
+      "w": 2,
+      "l": 6,
+      "net": -2409.68
+    },
+    "A": {
+      "n": 14,
+      "w": 9,
+      "l": 5,
+      "net": 4965.7
+    },
+    "H": {
+      "n": 4,
+      "w": 2,
+      "l": 2,
+      "net": -208.26
+    }
+  },
+  "tradeList": [
+    {
+      "date": "2025-07-28",
+      "pnl": -851.24,
+      "tier": "A+",
+      "signal": "Short_AP",
+      "mfeUsd": 139.88,
+      "maeUsd": -835.12,
+      "durationBars": 1
+    },
+    {
+      "date": "2025-07-29",
+      "pnl": -856.98,
+      "tier": "A",
+      "signal": "Long_A",
+      "mfeUsd": 766.26,
+      "maeUsd": -840.24,
+      "durationBars": 2
+    },
+    {
+      "date": "2025-08-11",
+      "pnl": -811.58,
+      "tier": "A",
+      "signal": "Short_A",
+      "mfeUsd": 99.96,
+      "maeUsd": -801.04,
+      "durationBars": 2
+    },
+    {
+      "date": "2025-08-12",
+      "pnl": 704.34,
+      "tier": "A",
+      "signal": "Long_A",
+      "mfeUsd": 709.92,
+      "maeUsd": -109.08,
+      "durationBars": 1
+    },
+    {
+      "date": "2025-08-18",
+      "pnl": -807.4,
+      "tier": "A+",
+      "signal": "Long_AP",
+      "mfeUsd": 828.8,
+      "maeUsd": -801.2,
+      "durationBars": 9
+    },
+    {
+      "date": "2025-08-29",
+      "pnl": 1017.38,
+      "tier": "A",
+      "signal": "Long_A",
+      "mfeUsd": 1025.44,
+      "maeUsd": -177.06,
+      "durationBars": 4
+    },
+    {
+      "date": "2025-09-03",
+      "pnl": 1375.64,
+      "tier": "A+",
+      "signal": "Short_AP",
+      "mfeUsd": 1384.32,
+      "maeUsd": -519.68,
+      "durationBars": 1
+    },
+    {
+      "date": "2025-09-11",
+      "pnl": -741.92,
+      "tier": "A",
+      "signal": "Short_A",
+      "mfeUsd": 187.04,
+      "maeUsd": -736.96,
+      "durationBars": 5
+    },
+    {
+      "date": "2025-09-17",
+      "pnl": -829.36,
+      "tier": "A",
+      "signal": "Long_A",
+      "mfeUsd": 159.32,
+      "maeUsd": -820.68,
+      "durationBars": 3
+    },
+    {
+      "date": "2025-09-22",
+      "pnl": -794.36,
+      "tier": "A",
+      "signal": "Short_A",
+      "mfeUsd": 103.32,
+      "maeUsd": -785.68,
+      "durationBars": 2
+    },
+    {
+      "date": "2025-11-17",
+      "pnl": 547.82,
+      "tier": "A",
+      "signal": "Short_A",
+      "mfeUsd": 552.16,
+      "maeUsd": -235.34,
+      "durationBars": 1
+    },
+    {
+      "date": "2025-12-02",
+      "pnl": 1330.42,
+      "tier": "A",
+      "signal": "Short_A",
+      "mfeUsd": 1340.96,
+      "maeUsd": -571.54,
+      "durationBars": 2
+    },
+    {
+      "date": "2025-12-15",
+      "pnl": -383.18,
+      "tier": "H",
+      "signal": "Long_H",
+      "mfeUsd": 104.16,
+      "maeUsd": -378.84,
+      "durationBars": 1
+    },
+    {
+      "date": "2025-12-31",
+      "pnl": 1408.68,
+      "tier": "A",
+      "signal": "Long_A",
+      "mfeUsd": 1419.84,
+      "maeUsd": -290.16,
+      "durationBars": 11
+    },
+    {
+      "date": "2026-01-26",
+      "pnl": -813.54,
+      "tier": "A+",
+      "signal": "Short_AP",
+      "mfeUsd": 1267.98,
+      "maeUsd": -800.52,
+      "durationBars": 6
+    },
+    {
+      "date": "2026-03-05",
+      "pnl": 782.6,
+      "tier": "A",
+      "signal": "Short_A",
+      "mfeUsd": 788.8,
+      "maeUsd": -186.2,
+      "durationBars": 1
+    },
+    {
+      "date": "2026-03-26",
+      "pnl": -718.7,
+      "tier": "A+",
+      "signal": "Long_AP",
+      "mfeUsd": 276.9,
+      "maeUsd": -715.6,
+      "durationBars": 16
+    },
+    {
+      "date": "2026-04-21",
+      "pnl": -815.36,
+      "tier": "A+",
+      "signal": "Short_AP",
+      "mfeUsd": 82.32,
+      "maeUsd": -806.68,
+      "durationBars": 1
+    },
+    {
+      "date": "2026-04-23",
+      "pnl": 1252.16,
+      "tier": "A",
+      "signal": "Short_A",
+      "mfeUsd": 1262.08,
+      "maeUsd": -73.92,
+      "durationBars": 1
+    },
+    {
+      "date": "2026-04-30",
+      "pnl": 233.04,
+      "tier": "H",
+      "signal": "Long_H",
+      "mfeUsd": 235.52,
+      "maeUsd": -80.48,
+      "durationBars": 1
+    },
+    {
+      "date": "2026-05-04",
+      "pnl": 1017.38,
+      "tier": "A",
+      "signal": "Short_A",
+      "mfeUsd": 1025.44,
+      "maeUsd": -554.06,
+      "durationBars": 1
+    },
+    {
+      "date": "2026-05-08",
+      "pnl": -859.94,
+      "tier": "A+",
+      "signal": "Short_AP",
+      "mfeUsd": 879.78,
+      "maeUsd": -840.72,
+      "durationBars": 1
+    },
+    {
+      "date": "2026-05-21",
+      "pnl": -407.68,
+      "tier": "H",
+      "signal": "Short_H",
+      "mfeUsd": 62.16,
+      "maeUsd": -403.34,
+      "durationBars": 1
+    },
+    {
+      "date": "2026-05-28",
+      "pnl": 1080.86,
+      "tier": "A+",
+      "signal": "Long_AP",
+      "mfeUsd": 1087.68,
+      "maeUsd": -122.32,
+      "durationBars": 2
+    },
+    {
+      "date": "2026-07-01",
+      "pnl": 349.56,
+      "tier": "H",
+      "signal": "Short_H",
+      "mfeUsd": 353.28,
+      "maeUsd": -324.72,
+      "durationBars": 1
+    },
+    {
+      "date": "2026-07-10",
+      "pnl": 939.12,
+      "tier": "A",
+      "signal": "Short_A",
+      "mfeUsd": 946.56,
+      "maeUsd": -715.44,
+      "durationBars": 5
+    }
+  ]
+}
