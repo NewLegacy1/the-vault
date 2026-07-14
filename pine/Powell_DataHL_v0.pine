@@ -1,0 +1,378 @@
+//@version=6
+// Powell Data H/L v0 — SOP §8 opposing-draw experiment (separate from PRB 10 AM window)
+//
+// MECHANICAL CORE:
+//   1. 8:30 news reaction prints data high + data low (formation window)
+//   2. First side swept → draw = opposing data pool
+//   3. Flip confirm (CISD or RB retest) → entry toward opposing extreme
+//   4. TPT $50K risk engine (shared sizing rules with PRB)
+//
+// NOT CODEABLE (manual / F7 NEWS):
+//   FF one-sided trend-day filter · prominent-swing quality · SMT vs ES ·
+//   engineered liquidity for wick CE · volume-balance RB marking
+strategy(
+     title                   = "Powell Data H/L v0",
+     shorttitle              = "DataHL v0",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_lines_count         = 300,
+     max_boxes_count         = 300,
+     max_labels_count        = 300)
+
+// ─── Inputs ──────────────────────────────────────────────────────────────────
+grpData = "Data H/L (SOP §8)"
+i_formStart  = input.int(830, "Formation from (HHMM)", minval = 0, maxval = 2359, group = grpData)
+i_formEnd    = input.int(915, "Formation until (HHMM)", minval = 0, maxval = 2359, group = grpData, tooltip = "Reaction range locks when this time passes OR a defining candle closes inside the window.")
+i_minReactPts = input.float(12.0, "Min reaction range (pts) to lock data H/L", minval = 4.0, step = 1.0, group = grpData)
+i_definingPts = input.float(8.0, "Defining candle min range (pts)", minval = 2.0, step = 0.5, group = grpData, tooltip = "Large 8:30 spike candle can lock the range before formEnd.")
+
+grpWin = "Session (NY time)"
+i_tradeStart = input.int(830, "Entries from (HHMM)", minval = 0, maxval = 2359, group = grpWin, tooltip = "Data model trades the news window — unlike PRB which waits for 10:00.")
+i_tradeEnd   = input.int(1130, "Last order (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_flatTime   = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpWin)
+i_skipMonday  = input.bool(true, "Skip Mondays", group = grpWin)
+
+grpRb = "Entry after first sweep"
+i_entryMode = input.string("CISD trigger (for 1m)", "Entry mode", options = ["Limit at wick start", "Limit at wick CE", "Auto (CE if stop too big)", "CISD trigger (for 1m)"], group = grpRb)
+i_minWickPts = input.float(4.0, "Min RB wick (pts)", minval = 0.0, step = 0.5, group = grpRb)
+i_localLen   = input.int(8, "RB extreme lookback", minval = 4, maxval = 30, group = grpRb)
+i_confClose  = input.bool(true, "RB confirming close", group = grpRb)
+i_leaveR     = input.float(0.5, "Leave-then-retest (× risk, 0 = arm at once)", minval = 0.0, step = 0.25, group = grpRb)
+i_tapTimeout = input.int(18, "Setup expires after N bars", minval = 4, maxval = 80, group = grpRb)
+i_targetMode = input.string("Opposing data pool", "Target", options = ["Opposing data pool", "Fixed R multiple"], group = grpRb, tooltip = "SOP default: mechanical opposing data extreme. Fixed R for A/B vs PRB-style 1:5.")
+
+grpRisk = "Risk (TPT $50K engine)"
+i_maxStopPts = input.float(15.0, "Max stop (pts) — SOP data trades often ~10", minval = 2.0, step = 0.5, group = grpRisk)
+i_minStopPts = input.float(5.0, "Min stop (pts)", minval = 0.0, step = 0.5, group = grpRisk)
+i_stopBufPts = input.float(2.0, "Stop buffer beyond wick (pts)", minval = 0.0, step = 0.25, group = grpRisk)
+i_rr         = input.float(4.0, "Fixed R target (if not data pool)", minval = 1.0, step = 0.5, group = grpRisk)
+i_beAtR      = input.float(1.0, "Breakeven at +N R (0 = off)", minval = 0.0, step = 0.25, group = grpRisk)
+i_riskUsd    = input.float(400.0, "Risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk)
+i_maxContracts = input.int(60, "Max contracts", minval = 1, maxval = 60, group = grpRisk)
+i_dailyLossStop   = input.float(800.0, "Daily loss stop (USD)", minval = 0.0, step = 50.0, group = grpRisk)
+i_dailyProfitLock = input.float(1400.0, "Daily profit lock (USD)", minval = 0.0, step = 50.0, group = grpRisk)
+
+grpVis = "Visuals"
+i_showData = input.bool(true, "Show data H/L lines", group = grpVis)
+i_showSig  = input.bool(true, "Show sweep / entry labels", group = grpVis)
+i_showTable = input.bool(true, "Show funnel table", group = grpVis)
+
+// ─── Time ────────────────────────────────────────────────────────────────────
+int nyHhmm  = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool inForm = nyHhmm >= i_formStart and nyHhmm < i_formEnd
+bool inTrade = nyHhmm >= i_tradeStart and nyHhmm < i_tradeEnd
+bool canPlace = nyHhmm < i_tradeEnd
+bool dayAllowed = not i_skipMonday or dayofweek(time, "America/New_York") != dayofweek.monday
+
+var float ko0830 = na
+if nyHhmm >= 830 and nyHhmm[1] < 830
+    ko0830 := open
+
+// ─── Data H/L state ─────────────────────────────────────────────────────────
+// phase: 0 forming · 1 armed (range locked, waiting first soup) · 2 draw set · 3 in setup
+var float dataHigh = na
+var float dataLow  = na
+var int   dataPhase = 0
+var int   drawDir = 0      // -1 = drew low (short bias) · +1 = drew high (long bias)
+var int   firstSoup = 0    // -1 high soup first · +1 low soup first
+var line  lnDataHi = na
+var line  lnDataLo = na
+
+if newDay
+    dataHigh := na
+    dataLow := na
+    dataPhase := 0
+    drawDir := 0
+    firstSoup := 0
+    if not na(lnDataHi)
+        line.delete(lnDataHi)
+        line.delete(lnDataLo)
+        lnDataHi := na
+        lnDataLo := na
+
+if dataPhase == 0
+    if inForm
+        dataHigh := na(dataHigh) ? high : math.max(dataHigh, high)
+        dataLow  := na(dataLow)  ? low  : math.min(dataLow, low)
+        bool defining = (high - low) >= i_definingPts and nyHhmm >= i_formStart
+        bool rangeOk = not na(dataHigh) and not na(dataLow) and (dataHigh - dataLow) >= i_minReactPts
+        if defining and rangeOk
+            dataPhase := 1
+    if nyHhmm >= i_formEnd and not na(dataHigh) and not na(dataLow) and (dataHigh - dataLow) >= i_minReactPts
+        dataPhase := 1
+
+f_soupAbove(float lvl) => not na(lvl) and high > lvl and close < lvl
+f_soupBelow(float lvl) => not na(lvl) and low < lvl and close > lvl
+
+if dataPhase == 1 and not na(dataHigh) and not na(dataLow)
+    if f_soupAbove(dataHigh)
+        firstSoup := -1
+        drawDir := 1
+        dataPhase := 2
+        if i_showSig
+            label.new(bar_index, high, "DH soup → draw DL", style = label.style_label_down, color = color.new(color.orange, 20), textcolor = color.white, size = size.small)
+    else if f_soupBelow(dataLow)
+        firstSoup := 1
+        drawDir := -1
+        dataPhase := 2
+        if i_showSig
+            label.new(bar_index, low, "DL soup → draw DH", style = label.style_label_up, color = color.new(color.teal, 20), textcolor = color.white, size = size.small)
+
+if i_showData and dataPhase >= 1 and not na(dataHigh) and na(lnDataHi)
+    lnDataHi := line.new(bar_index, dataHigh, bar_index + 1, dataHigh, color = color.new(color.red, 30), width = 2, extend = extend.right)
+    lnDataLo := line.new(bar_index, dataLow, bar_index + 1, dataLow, color = color.new(color.lime, 30), width = 2, extend = extend.right)
+
+// ─── RB after draw set ───────────────────────────────────────────────────────
+float upperWick = high - math.max(open, close)
+float lowerWick = math.min(open, close) - low
+bool localHigh = high >= ta.highest(high, i_localLen)
+bool localLow  = low <= ta.lowest(low, i_localLen)
+
+bool rbBear = inTrade and dataPhase >= 2 and drawDir == 1 and localHigh and upperWick >= i_minWickPts and (not i_confClose or close < open)
+bool rbBull = inTrade and dataPhase >= 2 and drawDir == -1 and localLow and lowerWick >= i_minWickPts and (not i_confClose or close > open)
+
+// ─── TPT accounting ──────────────────────────────────────────────────────────
+int totalTrades = strategy.opentrades + strategy.closedtrades
+var int tradesAtDayStart = 0
+var float dayStartEquity = na
+if newDay
+    tradesAtDayStart := totalTrades
+    dayStartEquity := strategy.equity
+float dayPnl = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
+bool dayOk = (i_dailyLossStop == 0 or dayPnl > -i_dailyLossStop) and (i_dailyProfitLock == 0 or dayPnl < i_dailyProfitLock)
+bool roomToday = not i_oneTradeDay or totalTrades == tradesAtDayStart
+bool flat = strategy.position_size == 0
+
+f_qty(float stopPts) =>
+    if stopPts < i_minStopPts or stopPts > i_maxStopPts
+        0
+    else
+        int q = math.floor(i_riskUsd / (stopPts * syminfo.pointvalue))
+        math.min(q, i_maxContracts)
+
+f_target(bool isShort, float entry, float riskPts) =>
+    if i_targetMode == "Opposing data pool"
+        isShort ? (not na(dataLow) ? dataLow : entry - i_rr * riskPts) : (not na(dataHigh) ? dataHigh : entry + i_rr * riskPts)
+    else
+        isShort ? entry - i_rr * riskPts : entry + i_rr * riskPts
+
+// ─── Setup state ─────────────────────────────────────────────────────────────
+var int   suDir = 0
+var float suWickStart = na
+var float suCe = na
+var float suExtreme = na
+var float suEntry = na
+var float suStop = na
+var bool  suLeft = false
+var int   suBar = na
+var bool  suOrd = false
+var bool  suTapped = false
+var float openRiskPts = na
+var float peakR = na
+var float lockR = na
+var float pendStop = na
+var float pendTp = na
+
+bool isTrigger = i_entryMode == "CISD trigger (for 1m)"
+
+if newDay
+    suDir := 0
+    suOrd := false
+    strategy.cancel_all()
+
+bool canArm = flat and roomToday and canPlace and dayOk and dayAllowed and suDir == 0 and not suOrd
+
+f_plan(float wickStart, float ce, float extreme, bool isShort) =>
+    float stopPx = isShort ? extreme + i_stopBufPts : extreme - i_stopBufPts
+    float riskWick = math.abs(wickStart - stopPx)
+    float riskCe = math.abs(ce - stopPx)
+    float entryPx = na
+    if i_entryMode == "Limit at wick start"
+        entryPx := riskWick >= i_minStopPts and riskWick <= i_maxStopPts ? wickStart : na
+    else if i_entryMode == "Limit at wick CE"
+        entryPx := riskCe >= i_minStopPts and riskCe <= i_maxStopPts ? ce : na
+    else if i_entryMode == "Auto (CE if stop too big)"
+        entryPx := riskWick <= i_maxStopPts and riskWick >= i_minStopPts ? wickStart : (riskCe <= i_maxStopPts and riskCe >= i_minStopPts ? ce : na)
+    else
+        entryPx := wickStart
+    [entryPx, stopPx]
+
+if canArm and rbBear
+    suDir := -1
+    suWickStart := math.max(open, close)
+    suCe := high - upperWick * 0.5
+    suExtreme := high
+    suBar := bar_index
+    suLeft := i_leaveR == 0
+    suTapped := false
+    [e, s] = f_plan(suWickStart, suCe, suExtreme, true)
+    suEntry := e
+    suStop := s
+
+if canArm and rbBull
+    suDir := 1
+    suWickStart := math.min(open, close)
+    suCe := low + lowerWick * 0.5
+    suExtreme := low
+    suBar := bar_index
+    suLeft := i_leaveR == 0
+    suTapped := false
+    [e, s] = f_plan(suWickStart, suCe, suExtreme, false)
+    suEntry := e
+    suStop := s
+
+// Limit path
+if not isTrigger and suDir != 0 and flat
+    float riskPts = math.abs(suStop - suEntry)
+    bool invalidated = (suDir == -1 and close > suStop) or (suDir == 1 and close < suStop)
+    if bar_index - suBar > i_tapTimeout or not canPlace or invalidated or na(suEntry)
+        if suOrd
+            strategy.cancel("Short")
+            strategy.cancel("Long")
+        suOrd := false
+        suDir := 0
+    else
+        if not suLeft
+            if suDir == -1 and low <= suEntry - i_leaveR * riskPts
+                suLeft := true
+            if suDir == 1 and high >= suEntry + i_leaveR * riskPts
+                suLeft := true
+        if suLeft and roomToday and dayOk
+            int qty = f_qty(riskPts)
+            if qty > 0
+                float tp = f_target(suDir == -1, suEntry, riskPts)
+                if suDir == -1
+                    strategy.entry("Short", strategy.short, qty = qty, limit = suEntry)
+                    strategy.exit("S-X", from_entry = "Short", stop = suStop, limit = tp)
+                else
+                    strategy.entry("Long", strategy.long, qty = qty, limit = suEntry)
+                    strategy.exit("L-X", from_entry = "Long", stop = suStop, limit = tp)
+                pendStop := suStop
+                pendTp := tp
+                openRiskPts := riskPts
+                suOrd := true
+            else
+                suDir := 0
+
+// CISD trigger
+bool prevBull = close[1] > open[1]
+bool prevBear = close[1] < open[1]
+bool cisdBear = prevBull and close < open[1]
+bool cisdBull = prevBear and close > open[1]
+
+if isTrigger and suDir == -1 and flat and bar_index > suBar
+    if bar_index - suBar > i_tapTimeout or high > suExtreme + i_stopBufPts or not canPlace
+        suDir := 0
+    else
+        if high >= suCe
+            suTapped := true
+        if suTapped and cisdBear and roomToday and dayOk
+            float stopPx = math.max(high, high[1]) + i_stopBufPts
+            float riskPts = stopPx - close
+            int qty = f_qty(riskPts)
+            if qty > 0
+                float tp = f_target(true, close, riskPts)
+                strategy.entry("Short", strategy.short, qty = qty)
+                strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = tp)
+                pendStop := stopPx
+                pendTp := tp
+                openRiskPts := riskPts
+            suDir := 0
+
+if isTrigger and suDir == 1 and flat and bar_index > suBar
+    if bar_index - suBar > i_tapTimeout or low < suExtreme - i_stopBufPts or not canPlace
+        suDir := 0
+    else
+        if low <= suCe
+            suTapped := true
+        if suTapped and cisdBull and roomToday and dayOk
+            float stopPx = math.min(low, low[1]) - i_stopBufPts
+            float riskPts = close - stopPx
+            int qty = f_qty(riskPts)
+            if qty > 0
+                float tp = f_target(false, close, riskPts)
+                strategy.entry("Long", strategy.long, qty = qty)
+                strategy.exit("L-X", from_entry = "Long", stop = stopPx, limit = tp)
+                pendStop := stopPx
+                pendTp := tp
+                openRiskPts := riskPts
+            suDir := 0
+
+// BE ratchet
+if not flat
+    suOrd := false
+    suDir := 0
+    if strategy.position_size[1] == 0
+        peakR := 0.0
+        lockR := na
+    if not na(openRiskPts)
+        float avg = strategy.position_avg_price
+        bool isLongPos = strategy.position_size > 0
+        float favR = isLongPos ? (high - avg) / openRiskPts : (avg - low) / openRiskPts
+        peakR := math.max(nz(peakR, 0.0), favR)
+        float newLock = na
+        if i_beAtR > 0 and peakR >= i_beAtR
+            newLock := 0.0
+        if not na(newLock) and (na(lockR) or newLock > lockR)
+            lockR := newLock
+            float stopPx = isLongPos ? avg + lockR * openRiskPts : avg - lockR * openRiskPts
+            float tp = pendTp
+            if isLongPos
+                strategy.exit("L-X", from_entry = "Long", stop = stopPx, limit = tp)
+            else
+                strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = tp)
+
+if nyHhmm >= i_flatTime
+    strategy.cancel_all()
+    suOrd := false
+    suDir := 0
+    if not flat
+        strategy.close_all(comment = "Session flat")
+
+// ─── Funnel table ────────────────────────────────────────────────────────────
+var int cntDays = 0
+var int cntFormed = 0
+var int cntSoup = 0
+var int cntRb = 0
+var int cntOrders = 0
+if newDay
+    cntDays += 1
+if dataPhase == 1 and dataPhase[1] == 0
+    cntFormed += 1
+if dataPhase == 2 and dataPhase[1] == 1
+    cntSoup += 1
+if rbBear or rbBull
+    cntRb += 1
+
+var table funnel = table.new(position.bottom_right, 2, 8, bgcolor = color.new(color.black, 75), border_width = 1)
+if i_showTable and barstate.islast
+    table.cell(funnel, 0, 0, "DataHL funnel", text_color = color.white, bgcolor = color.new(color.gray, 60))
+    table.cell(funnel, 1, 0, "count", text_color = color.white, bgcolor = color.new(color.gray, 60))
+    table.cell(funnel, 0, 1, "Sessions", text_color = color.silver)
+    table.cell(funnel, 1, 1, str.tostring(cntDays), text_color = color.white)
+    table.cell(funnel, 0, 2, "Data range locked", text_color = color.silver)
+    table.cell(funnel, 1, 2, str.tostring(cntFormed), text_color = color.white)
+    table.cell(funnel, 0, 3, "First soup + draw", text_color = color.silver)
+    table.cell(funnel, 1, 3, str.tostring(cntSoup), text_color = color.white)
+    table.cell(funnel, 0, 4, "RB in draw dir", text_color = color.silver)
+    table.cell(funnel, 1, 4, str.tostring(cntRb), text_color = color.white)
+    table.cell(funnel, 0, 5, "Closed trades", text_color = color.silver)
+    table.cell(funnel, 1, 5, str.tostring(strategy.closedtrades), text_color = color.white)
+    string drawTxt = drawDir == 1 ? "SHORT → DL" : drawDir == -1 ? "LONG → DH" : "—"
+    table.cell(funnel, 0, 6, "Today draw", text_color = color.silver)
+    table.cell(funnel, 1, 6, drawTxt, text_color = drawDir != 0 ? color.orange : color.gray)
+    table.cell(funnel, 0, 7, "8:30 open", text_color = color.silver)
+    table.cell(funnel, 1, 7, na(ko0830) ? "—" : str.tostring(ko0830, format.mintick), text_color = color.white)

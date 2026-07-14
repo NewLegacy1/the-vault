@@ -1,0 +1,378 @@
+//@version=6
+// Vault Strategy v0.5 — SMT + Turtle Soup only on PROMINENT swing highs/lows
+//
+// Turtle Soup (ICT): wick sweeps a confirmed pivot high/low, body closes back
+//   inside the range (close does NOT hold beyond the level).
+// SMT (NQ vs ES): only evaluated when a new NQ pivot high/low CONFIRMS —
+//   NQ makes LL while ES makes HL (bullish) or NQ HH while ES LH (bearish).
+//
+// Your notes: SMT + TS at the extreme, then IFVG or CE of post-9:30 FVG.
+// Indicator defaults: pivot strength 10, detect 09:00–11:00 NY, min disp 10 pts.
+
+strategy(
+     title                   = "Vault SMT+TS+FVG v0.5",
+     shorttitle              = "Vault v0.5",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 10,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1)
+
+// ─── Inputs ─────────────────────────────────────────────────────────────────
+grpWin = "Detection window"
+i_detectStart = input.int(900, "Detect from (HHMM NY)", minval = 0, maxval = 2359, group = grpWin)
+i_detectEnd   = input.int(1100, "Detect until (HHMM NY)", minval = 0, maxval = 2359, group = grpWin)
+i_flatTime    = input.int(1600, "Flat by (HHMM NY)", minval = 0, maxval = 2359, group = grpWin)
+i_oneTradeDay = input.bool(true, "Max 1 entry per NY day", group = grpWin)
+
+grpSwing = "Prominent swings (pivots)"
+i_pivotLen = input.int(10, "Pivot Lookback (Strength)", minval = 3, maxval = 50, group = grpSwing)
+i_minSweepPts = input.float(2.0, "Min sweep beyond level (pts)", minval = 0.0, step = 0.25, group = grpSwing)
+
+grpTs = "Turtle Soup"
+i_requireTs   = input.bool(true, "Require Turtle Soup", group = grpTs)
+i_requireDisp = input.bool(true, "Require min displacement after TS", group = grpTs)
+i_minDispPts  = input.float(10.0, "Min Displacement (Points)", minval = 0.0, step = 0.5, group = grpTs)
+
+grpSmt = "SMT (NQ vs ES) — swing only"
+i_requireSmt = input.bool(true, "Require NQ/ES SMT", group = grpSmt)
+i_esSymbol   = input.symbol("CME_MINI:ES1!", "ES symbol", group = grpSmt)
+i_minSmtPts  = input.float(5.0, "Min NQ swing separation (pts)", minval = 0.0, step = 0.5, group = grpSmt)
+
+grpFvg = "FVG / entries"
+i_allowIfvg   = input.bool(true, "Allow IFVG entries", group = grpFvg)
+i_allowCe     = input.bool(true, "Allow CE-respect entries", group = grpFvg)
+i_minFvgPts   = input.float(5.0, "Min FVG size (points)", minval = 0.0, step = 0.25, group = grpFvg)
+i_fvgLookback = input.int(80, "Bars FVG stays valid", minval = 10, maxval = 300, group = grpFvg)
+i_ceTolPts    = input.float(2.0, "CE touch tolerance (points)", minval = 0.0, step = 0.25, group = grpFvg)
+i_fvgFrom     = input.int(930, "First FVG from (HHMM NY)", minval = 0, maxval = 2359, group = grpFvg)
+
+grpRisk = "Risk / exits"
+i_targetMode = input.string("Toward TS extreme", "Target mode", options = ["Toward TS extreme", "Fixed points"], group = grpRisk)
+i_targetPts  = input.float(40.0, "Fixed take profit (points)", minval = 1.0, step = 1.0, group = grpRisk)
+i_stopMode   = input.string("Beyond FVG / TS", "Stop mode", options = ["Beyond FVG / TS", "Fixed points"], group = grpRisk)
+i_fixedStop  = input.float(25.0, "Fixed stop (points)", minval = 1.0, step = 1.0, group = grpRisk)
+i_qtyMnq     = input.int(10, "Contracts (MNQ lots)", minval = 1, maxval = 60, group = grpRisk)
+
+grpVis = "Visuals"
+i_showFvg    = input.bool(true, "Show FVG CE", group = grpVis)
+i_showSig    = input.bool(true, "Show SMT/TS labels", group = grpVis)
+i_showLevels = input.bool(true, "Show active swing levels", group = grpVis)
+i_showPivots = input.bool(true, "Mark confirmed pivots", group = grpVis)
+
+// ─── Time ────────────────────────────────────────────────────────────────────
+f_hhmmNy() =>
+    int h = hour(time, "America/New_York")
+    int m = minute(time, "America/New_York")
+    h * 100 + m
+
+f_inWin(int t, int a, int b) =>
+    t >= a and t < b
+
+f_isNewNyDay() =>
+    ta.change(time("D", "America/New_York")) != 0
+
+f_hhmmAt(int barsAgo) =>
+    int h = hour(time[barsAgo], "America/New_York")
+    int m = minute(time[barsAgo], "America/New_York")
+    h * 100 + m
+
+int  nyHhmm      = f_hhmmNy()
+bool inDetectWin = f_inWin(nyHhmm, i_detectStart, i_detectEnd)
+bool afterFvgTod = nyHhmm >= i_fvgFrom
+bool newDay      = f_isNewNyDay()
+bool swingBarInDetect = f_inWin(f_hhmmAt(i_pivotLen), i_detectStart, i_detectEnd)
+
+var int entriesToday = 0
+if newDay
+    entriesToday := 0
+
+// ─── FVG helpers ─────────────────────────────────────────────────────────────
+f_bearTop() => math.min(low[2], low)
+f_bearBot() => high[1]
+f_bullBot() => math.max(high[2], high)
+f_bullTop() => low[1]
+
+f_isBearFvg(float minPts) =>
+    bool gap = high[1] < math.min(low[2], low)
+    gap and (f_bearTop() - f_bearBot()) >= minPts
+
+f_isBullFvg(float minPts) =>
+    bool gap = low[1] > math.max(high[2], high)
+    gap and (f_bullTop() - f_bullBot()) >= minPts
+
+f_ce(float top, float bot) => (top + bot) / 2.0
+
+// ─── ES series ───────────────────────────────────────────────────────────────
+float esHigh = request.security(i_esSymbol, timeframe.period, high, lookahead = barmerge.lookahead_off, gaps = barmerge.gaps_off)
+float esLow  = request.security(i_esSymbol, timeframe.period, low,  lookahead = barmerge.lookahead_off, gaps = barmerge.gaps_off)
+bool  esOk   = not na(esHigh) and not na(esLow)
+
+// ─── Confirmed prominent pivots (lag = pivotLen) ─────────────────────────────
+float nqPivHigh = ta.pivothigh(high, i_pivotLen, i_pivotLen)
+float nqPivLow  = ta.pivotlow(low, i_pivotLen, i_pivotLen)
+
+bool nqSwingHighConfirmed = not na(nqPivHigh)
+bool nqSwingLowConfirmed  = not na(nqPivLow)
+
+// Active liquidity levels = last confirmed swings (these are what TS may sweep)
+var float activeSwingHigh = na
+var float activeSwingLow  = na
+var bool  highSwept       = false
+var bool  lowSwept        = false
+
+// SMT swing memory (NQ + ES price at the NQ swing bar)
+var float lastNqSwingLow  = na
+var float lastNqSwingHigh = na
+var float lastEsAtNqLow   = na
+var float lastEsAtNqHigh  = na
+
+var bool  bullSmtArmed = false
+var bool  bearSmtArmed = false
+var float smtLowPrice  = na
+var float smtHighPrice = na
+
+var bool  tsBullArmed = false
+var bool  tsBearArmed = false
+var float tsLowPrice  = na
+var float tsHighPrice = na
+
+bool bullSmtNow = false
+bool bearSmtNow = false
+bool tsBull     = false
+bool tsBear     = false
+
+if newDay
+    activeSwingHigh := na
+    activeSwingLow := na
+    highSwept := false
+    lowSwept := false
+    bullSmtArmed := false
+    bearSmtArmed := false
+    smtLowPrice := na
+    smtHighPrice := na
+    tsBullArmed := false
+    tsBearArmed := false
+    tsLowPrice := na
+    tsHighPrice := na
+    // keep multi-day swing memory for SMT continuity inside the session week;
+    // reset only arming / active levels each day
+
+// Register new prominent swings when confirmed
+if nqSwingHighConfirmed
+    activeSwingHigh := nqPivHigh
+    highSwept := false
+    // SMT at highs: compare this NQ swing high vs previous, ES price at swing bar vs previous
+    float esAtThisHigh = esHigh[i_pivotLen]
+    if not na(lastNqSwingHigh) and not na(lastEsAtNqHigh) and swingBarInDetect
+        bool nqHh = nqPivHigh > lastNqSwingHigh + i_minSmtPts
+        bool esLh = esAtThisHigh < lastEsAtNqHigh  // ES failed to confirm HH
+        bool nqLh = nqPivHigh < lastNqSwingHigh
+        bool esHh = esAtThisHigh > lastEsAtNqHigh + i_minSmtPts
+        // Bearish SMT: NQ higher high, ES lower/equal-fail high
+        if nqHh and esLh
+            bearSmtNow := true
+            bearSmtArmed := true
+            smtHighPrice := nqPivHigh
+        // Also allow: ES HH but NQ LH (weakness on NQ)
+        if esHh and nqLh
+            bearSmtNow := true
+            bearSmtArmed := true
+            smtHighPrice := nqPivHigh
+    lastNqSwingHigh := nqPivHigh
+    lastEsAtNqHigh := esAtThisHigh
+
+if nqSwingLowConfirmed
+    activeSwingLow := nqPivLow
+    lowSwept := false
+    float esAtThisLow = esLow[i_pivotLen]
+    if not na(lastNqSwingLow) and not na(lastEsAtNqLow) and swingBarInDetect
+        bool nqLl = nqPivLow < lastNqSwingLow - i_minSmtPts
+        bool esHl = esAtThisLow > lastEsAtNqLow  // ES higher low
+        bool nqHl = nqPivLow > lastNqSwingLow
+        bool esLl = esAtThisLow < lastEsAtNqLow - i_minSmtPts
+        // Bullish SMT: NQ lower low, ES higher low
+        if nqLl and esHl
+            bullSmtNow := true
+            bullSmtArmed := true
+            smtLowPrice := nqPivLow
+        // ES LL but NQ HL (relative strength on NQ)
+        if esLl and nqHl
+            bullSmtNow := true
+            bullSmtArmed := true
+            smtLowPrice := nqPivLow
+    lastNqSwingLow := nqPivLow
+    lastEsAtNqLow := esAtThisLow
+
+// ─── Turtle Soup: ONLY sweep of active prominent swing levels ────────────────
+// Bullish TS: wick below swing low by minSweepPts, close back ABOVE the level
+// Bearish TS: wick above swing high by minSweepPts, close back BELOW the level
+// Invalid if body closes beyond the level (real breakout).
+
+if inDetectWin and not na(activeSwingLow) and not lowSwept
+    bool sweptLow = low <= activeSwingLow - i_minSweepPts
+    bool closedBackIn = close > activeSwingLow
+    bool dispOk = not i_requireDisp or (close - low >= i_minDispPts)
+    if sweptLow and closedBackIn and dispOk
+        tsBull := true
+        tsBullArmed := true
+        tsLowPrice := low
+        lowSwept := true  // one soup per swing level
+
+if inDetectWin and not na(activeSwingHigh) and not highSwept
+    bool sweptHigh = high >= activeSwingHigh + i_minSweepPts
+    bool closedBackIn = close < activeSwingHigh
+    bool dispOk = not i_requireDisp or (high - close >= i_minDispPts)
+    if sweptHigh and closedBackIn and dispOk
+        tsBear := true
+        tsBearArmed := true
+        tsHighPrice := high
+        highSwept := true
+
+// If price closes cleanly beyond a swing (breakout), clear that level (not TS)
+if not na(activeSwingLow) and close < activeSwingLow and not tsBull
+    // breakout down — level consumed; wait for new pivot
+    if low < activeSwingLow - i_minSweepPts and close < activeSwingLow
+        lowSwept := true
+if not na(activeSwingHigh) and close > activeSwingHigh and not tsBear
+    if high > activeSwingHigh + i_minSweepPts and close > activeSwingHigh
+        highSwept := true
+
+float liqLow  = not na(tsLowPrice) ? tsLowPrice : smtLowPrice
+float liqHigh = not na(tsHighPrice) ? tsHighPrice : smtHighPrice
+
+// ─── First FVG after 9:30 ────────────────────────────────────────────────────
+var float actBearTop = na
+var float actBearBot = na
+var int   actBearBar = na
+var float actBullTop = na
+var float actBullBot = na
+var int   actBullBar = na
+
+if newDay
+    actBearTop := na
+    actBearBot := na
+    actBearBar := na
+    actBullTop := na
+    actBullBot := na
+    actBullBar := na
+
+bool newBearFvg = afterFvgTod and inDetectWin and f_isBearFvg(i_minFvgPts)
+bool newBullFvg = afterFvgTod and inDetectWin and f_isBullFvg(i_minFvgPts)
+
+if newBearFvg and na(actBearBar)
+    actBearTop := f_bearTop()
+    actBearBot := f_bearBot()
+    actBearBar := bar_index
+if newBullFvg and na(actBullBar)
+    actBullTop := f_bullTop()
+    actBullBot := f_bullBot()
+    actBullBar := bar_index
+
+if not na(actBearBar) and bar_index - actBearBar > i_fvgLookback
+    actBearTop := na
+    actBearBot := na
+    actBearBar := na
+if not na(actBullBar) and bar_index - actBullBar > i_fvgLookback
+    actBullTop := na
+    actBullBot := na
+    actBullBar := na
+
+float bearCe = not na(actBearBar) ? f_ce(actBearTop, actBearBot) : na
+float bullCe = not na(actBullBar) ? f_ce(actBullTop, actBullBot) : na
+
+bool ifvgLong  = not na(actBearBar) and close > actBearTop
+bool ifvgShort = not na(actBullBar) and close < actBullBot
+bool touchBearCe = not na(bearCe) and low <= bearCe + i_ceTolPts and high >= bearCe - i_ceTolPts
+bool touchBullCe = not na(bullCe) and high >= bullCe - i_ceTolPts and low <= bullCe + i_ceTolPts
+bool ceShort = touchBearCe and close < bearCe
+bool ceLong  = touchBullCe and close > bullCe
+
+bool smtBelow = not i_requireSmt or bullSmtArmed
+bool smtAbove = not i_requireSmt or bearSmtArmed
+bool tsBelow  = not i_requireTs or tsBullArmed
+bool tsAbove  = not i_requireTs or tsBearArmed
+bool roomToday = not i_oneTradeDay or entriesToday == 0
+bool flat = strategy.position_size == 0
+bool armedBelow = smtBelow and tsBelow
+bool armedAbove = smtAbove and tsAbove
+bool canEnter = flat and roomToday and afterFvgTod and nyHhmm < i_flatTime and (inDetectWin or not na(actBearBar) or not na(actBullBar))
+
+bool longIfvg  = i_allowIfvg and canEnter and armedBelow and ifvgLong
+bool shortIfvg = i_allowIfvg and canEnter and armedAbove and ifvgShort
+bool shortCe   = i_allowCe and canEnter and armedBelow and ceShort
+bool longCe    = i_allowCe and canEnter and armedAbove and ceLong
+bool longSetup  = longIfvg or longCe
+bool shortSetup = shortIfvg or shortCe
+
+float longStop = i_stopMode == "Fixed points" ? close - i_fixedStop : (longCe and not na(actBullBot) ? actBullBot - syminfo.mintick : (not na(liqLow) ? liqLow - syminfo.mintick : close - i_fixedStop))
+float shortStop = i_stopMode == "Fixed points" ? close + i_fixedStop : (shortCe and not na(actBearTop) ? actBearTop + syminfo.mintick : (not na(liqHigh) ? liqHigh + syminfo.mintick : close + i_fixedStop))
+float longLimit = i_targetMode == "Fixed points" or na(liqHigh) ? close + i_targetPts : (longCe ? liqHigh : close + i_targetPts)
+float shortLimit = i_targetMode == "Fixed points" or na(liqLow) ? close - i_targetPts : (shortCe ? liqLow : close - i_targetPts)
+
+if longSetup
+    strategy.entry("Long", strategy.long, qty = i_qtyMnq)
+    strategy.exit("L-Exit", from_entry = "Long", limit = longLimit, stop = longStop)
+    entriesToday := entriesToday + 1
+    actBearTop := na
+    actBearBot := na
+    actBearBar := na
+    actBullTop := na
+    actBullBot := na
+    actBullBar := na
+    bullSmtArmed := false
+    bearSmtArmed := false
+    tsBullArmed := false
+    tsBearArmed := false
+
+if shortSetup
+    strategy.entry("Short", strategy.short, qty = i_qtyMnq)
+    strategy.exit("S-Exit", from_entry = "Short", limit = shortLimit, stop = shortStop)
+    entriesToday := entriesToday + 1
+    actBearTop := na
+    actBearBot := na
+    actBearBar := na
+    actBullTop := na
+    actBullBot := na
+    actBullBar := na
+    bullSmtArmed := false
+    bearSmtArmed := false
+    tsBullArmed := false
+    tsBearArmed := false
+
+if strategy.position_size != 0 and nyHhmm >= i_flatTime
+    strategy.close_all(comment = "Session flat")
+
+// ─── Visuals (sparse: only real swings / soups / SMTs) ───────────────────────
+bgcolor(inDetectWin ? color.new(color.gray, 94) : na, title = "Detect window")
+bgcolor(longSetup ? color.new(color.green, 82) : na)
+bgcolor(shortSetup ? color.new(color.red, 82) : na)
+
+// Pivots plotted at the actual swing bar (offset back by pivotLen)
+plotshape(i_showPivots and nqSwingLowConfirmed, "Pivot low", shape.circle, location.belowbar, color.new(color.gray, 30), size = size.tiny, offset = -i_pivotLen)
+plotshape(i_showPivots and nqSwingHighConfirmed, "Pivot high", shape.circle, location.abovebar, color.new(color.gray, 30), size = size.tiny, offset = -i_pivotLen)
+
+plotshape(i_showSig and tsBull, "TS Bull", shape.labelup, location.belowbar, color.lime, size = size.small, text = "TS")
+plotshape(i_showSig and tsBear, "TS Bear", shape.labeldown, location.abovebar, color.red, size = size.small, text = "TS")
+// SMT label at confirmation (appears pivotLen bars after the swing) — also mark swing with offset
+plotshape(i_showSig and bullSmtNow, "Bull SMT", shape.triangleup, location.belowbar, color.aqua, size = size.small, offset = -i_pivotLen, text = "SMT")
+plotshape(i_showSig and bearSmtNow, "Bear SMT", shape.triangledown, location.abovebar, color.orange, size = size.small, offset = -i_pivotLen, text = "SMT")
+
+plot(i_showFvg ? bearCe : na, "Bear CE", color.new(color.red, 30), style = plot.style_linebr)
+plot(i_showFvg ? bullCe : na, "Bull CE", color.new(color.green, 30), style = plot.style_linebr)
+plot(i_showLevels and not lowSwept ? activeSwingLow : na, "Active swing low", color.new(color.lime, 40), style = plot.style_linebr)
+plot(i_showLevels and not highSwept ? activeSwingHigh : na, "Active swing high", color.new(color.red, 40), style = plot.style_linebr)
+
+plot(tsBullArmed ? 1 : 0, "tsBullArmed", display = display.data_window)
+plot(tsBearArmed ? 1 : 0, "tsBearArmed", display = display.data_window)
+plot(bullSmtArmed ? 1 : 0, "bullSmtArmed", display = display.data_window)
+plot(bearSmtArmed ? 1 : 0, "bearSmtArmed", display = display.data_window)
+plot(esOk ? 1 : 0, "esDataOk", display = display.data_window)
+plot(armedBelow ? 1 : 0, "armedBelow", display = display.data_window)
+plot(armedAbove ? 1 : 0, "armedAbove", display = display.data_window)

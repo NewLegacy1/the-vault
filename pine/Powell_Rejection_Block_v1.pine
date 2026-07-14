@@ -1,0 +1,984 @@
+//@version=6
+// Powell Rejection Block v1 — rebuilt from the full SOP (transcripts 01–07)
+//
+// CODED FROM THE SOP:
+//   · Formal RB (T03): candle sweeps liquidity, prints rejection wick; RB level
+//     = wick start (body top/bottom), alt entry = wick CE (50% of wick)
+//   · Key opens (T02): 18:00 / midnight / 10:00 opens tracked as liquidity —
+//     souping a key open counts as a sweep; optional proximity confluence
+//   · Sweep pool: premarket H/L, prior-day H/L, key opens, rolling 20-bar swing
+//   · Entry modes (T05): limit wick start (fills) / limit wick CE (risk) /
+//     Auto (CE when wick-start stop > max) / CISD trigger (1m confirmation:
+//     tap into RB zone, then close through prior opposing candle's open)
+//   · Stop tiers (T03/T09): beyond wick extreme; skip if > max (default 20,
+//     "25+ = hateful"); min-stop floor protects vs commission drag on 1m
+//   · Targets 1:5 default (1:3 floor per fib rules if you lower it) · BE at +1R
+//   · v1.3: Auto PDH/PDL draw bias (SOP §3 mechanical rule)
+//   · v1.4: Give-back regime note — one-click trail toggle (2.0/1.5) + rolling
+//     give-back counter in funnel table (real fills + ghost scratches)
+//   · TPT $50K engine: $400 auto-size, 60-micro cap, daily loss stop / profit
+//     lock, flat 15:55, max 1 trade/day
+//
+// NOT CODEABLE (trade these manually — see PINE_GUIDE):
+//   4H/1H narrative · open-proximity discretion · Forex Factory read ·
+//   data H/L quality · equal highs/lows · NDOG/NWOG · MM model · daily SMT ·
+//   fib anchoring · A+/B/C grading (Auto PDH/PDL covers §3 mechanical draw only)
+strategy(
+     title                   = "Powell Rejection Block v1",
+     shorttitle              = "PRB v1",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_lines_count         = 300,
+     max_boxes_count         = 300,
+     max_labels_count        = 300)
+
+// ─── Inputs ──────────────────────────────────────────────────────────────────
+grpWin = "Session (NY time)"
+i_winStart  = input.int(1000, "Entries from (HHMM) — SOP: wait for 10:00", minval = 0, maxval = 2359, group = grpWin)
+i_winEnd    = input.int(1130, "Last order (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_flatTime  = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpWin)
+i_skipMonday  = input.bool(true, "Skip Mondays (SOP: lower expectancy)", group = grpWin)
+i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Long only", "Short only", "Auto PDH/PDL draw"], group = grpWin, tooltip = "Both = no gate. Long/Short only = your manual morning read. Auto PDH/PDL draw = SOP §3: PDH souped + close back below → shorts only (draw to lows); PDL souped + close back above → longs only. Neutral until a PD side soups. Latest soup wins if both fire same day.")
+
+grpRb = "Rejection block (formal, T03)"
+i_minWickPts = input.float(5.0, "Min rejection wick (pts)", minval = 0.0, step = 0.5, group = grpRb)
+i_localLen   = input.int(12, "RB must be extreme of last N bars", minval = 4, maxval = 50, group = grpRb)
+i_reqSweep   = input.bool(true, "Require liquidity sweep on RB candle", group = grpRb)
+i_confClose  = input.bool(true, "Require confirming close (bear RB closes down)", group = grpRb)
+i_leaveR     = input.float(1.0, "Price must leave by N×risk before limit arms (0 = arm at once)", minval = 0.0, step = 0.25, group = grpRb, tooltip = "SOP: 'wait for price to leave, then retest the RB'. Kills same-bar blow-through fills.")
+i_strictLeave = input.bool(false, "Strict retest: leave must happen AFTER the RB candle", group = grpRb, tooltip = "Big-bodied RB candles satisfy the leave distance by themselves, arming the limit instantly. Strict mode requires the departure on a later bar. A/B this: it targets the remaining duration-0 losses but may delay some winners.")
+i_maxApproachR = input.float(0.0, "Approach guard: pause limit unless close is within N×risk (0 = off)", minval = 0.0, step = 0.5, group = grpRb, tooltip = "FAILED A/B (Run B, Feb–Mar): default 2.0 killed the Feb 10 +$1,943 winner and left mostly soft losses/scratches (−$803). Leave at 0. Softened a couple blows but the winners need the aggressive fills the guard blocks.")
+i_tapTimeout = input.int(24, "Setup expires after N bars", minval = 4, maxval = 120, group = grpRb)
+
+grpKo = "Key opens (T02)"
+i_useRollSweep = input.bool(false, "Rolling 20-bar swing counts as sweep liquidity (noisy)", group = grpKo)
+i_useKoSweep = input.bool(true, "Key opens count as sweep liquidity", group = grpKo)
+i_useAmOpens = input.bool(false, "8:30 / 9:00 / 9:30 opens count as sweep liquidity", group = grpKo, tooltip = "SOP T13/T14: morning opens matter mainly on news days (CPI/PPI/NFP at 8:30) — the script can't read the calendar, so these add noise on quiet days. A/B before locking on.")
+i_koConfl    = input.bool(false, "Require RB within N pts of a key open", group = grpKo)
+i_koConflPts = input.float(15.0, "Key-open proximity (pts)", minval = 1.0, step = 1.0, group = grpKo)
+
+grpCtx = "Context (T01)"
+i_useH4Wick    = input.bool(true, "Require developing 4H manipulation wick", group = grpCtx)
+i_minH4WickPts = input.float(8.0, "Min 4H wick (pts) — 15 good / 8 grey / 2 bad", minval = 0.0, step = 0.5, group = grpCtx)
+
+grpEntry = "Entry (T05)"
+i_entryMode = input.string("Auto (CE if stop too big)", "Entry mode", options = ["Limit at wick start", "Limit at wick CE", "Auto (CE if stop too big)", "CISD trigger (for 1m)"], group = grpEntry)
+
+grpInstrument = "Instrument / contract size"
+i_instrMode = input.string("Auto (chart symbol)", "Sizing mode", options = ["Auto (chart symbol)", "MNQ micro ($2/pt)", "NQ mini ($20/pt)"], group = grpInstrument, tooltip = "Best practice: load MNQ1! or NQ1! on the chart and leave Auto. MNQ ≈ $2/point (micro), NQ ≈ $20/point (mini, 10×). NQ auto-caps at 6 contracts (TPT = 60 micros). Override only for what-if sizing on the same chart.")
+
+grpRisk = "Risk (TPT $50K engine)"
+i_maxStopPts = input.float(20.0, "Max stop (pts) — SOP: 25+ = skip/refine", minval = 2.0, step = 1.0, group = grpRisk)
+i_minStopPts = input.float(5.0, "Min stop (pts) — commission floor for 1m", minval = 0.0, step = 0.5, group = grpRisk)
+i_stopBufPts = input.float(2.0, "Stop buffer beyond wick (pts)", minval = 0.0, step = 0.25, group = grpRisk)
+i_rr         = input.float(5.0, "Target (R multiple) — SOP 1:5–1:7, floor 1:3", minval = 1.0, step = 0.25, group = grpRisk)
+i_evalMaxWinUsd = input.float(0.0, "Eval max win cap (USD, 0 = off)", minval = 0.0, step = 50.0, group = grpRisk, tooltip = "Hard-caps TP so a full winner ≤ this USD. TPT eval: 1490 keeps best day under 50% while building toward $4k pass. Does not replace daily profit lock (that only blocks re-entry). After PRO pass, set 0 and use full Target R (e.g. 6R).")
+i_beAtR      = input.float(1.0, "Breakeven at +N R (0 = off)", minval = 0.0, step = 0.25, group = grpRisk)
+i_trailStartR = input.float(0.0, "Trail: activate at +N R (0 = off, BE only)", minval = 0.0, step = 0.25, group = grpRisk, tooltip = "FAILED A/B across 8 months (Dec–Jul): demoted winners (Jan 2/8, Feb 10, May 22, Jun 5 all reached full 5R after the trail would have cut them) cost ~$3,860 vs ~$2,820 recovered from scratches — net ≈ −$1,040. Leave at 0 (BE-only). May 22 hit the 5R target 10 min after the 2.0/1.5 trail exit.")
+i_trailGapR   = input.float(1.5, "Trail: distance behind peak (R)", minval = 0.25, step = 0.25, group = grpRisk, tooltip = "Smaller gap = locks more profit but cuts winners on normal pullbacks. 1.5R gap means a trade peaking at +3R exits no worse than +1.5R.")
+i_riskUsd    = input.float(400.0, "Risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk)
+
+grpRegime = "Give-back regime (manual toggle)"
+i_trailRegime = input.bool(false, "Give-back regime: trail ON (2.0 / 1.5)", group = grpRegime, tooltip = "One-click toggle for pop-and-fade months (e.g. Mar 2026). When ON, overrides trail to activate at +2R with 1.5R gap regardless of the Risk inputs above. Default OFF — 8-month A/B favours BE-only. Turn ON when the give-back counter below hits the threshold.")
+i_regimeGiveBackR = input.float(2.0, "Give-back: min peak (R) to count", minval = 1.0, step = 0.25, group = grpRegime, tooltip = "Trade peaked at least this many R but gave back almost all of it (scratch / sub-1R exit).")
+i_regimeLookback = input.int(10, "Give-back lookback (sessions)", minval = 3, maxval = 30, group = grpRegime)
+i_regimeThreshold = input.int(2, "Suggest trail when give-backs ≥", minval = 1, maxval = 8, group = grpRegime, tooltip = "Funnel table turns orange when rolling give-backs reach this count while trail is OFF.")
+i_maxContracts = input.int(60, "Max contracts (60 micros / 6 minis)", minval = 1, maxval = 60, group = grpRisk, tooltip = "TPT $50K cap = 60 MNQ or 6 NQ. On NQ chart or NQ sizing mode, effective max is min(this, 6).")
+i_dailyLossStop   = input.float(800.0, "Daily loss stop (USD)", minval = 0.0, step = 50.0, group = grpRisk)
+i_dailyProfitLock = input.float(1400.0, "Daily profit lock (USD)", minval = 0.0, step = 50.0, group = grpRisk)
+
+grpGhost = "Missed-trade autopsy"
+i_ghost     = input.bool(true, "Track near-miss setups (ghost trades)", group = grpGhost, tooltip = "Every RB candle that failed EXACTLY ONE filter is simulated as a ghost trade (same leave-retest, BE and 5R rules). The bottom-right table tallies wins/losses per rejection reason — it shows which filter is blocking profitable trades and which are earning their keep. Ghost fills are slightly conservative: same-bar stop+target resolves as a loss.")
+i_showGhost = input.bool(false, "Mark ghosts on chart (G + reason #)", group = grpGhost, tooltip = "Off by default to keep the live chart clean — the bottom-right autopsy table still tallies every ghost.")
+
+grpVis = "Visuals"
+i_showSig   = input.bool(true, "Show RB labels", group = grpVis)
+i_showSoup  = input.bool(false, "Show sweep triangles (soup markers)", group = grpVis, tooltip = "Off by default — sweeps fire often and clutter the chart. The RB label already implies a valid sweep when the sweep filter is on.")
+i_showLvls  = input.bool(true, "Show liquidity + key opens", group = grpVis)
+i_showPos   = input.bool(true, "Show position boxes (entry / SL / TP)", group = grpVis)
+i_showPend  = input.bool(true, "Show pending limit + stop lines", group = grpVis)
+i_showTable = input.bool(true, "Show diagnostic funnel table", group = grpVis)
+
+grpManual = "Manual / discretionary replay"
+i_manualOnly = input.bool(false, "Manual levels only — NO orders (you click)", group = grpManual, tooltip = "Draws LIMIT / STOP / TP boxes when a setup arms. No strategy orders — you decide after morning bias. Log take/skip in Vault F2 Journal. Use for 12mo discretionary replay; keep OFF for automated Strategy Tester exports.")
+i_showBlockedBias = input.bool(true, "Mark RB blocked by your bias filter", group = grpManual, tooltip = "Shows when a raw RB failed only the Direction filter — your discretion dataset.")
+i_manualAlerts = input.bool(false, "Alert when limit level arms", group = grpManual)
+
+float effTrailStartR = i_trailRegime ? 2.0 : i_trailStartR
+float effTrailGapR = i_trailRegime ? 1.5 : i_trailGapR
+
+// ─── Time ────────────────────────────────────────────────────────────────────
+int nyHhmm  = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool inWindow = nyHhmm >= i_winStart and nyHhmm < i_winEnd
+bool canPlace = nyHhmm < i_winEnd
+bool dayAllowed = not i_skipMonday or dayofweek(time, "America/New_York") != dayofweek.monday
+
+// ─── Liquidity references ────────────────────────────────────────────────────
+float prevDayHigh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
+float prevDayLow  = request.security(syminfo.tickerid, "D", low[1],  lookahead = barmerge.lookahead_on)
+
+var float pmHigh = na
+var float pmLow  = na
+if newDay
+    pmHigh := na
+    pmLow := na
+if nyHhmm < 930
+    pmHigh := na(pmHigh) ? high : math.max(pmHigh, high)
+    pmLow  := na(pmLow)  ? low  : math.min(pmLow, low)
+
+// Key opens: 18:00 (best) / midnight / 10:00 (T02 trio)
+// + optional 8:30 / 9:00 / 9:30 morning opens (T13/T14 — news days)
+var float ko1800 = na
+var float ko0000 = na
+var float ko1000 = na
+var float ko0830 = na
+var float ko0900 = na
+var float ko0930 = na
+if nyHhmm >= 1800 and nyHhmm[1] < 1800
+    ko1800 := open
+if newDay
+    ko0000 := open
+if nyHhmm >= 1000 and nyHhmm[1] < 1000
+    ko1000 := open
+if nyHhmm >= 830 and nyHhmm[1] < 830
+    ko0830 := open
+if nyHhmm >= 900 and nyHhmm[1] < 900
+    ko0900 := open
+if nyHhmm >= 930 and nyHhmm[1] < 930
+    ko0930 := open
+
+float roll20High = ta.highest(high, 20)[1]
+float roll20Low  = ta.lowest(low, 20)[1]
+
+// Sweep = wick through a level, close back on the origin side (soup)
+f_soupAbove(float lvl) => not na(lvl) and high > lvl and close < lvl
+f_soupBelow(float lvl) => not na(lvl) and low < lvl and close > lvl
+
+bool sweptAbove = f_soupAbove(pmHigh) or f_soupAbove(prevDayHigh) or (i_useRollSweep and f_soupAbove(roll20High)) or (i_useKoSweep and (f_soupAbove(ko1800) or f_soupAbove(ko0000) or f_soupAbove(ko1000))) or (i_useAmOpens and (f_soupAbove(ko0830) or f_soupAbove(ko0900) or f_soupAbove(ko0930)))
+bool sweptBelow = f_soupBelow(pmLow) or f_soupBelow(prevDayLow) or (i_useRollSweep and f_soupBelow(roll20Low)) or (i_useKoSweep and (f_soupBelow(ko1800) or f_soupBelow(ko0000) or f_soupBelow(ko1000))) or (i_useAmOpens and (f_soupBelow(ko0830) or f_soupBelow(ko0900) or f_soupBelow(ko0930)))
+
+// Auto PDH/PDL draw (SOP §3): soup + close back within → opposing side is the draw
+var int dayDraw = 0
+if newDay
+    dayDraw := 0
+if f_soupAbove(prevDayHigh)
+    dayDraw := -1
+if f_soupBelow(prevDayLow)
+    dayDraw := 1
+
+bool biasOkShort = i_biasMode != "Long only" and (i_biasMode != "Auto PDH/PDL draw" or dayDraw <= 0)
+bool biasOkLong  = i_biasMode != "Short only" and (i_biasMode != "Auto PDH/PDL draw" or dayDraw >= 0)
+bool autoBiasOn  = i_biasMode == "Auto PDH/PDL draw"
+
+// Key-open proximity (optional confluence)
+f_nearKo(float px) =>
+    (not na(ko1800) and math.abs(px - ko1800) <= i_koConflPts) or (not na(ko0000) and math.abs(px - ko0000) <= i_koConflPts) or (not na(ko1000) and math.abs(px - ko1000) <= i_koConflPts)
+
+// ─── Developing 4H manipulation wick (T01) ───────────────────────────────────
+var float h4Open = na
+var float h4High = na
+var float h4Low  = na
+if ta.change(time("240")) != 0
+    h4Open := open
+    h4High := high
+    h4Low := low
+else
+    h4High := math.max(nz(h4High, high), high)
+    h4Low := math.min(nz(h4Low, low), low)
+float h4UpperWick = nz(h4High, high) - math.max(nz(h4Open, open), close)
+float h4LowerWick = math.min(nz(h4Open, open), close) - nz(h4Low, low)
+bool h4OkBear = not i_useH4Wick or h4UpperWick >= i_minH4WickPts
+bool h4OkBull = not i_useH4Wick or h4LowerWick >= i_minH4WickPts
+
+// ─── Formal rejection block (T03) ────────────────────────────────────────────
+// Bearish RB: local high + rejection wick after sweeping liquidity above.
+// RB level = wick start (top of body). CE = midpoint of wick.
+float upperWick = high - math.max(open, close)
+float lowerWick = math.min(open, close) - low
+bool localHigh = high >= ta.highest(high, i_localLen)
+bool localLow  = low <= ta.lowest(low, i_localLen)
+
+bool rbBearRaw = inWindow and localHigh and upperWick >= i_minWickPts and (not i_confClose or close < open)
+bool rbBullRaw = inWindow and localLow  and lowerWick >= i_minWickPts and (not i_confClose or close > open)
+
+bool rbBear = rbBearRaw and h4OkBear and (not i_reqSweep or sweptAbove) and (not i_koConfl or f_nearKo(high)) and biasOkShort
+bool rbBull = rbBullRaw and h4OkBull and (not i_reqSweep or sweptBelow) and (not i_koConfl or f_nearKo(low)) and biasOkLong
+
+// ─── Trade accounting / TPT risk engine ──────────────────────────────────────
+int totalTrades = strategy.opentrades + strategy.closedtrades
+var int tradesAtDayStart = 0
+var float dayStartEquity = na
+if newDay
+    tradesAtDayStart := totalTrades
+    dayStartEquity := strategy.equity
+float dayPnl = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
+bool dayOk = (i_dailyLossStop == 0 or dayPnl > -i_dailyLossStop) and (i_dailyProfitLock == 0 or dayPnl < i_dailyProfitLock)
+bool roomToday = not i_oneTradeDay or totalTrades == tradesAtDayStart
+bool flat = i_manualOnly or strategy.position_size == 0
+
+// MNQ1! continuous contracts sometimes report syminfo.pointvalue as 20 (mini) in bar replay.
+// Anchor Auto mode on ticker/root before trusting pointvalue alone.
+f_tickerUpper() =>
+    str.upper(syminfo.ticker)
+
+f_rootUpper() =>
+    str.upper(syminfo.root)
+
+f_chartIsMnq() =>
+    string t = f_tickerUpper()
+    string r = f_rootUpper()
+    str.contains(t, "MNQ") or str.contains(r, "MNQ")
+
+f_chartIsNqMini() =>
+    not f_chartIsMnq() and (str.contains(f_tickerUpper(), "NQ") or str.contains(f_rootUpper(), "NQ"))
+
+f_autoPointVal() =>
+    if f_chartIsMnq()
+        2.0
+    else if f_chartIsNqMini()
+        20.0
+    else
+        float pv = syminfo.pointvalue
+        pv >= 10.0 ? 20.0 : pv > 0 ? pv : 2.0
+
+f_pointVal() =>
+    switch i_instrMode
+        "MNQ micro ($2/pt)" => 2.0
+        "NQ mini ($20/pt)" => 20.0
+        => f_autoPointVal()
+
+f_isNqMini() =>
+    i_instrMode == "NQ mini ($20/pt)" or (i_instrMode == "Auto (chart symbol)" and (f_chartIsNqMini() or (not f_chartIsMnq() and syminfo.pointvalue >= 10.0)))
+
+f_instrTag() =>
+    f_isNqMini() ? "NQ" : "MNQ"
+
+f_effMaxContracts() =>
+    f_isNqMini() ? math.min(i_maxContracts, 6) : i_maxContracts
+
+f_qty(float stopPts) =>
+    if stopPts < i_minStopPts or stopPts > i_maxStopPts
+        0
+    else
+        float pv = f_pointVal()
+        int q = math.floor(i_riskUsd / (stopPts * pv))
+        math.min(q, f_effMaxContracts())
+
+// Cap TP distance for eval consistency (TPT: best day < 50% of total at pass request)
+f_effRr() =>
+    float rrCap = i_evalMaxWinUsd > 0 and i_riskUsd > 0 ? i_evalMaxWinUsd / i_riskUsd : i_rr
+    math.min(i_rr, rrCap)
+
+// ─── Funnel counters ─────────────────────────────────────────────────────────
+var int cntDays = 0
+var int cntRbRaw = 0
+var int cntRbCtx = 0
+var int cntSkipStop = 0
+var int cntOrders = 0
+var int cntGuard = 0
+var int cntBiasBlk = 0
+if newDay
+    cntDays += 1
+if rbBearRaw or rbBullRaw
+    cntRbRaw += 1
+if rbBear or rbBull
+    cntRbCtx += 1
+if rbBearRaw and h4OkBear and (not i_reqSweep or sweptAbove) and (not i_koConfl or f_nearKo(high)) and not biasOkShort
+    cntBiasBlk += 1
+if rbBullRaw and h4OkBull and (not i_reqSweep or sweptBelow) and (not i_koConfl or f_nearKo(low)) and not biasOkLong
+    cntBiasBlk += 1
+
+// ─── Setup state ─────────────────────────────────────────────────────────────
+// dir: 0 none · -1 short setup · +1 long setup
+var int   suDir = 0
+var float suWickStart = na
+var float suCe = na
+var float suExtreme = na
+var float suEntry = na
+var float suStop = na
+var bool  suLeft = false
+var int   suBar = na
+var bool  suOrd = false
+var bool  suTapped = false
+var float openRiskPts = na
+var float peakR = na
+var float lockR = na
+var float pendStop = na
+var float pendTp = na
+var bool  manualReady = false
+var string manualState = "—"
+
+bool isTrigger = i_entryMode == "CISD trigger (for 1m)"
+
+if newDay
+    suDir := 0
+    suOrd := false
+    manualReady := false
+    manualState := "—"
+    if not i_manualOnly
+        strategy.cancel_all()
+
+bool canArm = flat and roomToday and canPlace and dayOk and dayAllowed and suDir == 0 and not suOrd
+
+// Pick entry level per mode; returns [entryPx, stopPx] or na to skip
+f_plan(float wickStart, float ce, float extreme, bool isShort) =>
+    float stopPx = isShort ? extreme + i_stopBufPts : extreme - i_stopBufPts
+    float eWick = wickStart
+    float eCe = ce
+    float riskWick = math.abs(eWick - stopPx)
+    float riskCe = math.abs(eCe - stopPx)
+    float entryPx = na
+    if i_entryMode == "Limit at wick start"
+        entryPx := riskWick >= i_minStopPts and riskWick <= i_maxStopPts ? eWick : na
+    else if i_entryMode == "Limit at wick CE"
+        entryPx := riskCe >= i_minStopPts and riskCe <= i_maxStopPts ? eCe : na
+    else
+        // Auto: prefer wick start (fills); fall back to CE when stop too big
+        entryPx := riskWick <= i_maxStopPts and riskWick >= i_minStopPts ? eWick : (riskCe <= i_maxStopPts and riskCe >= i_minStopPts ? eCe : na)
+    [entryPx, stopPx]
+
+// ─── Give-back regime tracker ────────────────────────────────────────────────
+var int sessionGiveBacks = 0
+var array<int> gbHistory = array.new_int(0)
+
+f_isGiveBack(float pk, float exitR) =>
+    pk >= i_regimeGiveBackR and exitR > -0.5 and exitR < 1.0
+
+f_gbRolling() =>
+    int s = 0
+    for i = 0 to array.size(gbHistory) - 1
+        s += array.get(gbHistory, i)
+    s
+
+if newDay
+    array.unshift(gbHistory, sessionGiveBacks)
+    while array.size(gbHistory) > i_regimeLookback
+        array.pop(gbHistory)
+    sessionGiveBacks := 0
+
+// ─── Ghost trades: near-miss setups that failed exactly one filter ───────────
+// Reasons: 1 before window (9:30→start) · 2 Monday · 3 slot used (1/day or in
+// pos) · 4 4H wick · 5 no sweep · 6 no confirming close · 7 stop bounds ·
+// 8 daily lock · 9 key-open proximity · 10 bias filter · 11 after window (end→15:00)
+var array<int>   ghDir    = array.new<int>()
+var array<float> ghEntry  = array.new<float>()
+var array<float> ghStop   = array.new<float>()
+var array<float> ghTp     = array.new<float>()
+var array<float> ghRisk   = array.new<float>()
+var array<int>   ghState  = array.new<int>()   // 0 wait-leave · 1 wait-fill · 2 in-pos
+var array<int>   ghBarIx  = array.new<int>()
+var array<int>   ghReason = array.new<int>()
+var array<bool>  ghBe     = array.new<bool>()
+var array<float> ghPeakR  = array.new<float>()
+var array<int>   ghCount  = array.new<int>(12, 0)
+var array<int>   ghWins   = array.new<int>(12, 0)
+var array<int>   ghLoss   = array.new<int>(12, 0)
+var array<int>   ghScr    = array.new<int>(12, 0)
+var array<float> ghNetR   = array.new<float>(12, 0.0)
+
+f_ghSpawn(int dir, float wickStart, float ce, float extreme, int reason) =>
+    [entryPx, stopPx] = f_plan(wickStart, ce, extreme, dir == -1)
+    float e = na(entryPx) ? wickStart : entryPx
+    float s = na(entryPx) ? (dir == -1 ? extreme + i_stopBufPts : extreme - i_stopBufPts) : stopPx
+    float r = math.abs(s - e)
+    if r > 0
+        array.push(ghDir, dir)
+        array.push(ghEntry, e)
+        array.push(ghStop, s)
+        array.push(ghTp, dir == -1 ? e - f_effRr() * r : e + f_effRr() * r)
+        array.push(ghRisk, r)
+        array.push(ghState, 0)
+        array.push(ghBarIx, bar_index)
+        array.push(ghReason, reason)
+        array.push(ghBe, false)
+        array.push(ghPeakR, 0.0)
+        array.set(ghCount, reason, array.get(ghCount, reason) + 1)
+        if i_showGhost
+            label.new(bar_index, dir == -1 ? high : low, "G" + str.tostring(reason), style = dir == -1 ? label.style_label_down : label.style_label_up, color = color.new(color.gray, 55), textcolor = color.white, size = size.tiny)
+
+bool inRth = nyHhmm >= 930 and nyHhmm < 1500
+var int lastGhBear = -999
+var int lastGhBull = -999
+
+if i_ghost and inRth and localHigh and upperWick >= i_minWickPts and array.size(ghDir) < 40 and bar_index - lastGhBear >= i_localLen
+    int fails = 0
+    int reason = 0
+    if i_confClose and not (close < open)
+        fails += 1
+        reason := 6
+    if not inWindow
+        fails += 1
+        reason := nyHhmm < i_winStart ? 1 : 11
+    if not dayAllowed
+        fails += 1
+        reason := 2
+    if not h4OkBear
+        fails += 1
+        reason := 4
+    if i_reqSweep and not sweptAbove
+        fails += 1
+        reason := 5
+    if i_koConfl and not f_nearKo(high)
+        fails += 1
+        reason := 9
+    if i_biasMode == "Long only" or (autoBiasOn and dayDraw == 1)
+        fails += 1
+        reason := 10
+    if not dayOk
+        fails += 1
+        reason := 8
+    if not (flat and roomToday and suDir == 0 and not suOrd)
+        fails += 1
+        reason := 3
+    float gws = math.max(open, close)
+    float gce = (high + gws) / 2.0
+    [gpe, gps] = f_plan(gws, gce, high, true)
+    if na(gpe)
+        fails += 1
+        reason := 7
+    if fails == 1
+        f_ghSpawn(-1, gws, gce, high, reason)
+        lastGhBear := bar_index
+
+if i_ghost and inRth and localLow and lowerWick >= i_minWickPts and array.size(ghDir) < 40 and bar_index - lastGhBull >= i_localLen
+    int fails = 0
+    int reason = 0
+    if i_confClose and not (close > open)
+        fails += 1
+        reason := 6
+    if not inWindow
+        fails += 1
+        reason := nyHhmm < i_winStart ? 1 : 11
+    if not dayAllowed
+        fails += 1
+        reason := 2
+    if not h4OkBull
+        fails += 1
+        reason := 4
+    if i_reqSweep and not sweptBelow
+        fails += 1
+        reason := 5
+    if i_koConfl and not f_nearKo(low)
+        fails += 1
+        reason := 9
+    if i_biasMode == "Short only" or (autoBiasOn and dayDraw == -1)
+        fails += 1
+        reason := 10
+    if not dayOk
+        fails += 1
+        reason := 8
+    if not (flat and roomToday and suDir == 0 and not suOrd)
+        fails += 1
+        reason := 3
+    float gws = math.min(open, close)
+    float gce = (low + gws) / 2.0
+    [gpe, gps] = f_plan(gws, gce, low, false)
+    if na(gpe)
+        fails += 1
+        reason := 7
+    if fails == 1
+        f_ghSpawn(1, gws, gce, low, reason)
+        lastGhBull := bar_index
+
+// Ghost life cycle — mirrors the real leave→retest→fill→manage sequence
+if i_ghost and array.size(ghDir) > 0
+    for gi = array.size(ghDir) - 1 to 0
+        int d = array.get(ghDir, gi)
+        float e = array.get(ghEntry, gi)
+        float s = array.get(ghStop, gi)
+        float t = array.get(ghTp, gi)
+        float r = array.get(ghRisk, gi)
+        int st = array.get(ghState, gi)
+        int rs = array.get(ghReason, gi)
+        bool sessionEnd = nyHhmm >= i_flatTime
+        bool done = false
+        bool ghGiveBack = false
+        if st == 0
+            bool inval = d == -1 ? close > s : close < s
+            if bar_index - array.get(ghBarIx, gi) > i_tapTimeout or inval or sessionEnd
+                done := true
+            else if (d == -1 ? low <= e - i_leaveR * r : high >= e + i_leaveR * r)
+                array.set(ghState, gi, 1)
+        else if st == 1
+            if bar_index - array.get(ghBarIx, gi) > i_tapTimeout or sessionEnd
+                done := true
+            else if (d == -1 ? high >= e : low <= e)
+                if (d == -1 ? high >= s : low <= s)
+                    array.set(ghLoss, rs, array.get(ghLoss, rs) + 1)
+                    array.set(ghNetR, rs, array.get(ghNetR, rs) - 1.0)
+                    done := true
+                else
+                    array.set(ghState, gi, 2)
+            else if (d == -1 ? close > s : close < s)
+                done := true
+        else
+            float favGhR = d == -1 ? (e - low) / r : (high - e) / r
+            array.set(ghPeakR, gi, math.max(array.get(ghPeakR, gi), favGhR))
+            if i_beAtR > 0 and not array.get(ghBe, gi) and (d == -1 ? low <= e - i_beAtR * r : high >= e + i_beAtR * r)
+                array.set(ghBe, gi, true)
+                array.set(ghStop, gi, e)
+            float curStop = array.get(ghStop, gi)
+            bool stopHit = d == -1 ? high >= curStop : low <= curStop
+            bool tpHit = d == -1 ? low <= t : high >= t
+            if stopHit
+                if array.get(ghBe, gi)
+                    array.set(ghScr, rs, array.get(ghScr, rs) + 1)
+                    ghGiveBack := array.get(ghPeakR, gi) >= i_regimeGiveBackR
+                else
+                    array.set(ghLoss, rs, array.get(ghLoss, rs) + 1)
+                    array.set(ghNetR, rs, array.get(ghNetR, rs) - 1.0)
+                done := true
+            else if tpHit
+                array.set(ghWins, rs, array.get(ghWins, rs) + 1)
+                array.set(ghNetR, rs, array.get(ghNetR, rs) + f_effRr())
+                done := true
+            else if sessionEnd
+                float mkR = d == -1 ? (e - close) / r : (close - e) / r
+                array.set(ghScr, rs, array.get(ghScr, rs) + 1)
+                array.set(ghNetR, rs, array.get(ghNetR, rs) + mkR)
+                ghGiveBack := f_isGiveBack(array.get(ghPeakR, gi), mkR)
+                done := true
+        if done
+            if ghGiveBack
+                sessionGiveBacks += 1
+            array.remove(ghDir, gi)
+            array.remove(ghEntry, gi)
+            array.remove(ghStop, gi)
+            array.remove(ghTp, gi)
+            array.remove(ghRisk, gi)
+            array.remove(ghState, gi)
+            array.remove(ghBarIx, gi)
+            array.remove(ghReason, gi)
+            array.remove(ghBe, gi)
+            array.remove(ghPeakR, gi)
+
+// ── Arm on RB (limit modes place the order immediately; trigger mode waits) ──
+if rbBear and canArm
+    float wickStart = math.max(open, close)
+    float ce = (high + wickStart) / 2.0
+    if isTrigger
+        suDir := -1
+        suWickStart := wickStart
+        suCe := ce
+        suExtreme := high
+        suBar := bar_index
+        suTapped := false
+    else
+        [entryPx, stopPx] = f_plan(wickStart, ce, high, true)
+        if na(entryPx)
+            cntSkipStop += 1
+        else
+            suDir := -1
+            suEntry := entryPx
+            suStop := stopPx
+            suBar := bar_index
+            suLeft := i_leaveR == 0
+
+if rbBull and canArm and suDir == 0
+    float wickStart = math.min(open, close)
+    float ce = (low + wickStart) / 2.0
+    if isTrigger
+        suDir := 1
+        suWickStart := wickStart
+        suCe := ce
+        suExtreme := low
+        suBar := bar_index
+        suTapped := false
+    else
+        [entryPx, stopPx] = f_plan(wickStart, ce, low, false)
+        if na(entryPx)
+            cntSkipStop += 1
+        else
+            suDir := 1
+            suEntry := entryPx
+            suStop := stopPx
+            suBar := bar_index
+            suLeft := i_leaveR == 0
+
+// ── Leave-then-retest arming (SOP T03: wait for price to LEAVE, then retest) ──
+// The order is re-evaluated every bar while the setup is live: it only stays
+// working while the prior close is within i_maxApproachR × risk of the entry
+// (approach guard), so violent bars ripping in from far away find no order.
+if not isTrigger and suDir != 0 and flat
+    float riskPts = math.abs(suStop - suEntry)
+    bool invalidated = (suDir == -1 and close > suStop) or (suDir == 1 and close < suStop)
+    if bar_index - suBar > i_tapTimeout or not canPlace or invalidated
+        if suOrd and not i_manualOnly
+            strategy.cancel("Short")
+            strategy.cancel("Long")
+        suOrd := false
+        suDir := 0
+        manualReady := false
+        manualState := "—"
+    else
+        if not suLeft and (not i_strictLeave or bar_index > suBar)
+            if suDir == -1 and low <= suEntry - i_leaveR * riskPts
+                suLeft := true
+            if suDir == 1 and high >= suEntry + i_leaveR * riskPts
+                suLeft := true
+        bool nearOk = i_maxApproachR == 0 or math.abs(close - suEntry) <= i_maxApproachR * riskPts
+        manualState := not suLeft ? "WAIT leave" : not nearOk ? "WAIT approach" : not roomToday ? "1/day used" : not dayOk ? "Daily lock" : "ARMED — you click"
+        if suLeft and roomToday and dayOk
+            if nearOk
+                float tpPx = suDir == -1 ? suEntry - f_effRr() * riskPts : suEntry + f_effRr() * riskPts
+                pendStop := suStop
+                pendTp := tpPx
+                int qty = f_qty(riskPts)
+                if qty > 0
+                    manualReady := true
+                    if not i_manualOnly
+                        if suDir == -1
+                            strategy.entry("Short", strategy.short, qty = qty, limit = suEntry)
+                            strategy.exit("S-X", from_entry = "Short", stop = suStop, limit = tpPx)
+                        else
+                            strategy.entry("Long", strategy.long, qty = qty, limit = suEntry)
+                            strategy.exit("L-X", from_entry = "Long", stop = suStop, limit = tpPx)
+                        if not suOrd
+                            cntOrders += 1
+                        suOrd := true
+                        openRiskPts := riskPts
+                    else
+                        suOrd := false
+                else
+                    cntSkipStop += 1
+                    suDir := 0
+                    manualReady := false
+                    manualState := "Stop bounds"
+            else
+                manualReady := false
+                if suOrd and not i_manualOnly
+                    strategy.cancel("Short")
+                    strategy.cancel("Long")
+                    suOrd := false
+                    cntGuard += 1
+        else
+            manualReady := false
+            if suLeft
+                manualState := not roomToday ? "1/day used" : "Daily lock"
+
+// ── CISD trigger mode: tap the RB zone, then confirm (T05 1m package) ────────
+bool prevBull = close[1] > open[1]
+bool prevBear = close[1] < open[1]
+bool cisdBear = prevBull and close < open[1]
+bool cisdBull = prevBear and close > open[1]
+
+if isTrigger and suDir == -1 and flat and bar_index > suBar
+    manualState := suTapped ? "CISD watch" : "CISD tap CE"
+    if bar_index - suBar > i_tapTimeout or high > suExtreme + i_stopBufPts or not canPlace
+        suDir := 0
+        manualReady := false
+        manualState := "—"
+    else
+        if high >= suCe
+            suTapped := true
+        if suTapped and cisdBear and roomToday and dayOk
+            float stopPx = math.max(high, high[1]) + i_stopBufPts
+            float riskPts = stopPx - close
+            int qty = f_qty(riskPts)
+            if qty > 0
+                pendStop := stopPx
+                pendTp := close - f_effRr() * riskPts
+                manualReady := i_manualOnly
+                manualState := i_manualOnly ? "CISD GO — you click" : "CISD fill"
+                if not i_manualOnly
+                    strategy.entry("Short", strategy.short, qty = qty)
+                    strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = pendTp)
+                    openRiskPts := riskPts
+                    cntOrders += 1
+            else
+                cntSkipStop += 1
+            if not i_manualOnly
+                suDir := 0
+
+if isTrigger and suDir == 1 and flat and bar_index > suBar
+    manualState := suTapped ? "CISD watch" : "CISD tap CE"
+    if bar_index - suBar > i_tapTimeout or low < suExtreme - i_stopBufPts or not canPlace
+        suDir := 0
+        manualReady := false
+        manualState := "—"
+    else
+        if low <= suCe
+            suTapped := true
+        if suTapped and cisdBull and roomToday and dayOk
+            float stopPx = math.min(low, low[1]) - i_stopBufPts
+            float riskPts = close - stopPx
+            int qty = f_qty(riskPts)
+            if qty > 0
+                pendStop := stopPx
+                pendTp := close + f_effRr() * riskPts
+                manualReady := i_manualOnly
+                manualState := i_manualOnly ? "CISD GO — you click" : "CISD fill"
+                if not i_manualOnly
+                    strategy.entry("Long", strategy.long, qty = qty)
+                    strategy.exit("L-X", from_entry = "Long", stop = stopPx, limit = pendTp)
+                    openRiskPts := riskPts
+                    cntOrders += 1
+            else
+                cntSkipStop += 1
+            if not i_manualOnly
+                suDir := 0
+
+// Fill housekeeping + stop ratchet: BE at +beAtR, then trail (peak − gap)
+// once peak favorable excursion ≥ trailStartR. The stop only ever moves up.
+if not flat
+    suOrd := false
+    suDir := 0
+    if strategy.position_size[1] == 0
+        peakR := 0.0
+        lockR := na
+    if not na(openRiskPts)
+        float avg = strategy.position_avg_price
+        bool isLongPos = strategy.position_size > 0
+        float favR = isLongPos ? (high - avg) / openRiskPts : (avg - low) / openRiskPts
+        peakR := math.max(nz(peakR, 0.0), favR)
+        float newLock = na
+        if i_beAtR > 0 and peakR >= i_beAtR
+            newLock := 0.0
+        if effTrailStartR > 0 and peakR >= effTrailStartR
+            newLock := math.max(nz(newLock, peakR - effTrailGapR), peakR - effTrailGapR)
+        if not na(newLock) and (na(lockR) or newLock > lockR)
+            lockR := newLock
+            float stopPx = isLongPos ? avg + lockR * openRiskPts : avg - lockR * openRiskPts
+            if isLongPos
+                strategy.exit("L-X", from_entry = "Long", stop = stopPx, limit = avg + f_effRr() * openRiskPts)
+            else
+                strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = avg - f_effRr() * openRiskPts)
+
+// Closed-trade give-back tally (real fills)
+var int closedSeen = 0
+var float lastOpenRisk = na
+var float lastPeakR = na
+
+if not flat and not na(openRiskPts)
+    lastOpenRisk := openRiskPts
+    lastPeakR := nz(peakR, 0.0)
+
+if strategy.closedtrades > closedSeen
+    closedSeen := strategy.closedtrades
+    int ci = strategy.closedtrades - 1
+    float profit = strategy.closedtrades.profit(ci)
+    float sz = strategy.closedtrades.size(ci)
+    float riskUsd = nz(lastOpenRisk, openRiskPts) * f_pointVal() * sz
+    float exitR = riskUsd > 0 ? profit / riskUsd : 0.0
+    if f_isGiveBack(nz(lastPeakR, 0.0), exitR)
+        sessionGiveBacks += 1
+
+// Session flat
+if nyHhmm >= i_flatTime and not i_manualOnly
+    strategy.cancel_all()
+    suOrd := false
+    suDir := 0
+    if not flat
+        strategy.close_all(comment = "Session flat")
+else if nyHhmm >= i_flatTime and i_manualOnly
+    manualReady := false
+    manualState := "Flat 15:55"
+    suDir := 0
+
+// ─── Position boxes: TradingView long/short-position style ───────────────────
+bool justOpened = strategy.position_size != 0 and strategy.position_size[1] == 0
+bool inPos = strategy.position_size != 0
+
+var line  posLnEntry = na
+var line  posLnStop = na
+var line  posLnTp = na
+var box   posBxRisk = na
+var box   posBxReward = na
+var float posStopLv = na
+
+if i_showPos and justOpened
+    float avg = strategy.position_avg_price
+    posStopLv := pendStop
+    posLnEntry := line.new(bar_index, avg, bar_index, avg, color = color.new(color.white, 20), width = 2)
+    posLnStop := line.new(bar_index, pendStop, bar_index, pendStop, color = color.new(color.red, 0), width = 2)
+    posLnTp := line.new(bar_index, pendTp, bar_index, pendTp, color = color.new(color.lime, 0), width = 2)
+    posBxRisk := box.new(bar_index, math.max(avg, pendStop), bar_index, math.min(avg, pendStop), border_color = color.new(color.red, 65), bgcolor = color.new(color.red, 85))
+    posBxReward := box.new(bar_index, math.max(avg, pendTp), bar_index, math.min(avg, pendTp), border_color = color.new(color.green, 65), bgcolor = color.new(color.green, 85))
+    bool isLong = strategy.position_size > 0
+    float stopPts = math.abs(avg - pendStop)
+    string txt = (isLong ? "LONG " : "SHORT ") + str.tostring(math.abs(strategy.position_size), "#") + " " + f_instrTag() + " · stop " + str.tostring(stopPts, "#.##") + " pts · $" + str.tostring(math.abs(strategy.position_size) * stopPts * f_pointVal(), "#") + " risk"
+    label.new(bar_index, avg, txt, style = isLong ? label.style_label_lower_left : label.style_label_upper_left, color = color.new(color.black, 30), textcolor = isLong ? color.lime : color.red, size = size.small)
+
+if inPos and not na(posLnEntry)
+    line.set_x2(posLnEntry, bar_index)
+    line.set_x2(posLnStop, bar_index)
+    line.set_x2(posLnTp, bar_index)
+    box.set_right(posBxRisk, bar_index)
+    box.set_right(posBxReward, bar_index)
+    // Reflect the stop ratchet (BE / trail) on the drawing
+    float avgPx = strategy.position_avg_price
+    float liveStop = not na(lockR) and not na(openRiskPts) ? (strategy.position_size > 0 ? avgPx + lockR * openRiskPts : avgPx - lockR * openRiskPts) : posStopLv
+    if liveStop != posStopLv
+        posStopLv := liveStop
+        line.set_y1(posLnStop, posStopLv)
+        line.set_y2(posLnStop, posStopLv)
+        line.set_color(posLnStop, color.new(color.yellow, 0))
+        box.set_top(posBxRisk, math.max(avgPx, posStopLv))
+        box.set_bottom(posBxRisk, math.min(avgPx, posStopLv))
+
+if not inPos and not na(posLnEntry) and strategy.position_size[1] != 0
+    posLnEntry := na
+    posLnStop := na
+    posLnTp := na
+    posBxRisk := na
+    posBxReward := na
+
+// Pending limit preview: semi-transparent risk / reward zones while the limit
+// is armed. Red box = entry→stop (what you risk), teal box = entry→target.
+// The label prints the exact prices to place in the broker DOM.
+var box   pendBxRisk2  = na
+var box   pendBxRew2   = na
+var line  pendLnEntry2 = na
+var label pendLbl2     = na
+bool pendVis = i_showPend and (suOrd or (i_manualOnly and manualReady)) and (flat or i_manualOnly)
+if pendVis
+    float dispEntry = na(suEntry) ? close : suEntry
+    if na(pendBxRisk2)
+        pendBxRisk2 := box.new(bar_index, math.max(dispEntry, pendStop), bar_index + 1, math.min(dispEntry, pendStop), border_color = color.new(color.red, 55), bgcolor = color.new(color.red, 86))
+        pendBxRew2 := box.new(bar_index, math.max(dispEntry, pendTp), bar_index + 1, math.min(dispEntry, pendTp), border_color = color.new(color.teal, 55), bgcolor = color.new(color.teal, 88))
+        pendLnEntry2 := line.new(bar_index, dispEntry, bar_index + 1, dispEntry, color = color.new(color.white, 10), width = 2, style = line.style_dashed)
+        pendLbl2 := label.new(bar_index + 1, dispEntry, "", style = label.style_label_left, color = color.new(color.black, 25), textcolor = color.white, size = size.small)
+    box.set_right(pendBxRisk2, bar_index + 1)
+    box.set_right(pendBxRew2, bar_index + 1)
+    box.set_top(pendBxRisk2, math.max(dispEntry, pendStop))
+    box.set_bottom(pendBxRisk2, math.min(dispEntry, pendStop))
+    box.set_top(pendBxRew2, math.max(dispEntry, pendTp))
+    box.set_bottom(pendBxRew2, math.min(dispEntry, pendTp))
+    line.set_x2(pendLnEntry2, bar_index + 1)
+    label.set_x(pendLbl2, bar_index + 1)
+    string dirTxt = suDir == -1 ? "SHORT" : "LONG"
+    string modeTxt = i_manualOnly ? " (MANUAL)" : ""
+    label.set_text(pendLbl2, dirTxt + modeTxt + " @ " + str.tostring(dispEntry, format.mintick) + "\nSTOP " + str.tostring(pendStop, format.mintick) + "\nTP " + str.tostring(pendTp, format.mintick) + "\n" + manualState)
+    line.set_y1(pendLnEntry2, dispEntry)
+    line.set_y2(pendLnEntry2, dispEntry)
+else if not na(pendBxRisk2)
+    box.delete(pendBxRisk2)
+    box.delete(pendBxRew2)
+    line.delete(pendLnEntry2)
+    label.delete(pendLbl2)
+    pendBxRisk2 := na
+    pendBxRew2 := na
+    pendLnEntry2 := na
+    pendLbl2 := na
+
+// ─── Visuals ─────────────────────────────────────────────────────────────────
+bgcolor(nyHhmm == 1000 ? color.new(color.yellow, 82) : na, title = "10:00 key open")
+bgcolor(inWindow ? color.new(color.gray, 95) : na, title = "Entry window")
+
+plotshape(i_showSig and rbBear, "RB Bear", shape.labeldown, location.abovebar, color.red, size = size.small, text = "RB")
+plotshape(i_showSig and rbBull, "RB Bull", shape.labelup, location.belowbar, color.lime, size = size.small, text = "RB")
+bool biasBlkBear = i_showBlockedBias and rbBearRaw and h4OkBear and (not i_reqSweep or sweptAbove) and (not i_koConfl or f_nearKo(high)) and not biasOkShort
+bool biasBlkBull = i_showBlockedBias and rbBullRaw and h4OkBull and (not i_reqSweep or sweptBelow) and (not i_koConfl or f_nearKo(low)) and not biasOkLong
+plotshape(biasBlkBear, "Bias block short", shape.xcross, location.abovebar, color.new(color.orange, 0), size = size.tiny, text = "BIAS?")
+plotshape(biasBlkBull, "Bias block long", shape.xcross, location.belowbar, color.new(color.orange, 0), size = size.tiny, text = "BIAS?")
+plotshape(i_showSoup and sweptAbove and inWindow, "Soup above", shape.triangledown, location.abovebar, color.orange, size = size.tiny)
+plotshape(i_showSoup and sweptBelow and inWindow, "Soup below", shape.triangleup, location.belowbar, color.aqua, size = size.tiny)
+plotshape(i_showSig and autoBiasOn and f_soupAbove(prevDayHigh), "PDH soup", shape.xcross, location.abovebar, color.new(color.red, 30), size = size.tiny)
+plotshape(i_showSig and autoBiasOn and f_soupBelow(prevDayLow), "PDL soup", shape.xcross, location.belowbar, color.new(color.lime, 30), size = size.tiny)
+
+if i_showSig and autoBiasOn and nyHhmm == i_winStart and barstate.isconfirmed
+    string drawTxt = dayDraw == -1 ? "PD draw ↓ shorts" : dayDraw == 1 ? "PD draw ↑ longs" : "PD draw — both"
+    label.new(bar_index, high, drawTxt, style = label.style_label_down, color = color.new(color.black, 40), textcolor = dayDraw == -1 ? color.red : dayDraw == 1 ? color.lime : color.gray, size = size.tiny)
+
+plot(i_showLvls ? prevDayHigh : na, "PDH", color.new(color.red, 60), style = plot.style_linebr)
+plot(i_showLvls ? prevDayLow : na, "PDL", color.new(color.lime, 60), style = plot.style_linebr)
+plot(i_showLvls and nyHhmm >= 930 ? pmHigh : na, "PM High", color.new(color.orange, 60), style = plot.style_linebr)
+plot(i_showLvls and nyHhmm >= 930 ? pmLow : na, "PM Low", color.new(color.aqua, 60), style = plot.style_linebr)
+plot(i_showLvls ? ko1800 : na, "18:00 open", color.new(color.green, 45), style = plot.style_linebr)
+plot(i_showLvls ? ko0000 : na, "Midnight open", color.new(color.yellow, 45), style = plot.style_linebr)
+plot(i_showLvls ? ko1000 : na, "10:00 open", color.new(color.fuchsia, 45), style = plot.style_linebr)
+plot(i_showLvls and i_useAmOpens ? ko0830 : na, "8:30 open", color.new(color.silver, 60), style = plot.style_linebr)
+plot(i_showLvls and i_useAmOpens ? ko0900 : na, "9:00 open", color.new(color.silver, 70), style = plot.style_linebr)
+plot(i_showLvls and i_useAmOpens ? ko0930 : na, "9:30 open", color.new(color.silver, 65), style = plot.style_linebr)
+plot(isTrigger and suDir != 0 ? suCe : na, "RB zone CE", color.new(color.white, 40), style = plot.style_linebr)
+
+// ─── Diagnostic funnel table ─────────────────────────────────────────────────
+f_row(table t, int r, string k, string v) =>
+    table.cell(t, 0, r, k, text_color = color.new(color.lime, 20), text_size = size.small, text_halign = text.align_left)
+    table.cell(t, 1, r, v, text_color = color.white, text_size = size.small, text_halign = text.align_right)
+
+f_rowCol(table t, int r, string k, string v, color vc) =>
+    table.cell(t, 0, r, k, text_color = color.new(color.lime, 20), text_size = size.small, text_halign = text.align_left)
+    table.cell(t, 1, r, v, text_color = vc, text_size = size.small, text_halign = text.align_right)
+
+var table diag = table.new(position.top_right, 2, 17, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
+if i_showTable and barstate.islast
+    int gbRoll = f_gbRolling() + sessionGiveBacks
+    bool suggestTrail = not i_trailRegime and gbRoll >= i_regimeThreshold
+    string trailLbl = i_trailRegime ? "ON (2.0 / 1.5)" : "OFF (BE-only)"
+    color trailCol = i_trailRegime ? color.new(color.yellow, 0) : color.white
+    string gbLbl = str.tostring(gbRoll) + " / " + str.tostring(i_regimeLookback) + "s"
+    string regimeLbl = i_trailRegime ? "Trail active" : suggestTrail ? "Consider trail" : "BE-only OK"
+    color regimeCol = i_trailRegime ? color.new(color.yellow, 0) : suggestTrail ? color.new(color.orange, 0) : color.new(color.lime, 20)
+    string modeLbl = i_manualOnly ? "MANUAL (no orders)" : "AUTO strategy"
+    color modeCol = i_manualOnly ? color.new(color.yellow, 0) : color.new(color.lime, 20)
+    float effRr = f_effRr()
+    string evalLbl = i_evalMaxWinUsd > 0 ? str.tostring(effRr, "#.##") + "R cap $" + str.tostring(i_evalMaxWinUsd, "#") : "off (full " + str.tostring(i_rr, "#.#") + "R)"
+    color evalCol = i_evalMaxWinUsd > 0 ? color.new(color.yellow, 0) : color.white
+    f_rowCol(diag, 0, "PRB v1 FUNNEL", modeLbl, modeCol)
+    f_row(diag, 1, "Days in history", str.tostring(cntDays))
+    f_row(diag, 2, "RB candles (raw)", str.tostring(cntRbRaw))
+    f_row(diag, 3, "RB + sweep + 4H + KO", str.tostring(cntRbCtx))
+    f_row(diag, 4, "Blocked (bias)", str.tostring(cntBiasBlk))
+    f_row(diag, 5, "Skipped (stop bounds)", str.tostring(cntSkipStop))
+    f_row(diag, 6, "Orders placed", str.tostring(cntOrders))
+    f_row(diag, 7, "Guard pauses", str.tostring(cntGuard))
+    f_row(diag, 8, "Trades filled", str.tostring(totalTrades))
+    string drawLbl = autoBiasOn ? (dayDraw == -1 ? "Auto ↓ short" : dayDraw == 1 ? "Auto ↑ long" : "Auto — neutral") : i_biasMode
+    f_row(diag, 9, "Bias", drawLbl)
+    string tvPv = i_instrMode == "Auto (chart symbol)" ? " · tv=" + str.tostring(syminfo.pointvalue, "#.##") : ""
+    string sizeLbl = f_instrTag() + " · max " + str.tostring(f_effMaxContracts()) + " · $" + str.tostring(f_pointVal(), "#") + "/pt" + tvPv
+    f_row(diag, 10, "Sizing", sizeLbl)
+    f_rowCol(diag, 11, "Trail toggle", trailLbl, trailCol)
+    f_row(diag, 12, "Give-backs", gbLbl)
+    f_rowCol(diag, 13, "Regime", regimeLbl, regimeCol)
+    f_rowCol(diag, 14, "Eval win cap", evalLbl, evalCol)
+    f_rowCol(diag, 15, "Manual state", manualState, manualReady ? color.new(color.yellow, 0) : color.white)
+    f_row(diag, 16, "Log → Vault F2", i_manualOnly ? "Journal bias+take" : "—")
+
+alertcondition(i_manualOnly and manualReady and i_manualAlerts, title = "PRB manual level armed", message = "PRB manual: limit level armed — check bias then click or skip")
+
+// ─── Missed-trade autopsy table (bottom right) ───────────────────────────────
+var string[] ghNames = array.from("", "Before window (9:30→start)", "Monday", "Slot used (1/day, in pos)", "4H wick too small", "No liquidity sweep", "No confirming close", "Stop out of bounds", "Daily P&L lock", "Not near key open", "Bias filter", "After window (end→15:00)")
+
+f_ghRow(table t, int r, string c0, string c1, string c2, string c3, color tc) =>
+    table.cell(t, 0, r, c0, text_color = tc, text_size = size.small, text_halign = text.align_left)
+    table.cell(t, 1, r, c1, text_color = tc, text_size = size.small, text_halign = text.align_right)
+    table.cell(t, 2, r, c2, text_color = tc, text_size = size.small, text_halign = text.align_right)
+    table.cell(t, 3, r, c3, text_color = tc, text_size = size.small, text_halign = text.align_right)
+
+var table ghT = table.new(position.bottom_right, 4, 13, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
+if i_ghost and i_showTable and barstate.islast
+    f_ghRow(ghT, 0, "MISSED (failed 1 filter)", "n", "W/L/scr", "net R", color.new(color.orange, 10))
+    int totN = 0
+    int totW = 0
+    int totL = 0
+    int totS = 0
+    float totR = 0.0
+    for rs = 1 to 11
+        int n = array.get(ghCount, rs)
+        int w = array.get(ghWins, rs)
+        int l = array.get(ghLoss, rs)
+        int sc = array.get(ghScr, rs)
+        float nr = array.get(ghNetR, rs)
+        totN += n
+        totW += w
+        totL += l
+        totS += sc
+        totR += nr
+        color rowCol = n == 0 ? color.new(color.gray, 55) : nr > 0 ? color.new(color.lime, 15) : color.white
+        f_ghRow(ghT, rs, array.get(ghNames, rs), str.tostring(n), str.tostring(w) + "/" + str.tostring(l) + "/" + str.tostring(sc), str.tostring(nr, "#.#"), rowCol)
+    f_ghRow(ghT, 12, "TOTAL", str.tostring(totN), str.tostring(totW) + "/" + str.tostring(totL) + "/" + str.tostring(totS), str.tostring(totR, "#.#"), color.new(color.orange, 10))

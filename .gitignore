@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+vault-app/node_modules/
+scripts/node_modules/
+
+# Next.js
+vault-app/.next/
+vault-app/out/
+
+# Build / cache
+vault-app/tsconfig.tsbuildinfo
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.obsidian/workspace.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Vercel
+vault-app/.vercel/

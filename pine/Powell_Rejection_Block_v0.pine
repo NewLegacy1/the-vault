@@ -1,0 +1,277 @@
+//@version=6
+// Powell Rejection Block v0 — 10 AM key open + rejection block hybrid
+// Distilled from the Powell transcript chat:
+//   1. Wait for the 10:00 NY key open (avoid 9:30–10:00 manipulation chop)
+//   2. Liquidity must be swept into the open (premarket / prior-day / recent highs-lows)
+//   3. A rejection-block candle forms: local extreme + real wick + close back
+//      against the wick. 4H context wick must show visible manipulation.
+//   4. Entry: limit at the tap back into the block (body edge). Stop beyond
+//      the wick + buffer — skipped entirely if stop > ~20 pts.
+//   5. Target 1:5 (input up to 1:7). Optional move-to-breakeven at +1R.
+// Not coded (manual judgment for now): 0.79 fib "too premium" filter,
+//   10 AM open-as-order-block alternate entry, Monday quality read.
+// TPT $50K risk engine carried over from Vault v1.1.
+
+strategy(
+     title                   = "Powell Rejection Block v0",
+     shorttitle              = "PRB v0",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0)
+
+// ─── Inputs ──────────────────────────────────────────────────────────────────
+grpWin = "Session (NY time)"
+i_keyOpen   = input.int(1000, "Key open (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_entryEnd  = input.int(1130, "Last order placed (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_flatTime  = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpWin)
+i_skipMonday  = input.bool(true, "Skip Mondays", group = grpWin)
+
+grpRb = "Rejection block"
+i_minWickPts  = input.float(5.0, "Min RB wick (pts, chart TF)", minval = 0.0, step = 0.5, group = grpRb)
+i_localLen    = input.int(12, "RB must be extreme of last N bars", minval = 4, maxval = 50, group = grpRb)
+i_tapTimeout  = input.int(24, "Cancel unfilled tap order after N bars", minval = 4, maxval = 100, group = grpRb)
+
+grpCtx = "Context filters"
+i_useH4Wick    = input.bool(true, "Require developing 4H manipulation wick", group = grpCtx)
+i_minH4WickPts = input.float(8.0, "Min 4H wick (pts) — 15 good, 8 grey, 2 bad", minval = 0.0, step = 0.5, group = grpCtx)
+i_reqSweep     = input.bool(true, "Require liquidity sweep into the open", group = grpCtx)
+i_sweepLookbk  = input.int(8, "Sweep must be within last N bars of RB", minval = 1, maxval = 40, group = grpCtx)
+
+grpRisk = "Risk (TPT $50K engine)"
+i_maxStopPts = input.float(20.0, "Max stop (pts) — transcript: <20 good, 25+ skip", minval = 2.0, step = 1.0, group = grpRisk)
+i_stopBufPts = input.float(2.0, "Stop buffer beyond RB wick (pts)", minval = 0.0, step = 0.25, group = grpRisk)
+i_rr         = input.float(5.0, "Target (R multiple) — transcript 1:5–1:7", minval = 1.0, step = 0.5, group = grpRisk)
+i_beAtR      = input.float(1.0, "Move stop to breakeven at +N R (0 = off)", minval = 0.0, step = 0.25, group = grpRisk)
+i_riskUsd    = input.float(400.0, "Risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk)
+i_maxContracts = input.int(60, "Max contracts (TPT $50K = 60 micros)", minval = 1, maxval = 60, group = grpRisk)
+i_dailyLossStop   = input.float(800.0, "Daily loss stop (USD)", minval = 0.0, step = 50.0, group = grpRisk)
+i_dailyProfitLock = input.float(1400.0, "Daily profit lock (USD)", minval = 0.0, step = 50.0, group = grpRisk)
+
+grpVis = "Visuals"
+i_showSig   = input.bool(true, "Show RB / sweep labels", group = grpVis)
+i_showLvls  = input.bool(true, "Show liquidity levels", group = grpVis)
+i_showTable = input.bool(true, "Show diagnostic funnel table", group = grpVis)
+
+// ─── Time ────────────────────────────────────────────────────────────────────
+int nyHhmm  = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool inWindow = nyHhmm >= i_keyOpen and nyHhmm < i_entryEnd
+bool canPlace = nyHhmm < i_entryEnd
+bool dayAllowed = not i_skipMonday or dayofweek(time, "America/New_York") != dayofweek.monday
+
+// ─── Liquidity references ────────────────────────────────────────────────────
+float prevDayHigh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
+float prevDayLow  = request.security(syminfo.tickerid, "D", low[1],  lookahead = barmerge.lookahead_on)
+
+var float pmHigh = na
+var float pmLow  = na
+if newDay
+    pmHigh := na
+    pmLow := na
+if nyHhmm < 930
+    pmHigh := na(pmHigh) ? high : math.max(pmHigh, high)
+    pmLow  := na(pmLow)  ? low  : math.min(pmLow, low)
+
+// Sweep tracking: did any recent bar wick beyond a liquidity level?
+bool sweptHighNow = (not na(pmHigh) and high > pmHigh and close < pmHigh) or (not na(prevDayHigh) and high > prevDayHigh and close < prevDayHigh)
+bool sweptLowNow  = (not na(pmLow)  and low < pmLow  and close > pmLow)  or (not na(prevDayLow)  and low < prevDayLow  and close > prevDayLow)
+bool sweepHighRecent = math.sum(sweptHighNow ? 1 : 0, i_sweepLookbk) > 0
+bool sweepLowRecent  = math.sum(sweptLowNow ? 1 : 0, i_sweepLookbk) > 0
+
+// ─── Developing 4H candle (manipulation wick context) ────────────────────────
+var float h4Open = na
+var float h4High = na
+var float h4Low  = na
+if ta.change(time("240")) != 0
+    h4Open := open
+    h4High := high
+    h4Low := low
+else
+    h4High := math.max(nz(h4High, high), high)
+    h4Low := math.min(nz(h4Low, low), low)
+float h4UpperWick = nz(h4High, high) - math.max(nz(h4Open, open), close)
+float h4LowerWick = math.min(nz(h4Open, open), close) - nz(h4Low, low)
+bool h4WickOkBear = not i_useH4Wick or h4UpperWick >= i_minH4WickPts
+bool h4WickOkBull = not i_useH4Wick or h4LowerWick >= i_minH4WickPts
+
+// ─── Rejection block detection (chart TF, after key open) ────────────────────
+float upperWick = high - math.max(open, close)
+float lowerWick = math.min(open, close) - low
+bool localHigh = high >= ta.highest(high, i_localLen)
+bool localLow  = low <= ta.lowest(low, i_localLen)
+
+bool rbBearRaw = inWindow and localHigh and upperWick >= i_minWickPts and close < open
+bool rbBullRaw = inWindow and localLow  and lowerWick >= i_minWickPts and close > open
+
+bool rbBear = rbBearRaw and h4WickOkBear and (not i_reqSweep or sweepHighRecent)
+bool rbBull = rbBullRaw and h4WickOkBull and (not i_reqSweep or sweepLowRecent)
+
+// ─── Trade accounting / risk engine ──────────────────────────────────────────
+int totalTrades = strategy.opentrades + strategy.closedtrades
+var int tradesAtDayStart = 0
+var float dayStartEquity = na
+if newDay
+    tradesAtDayStart := totalTrades
+    dayStartEquity := strategy.equity
+float dayPnl = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
+bool dayLossOk   = i_dailyLossStop == 0 or dayPnl > -i_dailyLossStop
+bool dayProfitOk = i_dailyProfitLock == 0 or dayPnl < i_dailyProfitLock
+bool dayOk = dayLossOk and dayProfitOk
+bool roomToday = not i_oneTradeDay or totalTrades == tradesAtDayStart
+bool flat = strategy.position_size == 0
+
+f_qty(float stopPts) =>
+    if stopPts <= 0 or stopPts > i_maxStopPts
+        0
+    else
+        int q = math.floor(i_riskUsd / (stopPts * syminfo.pointvalue))
+        math.min(q, i_maxContracts)
+
+// ─── Funnel counters ─────────────────────────────────────────────────────────
+var int cntDays = 0
+var int cntRbRaw = 0
+var int cntRbCtx = 0
+var int cntSkipRisk = 0
+var int cntOrders = 0
+if newDay
+    cntDays += 1
+if rbBearRaw or rbBullRaw
+    cntRbRaw += 1
+if rbBear or rbBull
+    cntRbCtx += 1
+
+// ─── Pending tap orders ──────────────────────────────────────────────────────
+var bool  shortPend = false
+var float shortEntryPx = na
+var float shortStopPx = na
+var int   shortBar = na
+var bool  longPend = false
+var float longEntryPx = na
+var float longStopPx = na
+var int   longBar = na
+var float openRiskPts = na
+var bool  beDone = false
+
+if newDay
+    shortPend := false
+    longPend := false
+    strategy.cancel_all()
+
+bool canArm = flat and roomToday and canPlace and dayOk and dayAllowed
+
+// Bearish RB: entry = tap back to body top; stop = wick high + buffer
+if rbBear and canArm
+    float entryPx = math.max(open, close)
+    float stopPx = high + i_stopBufPts
+    float riskPts = stopPx - entryPx
+    int qty = f_qty(riskPts)
+    if qty > 0
+        strategy.cancel("Long")
+        longPend := false
+        strategy.entry("Short", strategy.short, qty = qty, limit = entryPx)
+        strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = entryPx - i_rr * riskPts)
+        shortPend := true
+        shortEntryPx := entryPx
+        shortStopPx := stopPx
+        shortBar := bar_index
+        openRiskPts := riskPts
+        beDone := false
+        cntOrders += 1
+    else
+        cntSkipRisk += 1
+
+// Bullish RB: entry = tap back to body bottom; stop = wick low - buffer
+if rbBull and canArm and not shortPend
+    float entryPx = math.min(open, close)
+    float stopPx = low - i_stopBufPts
+    float riskPts = entryPx - stopPx
+    int qty = f_qty(riskPts)
+    if qty > 0
+        strategy.cancel("Short")
+        shortPend := false
+        strategy.entry("Long", strategy.long, qty = qty, limit = entryPx)
+        strategy.exit("L-X", from_entry = "Long", stop = stopPx, limit = entryPx + i_rr * riskPts)
+        longPend := true
+        longEntryPx := entryPx
+        longStopPx := stopPx
+        longBar := bar_index
+        openRiskPts := riskPts
+        beDone := false
+        cntOrders += 1
+    else
+        cntSkipRisk += 1
+
+// Timeout / end-of-window cancels for unfilled taps
+if shortPend and flat and (bar_index - shortBar > i_tapTimeout or not canPlace)
+    strategy.cancel("Short")
+    shortPend := false
+if longPend and flat and (bar_index - longBar > i_tapTimeout or not canPlace)
+    strategy.cancel("Long")
+    longPend := false
+
+// Fill housekeeping + breakeven move at +N R
+if not flat
+    shortPend := false
+    longPend := false
+    if i_beAtR > 0 and not beDone and not na(openRiskPts)
+        float avg = strategy.position_avg_price
+        bool beHitLong  = strategy.position_size > 0 and high >= avg + i_beAtR * openRiskPts
+        bool beHitShort = strategy.position_size < 0 and low <= avg - i_beAtR * openRiskPts
+        if beHitLong
+            strategy.exit("L-X", from_entry = "Long", stop = avg, limit = avg + i_rr * openRiskPts)
+            beDone := true
+        if beHitShort
+            strategy.exit("S-X", from_entry = "Short", stop = avg, limit = avg - i_rr * openRiskPts)
+            beDone := true
+
+// Session flat
+if nyHhmm >= i_flatTime
+    strategy.cancel_all()
+    shortPend := false
+    longPend := false
+    if not flat
+        strategy.close_all(comment = "Session flat")
+
+// ─── Visuals ─────────────────────────────────────────────────────────────────
+bool keyOpenBar = nyHhmm == i_keyOpen
+bgcolor(keyOpenBar ? color.new(color.yellow, 82) : na, title = "10 AM key open")
+bgcolor(inWindow ? color.new(color.gray, 95) : na, title = "Entry window")
+
+plotshape(i_showSig and rbBear, "RB Bear", shape.labeldown, location.abovebar, color.red, size = size.small, text = "RB")
+plotshape(i_showSig and rbBull, "RB Bull", shape.labelup, location.belowbar, color.lime, size = size.small, text = "RB")
+plotshape(i_showSig and sweptHighNow and inWindow, "Sweep high", shape.triangledown, location.abovebar, color.orange, size = size.tiny)
+plotshape(i_showSig and sweptLowNow and inWindow, "Sweep low", shape.triangleup, location.belowbar, color.aqua, size = size.tiny)
+
+plot(i_showLvls ? prevDayHigh : na, "PDH", color.new(color.red, 60), style = plot.style_linebr)
+plot(i_showLvls ? prevDayLow : na, "PDL", color.new(color.lime, 60), style = plot.style_linebr)
+plot(i_showLvls and nyHhmm >= 930 ? pmHigh : na, "PM High", color.new(color.orange, 60), style = plot.style_linebr)
+plot(i_showLvls and nyHhmm >= 930 ? pmLow : na, "PM Low", color.new(color.aqua, 60), style = plot.style_linebr)
+plot(shortPend and flat ? shortEntryPx : na, "Short tap", color.new(color.red, 20), style = plot.style_linebr)
+plot(longPend and flat ? longEntryPx : na, "Long tap", color.new(color.lime, 20), style = plot.style_linebr)
+
+// ─── Diagnostic funnel table ─────────────────────────────────────────────────
+f_row(table t, int r, string k, string v) =>
+    table.cell(t, 0, r, k, text_color = color.new(color.lime, 20), text_size = size.small, text_halign = text.align_left)
+    table.cell(t, 1, r, v, text_color = color.white, text_size = size.small, text_halign = text.align_right)
+
+var table diag = table.new(position.top_right, 2, 8, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
+if i_showTable and barstate.islast
+    f_row(diag, 0, "PRB FUNNEL", "count")
+    f_row(diag, 1, "Days in history", str.tostring(cntDays))
+    f_row(diag, 2, "RB candles (raw)", str.tostring(cntRbRaw))
+    f_row(diag, 3, "RB + sweep + 4H wick", str.tostring(cntRbCtx))
+    f_row(diag, 4, "Skipped (stop > max)", str.tostring(cntSkipRisk))
+    f_row(diag, 5, "Tap orders placed", str.tostring(cntOrders))
+    f_row(diag, 6, "Trades filled", str.tostring(totalTrades))
+    f_row(diag, 7, "RR 1:" + str.tostring(i_rr) + " · BE @ " + str.tostring(i_beAtR) + "R", i_skipMonday ? "no Mondays" : "all days")

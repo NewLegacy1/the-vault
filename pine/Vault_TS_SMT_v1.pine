@@ -1,0 +1,482 @@
+//@version=6
+// Vault v1 — Turtle Soup + SMT + MSS + FVG state machine (ICT 2022-style)
+//
+// Sequence (per direction):
+//   1. LIQUIDITY  : prior-day H/L, premarket H/L, confirmed swing pivots
+//   2. TURTLE SOUP: wick sweeps a level, BODY closes back inside (not breakout)
+//   3. SMT        : read AT the sweep bar — NQ swept its level, ES held its own
+//                   swing (optional filter: Off / Prefer / Require)
+//   4. MSS        : close breaks the last minor swing against the sweep,
+//                   with displacement from the sweep extreme
+//   5. ENTRY      : market on MSS (default), or limit at displacement FVG CE,
+//                   or market on sweep close (loosest)
+//   Stop beyond sweep wick; target = R multiple. Diagnostic funnel table shows
+//   how many setups survive each stage so dead gates are visible.
+
+strategy(
+     title                   = "Vault TS+SMT v1.1 (TPT risk engine)",
+     shorttitle              = "Vault v1.1",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 10,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     // Pine v6 defaults margin to 100% — that silently blocks every fill on
+     // futures notional (10 MNQ ≈ $480k vs $50k capital). 0 = no margin check,
+     // which matches how prop/futures intraday margin actually works.
+     margin_long             = 0,
+     margin_short            = 0)
+
+// ─── Inputs ──────────────────────────────────────────────────────────────────
+grpWin = "Session (NY time)"
+i_detectStart = input.int(900,  "Sweeps detected from (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_detectEnd   = input.int(1100, "Sweeps detected until (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_entryEnd    = input.int(1200, "Last entry (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_flatTime    = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpWin)
+i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpWin)
+
+grpLiq = "Liquidity levels"
+i_pivotLen    = input.int(10, "Swing pivot strength", minval = 3, maxval = 50, group = grpLiq)
+i_usePdhPdl   = input.bool(true, "Use prior day high/low", group = grpLiq)
+i_usePremkt   = input.bool(true, "Use premarket high/low", group = grpLiq)
+i_minSweepPts = input.float(1.0, "Min sweep beyond level (pts)", minval = 0.0, step = 0.25, group = grpLiq)
+
+grpSmt = "SMT (NQ vs ES, read at sweep)"
+i_smtMode  = input.string("Prefer (label only)", "SMT mode", options = ["Off", "Prefer (label only)", "Require"], group = grpSmt)
+i_esSymbol = input.symbol("CME_MINI:ES1!", "Correlated symbol", group = grpSmt)
+
+grpMss = "Structure shift / displacement"
+i_minorLen    = input.int(3, "Minor pivot strength (MSS level)", minval = 2, maxval = 10, group = grpMss)
+i_requireDisp = input.bool(true, "Require displacement", group = grpMss)
+i_minDispPts  = input.float(10.0, "Min displacement from sweep extreme (pts)", minval = 0.0, step = 0.5, group = grpMss)
+i_mssTimeout  = input.int(30, "MSS must fire within N bars of sweep", minval = 3, maxval = 120, group = grpMss)
+
+grpEntry = "Entry"
+i_entryMode = input.string("Market on MSS", "Entry mode", options = ["Market on MSS", "Retrace to FVG CE", "Market on sweep close"], group = grpEntry)
+i_minFvgPts = input.float(2.0, "Min displacement FVG size (pts)", minval = 0.0, step = 0.25, group = grpEntry)
+i_retraceTimeout = input.int(20, "Cancel unfilled limit after N bars", minval = 3, maxval = 120, group = grpEntry)
+
+grpRisk = "Risk (sized for TPT $50K: $2,000 EOD trailing DD)"
+i_stopBufPts = input.float(2.0, "Stop buffer beyond sweep wick (pts)", minval = 0.0, step = 0.25, group = grpRisk)
+i_rr         = input.float(2.0, "Target (R multiple)", minval = 0.5, step = 0.25, group = grpRisk)
+i_riskUsd      = input.float(400.0, "Risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk, tooltip = "Contracts = floor(risk / (stop pts × point value)). 20% of TPT's $2,000 DD = 5 lives.")
+i_maxStopPts   = input.float(60.0, "Max stop distance (pts) — skip wider setups", minval = 5.0, step = 5.0, group = grpRisk)
+i_maxContracts = input.int(60, "Max contracts (TPT $50K = 6 minis = 60 micros)", minval = 1, maxval = 60, group = grpRisk)
+i_dailyLossStop   = input.float(800.0, "Daily loss stop (USD) — no new entries", minval = 0.0, step = 50.0, group = grpRisk)
+i_dailyProfitLock = input.float(1400.0, "Daily profit lock (USD) — no new entries (consistency rule)", minval = 0.0, step = 50.0, group = grpRisk)
+
+grpVis = "Visuals"
+i_showLevels = input.bool(true, "Show liquidity levels", group = grpVis)
+i_showSig    = input.bool(true, "Show TS / SMT / MSS labels", group = grpVis)
+i_showTable  = input.bool(true, "Show diagnostic funnel table", group = grpVis)
+
+// ─── Time helpers ────────────────────────────────────────────────────────────
+f_hhmmNy() =>
+    hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+
+int  nyHhmm      = f_hhmmNy()
+bool inDetectWin = nyHhmm >= i_detectStart and nyHhmm < i_detectEnd
+bool canPlace    = nyHhmm < i_entryEnd
+bool newDay      = ta.change(time("D", "America/New_York")) != 0
+
+// ─── FVG helpers ─────────────────────────────────────────────────────────────
+f_isBullFvg(float minPts) =>
+    low > high[2] and (low - high[2]) >= minPts
+f_isBearFvg(float minPts) =>
+    high < low[2] and (low[2] - high) >= minPts
+
+// ─── ES series + ES swing tracking (for SMT at the sweep) ────────────────────
+float esHigh = request.security(i_esSymbol, timeframe.period, high, lookahead = barmerge.lookahead_off)
+float esLow  = request.security(i_esSymbol, timeframe.period, low,  lookahead = barmerge.lookahead_off)
+
+float esPivHigh = ta.pivothigh(esHigh, i_pivotLen, i_pivotLen)
+float esPivLow  = ta.pivotlow(esLow, i_pivotLen, i_pivotLen)
+var float esSwingHigh = na
+var float esSwingLow  = na
+if not na(esPivHigh)
+    esSwingHigh := esPivHigh
+if not na(esPivLow)
+    esSwingLow := esPivLow
+
+// ─── NQ swings: prominent (liquidity) + minor (MSS reference) ────────────────
+float nqPivHigh = ta.pivothigh(high, i_pivotLen, i_pivotLen)
+float nqPivLow  = ta.pivotlow(low, i_pivotLen, i_pivotLen)
+
+float minorPivHigh = ta.pivothigh(high, i_minorLen, i_minorLen)
+float minorPivLow  = ta.pivotlow(low, i_minorLen, i_minorLen)
+var float lastMinorHigh = na
+var float lastMinorLow  = na
+if not na(minorPivHigh)
+    lastMinorHigh := minorPivHigh
+if not na(minorPivLow)
+    lastMinorLow := minorPivLow
+
+float rHigh = ta.highest(high, 15)
+float rLow  = ta.lowest(low, 15)
+
+// ─── Prior day + premarket levels ────────────────────────────────────────────
+float prevDayHigh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
+float prevDayLow  = request.security(syminfo.tickerid, "D", low[1],  lookahead = barmerge.lookahead_on)
+
+var float pmHigh = na
+var float pmLow  = na
+if newDay
+    pmHigh := na
+    pmLow := na
+if nyHhmm < 930
+    pmHigh := na(pmHigh) ? high : math.max(pmHigh, high)
+    pmLow  := na(pmLow)  ? low  : math.min(pmLow, low)
+
+// ─── Liquidity level pools (price + swept flag) ──────────────────────────────
+var array<float> lowLvl    = array.new_float()   // sell-side liquidity (bull TS targets)
+var array<bool>  lowSwept  = array.new_bool()
+var array<float> highLvl   = array.new_float()   // buy-side liquidity (bear TS targets)
+var array<bool>  highSwept = array.new_bool()
+var bool sessionLevelsAdded = false
+
+// funnel counters
+var int cntDays = 0
+var int cntSwings = 0
+var int cntTs = 0
+var int cntSmt = 0
+var int cntMss = 0
+var int cntOrders = 0
+var int cntSkipRisk = 0
+
+if newDay
+    array.clear(lowLvl)
+    array.clear(lowSwept)
+    array.clear(highLvl)
+    array.clear(highSwept)
+    sessionLevelsAdded := false
+    cntDays += 1
+
+// At 9:30 seed the obvious pools: prior day H/L and premarket H/L
+if not sessionLevelsAdded and nyHhmm >= 930
+    sessionLevelsAdded := true
+    if i_usePdhPdl and not na(prevDayLow)
+        array.push(lowLvl, prevDayLow)
+        array.push(lowSwept, false)
+        array.push(highLvl, prevDayHigh)
+        array.push(highSwept, false)
+    if i_usePremkt and not na(pmLow)
+        array.push(lowLvl, pmLow)
+        array.push(lowSwept, false)
+        array.push(highLvl, pmHigh)
+        array.push(highSwept, false)
+
+// Confirmed prominent pivots join the pool
+if not na(nqPivLow)
+    array.push(lowLvl, nqPivLow)
+    array.push(lowSwept, false)
+    cntSwings += 1
+    if array.size(lowLvl) > 10
+        array.shift(lowLvl)
+        array.shift(lowSwept)
+if not na(nqPivHigh)
+    array.push(highLvl, nqPivHigh)
+    array.push(highSwept, false)
+    cntSwings += 1
+    if array.size(highLvl) > 10
+        array.shift(highLvl)
+        array.shift(highSwept)
+
+// ─── Turtle Soup: sweep + body close back inside ─────────────────────────────
+bool  tsBull = false
+bool  tsBear = false
+float tsBullLevel = na
+float tsBearLevel = na
+
+if inDetectWin and array.size(lowLvl) > 0
+    for i = 0 to array.size(lowLvl) - 1
+        float px = array.get(lowLvl, i)
+        if not array.get(lowSwept, i)
+            if low <= px - i_minSweepPts and close > px
+                tsBull := true
+                tsBullLevel := px
+                array.set(lowSwept, i, true)
+            else if close < px - i_minSweepPts
+                array.set(lowSwept, i, true)   // clean breakout — level consumed, no soup
+
+if inDetectWin and array.size(highLvl) > 0
+    for i = 0 to array.size(highLvl) - 1
+        float px = array.get(highLvl, i)
+        if not array.get(highSwept, i)
+            if high >= px + i_minSweepPts and close < px
+                tsBear := true
+                tsBearLevel := px
+                array.set(highSwept, i, true)
+            else if close > px + i_minSweepPts
+                array.set(highSwept, i, true)
+
+// ─── SMT read at the sweep bar (no lag) ──────────────────────────────────────
+// Bull SMT: NQ swept its low but ES held above its own swing low.
+bool smtBullNow = tsBull and not na(esSwingLow)  and esLow > esSwingLow
+bool smtBearNow = tsBear and not na(esSwingHigh) and esHigh < esSwingHigh
+
+bool smtGateBull = i_smtMode != "Require" or smtBullNow
+bool smtGateBear = i_smtMode != "Require" or smtBearNow
+
+// ─── Displacement FVG tracking (entry zone for retrace mode) ─────────────────
+var float latBullFvgCe  = na
+var int   latBullFvgBar = na
+var float latBearFvgCe  = na
+var int   latBearFvgBar = na
+if f_isBullFvg(i_minFvgPts)
+    latBullFvgCe := (low + high[2]) / 2.0
+    latBullFvgBar := bar_index
+if f_isBearFvg(i_minFvgPts)
+    latBearFvgCe := (high + low[2]) / 2.0
+    latBearFvgBar := bar_index
+
+// ─── Trade accounting ────────────────────────────────────────────────────────
+int totalTrades = strategy.opentrades + strategy.closedtrades
+var int tradesAtDayStart = 0
+var float dayStartEquity = na
+if newDay
+    tradesAtDayStart := totalTrades
+    dayStartEquity := strategy.equity
+float dayPnl = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
+bool dayLossOk   = i_dailyLossStop == 0 or dayPnl > -i_dailyLossStop
+bool dayProfitOk = i_dailyProfitLock == 0 or dayPnl < i_dailyProfitLock
+bool dayOk = dayLossOk and dayProfitOk
+bool roomToday = not i_oneTradeDay or totalTrades == tradesAtDayStart
+bool flat = strategy.position_size == 0
+
+// Contracts from fixed-dollar risk. Returns 0 when the stop is too wide.
+f_qty(float stopPts) =>
+    if stopPts <= 0 or stopPts > i_maxStopPts
+        0
+    else
+        int q = math.floor(i_riskUsd / (stopPts * syminfo.pointvalue))
+        math.min(q, i_maxContracts)
+
+// ─── State machines ──────────────────────────────────────────────────────────
+// 0 idle · 1 swept, waiting MSS · 2 MSS done, limit working at FVG CE
+var int   bullState = 0
+var float bullSweepLow = na
+var int   bullSweepBar = na
+var float bullMssLvl = na
+var bool  bullSmt = false
+var bool  bullOrd = false
+var int   bullOrdBar = na
+
+var int   bearState = 0
+var float bearSweepHigh = na
+var int   bearSweepBar = na
+var float bearMssLvl = na
+var bool  bearSmt = false
+var bool  bearOrd = false
+var int   bearOrdBar = na
+
+bool bullMssNow = false
+bool bearMssNow = false
+
+if newDay
+    bullState := 0
+    bearState := 0
+    bullOrd := false
+    bearOrd := false
+    strategy.cancel_all()
+
+bool idleAll = bullState == 0 and bearState == 0 and not bullOrd and not bearOrd
+bool canArm  = flat and roomToday and canPlace and dayOk
+
+// ── Arm on Turtle Soup ──
+if tsBull
+    cntTs += 1
+    if smtBullNow
+        cntSmt += 1
+if tsBear
+    cntTs += 1
+    if smtBearNow
+        cntSmt += 1
+
+if tsBull and canArm and idleAll and smtGateBull
+    if i_entryMode == "Market on sweep close"
+        bool dispOk = not i_requireDisp or (close - low) >= i_minDispPts
+        if dispOk
+            float stopPx = low - i_stopBufPts
+            float risk = close - stopPx
+            int qty = f_qty(risk)
+            if qty > 0
+                strategy.entry("Long", strategy.long, qty = qty)
+                strategy.exit("L-X", from_entry = "Long", stop = stopPx, limit = close + i_rr * risk)
+                cntOrders += 1
+            else
+                cntSkipRisk += 1
+    else
+        bullState := 1
+        bullSweepLow := low
+        bullSweepBar := bar_index
+        bullMssLvl := na(lastMinorHigh) ? rHigh : lastMinorHigh
+        bullSmt := smtBullNow
+
+if tsBear and canArm and idleAll and smtGateBear and bullState == 0
+    if i_entryMode == "Market on sweep close"
+        bool dispOk = not i_requireDisp or (high - close) >= i_minDispPts
+        if dispOk
+            float stopPx = high + i_stopBufPts
+            float risk = stopPx - close
+            int qty = f_qty(risk)
+            if qty > 0
+                strategy.entry("Short", strategy.short, qty = qty)
+                strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = close - i_rr * risk)
+                cntOrders += 1
+            else
+                cntSkipRisk += 1
+    else
+        bearState := 1
+        bearSweepHigh := high
+        bearSweepBar := bar_index
+        bearMssLvl := na(lastMinorLow) ? rLow : lastMinorLow
+        bearSmt := smtBearNow
+
+// ── Stage 1 → MSS ──
+if bullState == 1 and bar_index > bullSweepBar
+    if bar_index - bullSweepBar > i_mssTimeout or low < bullSweepLow - i_stopBufPts
+        bullState := 0
+    else if close > bullMssLvl
+        bool dispOk = not i_requireDisp or (close - bullSweepLow) >= i_minDispPts
+        if dispOk
+            bullMssNow := true
+            cntMss += 1
+            if i_entryMode == "Market on MSS" and canPlace and flat and roomToday and dayOk
+                float stopPx = bullSweepLow - i_stopBufPts
+                float risk = close - stopPx
+                int qty = f_qty(risk)
+                if qty > 0
+                    strategy.entry("Long", strategy.long, qty = qty)
+                    strategy.exit("L-X", from_entry = "Long", stop = stopPx, limit = close + i_rr * risk)
+                    cntOrders += 1
+                else
+                    cntSkipRisk += 1
+                bullState := 0
+            else
+                bullState := 2
+                bullOrdBar := bar_index
+
+if bearState == 1 and bar_index > bearSweepBar
+    if bar_index - bearSweepBar > i_mssTimeout or high > bearSweepHigh + i_stopBufPts
+        bearState := 0
+    else if close < bearMssLvl
+        bool dispOk = not i_requireDisp or (bearSweepHigh - close) >= i_minDispPts
+        if dispOk
+            bearMssNow := true
+            cntMss += 1
+            if i_entryMode == "Market on MSS" and canPlace and flat and roomToday and dayOk
+                float stopPx = bearSweepHigh + i_stopBufPts
+                float risk = stopPx - close
+                int qty = f_qty(risk)
+                if qty > 0
+                    strategy.entry("Short", strategy.short, qty = qty)
+                    strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = close - i_rr * risk)
+                    cntOrders += 1
+                else
+                    cntSkipRisk += 1
+                bearState := 0
+            else
+                bearState := 2
+                bearOrdBar := bar_index
+
+// ── Stage 2 → limit at displacement FVG CE (retrace mode) ──
+if bullState == 2
+    if not bullOrd
+        if not na(latBullFvgBar) and latBullFvgBar >= bullSweepBar and canPlace and dayOk
+            float cePx = latBullFvgCe
+            float stopPx = bullSweepLow - i_stopBufPts
+            float risk = cePx - stopPx
+            int qty = risk > 0 ? f_qty(risk) : 0
+            if qty > 0
+                strategy.entry("Long", strategy.long, qty = qty, limit = cePx)
+                strategy.exit("L-X", from_entry = "Long", stop = stopPx, limit = cePx + i_rr * risk)
+                bullOrd := true
+                bullOrdBar := bar_index
+                cntOrders += 1
+            else if risk > 0
+                cntSkipRisk += 1
+                bullState := 0
+        if bar_index - bullOrdBar > i_retraceTimeout
+            bullState := 0
+    else if flat and bar_index - bullOrdBar > i_retraceTimeout
+        strategy.cancel("Long")
+        bullOrd := false
+        bullState := 0
+
+if bearState == 2
+    if not bearOrd
+        if not na(latBearFvgBar) and latBearFvgBar >= bearSweepBar and canPlace and dayOk
+            float cePx = latBearFvgCe
+            float stopPx = bearSweepHigh + i_stopBufPts
+            float risk = stopPx - cePx
+            int qty = risk > 0 ? f_qty(risk) : 0
+            if qty > 0
+                strategy.entry("Short", strategy.short, qty = qty, limit = cePx)
+                strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = cePx - i_rr * risk)
+                bearOrd := true
+                bearOrdBar := bar_index
+                cntOrders += 1
+            else if risk > 0
+                cntSkipRisk += 1
+                bearState := 0
+        if bar_index - bearOrdBar > i_retraceTimeout
+            bearState := 0
+    else if flat and bar_index - bearOrdBar > i_retraceTimeout
+        strategy.cancel("Short")
+        bearOrd := false
+        bearState := 0
+
+// Position opened → clear machinery
+if not flat
+    bullState := 0
+    bearState := 0
+    bullOrd := false
+    bearOrd := false
+
+// Session flat
+if nyHhmm >= i_flatTime
+    strategy.cancel_all()
+    if not flat
+        strategy.close_all(comment = "Session flat")
+
+// ─── Visuals ─────────────────────────────────────────────────────────────────
+bgcolor(inDetectWin ? color.new(color.gray, 95) : na, title = "Detect window")
+
+plotshape(i_showSig and tsBull, "TS Bull", shape.labelup, location.belowbar, color.lime, size = size.small, text = "TS")
+plotshape(i_showSig and tsBear, "TS Bear", shape.labeldown, location.abovebar, color.red, size = size.small, text = "TS")
+plotshape(i_showSig and smtBullNow, "SMT Bull", shape.triangleup, location.belowbar, color.aqua, size = size.small, text = "SMT")
+plotshape(i_showSig and smtBearNow, "SMT Bear", shape.triangledown, location.abovebar, color.orange, size = size.small, text = "SMT")
+plotshape(i_showSig and bullMssNow, "MSS Bull", shape.diamond, location.belowbar, color.green, size = size.tiny, text = "MSS")
+plotshape(i_showSig and bearMssNow, "MSS Bear", shape.diamond, location.abovebar, color.maroon, size = size.tiny, text = "MSS")
+
+plot(i_showLevels and nyHhmm >= 930 and i_usePdhPdl ? prevDayHigh : na, "PDH", color.new(color.red, 60), style = plot.style_linebr)
+plot(i_showLevels and nyHhmm >= 930 and i_usePdhPdl ? prevDayLow : na, "PDL", color.new(color.lime, 60), style = plot.style_linebr)
+plot(i_showLevels and nyHhmm >= 930 and i_usePremkt ? pmHigh : na, "PM High", color.new(color.orange, 60), style = plot.style_linebr)
+plot(i_showLevels and nyHhmm >= 930 and i_usePremkt ? pmLow : na, "PM Low", color.new(color.aqua, 60), style = plot.style_linebr)
+
+plot(bullState, "bullState", display = display.data_window)
+plot(bearState, "bearState", display = display.data_window)
+
+// ─── Diagnostic funnel table ─────────────────────────────────────────────────
+f_row(table t, int r, string k, string v) =>
+    table.cell(t, 0, r, k, text_color = color.new(color.lime, 20), text_size = size.small, text_halign = text.align_left)
+    table.cell(t, 1, r, v, text_color = color.white, text_size = size.small, text_halign = text.align_right)
+
+var table diag = table.new(position.top_right, 2, 10, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
+if i_showTable and barstate.islast
+    f_row(diag, 0, "FUNNEL", "count")
+    f_row(diag, 1, "Days in history", str.tostring(cntDays))
+    f_row(diag, 2, "Swing pivots", str.tostring(cntSwings))
+    f_row(diag, 3, "Turtle Soups", str.tostring(cntTs))
+    f_row(diag, 4, "SMT at sweep", str.tostring(cntSmt))
+    f_row(diag, 5, "MSS confirms", str.tostring(cntMss))
+    f_row(diag, 6, "Skipped (risk/stop filter)", str.tostring(cntSkipRisk))
+    f_row(diag, 7, "Orders placed", str.tostring(cntOrders))
+    f_row(diag, 8, "Trades filled", str.tostring(totalTrades))
+    f_row(diag, 9, "Mode", i_entryMode + " / SMT " + i_smtMode)
