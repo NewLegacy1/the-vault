@@ -5,6 +5,8 @@ import { useLocal, fmtUsd } from "@/lib/store";
 import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
 import { mergeTvCsvs, parseTvCsv, tradesPerWeek } from "@/lib/csv";
 import { ALL_SEED_TRADES, TRADES_DEC_MAR, TRADES_APR_JUL } from "@/lib/prb-data";
+import { TRADES_YTD_FULL, TRADES_YTD_MAY17 } from "@/lib/prb-ytd-data";
+import { TRADES_YTD_CHUNKS_3039 } from "@/lib/prb-chunks-3039-data";
 import { PROP_RULES, ruleById } from "@/lib/prop-firms";
 import { PropRule } from "@/lib/types";
 import { buildEquityCurve, EquityStats } from "@/lib/equity-curve";
@@ -58,6 +60,30 @@ function datasetOptionSub(d: Dataset): string {
 }
 
 const SEED_SETS: Dataset[] = [
+  {
+    id: "ytd-chunks-3039",
+    name: "PRB v1 — YTD chunks 30–39 (96 trades) ★",
+    label: "PRB YTD chunks 30-39",
+    trades: TRADES_YTD_CHUNKS_3039.map((t) => t.pnl),
+    dates: TRADES_YTD_CHUNKS_3039.map((t) => t.date),
+    sources: ["Downloads chunks 30-39 · sequential windows"],
+  },
+  {
+    id: "ytd-full",
+    name: "PRB v1 — YTD merged from TV exports (108 trades)",
+    label: "PRB YTD Jul 14 — 1/day dedupe",
+    trades: TRADES_YTD_FULL.map((t) => t.pnl),
+    dates: TRADES_YTD_FULL.map((t) => t.date),
+    sources: ["Downloads 40 CSVs · vault data/tv-exports"],
+  },
+  {
+    id: "ytd-may17",
+    name: "PRB v1 — May 17 2025+ (85 trades)",
+    label: "PRB May17+ Jul 14",
+    trades: TRADES_YTD_MAY17.map((t) => t.pnl),
+    dates: TRADES_YTD_MAY17.map((t) => t.date),
+    sources: ["Downloads 40 CSVs · May 17 subset"],
+  },
   {
     id: "all",
     name: "PRB v1 — full record Dec 25–Jul 26 (37 trades)",
@@ -892,7 +918,7 @@ function buildDatasetFromParsed(
 
 export default function LabPage() {
   const [uploads, setUploads] = useLocal<Dataset[]>("vault.lab.datasets", []);
-  const [dsId, setDsId] = useState("all");
+  const [dsId, setDsId] = useState("ytd-chunks-3039");
   const [ruleId, setRuleId] = useState(PROP_RULES[0].id);
   const [sims, setSims] = useState(2000);
   const [maxTrades, setMaxTrades] = useState(80);
@@ -999,7 +1025,7 @@ export default function LabPage() {
       });
       // Merged year dataset (dedupes overlapping bar-replay windows)
       const rawCount = texts.reduce((n, tx) => n + parseTvCsv(tx).length, 0);
-      const merged = mergeTvCsvs(texts);
+      const merged = mergeTvCsvs(texts, { onePerDay: true, seed: ALL_SEED_TRADES });
       if (merged.length > 0) {
         const span =
           merged[0].date && merged[merged.length - 1].date
