@@ -5,6 +5,11 @@ import { fmtUsd } from "@/lib/store";
 import type { CohortRecord } from "@/lib/cohort";
 import { matrixPresets, type StrategyPreset } from "@/lib/lab-profile";
 
+/** Premium matrix rows only (excludes experimental) for progress denominator. */
+function premiumMatrixPresets(): StrategyPreset[] {
+  return matrixPresets().filter((p) => p.matrixTrack !== "experimental");
+}
+
 export interface MatrixResultsProps {
   activePresetId?: string;
   onSelectPreset: (presetId: string) => void;
@@ -61,12 +66,13 @@ export function MatrixResults({ activePresetId, onSelectPreset, refreshKey = 0 }
   }, [refreshKey]);
 
   const rows = useMemo(() => matrixPresets(), []);
+  const premiumRows = useMemo(() => premiumMatrixPresets(), []);
   const filled = useMemo(
-    () => rows.filter((p) => cohortForPreset(cohorts, p)).length,
-    [rows, cohorts]
+    () => premiumRows.filter((p) => cohortForPreset(cohorts, p)).length,
+    [premiumRows, cohorts]
   );
 
-  const premium = rows.filter((p) => p.matrixTrack !== "experimental");
+  const premium = premiumRows;
   const experimental = rows.filter((p) => p.matrixTrack === "experimental");
 
   const renderTable = (section: StrategyPreset[], title: string) => (
@@ -131,11 +137,18 @@ export function MatrixResults({ activePresetId, onSelectPreset, refreshKey = 0 }
       <div className="frm-row" style={{ alignItems: "center", marginBottom: 8 }}>
         <div className="small">
           <span className="accent">Matrix progress</span>
-          <span className="dim"> — {filled}/{rows.length} saved · click row to load study below</span>
+          <span className="dim"> — {filled}/{premiumRows.length} premium saved · click row → F4 Lab</span>
         </div>
         {loading && <span className="small dim">Loading…</span>}
       </div>
-      {loadErr && <p className="small neg">{loadErr}</p>}
+      {loadErr && (
+        <p className="small neg">
+          Could not load cohorts: {loadErr}. Rebuild index with <code className="inline">npm run index</code> in vault-app.
+        </p>
+      )}
+      {!loading && cohorts.length === 0 && !loadErr && (
+        <p className="small warn">No cohorts in index — run MC in Lab with auto-save, then redeploy or run npm run index.</p>
+      )}
       {renderTable(premium, "Premium 365d")}
       {experimental.length > 0 && renderTable(experimental, "Experimental / future strategies")}
       <p className="small dim" style={{ marginTop: 10, marginBottom: 0, lineHeight: 1.55 }}>

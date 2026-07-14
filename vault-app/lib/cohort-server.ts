@@ -10,12 +10,17 @@ import {
 } from "@/lib/cohort";
 import { commitCohortToGitHub, githubCohortConfigured } from "@/lib/github-cohort";
 
-/** Canonical Obsidian path — always prefer strategies/cohorts when repo layout exists. */
+function isVercelRuntime(): boolean {
+  return process.env.VERCEL === "1";
+}
+
+/** Local dev only — never parent repo paths on Vercel (read-only / missing). */
 function cohortsRoot(): string {
-  const inRepo = path.join(process.cwd(), "..", "strategies", "cohorts");
   const inApp = path.join(process.cwd(), "data", "cohorts");
+  if (isVercelRuntime()) return inApp;
+  const inRepo = path.join(process.cwd(), "..", "strategies", "cohorts");
   if (fs.existsSync(path.join(process.cwd(), "..", "strategies"))) return inRepo;
-  return fs.existsSync(inApp) ? inApp : inRepo;
+  return inApp;
 }
 
 async function walkMdFiles(dir: string, base: string): Promise<{ rel: string; abs: string }[]> {
@@ -45,6 +50,9 @@ async function walkMdFiles(dir: string, base: string): Promise<{ rel: string; ab
 }
 
 export async function ensureCohortsDir(): Promise<string> {
+  if (isVercelRuntime()) {
+    throw new Error("Cannot write cohorts on Vercel filesystem — use GitHub token or download.");
+  }
   const dir = cohortsRoot();
   await mkdir(dir, { recursive: true });
   for (const sub of ["eval", "funded", "combined", "research"]) {
@@ -68,8 +76,9 @@ function loadBundledCohorts(): CohortRecord[] {
   }
 }
 
-export async function listCohorts(): Promise<CohortRecord[]> {
-  const dir = await ensureCohortsDir();
+async function listCohortsFromDisk(): Promise<CohortRecord[]> {
+  const dir = cohortsRoot();
+  if (!fs.existsSync(dir)) return [];
   const files = await walkMdFiles(dir, "");
   const records: CohortRecord[] = [];
   for (const { rel, abs } of files) {
@@ -77,7 +86,6 @@ export async function listCohorts(): Promise<CohortRecord[]> {
     const meta = parseCohortMeta(content, path.basename(rel), rel);
     if (meta) records.push(meta);
   }
-  // Legacy flat files at cohorts root
   try {
     const rootEntries = await readdir(dir);
     for (const f of rootEntries.filter((x) => x.endsWith(".md") && !x.startsWith("_"))) {
@@ -91,8 +99,20 @@ export async function listCohorts(): Promise<CohortRecord[]> {
   } catch {
     /* ignore */
   }
-  if (records.length > 0) {
-    return records.sort((a, b) => b.created.localeCompare(a.created));
+  return records;
+}
+
+export async function listCohorts(): Promise<CohortRecord[]> {
+  if (isVercelRuntime()) {
+    return loadBundledCohorts().sort((a, b) => b.created.localeCompare(a.created));
+  }
+  try {
+    const fromDisk = await listCohortsFromDisk();
+    if (fromDisk.length > 0) {
+      return fromDisk.sort((a, b) => b.created.localeCompare(a.created));
+    }
+  } catch {
+    /* fall through to bundle */
   }
   return loadBundledCohorts().sort((a, b) => b.created.localeCompare(a.created));
 }
@@ -110,7 +130,7 @@ export type CohortSaveResult = {
 
 function isReadOnlyFsError(e: unknown): boolean {
   const code = (e as NodeJS.ErrnoException)?.code;
-  return code === "EROFS" || code === "EACCES";
+  return code === "EROFS" || code === "EACCES" || code === "ENOENT";
 }
 
 async function saveCohortToGitHub(relativePath: string, markdown: string): Promise<CohortSaveResult> {
@@ -130,7 +150,7 @@ export async function saveCohort(input: CohortSaveInput): Promise<CohortSaveResu
   const markdown = buildCohortMarkdown(input);
   const filename = path.basename(relativePath);
 
-  if (process.env.VERCEL === "1") {
+  if (isVercelRuntime()) {
     if (githubCohortConfigured()) {
       try {
         return await saveCohortToGitHub(relativePath, markdown);
@@ -140,7 +160,13 @@ export async function saveCohort(input: CohortSaveInput): Promise<CohortSaveResu
         return { filename, relativePath, markdown, mode: "download", githubError };
       }
     }
-    return { filename, relativePath, markdown, mode: "download" };
+    return {
+      filename,
+      relativePath,
+      markdown,
+      mode: "download",
+      githubError: "Set GITHUB_TOKEN on Vercel to auto-save cohorts to Obsidian.",
+    };
   }
 
   try {

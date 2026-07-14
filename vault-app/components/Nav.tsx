@@ -9,6 +9,7 @@ const TABS = [
   { href: "/accounts", fkey: "F2", label: "ACCOUNTS" },
   { href: "/strategies", fkey: "F3", label: "STRATEGY" },
   { href: "/lab", fkey: "F4", label: "LAB" },
+  { href: "/results", fkey: "F8", label: "RESULTS" },
   { href: "/journal", fkey: "F5", label: "JOURNAL" },
   { href: "/data", fkey: "F6", label: "DATA" },
   { href: "/news", fkey: "F7", label: "NEWS" },

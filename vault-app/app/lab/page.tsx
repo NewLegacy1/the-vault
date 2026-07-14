@@ -3,8 +3,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useLocal, fmtUsd } from "@/lib/store";
 import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
-import { parseLabLedger, tradesPerWeek, type ParsedTrade } from "@/lib/csv";
-import { applyMacroMatrixFilter, isDerivedMacroPreset, macroBranchFromPreset } from "@/lib/macro-matrix";
+import { parseLabLedger, tradesPerWeek } from "@/lib/csv";
 import { ALL_SEED_TRADES, TRADES_DEC_MAR, TRADES_APR_JUL } from "@/lib/prb-data";
 import { TRADES_YTD_FULL, TRADES_YTD_MAY17 } from "@/lib/prb-ytd-data";
 import { TRADES_BE2R_PDH_12MO } from "@/lib/prb-be2r-data";
@@ -27,8 +26,14 @@ import {
   type FindingFamily,
   analyzeBeRetest,
 } from "@/lib/lab-findings";
-import { MatrixResults } from "@/components/matrix-results";
 import { NewsDayPanel } from "@/components/news-day-panel";
+import Link from "next/link";
+import {
+  buildActiveDataset,
+  saveLedgerEntry,
+  type PresetLedgerStore,
+} from "@/lib/lab-ledger";
+import { isDerivedMacroPreset } from "@/lib/macro-matrix";
 
 interface Dataset {
   id: string;
@@ -959,6 +964,18 @@ function GhostAutopsyCard({
   );
 }
 
+function ledgerToDataset(active: NonNullable<ReturnType<typeof buildActiveDataset>>): Dataset {
+  return {
+    id: active.id,
+    name: active.fileName,
+    presetId: active.presetId,
+    label: active.label,
+    trades: active.trades,
+    dates: active.dates,
+    sources: active.sources,
+  };
+}
+
 function buildDatasetFromParsed(
   id: string,
   fileName: string,
@@ -982,6 +999,7 @@ function buildDatasetFromParsed(
 }
 
 export default function LabPage() {
+  const [ledgers, setLedgers, ledgersReady] = useLocal<PresetLedgerStore>("vault.lab.ledgers", {});
   const [uploads, setUploads] = useLocal<Dataset[]>("vault.lab.datasets", []);
   const [dsId, setDsId, dsReady] = useLocal<string>("vault.lab.dsId", "");
   const [datasetAliases, setDatasetAliases] = useLocal<Record<string, string>>("vault.lab.datasetAliases", {});
@@ -997,7 +1015,6 @@ export default function LabPage() {
   const [study, setStudy, studyHydrated] = useLocal<LabStudy>("vault.lab.study", DEFAULT_STUDY);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "ok" | "err">("idle");
   const [saveMsg, setSaveMsg] = useState("");
-  const [cohortRefreshKey, setCohortRefreshKey] = useState(0);
   const [autoSave, setAutoSave] = useLocal<boolean>("vault.lab.autosave", true);
   const [winCapUsd, setWinCapUsd] = useLocal<number>("vault.lab.winCapUsd", 1490);
   const [ghostKind, setGhostKind] = useLocal<"prb" | "macro">("vault.lab.ghostKind", "prb");
@@ -1016,18 +1033,26 @@ export default function LabPage() {
   const activePreset = presetById(study.presetId);
   const matrixBranch = activePreset?.matrixBranch ?? "—";
   const variantName = studyVariantName(study);
+  const isDerived = isDerivedMacroPreset(study.presetId);
+  const b0Ledger = ledgers["matrix-b0"];
+  const presetLedger = ledgers[study.presetId];
 
-  const ds = useMemo(() => {
-    if (uploads.length > 0) return uploads[0];
+  const activeLedgerDs = useMemo(
+    () => buildActiveDataset(study.presetId, ledgers),
+    [study.presetId, ledgers]
+  );
+
+  const ds = useMemo((): Dataset | null => {
+    if (activeLedgerDs) return ledgerToDataset(activeLedgerDs);
+    if (uploads.length > 0 && uploads[0].presetId === study.presetId) return uploads[0];
     if (typeof dsId === "string" && dsId && isSeedDataset(dsId)) {
       return SEED_SETS.find((s) => s.id === dsId) ?? null;
     }
     return null;
-  }, [uploads, dsId]);
+  }, [activeLedgerDs, uploads, dsId, study.presetId]);
 
-  const datasetMismatch = Boolean(ds?.presetId && ds.presetId !== study.presetId);
-  const safeDsId = ds?.id ?? "";
-  const dateFilter = dateFilters[safeDsId] ?? { from: "", to: "" };
+  const dataKey = study.presetId;
+  const dateFilter = dateFilters[dataKey] ?? { from: "", to: "" };
   const dsBounds = useMemo(() => datasetBounds(ds?.dates ?? []), [ds?.dates]);
   const activeDs = useMemo(
     () => (ds ? applyDateFilter(ds, dateFilter) : { id: "", name: "", trades: [], dates: [], sources: [] }),
@@ -1036,13 +1061,13 @@ export default function LabPage() {
   const dateFilterActive = Boolean(dateFilter.from || dateFilter.to);
   const displayName = ds ? datasetDisplayName(ds, datasetAliases) : "";
   const rule = ruleById(typeof ruleId === "string" ? ruleId : PROP_RULES[0].id) ?? PROP_RULES[0];
-  const canRun = studyReady(study) && activeDs.trades.length > 0 && !datasetMismatch;
-  const storageReady = dsReady && ruleReady && simsReady && maxTradesReady && payoutReady && studyHydrated;
+  const canRun = studyReady(study) && activeDs.trades.length > 0;
+  const storageReady = dsReady && ruleReady && simsReady && maxTradesReady && payoutReady && studyHydrated && ledgersReady;
 
   const runKey = useMemo(
     () =>
       buildLabRunKey({
-        dsId: safeDsId,
+        dsId: dataKey,
         presetId: study.presetId,
         customLabel: study.customLabel,
         hypothesis: study.hypothesis,
@@ -1054,7 +1079,7 @@ export default function LabPage() {
         dateFrom: dateFilter.from,
         dateTo: dateFilter.to,
       }),
-    [safeDsId, study, ruleId, sims, maxTrades, payoutBuffer, winCapUsd, dateFilter]
+    [dataKey, study, ruleId, sims, maxTrades, payoutBuffer, winCapUsd, dateFilter]
   );
 
   const equity = useMemo(() => buildEquityCurve(activeDs.trades, activeDs.dates), [activeDs]);
@@ -1119,7 +1144,7 @@ export default function LabPage() {
         Number(payoutBuffer) || 1000
       );
       const metrics = buildScorecardMetrics({
-        id: `${study.presetId}-${safeDsId}`,
+        id: `${study.presetId}-${dataKey}`,
         label: variantName,
         dataset: displayName,
         span: stats.span,
@@ -1133,7 +1158,7 @@ export default function LabPage() {
       const comparison = compareToBenchmark(metrics);
       return { mcResult, comparison };
     };
-  }, [activeDs, rule, sims, maxTrades, payoutBuffer, stats, consistency, study.presetId, safeDsId, variantName, displayName]);
+  }, [activeDs, rule, sims, maxTrades, payoutBuffer, stats, consistency, study.presetId, dataKey, variantName, displayName]);
 
   useEffect(() => {
     if (!storageReady) return;
@@ -1194,91 +1219,49 @@ export default function LabPage() {
   }, [saveStatus]);
 
   useEffect(() => {
+    if (!studyHydrated || !ledgersReady) return;
+    if (macroB0Csv && !ledgers["matrix-b0"]) {
+      setLedgers(saveLedgerEntry(ledgers, "matrix-b0", macroB0Name || "B0.csv", macroB0Csv));
+    }
+  }, [studyHydrated, ledgersReady, macroB0Csv, macroB0Name, ledgers, setLedgers]);
+
+  useEffect(() => {
     if (!studyHydrated) return;
     if (!isLabPresetId(study.presetId)) {
       setStudy(DEFAULT_STUDY);
-      setUploads([]);
-      setDsId("");
-      setDatasetAliases({});
     }
-  }, [studyHydrated, study.presetId, setStudy, setUploads, setDsId, setDatasetAliases]);
+  }, [studyHydrated, study.presetId, setStudy]);
 
-  useEffect(() => {
-    if (!dsReady) return;
-    if (uploads.length <= 1) return;
-    const pick =
-      uploads.find((u) => u.id === dsId) ?? uploads[uploads.length - 1];
-    setUploads([pick]);
-    setDsId(pick.id);
-  }, [dsReady, uploads.length, dsId, setUploads, setDsId]);
-
-  const clearDataset = () => {
+  const clearLedgerForPreset = () => {
+    setLedgers((prev) => {
+      const next = { ...prev };
+      delete next[study.presetId];
+      return next;
+    });
     setUploads([]);
-    setDsId("");
-    setDatasetAliases({});
     setRes(null);
     setScorecardComparison(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const installDataset = (
-    parsed: ParsedTrade[],
-    presetId: string,
-    sourceName: string,
-    sourceNote?: string
-  ) => {
-    const preset = presetById(presetId);
-    const branch = preset?.matrixBranch ?? "custom";
-    const id = "u" + Date.now();
-    const dataset = buildDatasetFromParsed(id, sourceName, parsed, presetId, branch);
-    if (sourceNote) dataset.sources = [sourceNote];
-    setUploads([dataset]);
-    setDatasetAliases({ [id]: dataset.label ?? sourceName });
-    setDsId(id);
-    setRes(null);
-    setScorecardComparison(null);
-  };
-
-  const deriveMacroFromB0 = (presetId: string): boolean => {
-    const branch = macroBranchFromPreset(presetId);
-    if (!branch || !macroB0Csv) return false;
-    const parsed = parseLabLedger(macroB0Csv);
-    const filtered = applyMacroMatrixFilter(parsed, branch);
-    if (filtered.length === 0) return false;
-    const preset = presetById(presetId);
-    const label = `${macroB0Name || "B0"} → ${preset?.matrixBranch ?? branch}`;
-    installDataset(filtered, presetId, label, `${label} (auto-derived)`);
-    return true;
-  };
-
-  const tryActivatePreset = (presetId: string, opts?: { fromUrl?: boolean }) => {
+  const applyPreset = (presetId: string) => {
     const preset = presetById(presetId);
     if (!preset) return;
-    const changed = presetId !== study.presetId;
-    if (changed) {
-      setStudy({
-        ...study,
-        presetId,
-        regimes: preset.defaultRegimes ?? study.regimes,
-        hypothesis: preset.defaultHypothesis ?? study.hypothesis,
-      });
-      setSaveStatus("idle");
-    }
-    if (isDerivedMacroPreset(presetId)) {
-      if (!deriveMacroFromB0(presetId)) {
-        if (changed) clearDataset();
-      }
-      return;
-    }
-    if (changed && !opts?.fromUrl) clearDataset();
+    if (presetId === study.presetId) return;
+    setStudy({
+      ...study,
+      presetId,
+      regimes: preset.defaultRegimes ?? study.regimes,
+      hypothesis: preset.defaultHypothesis ?? study.hypothesis,
+    });
+    setSaveStatus("idle");
+    setSaveMsg("");
   };
 
   const onFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    if (!file) return;
-
-    const preset = presetById(study.presetId);
+    if (!file || isDerived) return;
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -1288,36 +1271,17 @@ export default function LabPage() {
         alert("No trades parsed — export TradingView Strategy Tester as 'List of trades' CSV.");
         return;
       }
-      if (
-        study.presetId === "matrix-b0" ||
-        (preset?.family === "macro" && preset.dataSource !== "derived-b0")
-      ) {
-        setMacroB0Csv(text);
-        setMacroB0Name(file.name);
-      }
-      if (isDerivedMacroPreset(study.presetId)) {
-        const branch = macroBranchFromPreset(study.presetId);
-        const b0Text = study.presetId === "matrix-b0" ? text : macroB0Csv;
-        if (b0Text && branch) {
-          const filtered = applyMacroMatrixFilter(parseLabLedger(b0Text), branch);
-          if (filtered.length > 0) {
-            const label = `${macroB0Name || file.name} → ${preset?.matrixBranch ?? branch}`;
-            installDataset(filtered, study.presetId, label, `${label} (auto-derived)`);
-            return;
-          }
-        }
-      }
-      installDataset(parsed, study.presetId, file.name);
+      setLedgers((prev) => saveLedgerEntry(prev, study.presetId, file.name, text));
+      setUploads([]);
+      setRes(null);
+      setScorecardComparison(null);
     };
     reader.readAsText(file);
   };
 
-  const setDisplayName = (id: string, name: string) => {
+  const setDisplayName = (presetId: string, name: string) => {
     const trimmed = name.trim();
-    setDatasetAliases({ ...datasetAliases, [id]: trimmed });
-    if (uploads[0]?.id === id) {
-      setUploads([{ ...uploads[0], label: trimmed || undefined }]);
-    }
+    setDatasetAliases({ ...datasetAliases, [presetId]: trimmed });
   };
 
   const setDateFilterFor = (id: string, patch: Partial<DateFilter>) => {
@@ -1333,16 +1297,14 @@ export default function LabPage() {
 
   const applyStudyLabel = () => {
     if (!ds || !activePreset?.matrixBranch) return;
-    setDisplayName(ds.id, suggestDatasetName(ds.dates, activePreset.matrixBranch));
+    setDisplayName(dataKey, suggestDatasetName(ds.dates, activePreset.matrixBranch));
   };
-
-  const applyPreset = (presetId: string) => tryActivatePreset(presetId);
 
   useEffect(() => {
     if (!studyHydrated || typeof window === "undefined") return;
     const q = new URLSearchParams(window.location.search).get("preset");
     if (q && presetById(q) && q !== study.presetId) {
-      tryActivatePreset(q, { fromUrl: true });
+      applyPreset(q);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on hydrate + URL
   }, [studyHydrated]);
