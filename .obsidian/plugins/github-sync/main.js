@@ -4722,8 +4722,6 @@ var GHSyncPlugin = class extends import_obsidian.Plugin {
       trimmed: false
     };
     git = simpleGit(simpleGitOptions);
-    let os = require("os");
-    let hostname = os.hostname();
     let statusResult = await git.status().catch((e) => {
       this.showNotice("Vault is not a Git repo or git binary cannot be found.", "ERROR", 1e4);
       return;
@@ -4731,10 +4729,12 @@ var GHSyncPlugin = class extends import_obsidian.Plugin {
     if (!statusResult) {
       return;
     }
-    let clean = statusResult.isClean();
+    let hadLocalChanges = !statusResult.isClean();
     let date = new Date();
+    let os = require("os");
+    let hostname = os.hostname();
     let msg = hostname + " " + date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + ":" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-    if (!clean) {
+    if (hadLocalChanges) {
       try {
         await git.add("./*").commit(msg);
       } catch (e) {
@@ -4743,25 +4743,13 @@ var GHSyncPlugin = class extends import_obsidian.Plugin {
       }
     }
     try {
-      await git.removeRemote("origin").catch((e) => {
-        this.showNotice(e, "ERROR", 1e4);
-      });
-      await git.addRemote("origin", remote).catch((e) => {
-        this.showNotice(e, "ERROR", 1e4);
-      });
-    } catch (e) {
-      this.showNotice(e, "ERROR", 1e4);
-      return;
-    }
-    try {
       await git.fetch();
     } catch (e) {
-      this.showNotice(String(e) + "\nGitHub Sync: Invalid remote URL.", "ERROR", 1e4);
+      this.showNotice(String(e) + "\nGitHub Sync: fetch failed. Check remote URL and auth.", "ERROR", 1e4);
       return;
     }
     try {
-      await git.pull("origin", "master", { "--no-rebase": null }, (err, update) => {
-      });
+      await git.pull("origin", "master", { "--rebase": null });
     } catch (e) {
       let conflictStatus = await git.status().catch((error) => {
         this.showNotice(error, "ERROR", 1e4);
@@ -4770,24 +4758,29 @@ var GHSyncPlugin = class extends import_obsidian.Plugin {
       if (!conflictStatus) {
         return;
       }
-      let conflictMsg = "Merge conflicts in:";
-      for (let c of conflictStatus.conflicted) {
-        conflictMsg += "\n	" + c;
-      }
-      conflictMsg += "\nResolve them or click sync button again to push with unresolved conflicts.";
-      this.showNotice(conflictMsg, "WARNING");
-      for (let c of conflictStatus.conflicted) {
-        this.app.workspace.openLinkText("", c, true);
+      if (conflictStatus.conflicted.length > 0) {
+        let conflictMsg = "Merge conflicts in:";
+        for (let c of conflictStatus.conflicted) {
+          conflictMsg += "\n	" + c;
+        }
+        conflictMsg += "\nResolve in the editor, then click sync again.";
+        this.showNotice(conflictMsg, "WARNING", 1e4);
+        for (let c of conflictStatus.conflicted) {
+          this.app.workspace.openLinkText("", c, true);
+        }
+      } else {
+        this.showNotice("GitHub Sync pull failed:\n" + String(e), "ERROR", 1e4);
       }
       return;
     }
-    if (!clean) {
-      try {
+    try {
+      const after = await git.status();
+      if (after.ahead > 0) {
         await git.push("origin", "master", ["-u"]);
-      } catch (e) {
-        this.showNotice(e, "ERROR", 1e4);
-        return;
       }
+    } catch (e) {
+      this.showNotice(e, "ERROR", 1e4);
+      return;
     }
     this.showSyncSuccessNotice();
   }
