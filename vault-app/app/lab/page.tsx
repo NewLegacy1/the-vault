@@ -1519,7 +1519,7 @@ export default function LabPage() {
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="Funded">
+                    <optgroup label="Funded · PRB + Macro B0/B1 (A-tier study)">
                       {labDropdownPresets()
                         .filter(
                           (p) =>
@@ -1531,14 +1531,14 @@ export default function LabPage() {
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="Macro income · M0 / M1 / M2">
+                    <optgroup label="Macro_v2 income track only (M0/M1/M2 — not B0)">
                       {labDropdownPresets()
                         .filter((p) => p.seriesId === "macro-income")
                         .map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="Hybrid · Eval (H0a / H1a / H2a)">
+                    <optgroup label="Hybrid · Eval (H0a both windows · H2a 9:50-only · H1a quiet)">
                       {labDropdownPresets()
                         .filter((p) => p.seriesId === "hybrid-sleeve" && p.phase === "eval")
                         .map((p) => (

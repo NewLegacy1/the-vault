@@ -2,44 +2,38 @@
 updated: 2026-07-14
 tags: [checklist, 3y, strategy-dev]
 ---
-# Tier 0 handoff — your 3y exports → Lab
+# Tier 0 — exact Lab dropdown names
 
-Files are already in `vault-app/data/tv-exports/matrix/*-3y.csv`.
+**Advanced:** Max trades **220** · Payout buffer **2000**.
 
-## Lab run order (MUST raise Max trades)
+| What you exported | Lab dropdown (exact) | Section |
+|---|---|---|
+| PRB RR5 | **A0a · PRB control** | Eval |
+| PRB RR6 | **D1 · PRB RR6 funded raw** | Funded · PRB + Macro B0/B1 |
+| Hybrid both Macro windows | **H0a · Eval · A0a + B1a** | Hybrid · Eval |
+| Hybrid funded | **H0b · Funded · D1 + B1a** | Hybrid · Funded |
+| Hybrid 9:50 ON / 10:50 OFF | **H2a · Eval · 9:50 Macro only (10:50 OFF)** | Hybrid · Eval |
+| Macro_v2 / Macro full CSV | **B0 · Macro full book (upload here)** then **B1a · Macro A-tier only (from B0)** | Funded · PRB + Macro B0/B1 |
 
-**Advanced options → Max trades = `220`** (default used to be 80 — that truncates 3y books).  
-Payout buffer = **2000**. Scoreboard = **E[$/wk]**.
+**Do not use for the A-tier study:**  
+`M0 · Macro_v2 $400…` / `M1 · Macro_v2 $400…` — those are the killed income track (Macro_Model_v2 profiles), not B0/B1a.
 
-| Your Downloads file | Matrix name | Lab strategy | Notes |
-|---|---|---|---|
-| `PRB_…e89d7.csv` | `prb-a0a-3y.csv` | **A0a · PRB control** | RR5 eval |
-| `PRB_…57097.csv` | `prb-d1-3y.csv` | **D1 · PRB RR6 funded** | |
-| `Hybrid_…19fab.csv` | `hybrid-h0a-3y.csv` | **H0a · Eval** | both Macro windows |
-| `Hybrid_…c1da1.csv` | `hybrid-h0b-3y.csv` | **H0b · Funded** | |
-| `Hybrid_…6b19e.csv` | `hybrid-h2a-3y.csv` | **H2a · Eval · Macro 9:50 only** | Macro 10:50 off (PRB may still print ~10:50) |
-| `Macro_v2_…20853.csv` | `macro-v2-full-3y.csv` | **B0 · Macro** first, then **B1a · A-tier only** | File is **full** A/A+/H — not A-only. B1a derives A-tier from B0 |
+## 395f4 (this Hybrid)
 
-After each full RUN: Advanced dates → last **12 months** → RUN again (OOS).
+Same book as prior H2a (`6b19e`): **154 trades**, **0 Macro @ 10:50**, net **−$155**.  
+Engine MC (eval): ~**20% pass · 79% bust · E[$/wk] ≈ −$12** — worse than H0a ($10/wk).  
 
-## Quick engine MC (already run locally · max trades 220)
+Lab: select **H2a · Eval · 9:50 Macro only (10:50 OFF)** → upload `395f4` → RUN (hard-refresh if H2a missing).
 
-| Book | Pass | Bust | E[$/wk] | Read |
-|---|---|---|---|---|
-| A0a-3y | ~34% | ~66% | ~$2 | Survival collapses vs 1y |
-| D1-3y | ~95%* | ~43% | ~$28 | Funded recycle still pays |
-| H0a-3y | ~23% | ~76% | **−$9** | Kill as eval income |
-| H0b-3y | ~67%* | ~57% | ~$33 | Best funded speed |
-| H2a-3y | ~18% | ~81% | **−$16** | Worse than H0a on 3y |
-| Macro full | ~20% | ~83% | −$4 | Kill |
-| B1a A-only | thin | high | ~$0 | Sparse · not income |
+## Stack so far (Lab cohorts)
 
-\*Funded-mode “pass” is recycle path, not eval pass.
+| | E[$/wk] |
+|---|---|
+| H0b funded | **$36** (best) |
+| D1 funded | **$28** |
+| A0a eval | **$15** |
+| H0a eval | **$10** |
+| H2a 9:50-only | **−$12** (engine) |
+| M0/M1 | **−$4** |
 
-**Implication:** 3y window is much harder than the premium 1y. Don’t trust 1y EV until OOS (last 12m) on these same ledgers.
-
-## Live Lab note
-
-**H2a** preset is new in code — needs a deploy/push for https://the-vault-rose.vercel.app. Until then use **H0a** + hypothesis `H2a-3y` with the `6b19e` / `hybrid-h2a-3y.csv` file.
-
-Full queue: [[sim-queue]] · Calendar: [[calendar-3y]]
+[[sim-queue]]

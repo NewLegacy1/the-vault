@@ -94,27 +94,28 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
   }),
   premiumRow({
     id: "matrix-b0",
-    label: "B0 · Macro v1.4 full book",
+    label: "B0 · Macro full book (upload here)",
     version: "v1.4",
     matrixBranch: "B0",
-    config: "CE confirm · tiered · $800 · pivot 5",
+    config: "CE confirm · tiered · Macro v1.4 or Macro_v2 CSV",
     defaultRegimes: ["baseline", "be-only"],
     family: "macro",
     phase: "funded",
     uploadHint:
-      "Full Macro TV CSV (v1.4 or Macro_v2) — or matrix/macro-v2-full-3y.csv. Then pick B1a for A-tier filter.",
+      "Upload your Macro_v2 / Macro v1.4 full TV CSV HERE (not under M0/M1). Then switch to B1a for A-tier-only MC.",
     defaultHypothesis: "Macro full book · feed for B1* derived filters",
   }),
   premiumRow({
     id: "matrix-b1a",
-    label: "B1a · Macro A-tier only",
+    label: "B1a · Macro A-tier only (from B0)",
     version: "v1.4",
     matrixBranch: "B1a",
-    config: "Filtered: tier A only",
+    config: "Auto-filter: tier A only from B0 upload",
     defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
-    uploadHint: "Derived from B0 — upload Macro full CSV on B0 first, then select B1a.",
+    uploadHint:
+      "No separate export. Select B0, upload Macro CSV, then select this for A-tier filter.",
     defaultHypothesis: "Funded primary — A-tier only",
     dataSource: "derived-b0",
   }),
@@ -213,22 +214,22 @@ function macroIncomeRow(
 export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
   macroIncomeRow({
     id: "matrix-m0",
-    label: "M0 · Macro $400 · BE OFF",
+    label: "M0 · Macro_v2 $400 · BE OFF (not B0)",
     matrixBranch: "M0",
     phase: "funded",
     config: "Macro_Model_v2 · Profile M0 · v1.4 entries · $400 · BE OFF",
     uploadHint:
-      "TV: Macro_Model_v2 · Profile M0 → Deep Backtest List of Trades CSV.",
+      "Macro_Model_v2 Profile M0 only. For A-tier study use Funded → B0 then B1a.",
     defaultHypothesis: "Control — $400 alone (no BE) vs v1.4 $800 parent",
   }),
   macroIncomeRow({
     id: "matrix-m1",
-    label: "M1 · Macro $400 · BE@2R",
+    label: "M1 · Macro_v2 $400 · BE@2R (not B0)",
     matrixBranch: "M1",
     phase: "funded",
     config: "Macro_Model_v2 · Profile M1 · v1.4 entries · $400 · BE@2R",
     uploadHint:
-      "TV: Macro_Model_v2 · Profile M1 → Deep Backtest List of Trades CSV. PRIMARY Track 4.1 test.",
+      "Macro_Model_v2 Profile M1 only. For A-tier study use Funded → B0 then B1a.",
     defaultHypothesis: "BE@2R kills symmetric-loss trail busts at $400 risk",
   }),
   macroIncomeRow({
@@ -267,7 +268,7 @@ export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
   }),
   hybridRow({
     id: "matrix-h2a",
-    label: "H2a · Eval · Macro 9:50 only",
+    label: "H2a · Eval · 9:50 Macro only (10:50 OFF)",
     version: "h2",
     matrixBranch: "H2a",
     phase: "eval",
