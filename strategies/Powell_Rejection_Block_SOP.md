@@ -347,7 +347,8 @@ Session timing:
 2. Avoid **9:30–10:00** by default.  
 3. If **8:30 news**, look then; otherwise wait unless obvious.  
 4. Pre-10 only with **strong conviction**.  
-5. Mondays / holiday / late-Dec: lower expectancy.
+5. Mondays / holiday / late-Dec: lower expectancy.  
+6. **Ops overlay (`regime-gate-v0`, Lab PASS 2026-07-14):** **STAND_DOWN** July & October (NY calendar). Use Pine `Powell_Rejection_Block_gate_v0.pine` (gate default ON). Checklist mirrors this. Not a causal market regime — do not stack March. Locked live script `Powell_Rejection_Block_v1.pine` stays ungated.
 
 4H wick grades:
 | Grade | Look | Action |

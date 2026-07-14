@@ -70,6 +70,19 @@ The F2 bias panel then compares filter mismatches, "Both filter on a bearish rea
 
 **MNQ vs NQ:** MNQ outperformed by ~$3K purely from sizing granularity — NQ rounds $400 risk down to 1 contract (or 0 when stop > 20 pts). Stay on MNQ until risk unit ≥ ~$1,000. **v1.8 — Instrument / contract size** input: `Auto (chart symbol)` reads MNQ1! vs NQ1! from the chart; override `MNQ micro ($2/pt)` or `NQ mini ($20/pt)` for what-if only. NQ auto-caps at **6 contracts** (TPT 60-micro equivalent). Funnel row **Sizing** shows tag + max contracts. For real NQ backtests: chart `CME_MINI:NQ1!` + Auto, or stay on MNQ1! (recommended for $400 risk). **v1.9:** Auto now checks **ticker/root for MNQ/NQ** before `syminfo.pointvalue` — bar replay on `MNQ1!` sometimes reported `tv=20` and sized like NQ (~2 contracts instead of ~20). Funnel shows `tv=` raw value when Auto is on; if tag ≠ chart, lock **MNQ micro ($2/pt)** for the 12mo run.
 
+## PRB gate_v0 (`Powell_Rejection_Block_gate_v0.pine`) — regime-gate-v0 ops
+
+Copy of locked **v1** with one extra Session input. **Never edit** `Powell_Rejection_Block_v1.pine`.
+
+| Input | Default | Behavior |
+|---|---|---|
+| **Skip July & October (regime-gate-v0)** | **ON** | No new entries when NY calendar month is **7 or 10** (same spirit as Skip Mondays) |
+| Skip Mondays | ON | Unchanged |
+
+Lab settled **PASS** 2026-07-14 ([[findings-prb]]). Calendar ops overlay — not a causal market regime; do not stack March. Funnel row **Jul/Oct gate** shows `STAND_DOWN Jul/Oct` / `ON · month ok` / `OFF`. Ghost reason **#12** = July/October stand-down.
+
+**Live / replay:** paste `Powell_Rejection_Block_gate_v0.pine` → leave Jul/Oct skip **ON**. Use locked v1 only if you intentionally want ungated months.
+
 ## Macro Model v2 (`Macro_Model_v2.pine`) — income track
 
 v1.4 entry engine + PRB-style BE ratchet. Does **not** replace `Macro_Model_v1.pine`. Lab series **M · Macro income**.

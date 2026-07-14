@@ -31,18 +31,21 @@ Full YAML records: `strategies/cohorts/`.
 3. **Skip Monday** holds.
 4. **1 trade/day** holds — slot discipline beats volume.
 5. Win profile is low win-rate / high payoff (13W/44L/12scr still nets $12k+) — the formula depends on **losses staying small** (BE mechanism), not on win rate.
-6. **`regime-gate-v0` PASS (2026-07-14)** — STAND_DOWN Jul+Oct on 3y A0a/D1. Lab-engine MC (`buildMcParamsForLab`, max 220, buffer 2000): E[$/wk] ↑ and bust ↓ on full + OOS vs ungated. Provisional **ops overlay** (calendar), not a causal market regime. Do **not** stack March into v0.
+6. **`regime-gate-v0` PASS (2026-07-14)** — STAND_DOWN Jul+Oct on 3y A0a/D1. Lab-engine MC (`buildMcParamsForLab`, max 220, buffer 2000): E[$/wk] ↑ and bust ↓ on full + OOS vs ungated. Provisional **ops overlay** (calendar), not a causal market regime. Do **not** stack March into v0. **Ops encoded** in Pine `pine/Powell_Rejection_Block_gate_v0.pine` (`Skip July & October` default ON).
+7. **Chain EV A0a→D1 × gate PASS (2026-07-14)** — see [[phase2-chain-ev-gated]]. Full-loop lab-engine: ungated **−$18/wk** → gated **−$6/wk** (Δ +$12). OOS: $32 → **$50/wk**. Absolute full-3y chain E[$/acct] still **negative** (−$593 → −$209) — gate reduces damage; does **not** create a profitable 3y business loop. JSON: `vault-app/data/tv-exports/chain-ev-gated-vs-ungated.json`.
 
 ## Phase 1–2 regime gate (3y · settled PASS)
 
-Full autopsy: [[phase1-autopsy-a0a-d1]] · confirm JSON: `vault-app/data/tv-exports/regime-gate-v0-lab-confirm.json` · script: `vault-app/scripts/lab-confirm-regime-gate-v0.ts`.
+Full autopsy: [[phase1-autopsy-a0a-d1]] · confirm JSON: `vault-app/data/tv-exports/regime-gate-v0-lab-confirm.json` · script: `vault-app/scripts/lab-confirm-regime-gate-v0.ts`.  
+Chain: [[phase2-chain-ev-gated]] · `vault-app/scripts/analyze-chain-ev-gated.ts`.
 
 | Claim | Status |
 |---|---|
 | PRB 3y edge is **non-stationary** (IS weak / OOS strong) | **settled** |
 | Red-folder stand-down helps PRB | **FAIL** (do not use) |
 | Year×month Jul/Oct hygiene (0 winners every year cell) | **PASS** |
-| **`regime-gate-v0`** Jul+Oct STAND_DOWN | **PASS** (Lab-engine · both A0a + D1) |
+| **`regime-gate-v0`** Jul+Oct STAND_DOWN (single-leg) | **PASS** (Lab-engine · both A0a + D1) |
+| **Chain EV A0a→D1 × gate** (full-loop) | **PASS** relative (−$18→−$6/wk; OOS $32→$50) · absolute full-3y still ≤0 |
 | Jul+Oct+Mar as v0 | **hold** — do not stack |
 
 ### Lab-engine confirm (TPT50 · max 220 · buf 2000)
@@ -56,16 +59,16 @@ Full autopsy: [[phase1-autopsy-a0a-d1]] · confirm JSON: `vault-app/data/tv-expo
 
 Cohorts: `strategies/cohorts/eval/*regime_gate_v0*` · `strategies/cohorts/funded/*regime_gate_v0*`.
 
-**Honesty:** Gate removes barren calendar months; does **not** prove forever PRB edge. Income still thin (~$26–37/wk) — not Phase 4 / multi-account.
+**Honesty:** Gate removes barren calendar months; does **not** prove forever PRB edge. Single-leg income still thin (~$26–37/wk). **Full-loop chain on 3y stays ≤0** even gated (−$6/wk) — see [[phase2-chain-ev-gated]].
 
-**Blocked until explicit next ask:** min-day pad (2.2), chain EV (2.3), March stack, Track B.
+**Blocked until explicit next ask:** min-day pad (2.2), March stack, Track B. Chain EV (2.3) **done**.
 
 ## Open questions
 
 - Optional Phase 2.4: can a pre-session market co-feature explain barren Jul/Oct better than calendar alone?
+- Live forward test with gate ON (ops) once Lane A Pine lands
 - Does trail 2.0/1.5 beat BE-only specifically in give-back months (Feb–Mar type)?
 - Long-only vs short-only bias splits by regime?
-- Does the PRB entry (rejection block + limit retest) work inside the 9:50–10:10 macro window? → feeds [[roadmap]] hybrid (deferred per [[execution-plan-post-3y]]).
 
 ## What failed (graveyard — don't resurrect)
 

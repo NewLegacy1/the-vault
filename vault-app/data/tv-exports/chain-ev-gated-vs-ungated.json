@@ -1,0 +1,137 @@
+{
+  "generated": "2026-07-14T23:15:22.133Z",
+  "gate": "regime-gate-v0",
+  "rule": "STAND_DOWN calendar month in {7,10}",
+  "pair": "prb-a0a-d1",
+  "mc": {
+    "sims": 2000,
+    "maxTrades": 220,
+    "payoutBuffer": 2000
+  },
+  "oosStart": "2025-07-14",
+  "passTolerance": 0.05,
+  "primaryMetric": "labEngine.chainEWeek (buildMcParamsForLab dual-run)",
+  "settleFull": "PASS",
+  "settleOos": "PASS",
+  "verdictNote": "PASS",
+  "deltaFullUsdPerWeek": 12,
+  "deltaOosUsdPerWeek": 18,
+  "pairs": {
+    "ungated_full": {
+      "key": "ungated_full",
+      "label": "Ungated full 3y",
+      "nEval": 120,
+      "nFunded": 120,
+      "evalFile": "prb-a0a-3y.csv",
+      "fundedFile": "prb-d1-3y.csv",
+      "labEngine": {
+        "evalPassPct": 41.5,
+        "evalBustPct": 58.6,
+        "evalWeeksToPassP50": 20.8,
+        "evalEWeek": 14,
+        "fundedPassPct": 90.8,
+        "fundedBustPct": 44.3,
+        "fundedWeeksToPayoutP50": 11.7,
+        "fundedEWeek": 28,
+        "fundedExpectedNetPerAccountUsd": 333,
+        "chainExpectedNetPerAccountUsd": -593,
+        "chainEWeek": -18,
+        "weeksChainP50": 32.5
+      },
+      "cohortPair": {
+        "evalSource": "eval/2026-07-14_222805698_a0a_prb_control.md",
+        "fundedSource": "funded/2026-07-14_222828594_d1_prb_rr6_funded_raw.md",
+        "chainEWeek": -16,
+        "chainExpectedNetPerAccountUsd": -508,
+        "weeksChainP50": 31.2,
+        "evalPassPct": 40.9,
+        "fundedPayoutPct": 92.5
+      }
+    },
+    "gated_full": {
+      "key": "gated_full",
+      "label": "Gated full 3y (Jul+Oct STAND_DOWN)",
+      "nEval": 100,
+      "nFunded": 100,
+      "evalFile": "prb-a0a-3y-gate-jul-oct.csv",
+      "fundedFile": "prb-d1-3y-gate-jul-oct.csv",
+      "labEngine": {
+        "evalPassPct": 58.8,
+        "evalBustPct": 41.2,
+        "evalWeeksToPassP50": 22.5,
+        "evalEWeek": 28,
+        "fundedPassPct": 124.7,
+        "fundedBustPct": 31.5,
+        "fundedWeeksToPayoutP50": 13.5,
+        "fundedEWeek": 39,
+        "fundedExpectedNetPerAccountUsd": 520,
+        "chainExpectedNetPerAccountUsd": -209,
+        "chainEWeek": -6,
+        "weeksChainP50": 36
+      },
+      "cohortPair": {
+        "evalSource": "eval/2026-07-14_230813710_a0a_prb_control_regime_gate_v0.md",
+        "fundedSource": "funded/2026-07-14_230815341_d1_prb_rr6_funded_raw_regime_gate_v0.md",
+        "chainEWeek": -7,
+        "chainExpectedNetPerAccountUsd": -240,
+        "weeksChainP50": 36,
+        "evalPassPct": 57.1,
+        "fundedPayoutPct": 127.3
+      }
+    },
+    "ungated_oos": {
+      "key": "ungated_oos",
+      "label": "Ungated OOS ≥2025-07-14",
+      "nEval": 40,
+      "nFunded": 40,
+      "evalFile": "prb-a0a-3y.csv",
+      "fundedFile": "prb-d1-3y.csv",
+      "labEngine": {
+        "evalPassPct": 83.3,
+        "evalBustPct": 16.8,
+        "evalWeeksToPassP50": 12.8,
+        "evalEWeek": 109,
+        "fundedPassPct": 192.2,
+        "fundedBustPct": 10.3,
+        "fundedWeeksToPayoutP50": 8.9,
+        "fundedEWeek": 113,
+        "fundedExpectedNetPerAccountUsd": 1007,
+        "chainExpectedNetPerAccountUsd": 690,
+        "chainEWeek": 32,
+        "weeksChainP50": 21.7
+      },
+      "cohortPair": null
+    },
+    "gated_oos": {
+      "key": "gated_oos",
+      "label": "Gated OOS ≥2025-07-14",
+      "nEval": 36,
+      "nFunded": 36,
+      "evalFile": "prb-a0a-3y-gate-jul-oct.csv",
+      "fundedFile": "prb-d1-3y-gate-jul-oct.csv",
+      "labEngine": {
+        "evalPassPct": 91.2,
+        "evalBustPct": 8.8,
+        "evalWeeksToPassP50": 11.5,
+        "evalEWeek": 156,
+        "fundedPassPct": 206.3,
+        "fundedBustPct": 7.5,
+        "fundedWeeksToPayoutP50": 7.6,
+        "fundedEWeek": 148,
+        "fundedExpectedNetPerAccountUsd": 1124,
+        "chainExpectedNetPerAccountUsd": 963,
+        "chainEWeek": 50,
+        "weeksChainP50": 19.1
+      },
+      "cohortPair": {
+        "evalSource": "eval/2026-07-14_230814501_a0a_prb_control_regime_gate_v0_oos.md",
+        "fundedSource": "funded/2026-07-14_230816068_d1_prb_rr6_funded_raw_regime_gate_v0_oos.md",
+        "chainEWeek": 52,
+        "chainExpectedNetPerAccountUsd": 992,
+        "weeksChainP50": 19.1,
+        "evalPassPct": 90.7,
+        "fundedPayoutPct": 210.2
+      }
+    }
+  }
+}

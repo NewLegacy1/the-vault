@@ -111,7 +111,7 @@ Use existing PRB/D1 ledgers + gate. Do **not** re-open Macro as primary.
 | **2.0** | **Gate hygiene (before celebrate)** — see checklist below | Jul+Oct remains plausible ops overlay | Year cells conflict · OOS lift vanishes in Lab · no story beyond calendar |
 | 2.1 | A0a / D1 **× regime-gate-v0** in **Lab MC** (not script proxy) | E[$/wk] ↑ vs ungated 3y · bust ↓ · n≥~80 | OOS E[$/wk] ≤ ungated · or Lab contradicts proxy |
 | 2.2 | Min-day pad overlay (ops) — **only after 2.1 settles PASS** | P(payout\|pass) ↑ | Doesn’t change bust math materially |
-| 2.3 | Chain EV A0a→D1 with gate — **after 2.1** | Full-loop E[$/wk] documented | Chain EV ≤ 0 after fees |
+| 2.3 | Chain EV A0a→D1 with gate | Full-loop E[$/wk] documented | **DONE** · relative PASS (−$18→−$6/wk; OOS $32→$50) · absolute full-3y chain still ≤0 — [[phase2-chain-ev-gated]] |
 
 Still blocked unless gate clears: second Macro window, same-day Macro+PRB sleeve as *new* primary, B0/B1a as funded primary, risk scale-up, **stacking March into v0**, mining more calendar months.
 
@@ -205,8 +205,8 @@ Phase 1–2.1 **done** — `regime-gate-v0` **PASS**.
 
 | Lane | Work | Status |
 |---|---|---|
-| **A** | Ops encode Jul+Oct into new Pine variant + checklist/SOP | ready |
-| **B** | Chain EV ungated vs gated A0a→D1 | ready |
+| **A** | Ops encode Jul+Oct into new Pine variant + checklist/SOP | ready (other agent) |
+| **B** | Chain EV ungated vs gated A0a→D1 | **DONE PASS** · [[phase2-chain-ev-gated]] |
 
 1. [x] Locate matrix CSVs: `prb-a0a-3y.csv`, `prb-d1-3y.csv`.
 2. [x] Year + OOS splits (script + MD).
@@ -214,9 +214,9 @@ Phase 1–2.1 **done** — `regime-gate-v0` **PASS**.
 4. [x] Draft gate: **Jul+Oct STAND_DOWN** (`regime-gate-v0`).
 5. [x] **2.0 hygiene** — year×month Jul/Oct all w=0; no March stack; calendar = provisional ops overlay.
 6. [x] **2.1 Lab-engine MC** — cohorts saved · [[findings-prb]] PASS.
-7. [ ] **Lane A** per [[parallel-impl-gated-prb]]
-8. [ ] **Lane B** per [[parallel-impl-gated-prb]]
-9. [ ] Merge → then user picks 2.4 / live forward / Track B. Still no March / multi-account until asked.
+7. [x] **Lane A** per [[parallel-impl-gated-prb]] — `pine/Powell_Rejection_Block_gate_v0.pine`
+8. [x] **Lane B / 2.3** — chain EV PASS relative (−$18→−$6/wk; OOS $32→$50); absolute full-3y chain still ≤0
+9. [ ] **Merge note** + user picks: 2.4 co-feature / live forward with gate / Track B for income. Still no March / multi-account until asked.
 
 ## 6. How this overrides / relates to other docs
 
@@ -247,3 +247,4 @@ Phase 1–2.1 **done** — `regime-gate-v0` **PASS**.
 | 2026-07-14 | Phase 1 autopsy complete — `regime-gate-v0` Jul+Oct STAND_DOWN; next = Phase 2 Lab confirm. |
 | 2026-07-14 | Phase 2.0+2.1 Lab-engine confirm → **PASS**; findings-prb settled; stop before 2.2/2.3/Track B. |
 | 2026-07-14 | Parallel sprint brief [[parallel-impl-gated-prb]] — Lane A ops + Lane B chain EV. |
+| 2026-07-14 | Lane B done — [[phase2-chain-ev-gated]] PASS relative (−$18→−$6/wk); absolute full-3y chain ≤0. |

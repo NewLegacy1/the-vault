@@ -1,6 +1,6 @@
 # PRB v1 — Trade Checklist (locked config)
 
-**Config:** 5m MNQ · Auto entry (CE if stop > 20 pts) · leave-then-retest 1R (strict OFF) · confirming close ON · rolling-sweep OFF · window 10:00–13:00 · $400 risk ($300 in fresh eval) · 1:5 target · BE at +1R · 1 trade/day · skip Mondays
+**Config:** 5m MNQ · Auto entry (CE if stop > 20 pts) · leave-then-retest 1R (strict OFF) · confirming close ON · rolling-sweep OFF · window 10:00–13:00 · $400 risk ($300 in fresh eval) · 1:5 target · BE at +1R · 1 trade/day · skip Mondays · **skip July & October** (`regime-gate-v0` · Pine `Powell_Rejection_Block_gate_v0.pine`)
 
 The script finds the setup. **You** are the bias filter. Three checkpoints:
 
@@ -8,6 +8,7 @@ The script finds the setup. **You** are the bias filter. Three checkpoints:
 
 ## 1. Pre-session (before 10:00, ~10 min)
 
+- [ ] **Jul/Oct stand-down (`regime-gate-v0`):** if NY calendar month is **July or October** → **no new trades** (funnel = STAND_DOWN). Resume when month rolls. Do not stack March.
 - [ ] **News check (Forex Factory):** red folders today? Time: ______
   - CPI/NFP with a one-sided beat → expect a trend day; **do not fade it** — skip the session or demand A+ context
   - Mixed prints → normal rules apply

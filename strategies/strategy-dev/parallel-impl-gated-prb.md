@@ -57,10 +57,10 @@ Make Jul+Oct STAND_DOWN **impossible to miss** in live / replay: Pine input on a
 
 ### Acceptance (Lane A done when)
 
-1. [ ] New Pine file exists; gate input default **true**; Monday skip still works.
-2. [ ] Funnel / status shows when blocked by Jul/Oct (one table row or label is enough).
-3. [ ] Checklist + SOP + PINE_GUIDE mention the gate.
-4. [ ] No edit to locked `…_v1.pine`.
+1. [x] New Pine file exists; gate input default **true**; Monday skip still works.
+2. [x] Funnel / status shows when blocked by Jul/Oct (one table row or label is enough).
+3. [x] Checklist + SOP + PINE_GUIDE mention the gate.
+4. [x] No edit to locked `…_v1.pine`.
 
 ### Copy-paste prompt for Lane A agent
 
@@ -150,6 +150,6 @@ Either agent (or user) does this once:
 
 | Lane | Status |
 |---|---|
-| A Ops encode | **ready to run** |
-| B Chain EV | **ready to run** |
-| Merge | waiting |
+| A Ops encode | **DONE** (other agent) · `pine/Powell_Rejection_Block_gate_v0.pine` |
+| B Chain EV | **DONE** · settle **PASS** (relative) · [[phase2-chain-ev-gated]] |
+| Merge | **ready** — both lanes green |
