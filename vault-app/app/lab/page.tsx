@@ -228,7 +228,7 @@ import {
   DEFAULT_STUDY,
   LabStudy,
   REGIME_PRESETS,
-  STRATEGY_PRESETS,
+  LAB_STRATEGY_PRESETS,
   presetById,
   studyReady,
   studyVariantName,
@@ -1337,6 +1337,7 @@ export default function LabPage() {
       ...study,
       presetId,
       regimes: preset?.defaultRegimes ?? study.regimes,
+      hypothesis: preset?.defaultHypothesis ?? study.hypothesis,
     });
     setSaveStatus("idle");
   };
@@ -1492,33 +1493,18 @@ export default function LabPage() {
                 <label className="fld" style={{ minWidth: 280, flex: 1 }}>
                   Strategy version
                   <select value={study.presetId} onChange={(e) => applyPreset(e.target.value)}>
-                    <optgroup label="PRB">
-                      {STRATEGY_PRESETS.filter((p) => p.id.startsWith("prb") || p.id === "custom").map((p) => (
+                    <optgroup label="Eval">
+                      {LAB_STRATEGY_PRESETS.filter((p) => p.phase === "eval").map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="Macro">
-                      {STRATEGY_PRESETS.filter((p) => p.id.startsWith("macro")).map((p) => (
-                        <option key={p.id} value={p.id}>{p.label}</option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Other">
-                      {STRATEGY_PRESETS.filter((p) => p.id.startsWith("datahl")).map((p) => (
+                    <optgroup label="Funded">
+                      {LAB_STRATEGY_PRESETS.filter((p) => p.phase === "funded").map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
                   </select>
                 </label>
-                {study.presetId === "custom" && (
-                  <label className="fld" style={{ flex: 1, minWidth: 200 }}>
-                    Custom variant name
-                    <input
-                      value={study.customLabel}
-                      onChange={(e) => setStudy({ ...study, customLabel: e.target.value })}
-                      placeholder="e.g. Macro v1.4 — pivot 5 only"
-                    />
-                  </label>
-                )}
               </div>
               <label className="fld" style={{ marginTop: 8 }}>
                 Hypothesis <span className="dim">(optional — saved to cohort notes)</span>
@@ -1531,6 +1517,11 @@ export default function LabPage() {
               {activePreset && (
                 <div className="small dim" style={{ marginTop: 6 }}>
                   <span className="cyan">Pine {activePreset.version}</span> · {activePreset.config}
+                  {activePreset.uploadHint && (
+                    <div className="accent" style={{ marginTop: 4 }}>
+                      Upload: {activePreset.uploadHint}
+                    </div>
+                  )}
                 </div>
               )}
               {!studyReady(study) && (

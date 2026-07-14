@@ -9,116 +9,243 @@ export interface StrategyPreset {
   config: string;
   defaultRegimes: string[];
   family: StrategyFamily;
-  /** Primary optimization target for this preset. */
   phase: StrategyPhase;
+  matrixBranch?: string;
+  uploadHint?: string;
+  defaultHypothesis?: string;
 }
 
-export const STRATEGY_PRESETS: StrategyPreset[] = [
+/** Premium 365d matrix — the only presets shown in F4 LAB dropdown. */
+export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
+  {
+    id: "matrix-a0a",
+    label: "A0a · PRB control",
+    version: "v1.5",
+    matrixBranch: "A0a",
+    config: "BE@1R · Both · trail OFF · $400 · RR 5",
+    defaultRegimes: ["baseline", "be-only"],
+    family: "prb",
+    phase: "eval",
+    uploadHint: "Your A0a TV CSV (one file).",
+    defaultHypothesis: "Premium 365d eval baseline",
+  },
+  {
+    id: "matrix-a0b",
+    label: "A0b · PRB BE@2R + PDH/PDL",
+    version: "v1.5",
+    matrixBranch: "A0b",
+    config: "BE@2R · Auto PDH/PDL · $400 · RR 5",
+    defaultRegimes: ["baseline", "be-only"],
+    family: "prb",
+    phase: "eval",
+    uploadHint: "Your A0b TV CSV (one file).",
+    defaultHypothesis: "Premium 365d BE@2R+PDH",
+  },
+  {
+    id: "matrix-a1c",
+    label: "A1c · PRB BE@2R + PDH + cap $1,490",
+    version: "v1.5",
+    matrixBranch: "A1c",
+    config: "A0b · RR 6 · eval max win cap $1,490",
+    defaultRegimes: ["baseline", "be-only"],
+    family: "prb",
+    phase: "eval",
+    uploadHint: "Your A1c TV CSV (one file).",
+    defaultHypothesis: "TPT consistency-safe eval",
+  },
+  {
+    id: "matrix-d1",
+    label: "D1 · PRB RR6 funded raw",
+    version: "v1.5",
+    matrixBranch: "D1",
+    config: "Control · RR 6 · eval cap OFF",
+    defaultRegimes: ["runner", "baseline"],
+    family: "prb",
+    phase: "funded",
+    uploadHint: "Your D1 TV CSV (one file).",
+    defaultHypothesis: "PRO economics — no consistency",
+  },
+  {
+    id: "matrix-b0",
+    label: "B0 · Macro v1.4 full book",
+    version: "v1.4",
+    matrixBranch: "B0",
+    config: "CE confirm · tiered · $800 · pivot 5",
+    defaultRegimes: ["baseline", "be-only"],
+    family: "macro",
+    phase: "funded",
+    uploadHint: "Your B0 Macro TV CSV (one file).",
+    defaultHypothesis: "Macro v1.4 premium 365d full",
+  },
+  {
+    id: "matrix-b1a",
+    label: "B1a · Macro A-tier only",
+    version: "v1.4",
+    matrixBranch: "B1a",
+    config: "Filtered: tier A only",
+    defaultRegimes: ["baseline"],
+    family: "macro",
+    phase: "funded",
+    uploadHint: "macro-matrix-b1a.csv or your A-tier filter.",
+    defaultHypothesis: "Funded primary — A-tier only",
+  },
+  {
+    id: "matrix-b1b",
+    label: "B1b · Macro A + H (no A+)",
+    version: "v1.4",
+    matrixBranch: "B1b",
+    config: "Filtered: tiers A + H",
+    defaultRegimes: ["baseline"],
+    family: "macro",
+    phase: "funded",
+    uploadHint: "macro-matrix-b1b.csv",
+    defaultHypothesis: "Drop A+ — keep A and H",
+  },
+  {
+    id: "matrix-b1c",
+    label: "B1c · Macro A+ only",
+    version: "v1.4",
+    matrixBranch: "B1c",
+    config: "Filtered: tier A+ only",
+    defaultRegimes: ["baseline"],
+    family: "macro",
+    phase: "funded",
+    uploadHint: "macro-matrix-b1c.csv",
+    defaultHypothesis: "Isolate A+ tier",
+  },
+  {
+    id: "matrix-b3a",
+    label: "B3a · Macro A-tier @ 0.5× risk",
+    version: "v1.4",
+    matrixBranch: "B3a",
+    config: "A-tier · PnL × 0.5",
+    defaultRegimes: ["baseline"],
+    family: "macro",
+    phase: "funded",
+    uploadHint: "macro-matrix-b3a.csv",
+    defaultHypothesis: "Halved risk on A-tier",
+  },
+  {
+    id: "matrix-b3b",
+    label: "B3b · Macro full book @ 0.5× risk",
+    version: "v1.4",
+    matrixBranch: "B3b",
+    config: "Full book · PnL × 0.5",
+    defaultRegimes: ["baseline"],
+    family: "macro",
+    phase: "funded",
+    uploadHint: "macro-matrix-b3b.csv",
+    defaultHypothesis: "Halved risk full book",
+  },
+];
+
+/** Archived presets — lookup only (old cohort notes), not shown in Lab. */
+const LEGACY_STRATEGY_PRESETS: StrategyPreset[] = [
   {
     id: "prb-v110-12mo-control",
-    label: "PRB v1.10 — 12mo control (Aug 25–Jul 26)",
+    label: "PRB v1.10 — 12mo control",
     version: "v1.10",
-    config: "BE +1R retest audit · MNQ sizing · Both bias · $400 risk · BE-only · ghost autopsy",
-    defaultRegimes: ["baseline", "be-only"],
+    config: "legacy",
+    defaultRegimes: ["baseline"],
     family: "prb",
     phase: "eval",
   },
   {
     id: "prb-v15-12mo-control",
-    label: "PRB v1.5 — 12mo control (Jul 25–Jul 26)",
+    label: "PRB v1.5 — 12mo control",
     version: "v1.5",
-    config: "Locked live profile · Both bias · $400 risk · BE +1R · 5m MNQ full year replay",
-    defaultRegimes: ["baseline", "be-only"],
+    config: "legacy",
+    defaultRegimes: ["baseline"],
     family: "prb",
     phase: "eval",
   },
   {
     id: "prb-v15-be2r-pdh",
-    label: "PRB v1.5 — BE@2R + Auto PDH/PDL (Jul 14)",
+    label: "PRB v1.5 — BE@2R + PDH/PDL",
     version: "v1.5",
-    config: "BE at +2R (was +1R) · Direction filter Auto PDH/PDL draw · $400 risk · skip Mon",
-    defaultRegimes: ["baseline", "be-only"],
+    config: "legacy",
+    defaultRegimes: ["baseline"],
     family: "prb",
     phase: "eval",
   },
   {
     id: "prb-v15-be-live",
-    label: "PRB v1.5 — BE-only (live locked)",
+    label: "PRB v1.5 — BE-only live",
     version: "v1.5",
-    config: "BE +1R · trail OFF · limit retest · 1/day · skip Mon · Both bias manual",
-    defaultRegimes: ["baseline", "be-only"],
+    config: "legacy",
+    defaultRegimes: ["baseline"],
     family: "prb",
     phase: "eval",
   },
   {
     id: "prb-v15-trail",
-    label: "PRB v1.5 — Trail 2.0/1.5 regime",
+    label: "PRB v1.5 — Trail",
     version: "v1.5",
-    config: "Give-back regime trail toggle ON · otherwise locked v1.5",
-    defaultRegimes: ["trail-on", "give-back"],
+    config: "legacy",
+    defaultRegimes: ["trail-on"],
     family: "prb",
     phase: "funded",
   },
   {
     id: "prb-v15-bias-long",
-    label: "PRB v1.5 — Long-only bias",
+    label: "PRB v1.5 — Long only",
     version: "v1.5",
-    config: "Direction filter Long only · BE-only · trail OFF",
+    config: "legacy",
     defaultRegimes: ["be-only"],
     family: "prb",
     phase: "research",
   },
   {
     id: "prb-v15-bias-short",
-    label: "PRB v1.5 — Short-only bias",
+    label: "PRB v1.5 — Short only",
     version: "v1.5",
-    config: "Direction filter Short only · BE-only · trail OFF",
+    config: "legacy",
     defaultRegimes: ["be-only"],
     family: "prb",
     phase: "research",
   },
   {
     id: "prb-v14-be",
-    label: "PRB v1.4 — BE-only (pre-declutter)",
+    label: "PRB v1.4 — BE-only",
     version: "v1.4",
-    config: "v1.4 pine · BE +1R · trail OFF",
+    config: "legacy",
     defaultRegimes: ["be-only"],
     family: "prb",
     phase: "eval",
   },
   {
     id: "datahl-v0-cisd",
-    label: "Data H/L v0 — manual replay (CISD 1m)",
+    label: "Data H/L v0",
     version: "v0",
-    config: "8:30 formation · first soup → opposing pool · CISD trigger · BE +1R",
-    defaultRegimes: ["news", "be-only"],
+    config: "legacy",
+    defaultRegimes: ["news"],
     family: "datahl",
     phase: "research",
   },
   {
     id: "macro-v0-journal",
-    label: "Macro Model v0 — manual journal (Apr 25–Feb 26)",
+    label: "Macro v0 journal",
     version: "v0",
-    config: "ICT macros 9:50–10:10 · DOL sweep 9:30–9:45 · BISI/SIBI · 30–50 pt · HALF/FULL tiers",
-    defaultRegimes: ["baseline", "news"],
+    config: "legacy",
+    defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
   },
   {
     id: "macro-v0-pine",
-    label: "Macro Model v1.3 — tiered TS/SMT",
+    label: "Macro v1.3",
     version: "v1.3",
-    config: "A+/A/B tiers · Vault TS · SMT at sweep · CE confirm · ghost autopsy",
-    defaultRegimes: ["baseline", "be-only"],
+    config: "legacy",
+    defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
   },
   {
     id: "macro-v14-ce",
-    label: "Macro Model v1.4 — CE confirm + tiered risk",
+    label: "Macro v1.4 CE",
     version: "v1.4",
-    config: "TS required · SMT boosts TP · wick 56–80 half risk · CE tap+lift · $800 risk",
-    defaultRegimes: ["baseline", "be-only"],
+    config: "legacy",
+    defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
   },
@@ -126,33 +253,41 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     id: "custom",
     label: "Custom experiment",
     version: "custom",
-    config: "User-defined variant — describe in hypothesis field",
+    config: "User-defined",
     defaultRegimes: [],
     family: "custom",
     phase: "research",
   },
 ];
 
+/** All presets (Lab + legacy) for cohort resolution. */
+export const STRATEGY_PRESETS: StrategyPreset[] = [
+  ...LAB_STRATEGY_PRESETS,
+  ...LEGACY_STRATEGY_PRESETS,
+];
+
 export interface LabStudy {
   presetId: string;
   customLabel: string;
   regimes: string[];
-  /** What you're testing vs baseline — saved to Obsidian. */
   hypothesis: string;
 }
 
 export const DEFAULT_STUDY: LabStudy = {
-  presetId: "prb-v15-be-live",
+  presetId: "matrix-a0a",
   customLabel: "",
   regimes: ["baseline", "be-only"],
-  hypothesis: "",
+  hypothesis: "Premium 365d eval baseline",
 };
+
+export function isMatrixPreset(id: string): boolean {
+  return id.startsWith("matrix-");
+}
 
 export function presetById(id: string): StrategyPreset | undefined {
   return STRATEGY_PRESETS.find((p) => p.id === id);
 }
 
-/** Display + Obsidian variant string from study config. */
 export function studyVariantName(study: LabStudy): string {
   const preset = presetById(study.presetId);
   if (!preset) return study.customLabel.trim() || "Unnamed study";
@@ -161,7 +296,6 @@ export function studyVariantName(study: LabStudy): string {
 }
 
 export function studyReady(study: LabStudy): boolean {
-  if (study.presetId === "custom") return study.customLabel.trim().length > 0;
   return !!presetById(study.presetId);
 }
 
