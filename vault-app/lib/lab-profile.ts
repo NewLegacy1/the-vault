@@ -53,8 +53,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline", "be-only"],
     family: "prb",
     phase: "eval",
-    uploadHint: "Your A0a TV CSV (one file) — or prb-matrix-a0a.csv from vault matrix folder.",
-    defaultHypothesis: "Premium 365d eval baseline",
+    uploadHint: "Your A0a TV CSV — or matrix/prb-a0a-3y.csv (3y) / prb-matrix-a0a.csv (1y).",
+    defaultHypothesis: "3y / premium eval baseline · max trades ≥ trade count",
   }),
   premiumRow({
     id: "matrix-a0b",
@@ -89,8 +89,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["runner", "baseline"],
     family: "prb",
     phase: "funded",
-    uploadHint: "Your D1 TV CSV (one file).",
-    defaultHypothesis: "PRO economics — no consistency",
+    uploadHint: "Your D1 TV CSV — or matrix/prb-d1-3y.csv.",
+    defaultHypothesis: "PRO economics — no consistency · max trades ≥ trade count",
   }),
   premiumRow({
     id: "matrix-b0",
@@ -101,8 +101,9 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline", "be-only"],
     family: "macro",
     phase: "funded",
-    uploadHint: "Your B0 Macro TV CSV (one file).",
-    defaultHypothesis: "Macro v1.4 premium 365d full",
+    uploadHint:
+      "Full Macro TV CSV (v1.4 or Macro_v2) — or matrix/macro-v2-full-3y.csv. Then pick B1a for A-tier filter.",
+    defaultHypothesis: "Macro full book · feed for B1* derived filters",
   }),
   premiumRow({
     id: "matrix-b1a",
@@ -113,7 +114,7 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline"],
     family: "macro",
     phase: "funded",
-    uploadHint: "macro-matrix-b1a.csv or filter from B0.",
+    uploadHint: "Derived from B0 — upload Macro full CSV on B0 first, then select B1a.",
     defaultHypothesis: "Funded primary — A-tier only",
     dataSource: "derived-b0",
   }),
@@ -261,8 +262,19 @@ export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
     config: "FUNDED · PRB RR6 ∪ Macro A · Hybrid_Sleeve_v0",
     defaultRegimes: ["runner", "baseline"],
     uploadHint:
-      "TV: Hybrid_Sleeve_v0 · Profile H0b → export CSV. Or upload matrix/hybrid-h0b.csv.",
+      "TV: Hybrid_Sleeve_v0 · Profile H0b → export CSV. Or upload matrix/hybrid-h0b-3y.csv.",
     defaultHypothesis: "Funded payout / recycle — D1 RR + Macro A",
+  }),
+  hybridRow({
+    id: "matrix-h2a",
+    label: "H2a · Eval · Macro 9:50 only",
+    version: "h2",
+    matrixBranch: "H2a",
+    phase: "eval",
+    config: "EVAL · PRB ∪ Macro A · 9:50 ON · 10:50 OFF",
+    uploadHint:
+      "TV: Hybrid_Sleeve · Macro 9:50 ON · 10:50 OFF. Or matrix/hybrid-h2a-3y.csv.",
+    defaultHypothesis: "Drop Macro 10:50 window — safer vs H0a",
   }),
   hybridRow({
     id: "matrix-h1a",

@@ -950,7 +950,7 @@ export default function LabPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dateFilters, setDateFilters] = useLocal<Record<string, DateFilter>>("vault.lab.dateFilters", {});
   const [sims, setSims, simsReady] = useLocal<number>("vault.lab.sims", 2000);
-  const [maxTrades, setMaxTrades, maxTradesReady] = useLocal<number>("vault.lab.maxTrades", 80);
+  const [maxTrades, setMaxTrades, maxTradesReady] = useLocal<number>("vault.lab.maxTrades", 200);
   const [payoutBuffer, setPayoutBuffer, payoutReady] = useLocal<number>("vault.lab.payoutBuffer", 2000);
   const [macroB0Csv, setMacroB0Csv] = useLocal<string>("vault.lab.macroB0Csv", "");
   const [macroB0Name, setMacroB0Name] = useLocal<string>("vault.lab.macroB0Name", "");
@@ -1538,7 +1538,7 @@ export default function LabPage() {
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="Hybrid · Eval (H0a / H1a)">
+                    <optgroup label="Hybrid · Eval (H0a / H1a / H2a)">
                       {labDropdownPresets()
                         .filter((p) => p.seriesId === "hybrid-sleeve" && p.phase === "eval")
                         .map((p) => (
