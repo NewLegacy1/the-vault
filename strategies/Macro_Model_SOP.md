@@ -406,3 +406,36 @@ Runs on **every core setup** regardless of live filters. Answers your question d
 5. A/B the suggested filter change before live.
 
 **No Pine source needed** for your external indicators — v1 rebuilds TS/SMT from your locked settings (§14). Compare label timing to your charts; tune inputs if labels diverge.
+
+---
+
+## 17. Early backtest findings (Jul 14 — MNQ × 10, May 28–Jul 10 2026)
+
+**Locked until 12mo confirm** — 22 trades only.
+
+| Knob | Finding |
+|------|---------|
+| **Require prem/disc ON** | ~−$2k → **+$5,367** vs OFF on same window |
+| **Dealing anchor `PDL ↔ session high`** | **~+3%** vs `PDH ↔ session low` on same window |
+| **Max stop 80 pts** | **Profitable** — most macro manipulation entries need wide wick stops |
+| **Max stop 30 pts** | **~$0 net** — not “tighter risk,” **different/smaller trade set** (script skips any signal whose wick stop > 30) |
+
+### Why max stop 30 kills PnL (not a bug)
+
+Stop is placed **beyond the signal-bar wick** (the manipulation candle). Macro sweeps often print **40–70+ pt** wicks. `Max stop` is a **filter**: if wick risk > max → **no trade**.
+
+- **80 pts** → allows those manipulation entries (your edge lives here)
+- **30 pts** → only takes “clean” tight wick bars — fewer trades, edge diluted
+
+So 80 doesn’t mean you *want* an 80-pt stop live — it means **the setups that work in this model tend to have wide manipulation wicks**. Capping at 30 doesn’t tighten the same trade; it **excludes** it.
+
+### Prop reality check
+
+At **10 MNQ**, a 78-pt stop (Jun 22 loss) ≈ **$1,560 risk** — not TPT **$400** risk. The tester can be +$5.4k while prop math would hate the tail loss. Next Pine pass: **$400 risk USD sizing** (like PRB) + optional **CE retest entry** to shrink wick stops without skipping the setup entirely.
+
+### PDL ↔ session high (why +3% might make sense)
+
+- **PDH ↔ session low** frames discount as “lower half toward today’s low from yesterday’s high” — good when narrative is **selling rallies** from PDH.
+- **PDL ↔ session high** frames discount as “lower half from **yesterday’s low** up through **today’s expansion**” — often better when the morning story is **sweep PDL / build from lows** or **short premium** under session high.
+
+Neither is universally right — **12mo A/B** both anchors with prem/disc ON.

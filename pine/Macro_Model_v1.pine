@@ -38,7 +38,7 @@ i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpMacro)
 
 grpLive = "Live entry (optional filters — TS/SMT NOT required by default)"
 i_requireStaging = input.bool(false, "Require 9:30–9:45 DOL sweep", group = grpLive)
-i_requirePremDisc = input.bool(false, "Require premium/discount alignment", group = grpLive)
+i_requirePremDisc = input.bool(true, "Require premium/discount alignment", group = grpLive, tooltip = "Jul 14 MNQ: ON flipped May–Jul window from ~−$2k to +$5.4k vs OFF. Keep ON until 12mo A/B says otherwise.")
 i_requireTs = input.bool(false, "Require turtle soup confirmed", group = grpLive)
 i_requireSmt = input.bool(false, "Require SMT", group = grpLive)
 i_requireFvg = input.bool(false, "Require FVG disrespect", group = grpLive)
@@ -56,7 +56,7 @@ i_esSymbol = input.symbol("CME_MINI:ES1!", "ES symbol", group = grpSmt)
 i_smtPivot = input.int(3, "SMT pivot lookback (5m)", minval = 2, maxval = 10, group = grpSmt)
 
 grpPd = "Premium / discount"
-i_pdAnchor = input.string("PDH ↔ session low", "Dealing range anchor", options = ["PDH ↔ session low", "PDL ↔ session high"], group = grpPd)
+i_pdAnchor = input.string("PDL ↔ session high", "Dealing range anchor", options = ["PDH ↔ session low", "PDL ↔ session high"], group = grpPd, tooltip = "Jul 14 MNQ A/B: PDL↔session high beat PDH↔session low by ~3% on May–Jul window. Re-verify on 12mo before locking.")
 
 grpFvg = "FVG triggers"
 i_minFvgPts = input.float(3.0, "Min FVG (pts)", group = grpFvg)
@@ -64,7 +64,7 @@ i_minFvgPts = input.float(3.0, "Min FVG (pts)", group = grpFvg)
 grpRisk = "Risk"
 i_targetPts = input.float(40.0, "Take profit (pts)", minval = 30.0, maxval = 50.0, group = grpRisk)
 i_stopBuf = input.float(1.0, "Stop buffer (pts)", group = grpRisk)
-i_maxStop = input.float(80.0, "Max stop (pts) — skip wider", group = grpRisk)
+i_maxStop = input.float(80.0, "Max stop (pts) — skip wider setups", minval = 5.0, maxval = 120.0, step = 5.0, group = grpRisk, tooltip = "Stop = signal-bar wick (manipulation leg). Macro bars often need 40–70+ pts. Max 30 = skips most setups (different trade set, often net ≤0). Max 80 = more fills but prop risk can exceed $400 at 10 MNQ — use risk USD cap when added.")
 i_qtyFull = input.int(10, "FULL MNQ", group = grpRisk)
 i_qtyHalf = input.int(5, "HALF MNQ", group = grpRisk)
 
