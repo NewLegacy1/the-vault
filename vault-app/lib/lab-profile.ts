@@ -80,9 +80,9 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   },
   {
     id: "macro-v0-pine",
-    label: "Macro Model v0 — Pine scaffold (not yet exported)",
-    version: "v0",
-    config: "Geometry filters only · narrative manual · compare vs PRB v1.5 on same firm profile",
+    label: "Macro Model v1 — ghost autopsy (TS/SMT optional)",
+    version: "v1",
+    config: "MISSED + CONFLUENCE tables · TS/SMT optional live filters · paste into F4 LAB",
     defaultRegimes: ["baseline", "be-only"],
   },
   {

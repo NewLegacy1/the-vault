@@ -360,3 +360,49 @@ float pct       = rangeHigh != rangeLow ? (close - rangeLow) / (rangeHigh - rang
 - Continuation PXH/PXL → may intentionally enter in premium on bullish expansion (soft override)
 
 The discretionary part is **which anchor today** — not whether Pine can compute the half.
+
+---
+
+## 16. Ghost autopsy (missed opportunities — like PRB)
+
+Macro Model v1 (`pine/Macro_Model_v1.pine`) ships **two tables** — paste both into **F4 LAB → Missed-trade autopsy**.
+
+### Table A — MISSED (failed exactly one live filter)
+
+PRB-style: when your **live profile** blocks a core setup because **one** filter failed, simulate the trade and tally outcomes.
+
+| Reason | Meaning |
+|--------|---------|
+| Outside macro window | Core fired outside 9:50–10:10 / 10:50–11:10 |
+| No staging DOL sweep | `Require staging` ON but 9:30–9:45 sweep missing |
+| Premium/discount mismatch | `Require prem/disc` ON but wrong half |
+| **No turtle soup** | `Require TS` ON but no TS Confirmed |
+| **No SMT** | `Require SMT` ON but no SMT label |
+| No FVG disrespect | `Require FVG` ON but no disrespect |
+| Slot used | 1/day already taken |
+| Stop too wide | Beyond max stop |
+
+**Default live profile:** TS and SMT **OFF** (optional per SOP). Turn them ON to see how many winners they block; green **No TS** / **No SMT** rows = evidence you can leave them optional.
+
+### Table B — CONFLUENCE (core setup outcomes by TS/SMT combo)
+
+Runs on **every core setup** regardless of live filters. Answers your question directly:
+
+| Row | Question it answers |
+|-----|---------------------|
+| **Neither TS nor SMT** | Did FVG/DOL-only macro trades work? |
+| **TS only (no SMT)** | Did turtle soup alone carry edge? |
+| **SMT only (no TS)** | Did SMT alone carry edge? |
+| **TS + SMT both** | Is the full stack worth requiring? |
+
+**How to read:** highest **net R** row with n≥3 → set live `Require TS` / `Require SMT` to match that row. If **Neither** is green and **Both** is red, TS/SMT are hurting more than helping on that window.
+
+### Workflow
+
+1. Load `Macro_Model_v1.pine` on **5m MNQ** (or 1m with HTF context).
+2. Set live filters to your current belief (start with TS OFF, SMT OFF).
+3. Bar replay 12 months → copy **MISSED** + **CONFLUENCE** tables.
+4. F4 LAB → select Macro preset → **Load blank template** → paste → read recommendations.
+5. A/B the suggested filter change before live.
+
+**No Pine source needed** for your external indicators — v1 rebuilds TS/SMT from your locked settings (§14). Compare label timing to your charts; tune inputs if labels diverge.

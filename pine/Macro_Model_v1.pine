@@ -1,0 +1,379 @@
+//@version=6
+// Macro Model v1 — ghost autopsy + optional TS/SMT confluence matrix
+//
+// SOP: strategies/Macro_Model_SOP.md
+//
+// Two autopsy tables (paste into F4 LAB ghost panel):
+//   MISSED — failed exactly ONE live filter (PRB-style)
+//   CONFLUENCE — every core setup simulated by TS/SMT presence (answers "which combo worked")
+//
+// TS/SMT rebuilt from your indicator SETTINGS (no source available):
+//   TS: pivot 10 · min disp 10 · detect 9:00–11:00 · sweep + close back inside
+//   SMT: pivot 3 on 5m · ES1! vs NQ · divergence at swing
+
+strategy(
+     title                   = "Macro Model v1",
+     shorttitle              = "Macro v1",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 10,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0)
+
+// ─── Macro session ───────────────────────────────────────────────────────────
+grpMacro = "ICT macro windows (NY ET)"
+i_useMacro1 = input.bool(true, "9:50–10:10 macro", group = grpMacro)
+i_useMacro2 = input.bool(true, "10:50–11:10 macro", group = grpMacro)
+i_stagingEnd = input.int(945, "DOL staging ends (HHMM)", minval = 930, maxval = 959, group = grpMacro)
+i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpMacro)
+i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpMacro)
+
+grpLive = "Live entry (optional filters — TS/SMT NOT required by default)"
+i_requireStaging = input.bool(false, "Require 9:30–9:45 DOL sweep", group = grpLive)
+i_requirePremDisc = input.bool(false, "Require premium/discount alignment", group = grpLive)
+i_requireTs = input.bool(false, "Require turtle soup confirmed", group = grpLive)
+i_requireSmt = input.bool(false, "Require SMT", group = grpLive)
+i_requireFvg = input.bool(false, "Require FVG disrespect", group = grpLive)
+i_halfSize = input.bool(false, "HALF size (red folder)", group = grpLive)
+
+grpTs = "Turtle soup (Strict indicator parity)"
+i_tsStart = input.int(900, "TS detect from (HHMM)", group = grpTs)
+i_tsEnd = input.int(1100, "TS detect until (HHMM)", group = grpTs)
+i_tsPivot = input.int(10, "Pivot lookback (strength)", minval = 3, maxval = 50, group = grpTs)
+i_tsSweep = input.float(1.0, "Min sweep beyond level (pts)", group = grpTs)
+i_tsDisp = input.float(10.0, "Min displacement (pts)", group = grpTs)
+
+grpSmt = "SMT (Master ICT parity — 5m pivot 3)"
+i_esSymbol = input.symbol("CME_MINI:ES1!", "ES symbol", group = grpSmt)
+i_smtPivot = input.int(3, "SMT pivot lookback (5m)", minval = 2, maxval = 10, group = grpSmt)
+
+grpPd = "Premium / discount"
+i_pdAnchor = input.string("PDH ↔ session low", "Dealing range anchor", options = ["PDH ↔ session low", "PDL ↔ session high"], group = grpPd)
+
+grpFvg = "FVG triggers"
+i_minFvgPts = input.float(3.0, "Min FVG (pts)", group = grpFvg)
+
+grpRisk = "Risk"
+i_targetPts = input.float(40.0, "Take profit (pts)", minval = 30.0, maxval = 50.0, group = grpRisk)
+i_stopBuf = input.float(1.0, "Stop buffer (pts)", group = grpRisk)
+i_maxStop = input.float(80.0, "Max stop (pts) — skip wider", group = grpRisk)
+i_qtyFull = input.int(10, "FULL MNQ", group = grpRisk)
+i_qtyHalf = input.int(5, "HALF MNQ", group = grpRisk)
+
+grpGhost = "Missed-trade autopsy"
+i_ghost = input.bool(true, "Track ghost trades", group = grpGhost)
+i_showGhost = input.bool(false, "Mark ghosts on chart", group = grpGhost)
+i_showTable = input.bool(true, "Show autopsy tables", group = grpGhost)
+
+grpVis = "Visuals"
+i_showBands = input.bool(true, "Shade macro + 9:35–10:15 band", group = grpVis)
+
+// ─── Time ────────────────────────────────────────────────────────────────────
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+
+f_inWin(int t, int a, int b) =>
+    t >= a and t < b
+
+bool inMacro = (i_useMacro1 and f_inWin(nyHhmm, 950, 1010)) or (i_useMacro2 and f_inWin(nyHhmm, 1050, 1110))
+bool inStaging = f_inWin(nyHhmm, 930, i_stagingEnd)
+bool inTsWin = f_inWin(nyHhmm, i_tsStart, i_tsEnd)
+bool inFocusBand = f_inWin(nyHhmm, 935, 1015)
+bool canPlace = nyHhmm < i_flatTime
+
+var int tradesToday = 0
+if newDay
+    tradesToday := 0
+
+// ─── Liquidity + DOL ─────────────────────────────────────────────────────────
+float pdh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
+float pdl = request.security(syminfo.tickerid, "D", low[1],  lookahead = barmerge.lookahead_on)
+
+var float sessHigh = na
+var float sessLow = na
+var float pmHigh = na
+var float pmLow = na
+if newDay
+    sessHigh := high
+    sessLow := low
+    pmHigh := high
+    pmLow := low
+else
+    sessHigh := math.max(sessHigh, high)
+    sessLow := math.min(sessLow, low)
+    if nyHhmm >= 400 and nyHhmm < 930
+        pmHigh := math.max(pmHigh, high)
+        pmLow := math.min(pmLow, low)
+
+float rangeHi = i_pdAnchor == "PDH ↔ session low" ? pdh : sessHigh
+float rangeLo = i_pdAnchor == "PDH ↔ session low" ? sessLow : pdl
+float eq = (rangeHi + rangeLo) / 2.0
+bool inPremium = close > eq
+bool inDiscount = close < eq
+
+// ─── FVG disrespect ──────────────────────────────────────────────────────────
+bool newBisi = low[1] > math.max(high[2], high) and (low[1] - math.max(high[2], high)) >= i_minFvgPts
+bool newSibi = high[1] < math.min(low[2], low) and (math.min(low[2], low) - high[1]) >= i_minFvgPts
+var float actBisiBot = na
+var float actSibiTop = na
+if newBisi
+    actBisiBot := math.max(high[2], high)
+if newSibi
+    actSibiTop := math.min(low[2], low)
+bool bisiDisrespect = not na(actBisiBot) and close < actBisiBot
+bool sibiDisrespect = not na(actSibiTop) and close > actSibiTop
+
+// ─── Turtle soup pools ───────────────────────────────────────────────────────
+var array<float> lowPool = array.new_float()
+var array<float> highPool = array.new_float()
+if newDay
+    array.clear(lowPool)
+    array.clear(highPool)
+    if not na(pdl)
+        array.push(lowPool, pdl)
+        array.push(highPool, pdh)
+    if not na(pmLow)
+        array.push(lowPool, pmLow)
+        array.push(highPool, pmHigh)
+
+float nqPl = ta.pivotlow(low, i_tsPivot, i_tsPivot)
+float nqPh = ta.pivothigh(high, i_tsPivot, i_tsPivot)
+if not na(nqPl)
+    array.push(lowPool, nqPl)
+if not na(nqPh)
+    array.push(highPool, nqPh)
+
+bool tsBull = false
+bool tsBear = false
+if inTsWin
+    for i = 0 to array.size(lowPool) - 1
+        float px = array.get(lowPool, i)
+        if low <= px - i_tsSweep and close > px
+            tsBull := true
+    for i = 0 to array.size(highPool) - 1
+        float px = array.get(highPool, i)
+        if high >= px + i_tsSweep and close < px
+            tsBear := true
+
+bool tsBullOk = tsBull and (close - low) >= i_tsDisp
+bool tsBearOk = tsBear and (high - close) >= i_tsDisp
+
+// ─── SMT on 5m pivot 3 (ES vs NQ) ────────────────────────────────────────────
+float esH5 = request.security(i_esSymbol, "5", high, gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
+float esL5 = request.security(i_esSymbol, "5", low, gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
+float nqH5 = request.security(syminfo.tickerid, "5", high, gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
+float nqL5 = request.security(syminfo.tickerid, "5", low, gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
+
+float nqPh5 = request.security(syminfo.tickerid, "5", ta.pivothigh(high, i_smtPivot, i_smtPivot), gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
+float nqPl5 = request.security(syminfo.tickerid, "5", ta.pivotlow(low, i_smtPivot, i_smtPivot), gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
+float esPh5 = request.security(i_esSymbol, "5", ta.pivothigh(high, i_smtPivot, i_smtPivot), gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
+float esPl5 = request.security(i_esSymbol, "5", ta.pivotlow(low, i_smtPivot, i_smtPivot), gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
+
+var float prevNqSH = na
+var float prevEsSH = na
+var float prevNqSL = na
+var float prevEsSL = na
+bool smtBear = false
+bool smtBull = false
+if not na(nqPh5)
+    smtBear := not na(prevNqSH) and nqH5 > prevNqSH and (na(prevEsSH) or esH5 <= prevEsSH)
+    prevNqSH := nqPh5
+    prevEsSH := esPh5
+if not na(nqPl5)
+    smtBull := not na(prevNqSL) and nqL5 < prevNqSL and (na(prevEsSL) or esL5 >= prevEsSL)
+    prevNqSL := nqPl5
+    prevEsSL := esPl5
+
+// ─── DOL staging sweep ───────────────────────────────────────────────────────
+float closestDol = math.abs(close - pdh) < math.abs(close - pdl) ? pdh : pdl
+bool sweptHigh = high > closestDol + i_tsSweep and close < closestDol
+bool sweptLow = low < closestDol - i_tsSweep and close > closestDol
+var bool stagingDone = false
+if newDay
+    stagingDone := false
+if inStaging and (sweptHigh or sweptLow)
+    stagingDone := true
+
+// ─── Core + live gates ───────────────────────────────────────────────────────
+bool flat = strategy.position_size == 0
+bool room = not i_oneTradeDay or tradesToday == 0
+bool allow = canPlace and flat and room
+
+bool coreLong = inMacro and (sibiDisrespect or tsBullOk or (stagingDone and sweptLow))
+bool coreShort = inMacro and (bisiDisrespect or tsBearOk or (stagingDone and sweptHigh))
+
+bool premOkLong = not i_requirePremDisc or inDiscount
+bool premOkShort = not i_requirePremDisc or inPremium
+bool stagingOk = not i_requireStaging or stagingDone
+bool tsOkLong = not i_requireTs or tsBullOk
+bool tsOkShort = not i_requireTs or tsBearOk
+bool smtOkLong = not i_requireSmt or smtBull
+bool smtOkShort = not i_requireSmt or smtBear
+bool fvgOkLong = not i_requireFvg or sibiDisrespect
+bool fvgOkShort = not i_requireFvg or bisiDisrespect
+
+bool liveLong = allow and coreLong and stagingOk and premOkLong and tsOkLong and smtOkLong and fvgOkLong
+bool liveShort = allow and coreShort and stagingOk and premOkShort and tsOkShort and smtOkShort and fvgOkShort
+
+float qty = i_halfSize ? i_qtyHalf : i_qtyFull
+
+if liveLong
+    float sl = low - i_stopBuf
+    if math.abs(close - sl) <= i_maxStop
+        strategy.entry("Long", strategy.long, qty = qty)
+        strategy.exit("LX", "Long", stop = sl, limit = close + i_targetPts)
+        tradesToday += 1
+if liveShort
+    float sl = high + i_stopBuf
+    if math.abs(sl - close) <= i_maxStop
+        strategy.entry("Short", strategy.short, qty = qty)
+        strategy.exit("SX", "Short", stop = sl, limit = close - i_targetPts)
+        tradesToday += 1
+
+// ─── Ghost autopsy ───────────────────────────────────────────────────────────
+// Missed reasons 1–8 · Confluence reasons 21–24
+var array<int>   gDir = array.new_int()
+var array<float> gEntry = array.new_float()
+var array<float> gStop = array.new_float()
+var array<float> gTp = array.new_float()
+var array<float> gRisk = array.new_float()
+var array<int>   gReason = array.new_int()
+var array<int>   gCount = array.new_int(25, 0)
+var array<int>   gWins = array.new_int(25, 0)
+var array<int>   gLoss = array.new_int(25, 0)
+var array<int>   gScr = array.new_int(25, 0)
+var array<float> gNetR = array.new_float(25, 0.0)
+
+f_gSpawn(int dir, float e, float s, float t, float r, int reason) =>
+    if r > 0 and array.size(gDir) < 60
+        array.push(gDir, dir)
+        array.push(gEntry, e)
+        array.push(gStop, s)
+        array.push(gTp, t)
+        array.push(gRisk, r)
+        array.push(gReason, reason)
+        array.set(gCount, reason, array.get(gCount, reason) + 1)
+
+f_gClose(int gi, int reason, float exitR) =>
+    if exitR > 0.35
+        array.set(gWins, reason, array.get(gWins, reason) + 1)
+    else if exitR < -0.35
+        array.set(gLoss, reason, array.get(gLoss, reason) + 1)
+    else
+        array.set(gScr, reason, array.get(gScr, reason) + 1)
+    array.set(gNetR, reason, array.get(gNetR, reason) + exitR)
+
+var int lastConfBar = -1
+
+if i_ghost and (coreLong or coreShort)
+    int dir = coreLong ? 1 : -1
+    float e = close
+    float s = dir == 1 ? low - i_stopBuf : high + i_stopBuf
+    float r = math.abs(e - s)
+    float t = dir == 1 ? e + i_targetPts : e - i_targetPts
+    bool hasTs = dir == 1 ? tsBullOk : tsBearOk
+    bool hasSmt = dir == 1 ? smtBull : smtBear
+    int combo = (hasTs ? 1 : 0) + (hasSmt ? 2 : 0)
+    int confR = 21 + combo
+
+    if r > 0 and r <= i_maxStop and bar_index != lastConfBar
+        f_gSpawn(dir, e, s, t, r, confR)
+        lastConfBar := bar_index
+        if i_showGhost
+            label.new(bar_index, dir == 1 ? low : high, "C" + str.tostring(confR), style = dir == 1 ? label.style_label_up : label.style_label_down, color = color.new(color.teal, 40), textcolor = color.white, size = size.tiny)
+
+    bool wouldLive = dir == 1 ? liveLong : liveShort
+    if not wouldLive and r > 0 and r <= i_maxStop
+        int fails = 0
+        int missR = 0
+        if not inMacro
+            fails += 1
+            missR := 1
+        if i_requireStaging and not stagingDone
+            fails += 1
+            missR := 2
+        if i_requirePremDisc and (dir == 1 ? not inDiscount : not inPremium)
+            fails += 1
+            missR := 3
+        if i_requireTs and not hasTs
+            fails += 1
+            missR := 4
+        if i_requireSmt and not hasSmt
+            fails += 1
+            missR := 5
+        if dir == 1 ? i_requireFvg and not sibiDisrespect : i_requireFvg and not bisiDisrespect
+            fails += 1
+            missR := 6
+        if not room
+            fails += 1
+            missR := 7
+        if r > i_maxStop
+            fails += 1
+            missR := 8
+        if fails == 1
+            f_gSpawn(dir, e, s, t, r, missR)
+            if i_showGhost
+                label.new(bar_index, dir == 1 ? low : high, "M" + str.tostring(missR), style = dir == 1 ? label.style_label_up : label.style_label_down, color = color.new(color.orange, 40), textcolor = color.white, size = size.tiny)
+
+// Ghost P&L resolution (same-bar conservative: stop before target)
+if i_ghost and array.size(gDir) > 0
+    for gi = array.size(gDir) - 1 to 0
+        int d = array.get(gDir, gi)
+        float e = array.get(gEntry, gi)
+        float s = array.get(gStop, gi)
+        float t = array.get(gTp, gi)
+        float r = array.get(gRisk, gi)
+        int rs = array.get(gReason, gi)
+        bool hitStop = d == 1 ? low <= s : high >= s
+        bool hitTp = d == 1 ? high >= t : low <= t
+        if hitStop or hitTp or nyHhmm >= i_flatTime
+            float exitR = hitTp and not hitStop ? i_targetPts / r : hitStop ? -1.0 : 0.0
+            f_gClose(gi, rs, exitR)
+            array.remove(gDir, gi)
+            array.remove(gEntry, gi)
+            array.remove(gStop, gi)
+            array.remove(gTp, gi)
+            array.remove(gRisk, gi)
+            array.remove(gReason, gi)
+
+// ─── Tables ──────────────────────────────────────────────────────────────────
+var string[] missNames = array.from("", "Outside macro window", "No staging DOL sweep", "Premium/discount mismatch", "No turtle soup", "No SMT", "No FVG disrespect", "Slot used (1/day)", "Stop too wide")
+var string[] confNames = array.from("", "Neither TS nor SMT", "TS only (no SMT)", "SMT only (no TS)", "TS + SMT both")
+
+f_tblRow(table t, int row, string c0, string c1, string c2, string c3, color tc) =>
+    table.cell(t, 0, row, c0, text_color = tc, text_size = size.tiny, text_halign = text.align_left)
+    table.cell(t, 1, row, c1, text_color = tc, text_size = size.tiny, text_halign = text.align_right)
+    table.cell(t, 2, row, c2, text_color = tc, text_size = size.tiny, text_halign = text.align_right)
+    table.cell(t, 3, row, c3, text_color = tc, text_size = size.tiny, text_halign = text.align_right)
+
+var table missT = table.new(position.bottom_right, 4, 14, bgcolor = color.new(color.black, 10), border_width = 1)
+var table confT = table.new(position.middle_right, 4, 6, bgcolor = color.new(color.black, 10), border_width = 1)
+
+if i_ghost and i_showTable and barstate.islast
+    f_tblRow(missT, 0, "MISSED (1 filter)", "n", "W/L/scr", "net R", color.orange)
+    for rs = 1 to 8
+        int n = array.get(gCount, rs)
+        float nr = array.get(gNetR, rs)
+        color rc = n == 0 ? color.gray : nr > 0 ? color.lime : color.white
+        f_tblRow(missT, rs, array.get(missNames, rs), str.tostring(n), str.tostring(array.get(gWins, rs)) + "/" + str.tostring(array.get(gLoss, rs)) + "/" + str.tostring(array.get(gScr, rs)), str.tostring(nr, "#.#"), rc)
+    f_tblRow(confT, 0, "CONFLUENCE", "n", "W/L/scr", "net R", color.teal)
+    for rs = 21 to 24
+        int n = array.get(gCount, rs)
+        float nr = array.get(gNetR, rs)
+        color rc = n == 0 ? color.gray : nr > 0 ? color.lime : color.white
+        int ci = rs - 20
+        f_tblRow(confT, ci, array.get(confNames, ci), str.tostring(n), str.tostring(array.get(gWins, rs)) + "/" + str.tostring(array.get(gLoss, rs)) + "/" + str.tostring(array.get(gScr, rs)), str.tostring(nr, "#.#"), rc)
+
+bgcolor(i_showBands and inMacro ? color.new(color.teal, 92) : na)
+bgcolor(i_showBands and inFocusBand ? color.new(color.purple, 94) : na)
+bgcolor(i_showBands and inStaging ? color.new(color.orange, 94) : na)
+
+plot(eq, "Equilibrium", color = color.new(color.gray, 50), linewidth = 1)

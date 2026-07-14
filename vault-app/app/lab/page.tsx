@@ -17,6 +17,7 @@ import {
   analyzeGhostAutopsy,
   parseGhostAutopsyPaste,
   GHOST_PASTE_TEMPLATE,
+  MACRO_GHOST_PASTE_TEMPLATE,
   GhostAutopsyReport,
 } from "@/lib/ghost-autopsy";
 import {
@@ -732,9 +733,18 @@ function GhostAutopsyCard({
   return (
     <>
       <p className="small dim" style={{ marginTop: 0, lineHeight: 1.6 }}>
-        Copy the <b>MISSED (failed 1 filter)</b> table (bottom-right) and <b>BE +1R retest</b> table (bottom-center) from Pine. Paste both below —
-        screenshot upload is for your reference only (no OCR yet). Green ghost rows in TV = filters blocking net-positive
-        trades; this panel maps them to Pine inputs to A/B.
+        {report.strategyKind === "macro" ? (
+          <>
+            Copy <b>MISSED (1 filter)</b> and <b>CONFLUENCE</b> tables from Macro Model v1 Pine (bottom-right + middle-right).
+            Confluence rows show which TS/SMT combos worked on core setups — TS and SMT are optional per SOP.
+          </>
+        ) : (
+          <>
+            Copy the <b>MISSED (failed 1 filter)</b> table (bottom-right) and <b>BE +1R retest</b> table (bottom-center) from Pine.
+            Paste both below — screenshot upload is for your reference only (no OCR yet).
+          </>
+        )}{" "}
+        Green ghost rows = filters blocking net-positive trades; this panel maps them to Pine inputs to A/B.
       </p>
       <div className="frm-row">
         <label className="fld" style={{ flex: 1 }}>
@@ -1830,7 +1840,9 @@ export default function LabPage() {
           report={ghostReport}
           paste={ghostPaste}
           onPasteChange={setGhostPaste}
-          onLoadTemplate={() => setGhostPaste(GHOST_PASTE_TEMPLATE)}
+          onLoadTemplate={() =>
+            setGhostPaste(study.presetId.startsWith("macro") ? MACRO_GHOST_PASTE_TEMPLATE : GHOST_PASTE_TEMPLATE)
+          }
           screenshotName={ghostScreenshot}
           onScreenshot={(file) => {
             if (!file) {
