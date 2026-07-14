@@ -75,14 +75,14 @@ See [[prop-firm-math]] for full rules and current MC standings.
 
 ## Standing questions for the agent
 
-**Primary (execution-plan Phase 2):** Does Lab confirm `regime-gate-v0` (Jul+Oct STAND_DOWN) on A0a/D1 gated CSVs — full 3y + OOS E[$/wk] lift?
+**Primary (post Phase 2.1 PASS):** Optional next only if user asks — 2.2 min-day pad, 2.3 chain EV, or 2.4 market co-feature for barren months. `regime-gate-v0` is settled PASS as calendar ops overlay.
 
-**Settled Phase 1:** Edge non-stationary; Jul/Oct WR 0%; red-folder stand-down fails for PRB. See [[phase1-autopsy-a0a-d1]].
+**Settled Phase 1–2.1:** Edge non-stationary; Jul/Oct WR 0% across years; red-folder stand-down fails; Lab-engine gate lift holds on A0a+D1 full+OOS. See [[findings-prb]] · [[phase1-autopsy-a0a-d1]].
 
-**Deferred until Phase 2 settles:**
+**Deferred:**
 - Can Macro A-tier alone (drop A+ and H) beat 40% pass with fewer than 20 trades/year?
 - Does the PRB BE@2R + PDH/PDL formula transfer to the macro window?
 - Is a hybrid (PRB structure trigger + Macro tier sizing) higher-expectancy than either parent?
 - What win-cap and stop-day rules maximize consistency-rule pass probability?
 
-**Track B (if Phase 2 Lab falsifies the gate):** What single non-ICT rule has trail-compatible losses and E[$/wk] > 0 on 3y + last-12m OOS?
+**Track B:** closed for now (gate PASSed). Reopen only if live OOS falsifies Jul+Oct.

@@ -241,6 +241,7 @@ Dropped Jul+Oct net ≈ **−$4.9k** (pure loser mass). Sample after gate: **100
 
 ### Phase 1 → Phase 2
 
-- Regime structure **exists** → stay on **Track A** (do not jump to Track B yet).
-- Next: Lab MC on `*-gate-jul-oct.csv` with hypothesis `regime-gate-v0` · save research/eval cohorts · settle in [[findings-prb]].
-- Caveat: full-sample still thin income; gate improves survival + EV/wk but does **not** invent a forever cohesive ICT edge.
+- Regime structure **exists** → stay on **Track A**.
+- **Phase 2.0 + 2.1:** **PASS** — Lab-engine MC (`lab-confirm-regime-gate-v0.ts`) on both A0a + D1, full + OOS. Settled in [[findings-prb]].
+- Stopped before min-day pad / chain EV / March stack / Track B per brief.
+- Caveat: full-sample still thin income; gate improves survival + EV/wk but does **not** invent a forever cohesive ICT edge. IS remains weak — most EV is OOS-concentrated.

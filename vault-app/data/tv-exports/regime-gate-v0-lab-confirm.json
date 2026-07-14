@@ -1,0 +1,98 @@
+{
+  "generated": "2026-07-14T23:08:16.069Z",
+  "gate": "regime-gate-v0",
+  "rule": "STAND_DOWN calendar month in {7,10}",
+  "hygiene": {
+    "yearMonthJulOct": "all cells w=0 across 2023–2026 (see autopsy byMonth)",
+    "stackedMarch": false,
+    "note": "calendar ops overlay — not causal market regime"
+  },
+  "mc": {
+    "sims": 2000,
+    "maxTrades": 220,
+    "payoutBuffer": 2000
+  },
+  "rows": [
+    {
+      "book": "A0a",
+      "window": "full",
+      "kind": "ungated",
+      "n": 120,
+      "eWeek": 16,
+      "pass": 42.2,
+      "bust": 57.9
+    },
+    {
+      "book": "A0a",
+      "window": "full",
+      "kind": "gated",
+      "n": 100,
+      "eWeek": 26,
+      "pass": 57.5,
+      "bust": 42.6,
+      "cohort": "eval/2026-07-14_230813710_a0a_prb_control_regime_gate_v0.md"
+    },
+    {
+      "book": "A0a",
+      "window": "oos",
+      "kind": "ungated",
+      "n": 40,
+      "eWeek": 112,
+      "pass": 84.3,
+      "bust": 15.7
+    },
+    {
+      "book": "A0a",
+      "window": "oos",
+      "kind": "gated",
+      "n": 36,
+      "eWeek": 144,
+      "pass": 91.8,
+      "bust": 8.3,
+      "cohort": "eval/2026-07-14_230814501_a0a_prb_control_regime_gate_v0_oos.md"
+    },
+    {
+      "book": "D1",
+      "window": "full",
+      "kind": "ungated",
+      "n": 120,
+      "eWeek": 33,
+      "pass": 95.1,
+      "bust": 42.4
+    },
+    {
+      "book": "D1",
+      "window": "full",
+      "kind": "gated",
+      "n": 100,
+      "eWeek": 37,
+      "pass": 123.8,
+      "bust": 32.7,
+      "cohort": "funded/2026-07-14_230815341_d1_prb_rr6_funded_raw_regime_gate_v0.md"
+    },
+    {
+      "book": "D1",
+      "window": "oos",
+      "kind": "ungated",
+      "n": 40,
+      "eWeek": 116,
+      "pass": 191.8,
+      "bust": 9.3
+    },
+    {
+      "book": "D1",
+      "window": "oos",
+      "kind": "gated",
+      "n": 36,
+      "eWeek": 152,
+      "pass": 208.2,
+      "bust": 6.3,
+      "cohort": "funded/2026-07-14_230816068_d1_prb_rr6_funded_raw_regime_gate_v0_oos.md"
+    }
+  ],
+  "verdicts": {
+    "A0a": "PASS",
+    "D1": "PASS"
+  },
+  "overall": "PASS"
+}

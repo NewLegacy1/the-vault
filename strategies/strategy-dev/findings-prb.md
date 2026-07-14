@@ -31,23 +31,38 @@ Full YAML records: `strategies/cohorts/`.
 3. **Skip Monday** holds.
 4. **1 trade/day** holds — slot discipline beats volume.
 5. Win profile is low win-rate / high payoff (13W/44L/12scr still nets $12k+) — the formula depends on **losses staying small** (BE mechanism), not on win rate.
+6. **`regime-gate-v0` PASS (2026-07-14)** — STAND_DOWN Jul+Oct on 3y A0a/D1. Lab-engine MC (`buildMcParamsForLab`, max 220, buffer 2000): E[$/wk] ↑ and bust ↓ on full + OOS vs ungated. Provisional **ops overlay** (calendar), not a causal market regime. Do **not** stack March into v0.
 
-## Phase 1 regime autopsy (3y · 2026-07-14) — pending Lab settle
+## Phase 1–2 regime gate (3y · settled PASS)
 
-Full write-up: [[phase1-autopsy-a0a-d1]] · script `vault-app/scripts/analyze-prb-3y-autopsy.ts`.
+Full autopsy: [[phase1-autopsy-a0a-d1]] · confirm JSON: `vault-app/data/tv-exports/regime-gate-v0-lab-confirm.json` · script: `vault-app/scripts/lab-confirm-regime-gate-v0.ts`.
 
 | Claim | Status |
 |---|---|
-| PRB 3y edge is **non-stationary** (IS weak / OOS strong) | **settled** on ledger splits |
-| Red-folder stand-down helps PRB | **fails** (A0a red days profitable) |
-| **`regime-gate-v0`:** STAND_DOWN Jul+Oct | **script proxy pass** · Lab MC confirm = Phase 2 |
-| Jul+Oct+Mar as v0 | **hold** — optional aggressive only |
+| PRB 3y edge is **non-stationary** (IS weak / OOS strong) | **settled** |
+| Red-folder stand-down helps PRB | **FAIL** (do not use) |
+| Year×month Jul/Oct hygiene (0 winners every year cell) | **PASS** |
+| **`regime-gate-v0`** Jul+Oct STAND_DOWN | **PASS** (Lab-engine · both A0a + D1) |
+| Jul+Oct+Mar as v0 | **hold** — do not stack |
 
-Gated CSVs ready for Lab: `matrix/prb-a0a-3y-gate-jul-oct.csv`, `prb-d1-3y-gate-jul-oct.csv` · hypothesis `regime-gate-v0`.
+### Lab-engine confirm (TPT50 · max 220 · buf 2000)
+
+| Book | Window | Ungated E[$/wk] | Gated E[$/wk] | Bust ungated → gated | n gated |
+|---|---|---:|---:|---|---:|
+| A0a | full 3y | $16 | **$26** | 57.9% → **42.5%** | 100 |
+| A0a | OOS 12m | $112 | **$144** | 15.7% → **8.3%** | 36 |
+| D1 | full 3y | $33 | **$37** | 42.4% → **32.7%** | 100 |
+| D1 | OOS 12m | $116 | **$152** | 9.3% → **6.3%** | 36 |
+
+Cohorts: `strategies/cohorts/eval/*regime_gate_v0*` · `strategies/cohorts/funded/*regime_gate_v0*`.
+
+**Honesty:** Gate removes barren calendar months; does **not** prove forever PRB edge. Income still thin (~$26–37/wk) — not Phase 4 / multi-account.
+
+**Blocked until explicit next ask:** min-day pad (2.2), chain EV (2.3), March stack, Track B.
 
 ## Open questions
 
-- Lab: does `regime-gate-v0` hold on A0a/D1 after official MC (full + OOS)?
+- Optional Phase 2.4: can a pre-session market co-feature explain barren Jul/Oct better than calendar alone?
 - Does trail 2.0/1.5 beat BE-only specifically in give-back months (Feb–Mar type)?
 - Long-only vs short-only bias splits by regime?
 - Does the PRB entry (rejection block + limit retest) work inside the 9:50–10:10 macro window? → feeds [[roadmap]] hybrid (deferred per [[execution-plan-post-3y]]).

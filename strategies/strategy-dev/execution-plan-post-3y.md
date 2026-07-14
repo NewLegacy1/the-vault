@@ -102,19 +102,33 @@ Cohorts live under `strategies/cohorts/{eval,funded}/` (1y baselines in `_archiv
 
 **If Lab Phase 2 falsifies the gate:** reopen Track B (one non-ICT candidate).
 
-### Phase 2 — Conditional Track A (only if Phase 1 finds a gate)
+### Phase 2 — Conditional Track A (Lab confirm · hygiene first)
 
 Use existing PRB/D1 ledgers + gate. Do **not** re-open Macro as primary.
 
 | # | Experiment | Prediction | Kill if |
 |---|---|---|---|
-| 2.1 | A0a / D1 **× regime gate** (CSV filter → Lab) | E[$/wk] ↑ vs ungated 3y | OOS E[$/wk] ≤ ungated or sample < useful floor |
-| 2.2 | Min-day pad overlay (ops) — **after** 2.1 looks good | P(payout\|pass) ↑ | Doesn’t change bust math materially |
-| 2.3 | Chain EV A0a→D1 with gate | Full-loop E[$/wk] documented | Chain EV ≤ 0 after fees |
+| **2.0** | **Gate hygiene (before celebrate)** — see checklist below | Jul+Oct remains plausible ops overlay | Year cells conflict · OOS lift vanishes in Lab · no story beyond calendar |
+| 2.1 | A0a / D1 **× regime-gate-v0** in **Lab MC** (not script proxy) | E[$/wk] ↑ vs ungated 3y · bust ↓ · n≥~80 | OOS E[$/wk] ≤ ungated · or Lab contradicts proxy |
+| 2.2 | Min-day pad overlay (ops) — **only after 2.1 settles PASS** | P(payout\|pass) ↑ | Doesn’t change bust math materially |
+| 2.3 | Chain EV A0a→D1 with gate — **after 2.1** | Full-loop E[$/wk] documented | Chain EV ≤ 0 after fees |
 
-Still blocked unless gate clears: second Macro window, same-day Macro+PRB sleeve as *new* primary, B0/B1a as funded primary, risk scale-up.
+Still blocked unless gate clears: second Macro window, same-day Macro+PRB sleeve as *new* primary, B0/B1a as funded primary, risk scale-up, **stacking March into v0**, mining more calendar months.
 
 Update [[findings-prb]] with gate result (settle: works / fails). Optional: one-line settle in [[findings-macro]] — B0 kill / B1a sleeve-only on 3y.
+
+#### Phase 2.0 — gate hygiene (MUST before promoting Jul+Oct)
+
+`regime-gate-v0` is a **calendar stand-down**, not a causal market regime. Treat it as a **provisional ops overlay** until hygiene passes.
+
+1. **Lab is source of truth** — script proxy in `analyze-prb-3y-autopsy.ts` is not settlement. Upload `*-gate-jul-oct.csv` → A0a + D1 → full 3y + OOS 12m.
+2. **Do not stack March in v0** — WR 0% is tempting; `07+10+03` stays optional aggressive only. Same for mining months 4–6.
+3. **Year×month stability** — Jul/Oct should not be a single-year artifact. Spot-check: Jul/Oct cells are 0-winner / negative across years present (Phase 1 follow-up). If a future year prints fat Jul winners, kill or revise the gate.
+4. **Honesty on non-stationarity** — IS (<2025-07) is still weak even before/after calendar filters; most EV sits in OOS. A gate that lifts E[$/wk] does **not** prove a forever PRB edge — it removes known barren months.
+5. **Prefer a live market co-feature later (Phase 2.4 optional)** — if Jul+Oct Lab-pass, next *research* question is whether a **pre-session observable** (trend/chop/vol proxy) explains those months. Calendar alone is allowed as v0 **ops**; causal feature is how you graduate toward the “strategy roster by market condition” thesis.
+6. **Income ceiling unchanged** — gated A0a ~$17/wk proxy is survival improvement, not the $1k/wk path. Don’t open Phase 4 / multi-account off this gate alone.
+
+**Agent instruction:** Complete **2.0 + 2.1 only** next. Do not start 2.2/2.3/Track B until findings-prb settles `regime-gate-v0` PASS or FAIL.
 
 ### Phase 3 — Track B: new coded edge research (parallel once Phase 1 started; primary if autopsy is empty)
 
@@ -185,15 +199,17 @@ Until then: **no** multi-account as a substitute for edge.
 
 ## 5. Immediate sprint board (next agent session)
 
-Phase 1 autopsy **done** — [[phase1-autopsy-a0a-d1]]. Next is **Phase 2 Lab confirm**:
+Phase 1–2.1 **done** — `regime-gate-v0` **PASS**. Stopped per brief (no 2.2/2.3/Track B until asked).
 
 1. [x] Locate matrix CSVs: `prb-a0a-3y.csv`, `prb-d1-3y.csv`.
 2. [x] Year + OOS splits (script + MD).
 3. [x] Winner / loss-streak / news clusters.
 4. [x] Draft gate: **Jul+Oct STAND_DOWN** (`regime-gate-v0`).
-5. [ ] Lab MC: upload `prb-a0a-3y-gate-jul-oct.csv` + `prb-d1-3y-gate-jul-oct.csv` (presets A0a / D1) · hypothesis `regime-gate-v0` · buffer 2000 · max 220 · full + OOS 12m · auto-save cohorts.
-6. [ ] Settle [[findings-prb]] from Lab numbers (script proxy already says works — Lab is source of truth for promotion).
-7. [ ] Only if Lab falsifies gate: Track B ticket — **one** candidate; don’t confuse Track B idea IDs B0/B1 with Lab Macro `matrix-b0` / `matrix-b1a`.
+5. [x] **2.0 hygiene** — year×month Jul/Oct all w=0; no March stack; calendar = provisional ops overlay.
+6. [x] **2.1 Lab-engine MC** — `lab-confirm-regime-gate-v0.ts` · A0a/D1 full + OOS · cohorts saved under `eval/` + `funded/`.
+7. [x] Settle [[findings-prb]] → **PASS** (both books).
+8. [ ] (Deferred) Only if user asks: 2.2 min-day pad / 2.3 chain EV / 2.4 market co-feature.
+9. [ ] Track B only if gate later falsified on live OOS — not open now.
 
 ## 6. How this overrides / relates to other docs
 
@@ -222,3 +238,4 @@ Phase 1 autopsy **done** — [[phase1-autopsy-a0a-d1]]. Next is **Phase 2 Lab co
 | 2026-07-14 | Created after 3y Tier 0 MC + senior review. Active brief for all strategy-dev chats. |
 | 2026-07-14 | Added final B0/B1a + H2a/M0/M1 numbers; Lab B1a-from-B0 SOP; sleeve-only B1a; agent hygiene (don’t overbuild TV filters); Track B ID collision note. |
 | 2026-07-14 | Phase 1 autopsy complete — `regime-gate-v0` Jul+Oct STAND_DOWN; next = Phase 2 Lab confirm. |
+| 2026-07-14 | Phase 2.0+2.1 Lab-engine confirm → **PASS**; findings-prb settled; stop before 2.2/2.3/Track B. |
