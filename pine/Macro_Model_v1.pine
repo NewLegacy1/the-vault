@@ -3,7 +3,7 @@
 //
 // SOP: strategies/Macro_Model_SOP.md
 //
-//   v1.1 — limit retest at FVG/TS CE + $400 risk sizing (PRB-style leave-then-retest)
+//   v1.2 — market on CE tap + lift (discretionary-style) alongside limit retest
 //
 // Two autopsy tables (paste into F4 LAB ghost panel):
 //   MISSED — failed exactly ONE live filter (PRB-style)
@@ -63,9 +63,11 @@ grpFvg = "FVG triggers"
 i_minFvgPts = input.float(3.0, "Min FVG (pts)", group = grpFvg)
 
 grpEntry = "Entry (SOP: rebalance to FVG / level)"
-i_entryMode = input.string("Limit retest (CE)", "Entry mode", options = ["Market on signal", "Limit retest (CE)"], group = grpEntry, tooltip = "Retest: stop stays beyond manipulation wick; limit at FVG CE or swept level. Shrinks entry→stop distance without skipping wide-wick setups.")
+i_entryMode = input.string("Limit retest (CE)", "Entry mode", options = ["Market on signal", "Limit retest (CE)", "Market on CE confirm (tap + lift)"], group = grpEntry, tooltip = "Limit = passive fill at FVG CE. CE confirm = tap CE zone then MARKET when price lifts off (long) or drops off (short). Signal = immediate market on disrespect/TS bar.")
 i_leaveR = input.float(1.0, "Leave N×risk before limit arms (0 = instant)", minval = 0.0, step = 0.25, group = grpEntry)
 i_retestTimeout = input.int(24, "Setup expires after N bars", minval = 4, maxval = 80, group = grpEntry)
+i_ceTolPts = input.float(2.0, "CE tap tolerance (pts)", minval = 0.0, step = 0.5, group = grpEntry)
+i_ceLiftPts = input.float(2.0, "Min lift off CE for market (pts)", minval = 0.0, step = 0.5, group = grpEntry, tooltip = "Long: after CE tap, close must finish this many pts above CE with bullish close. Short: mirror below CE.")
 
 grpRisk = "Risk (TPT $50K)"
 i_targetPts = input.float(40.0, "Take profit (pts from entry)", minval = 30.0, maxval = 50.0, group = grpRisk)
@@ -277,17 +279,23 @@ f_retestShort(float sigLo, float sigHi) =>
         lvl := f_ce(sigHi, sigLo)
     math.max(lvl, close)
 
-// ─── Pending setup state (leave → limit retest) ──────────────────────────────
+// ─── Pending setup state ─────────────────────────────────────────────────────
 var int   suDir = 0
 var float suEntry = na
 var float suStop = na
 var int   suBar = 0
 var bool  suLeft = false
 var bool  suOrd = false
+var bool  suTapped = false
+
+bool isLimitMode = i_entryMode == "Limit retest (CE)"
+bool isCeMktMode = i_entryMode == "Market on CE confirm (tap + lift)"
+bool isSignalMkt = i_entryMode == "Market on signal"
 
 if newDay
     suDir := 0
     suOrd := false
+    suTapped := false
     strategy.cancel("Long")
     strategy.cancel("Short")
 
@@ -295,41 +303,45 @@ if newDay
 if suDir == 0 and flat
     if liveLong
         float sl = low - i_stopBuf
-        float ent = i_entryMode == "Market on signal" ? close : f_retestLong(low, high)
+        float ceLvl = f_retestLong(low, high)
+        float ent = isSignalMkt ? close : ceLvl
         float risk = ent - sl
         if risk > 0 and risk <= i_maxStop
-            suDir := 1
-            suEntry := ent
-            suStop := sl
-            suBar := bar_index
-            suLeft := i_entryMode == "Market on signal" or i_leaveR == 0
-            if i_entryMode == "Market on signal"
+            if isSignalMkt
                 int q = f_qty(risk)
                 if q > 0
                     strategy.entry("Long", strategy.long, qty = q)
-                    strategy.exit("LX", "Long", stop = sl, limit = ent + i_targetPts)
+                    strategy.exit("LX", "Long", stop = sl, limit = close + i_targetPts)
                     tradesToday += 1
-                suDir := 0
+            else
+                suDir := 1
+                suEntry := ceLvl
+                suStop := sl
+                suBar := bar_index
+                suLeft := isLimitMode and i_leaveR == 0
+                suTapped := false
     else if liveShort
         float sl = high + i_stopBuf
-        float ent = i_entryMode == "Market on signal" ? close : f_retestShort(low, high)
+        float ceLvl = f_retestShort(low, high)
+        float ent = isSignalMkt ? close : ceLvl
         float risk = sl - ent
         if risk > 0 and risk <= i_maxStop
-            suDir := -1
-            suEntry := ent
-            suStop := sl
-            suBar := bar_index
-            suLeft := i_entryMode == "Market on signal" or i_leaveR == 0
-            if i_entryMode == "Market on signal"
+            if isSignalMkt
                 int q = f_qty(risk)
                 if q > 0
                     strategy.entry("Short", strategy.short, qty = q)
-                    strategy.exit("SX", "Short", stop = sl, limit = ent - i_targetPts)
+                    strategy.exit("SX", "Short", stop = sl, limit = close - i_targetPts)
                     tradesToday += 1
-                suDir := 0
+            else
+                suDir := -1
+                suEntry := ceLvl
+                suStop := sl
+                suBar := bar_index
+                suLeft := isLimitMode and i_leaveR == 0
+                suTapped := false
 
-// Leave-then-retest limit (PRB T03 pattern)
-if suDir != 0 and flat and i_entryMode == "Limit retest (CE)"
+// Limit retest (PRB leave-then-retest)
+if suDir != 0 and flat and isLimitMode
     float riskPts = suDir == 1 ? suEntry - suStop : suStop - suEntry
     bool inval = suDir == 1 ? close < suStop : close > suStop
     if bar_index - suBar > i_retestTimeout or not canPlace or inval
@@ -356,6 +368,36 @@ if suDir != 0 and flat and i_entryMode == "Limit retest (CE)"
                 suOrd := true
             else
                 suDir := 0
+
+// CE tap + lift → market (SOP rebalance, broker market click)
+if suDir != 0 and flat and isCeMktMode
+    bool inval = suDir == 1 ? close < suStop : close > suStop
+    if bar_index - suBar > i_retestTimeout or not canPlace or inval
+        suDir := 0
+        suTapped := false
+    else
+        if not suTapped
+            if suDir == 1 and low <= suEntry + i_ceTolPts
+                suTapped := true
+            if suDir == -1 and high >= suEntry - i_ceTolPts
+                suTapped := true
+        bool confirmLong = suTapped and suDir == 1 and close >= suEntry + i_ceLiftPts and close > open
+        bool confirmShort = suTapped and suDir == -1 and close <= suEntry - i_ceLiftPts and close < open
+        if confirmLong or confirmShort
+            float fillPx = close
+            float riskPts = suDir == 1 ? fillPx - suStop : suStop - fillPx
+            int q = f_qty(riskPts)
+            if q > 0
+                float tp = suDir == 1 ? fillPx + i_targetPts : fillPx - i_targetPts
+                if suDir == 1
+                    strategy.entry("Long", strategy.long, qty = q)
+                    strategy.exit("LX", "Long", stop = suStop, limit = tp)
+                else
+                    strategy.entry("Short", strategy.short, qty = q)
+                    strategy.exit("SX", "Short", stop = suStop, limit = tp)
+                tradesToday += 1
+            suDir := 0
+            suTapped := false
 
 if strategy.position_size != 0 and suOrd
     suOrd := false

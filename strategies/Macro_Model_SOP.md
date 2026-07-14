@@ -470,4 +470,12 @@ sequenceDiagram
 
 **Why this beats max-stop 30:** you still **take** the wide-wick setup; you just **wait for a better fill** instead of skipping the trade.
 
-**Pine:** `Entry mode → Limit retest (CE)` (new default). A/B vs `Market on signal` on same MNQ window before locking live.
+**Pine:** three entry modes under `Entry mode`:
+
+| Mode | Behavior |
+|------|----------|
+| **Limit retest (CE)** | Passive limit at FVG CE (default for first A/B) |
+| **Market on CE confirm (tap + lift)** | Tap CE zone → market when price lifts off CE with bullish/bearish close |
+| **Market on signal** | Immediate market on signal bar (legacy tester behavior) |
+
+**CE confirm (live-style market):** mirrors discretionary rebalance — stop still frozen on signal; script waits for price to **tap** CE (± tolerance), then fires **market** when the bar **closes off CE** (default +2 pts lift, bullish close for longs). Tuning: `CE tap tolerance`, `Min lift off CE`. A/B this vs limit retest on the same MNQ window before going live.
