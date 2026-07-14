@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLocal, fmtUsd, todayStr } from "@/lib/store";
 import { Account, JournalEntry, LedgerEntry, isCost } from "@/lib/types";
 import { BIAS_TO_FILTER, FINDING_BIAS_FLOW, FINDING_BIAS_RULES } from "@/lib/finding-bias";
+import { ruleById } from "@/lib/prop-firms";
 
 interface ChkItem {
   id: string;
