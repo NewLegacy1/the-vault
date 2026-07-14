@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T16:11:43.812Z",
+  "generatedAt": "2026-07-14T16:14:16.621Z",
   "strategy": "Macro Model v1 — CE confirm (tap + lift)",
   "settingsNote": "User-tuned: $800 risk, 50pt TP, 80pt max entry→stop, prem/disc ON, PDL↔session high",
   "sourceDir": "data/tv-exports/macro-v1-ce-confirm-2026-07-14",
@@ -28,17 +28,17 @@
     "sims": 2000,
     "passAt": 4000,
     "trailingDD": 2000,
-    "passRatePct": 29,
-    "bustRatePct": 71.1,
+    "passRatePct": 30.5,
+    "bustRatePct": 69.6,
     "timeoutRatePct": 0,
     "tradesToPassP50": 11,
     "tradesToPassP90": 19,
     "weeksToPassP50": 3.8,
     "weeksToPassP90": 6.6,
-    "expectedAccounts": 3.5,
+    "expectedAccounts": 3.3,
     "accountsFor90Pct": 7,
-    "payoutRatePct": 21.9,
-    "expectedNetUntilPass": 3915
+    "payoutRatePct": 23.8,
+    "expectedNetUntilPass": 3949
   },
   "evalConsistency": {
     "applicable": true,
