@@ -1,6 +1,6 @@
 import { McEconomics, McResult } from "./monte-carlo";
 import type { StrategyFamily, StrategyPhase } from "./lab-profile";
-import { normalizeMcPct } from "./firm-matrix-compare";
+import { normalizeMcPct } from "./mc-pct";
 
 export type { StrategyFamily, StrategyPhase };
 

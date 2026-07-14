@@ -174,6 +174,7 @@ export function MatrixFirmCompare({
           Firm comparison
           <span className="sub">
             {preset.matrixBranch} · {preset.label.split(" · ").slice(1).join(" · ") || preset.label}
+            {fundedMode ? " · funded PRO + recycle" : " · eval pass path"}
           </span>
         </div>
         <div className="panel-body">
@@ -203,8 +204,11 @@ export function MatrixFirmCompare({
             <p className="small dim" style={{ marginTop: 0, lineHeight: 1.55 }}>
               {embeddedInLab && (
                 <>
-                  <span className="accent">All firms</span> from one RUN — same trades, each prop&apos;s pass line / DD /
-                  consistency. Fan chart below uses TPT as reference. Full matrix view on{" "}
+                  <span className="accent">All firms</span> from one RUN — same trades, each prop&apos;s rules.
+                  {fundedMode
+                    ? " Funded presets use PRO survival, payout buffer, and TPT recycle-before-PRO+."
+                    : " Eval presets use pass line / DD / consistency."}{" "}
+                  Fan chart below uses TPT as reference. Full matrix on{" "}
                   <Link href="/results" className="accent">
                     F8 Results
                   </Link>
@@ -231,7 +235,8 @@ export function MatrixFirmCompare({
               {best && (
                 <>
                   {" "}
-                  Best pass: <span className="pos">{best.passPct}%</span> on{" "}
+                  Best {fundedMode ? "payout" : "pass"}:{" "}
+                  <span className="pos">{snapshotPrimaryPct(best)}%</span> on{" "}
                   {FIRM_LABELS[best.ruleId as MatrixCompareFirmId] ?? best.firmName}.
                 </>
               )}
@@ -241,24 +246,25 @@ export function MatrixFirmCompare({
           {rows.length > 0 && (
             <>
               <div className="chart-row" style={{ marginTop: 12, marginBottom: 14 }}>
-                <FirmPassChart rows={rows} />
+                <FirmPassChart rows={rows} fundedMode={fundedMode} />
               </div>
 
               <table>
                 <thead>
                   <tr>
                     <th>Firm</th>
-                    <th className="num">Pass %</th>
+                    <th className="num">{fundedMode ? "Payout %" : "Pass %"}</th>
                     <th className="num">Bust %</th>
-                    <th className="num">Payout %</th>
-                    <th className="num">Wk→pass</th>
-                    <th className="num">Pass line</th>
+                    {!fundedMode && <th className="num">Payout %</th>}
+                    {fundedMode && <th className="num">Recycle %</th>}
+                    <th className="num">{fundedMode ? "Wk→payout" : "Wk→pass"}</th>
                     <th className="num">DD</th>
                     <th>Consistency</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((r) => {
+                    const primary = snapshotPrimaryPct(r);
                     const isBest = best?.ruleId === r.ruleId;
                     const active = selectedFirm === r.ruleId;
                     return (
@@ -274,15 +280,26 @@ export function MatrixFirmCompare({
                         <td className="accent">
                           {FIRM_LABELS[r.ruleId as MatrixCompareFirmId] ?? r.firmName}
                           {isBest && <span className="pos" style={{ fontSize: 9, marginLeft: 4 }}>★</span>}
+                          {r.ddMode === "intraday" && (
+                            <span className="warn" style={{ fontSize: 9, marginLeft: 4 }}>
+                              intraday
+                            </span>
+                          )}
                         </td>
-                        <td className={"num " + passClass(r.passPct)}>{r.passPct}%</td>
+                        <td className={"num " + passClass(primary)}>{primary}%</td>
                         <td className="num neg">{r.bustPct}%</td>
-                        <td className="num">{r.payoutPct}%</td>
+                        {!fundedMode && <td className="num">{r.payoutPct}%</td>}
+                        {fundedMode && (
+                          <td className="num">{r.recyclePct != null ? `${r.recyclePct}%` : "—"}</td>
+                        )}
                         <td className="num">{r.weeksToPassP50 ?? "—"}</td>
-                        <td className="num">{fmtUsd(r.passAt)}</td>
                         <td className="num">{fmtUsd(r.trailingDD)}</td>
                         <td className="small dim">
-                          {r.consistencyPct > 0 ? `${r.consistencyPct}%` : "none"}
+                          {r.consistencyPct > 0
+                            ? fundedMode
+                              ? `${r.consistencyPct}% payout`
+                              : `${r.consistencyPct}% eval`
+                            : "none"}
                         </td>
                       </tr>
                     );
@@ -293,24 +310,32 @@ export function MatrixFirmCompare({
               {activeSnap && (
                 <div className="stat-strip" style={{ marginTop: 14 }}>
                   <div className="stat">
-                    <div className="k">Pass probability</div>
-                    <div className={"v " + passClass(activeSnap.passPct)}>{activeSnap.passPct}%</div>
-                    <div className="d">reach {fmtUsd(activeSnap.passAt)} before DD</div>
+                    <div className="k">{fundedMode ? "Payout probability" : "Pass probability"}</div>
+                    <div className={"v " + passClass(snapshotPrimaryPct(activeSnap))}>
+                      {snapshotPrimaryPct(activeSnap)}%
+                    </div>
+                    <div className="d">
+                      {fundedMode
+                        ? `clear $${payoutBuffer} buffer before DD · ${activeSnap.ddMode} trail`
+                        : `reach ${fmtUsd(activeSnap.passAt)} before DD`}
+                    </div>
                   </div>
+                  {fundedMode && activeSnap.recyclePct != null && (
+                    <div className="stat">
+                      <div className="k">Recycle rate</div>
+                      <div className="v cyan">{activeSnap.recyclePct}%</div>
+                      <div className="d">withdraw + restart before $5k PRO+ (TPT)</div>
+                    </div>
+                  )}
                   <div className="stat">
-                    <div className="k">Time to pass</div>
+                    <div className="k">{fundedMode ? "Time to payout" : "Time to pass"}</div>
                     <div className="v cyan">{activeSnap.weeksToPassP50 ?? "—"} wks</div>
                     <div className="d">median weeks · {sims.toLocaleString()} sims</div>
                   </div>
                   <div className="stat">
-                    <div className="k">Time to payout</div>
-                    <div className="v magenta">{activeSnap.weeksToPayoutP50 ?? "—"} wks</div>
-                    <div className="d">payout buffer ${payoutBuffer}</div>
-                  </div>
-                  <div className="stat">
                     <div className="k">Bust rate</div>
                     <div className="v neg">{activeSnap.bustPct}%</div>
-                    <div className="d">DD breach before pass</div>
+                    <div className="d">DD breach · {fmtUsd(activeSnap.trailingDD)} trail</div>
                   </div>
                 </div>
               )}
@@ -335,22 +360,29 @@ export function MatrixFirmCompare({
 }
 
 function compareFirmsFromCohortOnly(cohort: CohortRecord): FirmMcSnapshot[] {
+  const compareMode = mcCompareModeForPhase(cohort.phase);
   const out: FirmMcSnapshot[] = [];
   for (const id of MATRIX_COMPARE_FIRM_IDS) {
     const entry = firmMcForTab(cohort, id);
     const rule = ruleById(id);
     if (!entry || !rule) continue;
+    const fundedPhase = rule.phases.find((p) => p.id === "funded");
+    const evalPhase = rule.phases.find((p) => p.id === "eval");
+    const phaseRules = compareMode === "funded" ? fundedPhase : evalPhase;
     out.push({
       ruleId: id,
       firmName: rule.name,
-      passPct: normalizeStoredMcPct(entry.passPct, cohort.mcPassPct),
-      bustPct: normalizeStoredMcPct(entry.bustPct, cohort.mcBustPct),
-      payoutPct: normalizeStoredMcPct(entry.payoutPct, cohort.mcPayoutPct),
+      mcMode: entry.mcMode ?? compareMode,
+      passPct: entry.passPct,
+      bustPct: entry.bustPct,
+      payoutPct: entry.payoutPct,
+      recyclePct: entry.recyclePct,
       weeksToPassP50: entry.weeksToPassP50,
       weeksToPayoutP50: entry.weeksToPayoutP50,
       passAt: entry.passAt ?? rule.passAt,
       trailingDD: entry.trailingDD ?? rule.trailingDD,
       consistencyPct: entry.consistencyPct ?? rule.consistencyPct,
+      ddMode: phaseRules?.ddMode ?? rule.ddMode,
     });
   }
   return out;

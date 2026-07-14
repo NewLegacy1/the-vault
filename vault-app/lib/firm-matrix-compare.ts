@@ -1,5 +1,6 @@
 import type { CohortFirmMcEntry, CohortRecord } from "@/lib/cohort";
 import type { StrategyPhase } from "@/lib/lab-profile";
+import { mcRateToPct, normalizeMcPct } from "@/lib/mc-pct";
 import { runMonteCarlo } from "@/lib/monte-carlo";
 import type { PropPhaseRuleSet } from "@/lib/prop-phase-types";
 import { phaseById, ruleById } from "@/lib/prop-firms";
@@ -19,26 +20,7 @@ export type MatrixCompareFirmId = (typeof MATRIX_COMPARE_FIRM_IDS)[number];
 
 export type McCompareMode = "eval" | "funded";
 
-/** MC passRate/bustRate are 0–1; UI and cohort notes use 0–100 percent. */
-export function mcRateToPct(rate: number): number {
-  return Math.round(rate * 1000) / 10;
-}
-
-/**
- * Normalize MC percent fields from cohort storage (0–1 rates, ×10 bugs, or proper 0–100).
- */
-export function normalizeMcPct(pct: number, refPct?: number): number {
-  if (!Number.isFinite(pct)) return 0;
-  if (pct > 0 && pct <= 1) return mcRateToPct(pct);
-  if (refPct != null && refPct > 0 && refPct <= 1) refPct = mcRateToPct(refPct);
-  if (refPct != null && refPct > 15 && pct > 0 && pct < 15) {
-    return Math.round(pct * 10 * 10) / 10;
-  }
-  if (refPct != null && refPct > 20 && pct > 0 && pct < refPct * 0.25) {
-    return Math.round(pct * 100) / 10;
-  }
-  return pct;
-}
+export { mcRateToPct, normalizeMcPct } from "@/lib/mc-pct";
 
 /** @deprecated Use normalizeMcPct */
 export function normalizeStoredMcPct(pct: number, cohortMcPassPct?: number): number {
@@ -133,15 +115,15 @@ function buildMcParamsForFirm(
     };
   }
 
-  const eval = evalPhase;
-  const passAt = eval?.passAt ?? rule.passAt;
-  const trailingDD = eval?.trailingDD ?? rule.trailingDD;
-  const consistencyPct = eval?.evalConsistencyPct ?? rule.consistencyPct;
-  const minDays = eval?.minTradingDays ?? rule.minDays;
+  const evalRules = evalPhase;
+  const passAt = evalRules?.passAt ?? rule.passAt;
+  const trailingDD = evalRules?.trailingDD ?? rule.trailingDD;
+  const consistencyPct = evalRules?.evalConsistencyPct ?? rule.consistencyPct;
+  const minDays = evalRules?.minTradingDays ?? rule.minDays;
 
   return {
     rule,
-    evalPhase: eval,
+    evalPhase,
     fundedPhase,
     params: {
       trades: opts.trades,
@@ -151,9 +133,9 @@ function buildMcParamsForFirm(
       passAt,
       trailingDD,
       fees: {
-        evalFee: rule.evalFee ?? eval?.evalFee ?? 0,
-        activationFee: rule.activationFee ?? eval?.activationFee ?? 0,
-        monthlyFee: rule.monthlyFee ?? eval?.monthlyFee ?? 0,
+        evalFee: rule.evalFee ?? 0,
+        activationFee: rule.activationFee ?? evalRules?.activationFee ?? 0,
+        monthlyFee: rule.monthlyFee ?? evalRules?.monthlyFee ?? 0,
         payoutBuffer: opts.payoutBuffer,
       },
       consistency:

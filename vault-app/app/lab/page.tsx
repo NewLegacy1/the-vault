@@ -1009,8 +1009,9 @@ export default function LabPage() {
       sims: Number(sims) || 2000,
       maxTrades: Number(maxTrades) || 80,
       payoutBuffer: Number(payoutBuffer) || 1000,
+      strategyPhase: activePreset?.phase ?? study.presetId,
     }),
-    [activeDs, sims, maxTrades, payoutBuffer]
+    [activeDs, sims, maxTrades, payoutBuffer, activePreset?.phase, study.presetId]
   );
 
   const runKey = useMemo(
@@ -1294,6 +1295,7 @@ export default function LabPage() {
         sims: Number(sims) || 2000,
         maxTrades: Number(maxTrades) || 80,
         payoutBuffer: Number(payoutBuffer) || 1000,
+        strategyPhase: activePreset?.phase,
       });
     const payload: CohortSaveInput = {
       variant: variantName,

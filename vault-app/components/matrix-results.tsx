@@ -5,6 +5,9 @@ import { fmtUsd } from "@/lib/store";
 import type { CohortRecord } from "@/lib/cohort";
 import {
   firmMcForTab,
+  matrixPrimaryMcPct,
+  matrixWeeksMc,
+  mcCompareModeForPhase,
   type MatrixCompareFirmId,
 } from "@/lib/firm-matrix-compare";
 import { cohortForPreset } from "@/lib/matrix-cohort";
