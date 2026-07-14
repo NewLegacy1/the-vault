@@ -17,6 +17,7 @@ import { ruleById } from "@/lib/prop-firms";
 
 const FIRM_TABS: { id: MatrixCompareFirmId; label: string }[] = [
   { id: "tpt50", label: "TPT $50K" },
+  { id: "topstep50", label: "Topstep $50K" },
   { id: "alpha-zero-50", label: "Alpha Zero" },
   { id: "alpha-premium-50", label: "Alpha Premium" },
   { id: "apex50-eod", label: "Apex EOD" },

@@ -5,6 +5,7 @@ export type McCompareMode = "eval" | "funded";
 
 export type MatrixFirmId =
   | "tpt50"
+  | "topstep50"
   | "alpha-zero-50"
   | "alpha-premium-50"
   | "apex50-eod";
@@ -31,13 +32,15 @@ export interface FirmPayoutConfig {
   source: string;
 }
 
-/** Funded-phase payout consistency % (official, Jul 2026). */
+/** Funded-phase payout consistency % (official, Jul 2026). Topstep Standard XFA = 0; Consistency path = 40. */
 export function fundedPayoutConsistencyPct(ruleId: string): number {
   switch (ruleId as MatrixFirmId) {
     case "alpha-zero-50":
       return 40;
     case "apex50-eod":
       return 50;
+    case "topstep50":
+      return 0;
     default:
       return 0;
   }
@@ -130,6 +133,23 @@ const APEX_FUNDED: FirmPayoutConfig = {
   source: "apextraderfunding.com — EOD PA payouts (4.0, 50% consistency)",
 };
 
+/** XFA Standard path — Apr 2026 $50K cap; 50% of balance per request. */
+const TOPSTEP_EVAL: FirmPayoutConfig = {
+  traderKeepPct: 0.9,
+  profitBufferUsd: 0,
+  maxPayoutPerRequestUsd: 2000,
+  maxWithdrawFractionOfProfit: 0.5,
+  evalFeeUsd: 0,
+  activationFeeUsd: 149,
+  monthlyFeeUsd: 49,
+  source: "topstep.com — Standard Combine $49/mo + $149 XFA activation",
+};
+
+const TOPSTEP_FUNDED: FirmPayoutConfig = {
+  ...TOPSTEP_EVAL,
+  monthlyFeeUsd: 0,
+};
+
 /** Eval-path configs reuse funded withdrawal math; eval fees differ per firm. */
 const MATRIX_PAYOUT_CONFIG: Record<
   MatrixFirmId,
@@ -138,6 +158,10 @@ const MATRIX_PAYOUT_CONFIG: Record<
   tpt50: {
     eval: TPT_EVAL,
     funded: TPT_FUNDED,
+  },
+  topstep50: {
+    eval: TOPSTEP_EVAL,
+    funded: TOPSTEP_FUNDED,
   },
   "alpha-zero-50": {
     eval: {

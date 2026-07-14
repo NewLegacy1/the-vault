@@ -20,6 +20,7 @@ import { ruleById } from "@/lib/prop-firms";
 
 const FIRM_LABELS: Record<MatrixCompareFirmId, string> = {
   tpt50: "TPT $50K",
+  topstep50: "Topstep $50K",
   "alpha-zero-50": "Alpha Zero",
   "alpha-premium-50": "Alpha Premium",
   "apex50-eod": "Apex EOD",

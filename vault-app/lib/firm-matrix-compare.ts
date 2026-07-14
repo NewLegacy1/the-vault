@@ -9,6 +9,7 @@ import { phaseById, ruleById } from "@/lib/prop-firms";
 /** Firms shown on F8 matrix results tabs — eval $50K class. */
 export const MATRIX_COMPARE_FIRM_IDS = [
   "tpt50",
+  "topstep50",
   "alpha-zero-50",
   "alpha-premium-50",
   "apex50-eod",
@@ -94,6 +95,10 @@ function buildMcParamsForFirm(
     const funded = fundedPhase ?? evalPhase;
     if (!funded) return null;
     const payoutEconomics = payoutConfigForFirm(ruleId, "funded");
+    const payoutProfitTarget =
+      ruleId === "topstep50"
+        ? 4000
+        : opts.payoutBuffer;
     return {
       rule,
       evalPhase,
@@ -114,7 +119,7 @@ function buildMcParamsForFirm(
         simMode: "funded_only" as const,
         payoutEconomics: payoutEconomics ?? undefined,
         funded: {
-          payoutProfitTarget: opts.payoutBuffer,
+          payoutProfitTarget,
           recycleProfitCap: rule.id === "tpt50" ? 5000 : undefined,
           accountRecycling: rule.id === "tpt50",
           payoutConsistencyPct: fundedPayoutConsistencyPct(ruleId),
