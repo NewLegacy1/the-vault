@@ -43,6 +43,9 @@ export interface CohortRecord {
   scratches: number;
   maxDd: number;
   tradesPerWeek: number;
+  weeklyEdgeUsd: number;
+  scorecardVerdict: string;
+  compositeScore: number;
   mcPassPct: number;
   mcBustPct: number;
   mcPayoutPct: number;
@@ -70,6 +73,9 @@ export interface CohortSaveInput {
   scratches: number;
   maxDd: number;
   tradesPerWeek: number;
+  weeklyEdgeUsd?: number;
+  scorecardVerdict?: string;
+  compositeScore?: number;
   sims: number;
   maxTrades: number;
   payoutBuffer: number;
@@ -114,6 +120,10 @@ wins: ${input.wins}
 losses: ${input.losses}
 scratches: ${input.scratches}
 max_dd: ${Math.round(input.maxDd)}
+trades_per_week: ${input.tradesPerWeek}
+weekly_edge_usd: ${Math.round(input.tradesPerWeek * (input.trades ? input.netPnl / input.trades : 0))}
+scorecard_verdict: "${(input.scorecardVerdict ?? "hold").replace(/"/g, '\\"')}"
+composite_score: ${input.compositeScore ?? "null"}
 firm: "${input.firm.replace(/"/g, '\\"')}"
 mc_pass_pct: ${passPct}
 mc_bust_pct: ${bustPct}
@@ -164,6 +174,8 @@ dataset: "${input.datasetName.replace(/"/g, '\\"')}"
 | Median weeks to pass | ${eco.weeksToPassP50 ?? "—"} |
 | Median weeks to payout | ${eco.weeksToPayoutP50 ?? "—"} |
 | Expected accounts | ${Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "∞"} |
+| Weekly edge (E[$/wk]) | $${Math.round(input.tradesPerWeek * (input.trades ? input.netPnl / input.trades : 0)).toLocaleString()} |
+| Scorecard vs control | ${input.scorecardVerdict ?? "—"} (composite ${input.compositeScore ?? "—"}) |
 | Net after fees (median path) | $${eco.medianNetOnPass.toLocaleString()} |
 | Sims / max trades | ${input.sims} / ${input.maxTrades} |
 | Payout buffer | $${input.payoutBuffer} |
@@ -216,7 +228,10 @@ export function parseCohortMeta(content: string, filename: string): CohortRecord
     losses: parseInt(get("losses"), 10) || 0,
     scratches: parseInt(get("scratches"), 10) || 0,
     maxDd: parseFloat(get("max_dd")) || 0,
-    tradesPerWeek: 0,
+    tradesPerWeek: parseFloat(get("trades_per_week")) || 0,
+    weeklyEdgeUsd: parseFloat(get("weekly_edge_usd")) || 0,
+    scorecardVerdict: get("scorecard_verdict") || "",
+    compositeScore: parseFloat(get("composite_score")) || 0,
     mcPassPct: parseFloat(get("mc_pass_pct")) || 0,
     mcBustPct: parseFloat(get("mc_bust_pct")) || 0,
     mcPayoutPct: parseFloat(get("mc_payout_pct")) || 0,

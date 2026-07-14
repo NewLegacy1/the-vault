@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useLocal, fmtUsd } from "@/lib/store";
 import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
 import { mergeTvCsvs, parseTvCsv, tradesPerWeek } from "@/lib/csv";
@@ -11,7 +11,7 @@ import { TRADES_YTD_CHUNKS_3039 } from "@/lib/prb-chunks-3039-data";
 import { PROP_RULES, ruleById } from "@/lib/prop-firms";
 import { PropRule } from "@/lib/types";
 import { buildEquityCurve, EquityStats } from "@/lib/equity-curve";
-import { CohortSaveInput, mcToSummary, McSummary } from "@/lib/cohort";
+import { CohortSaveInput, mcToSummary, McSummary, CohortRecord } from "@/lib/cohort";
 import { analyzeEvalConsistency, EvalConsistencyReport } from "@/lib/eval-consistency";
 import {
   analyzeGhostAutopsy,
@@ -148,6 +148,16 @@ const SEED_SETS: Dataset[] = [
   },
 ];
 
+import { LabScorecardPanel } from "@/components/lab-scorecard-panel";
+import {
+  buildScorecardMetrics,
+  compareToBenchmark,
+  mcPassRateSecondHalf,
+  cohortToScorecardMetrics,
+  type ScorecardRunEntry,
+  type LabScorecardMetrics,
+  type ScorecardComparison,
+} from "@/lib/lab-scorecard";
 import {
   DEFAULT_STUDY,
   LabStudy,
@@ -877,6 +887,9 @@ export default function LabPage() {
   const [winCapUsd, setWinCapUsd] = useLocal<number>("vault.lab.winCapUsd", 1490);
   const [ghostPaste, setGhostPaste] = useLocal<string>("vault.lab.ghostPaste", "");
   const [ghostScreenshot, setGhostScreenshot] = useState<string | null>(null);
+  const [scorecardComparison, setScorecardComparison] = useState<ScorecardComparison | null>(null);
+  const [scorecardHistory, setScorecardHistory] = useLocal<ScorecardRunEntry[]>("vault.lab.scorecardHistory", []);
+  const [savedCohorts, setSavedCohorts] = useState<LabScorecardMetrics[]>([]);
   const mcResultsRef = useRef<HTMLDivElement>(null);
 
   const activePreset = presetById(study.presetId);
@@ -920,6 +933,18 @@ export default function LabPage() {
       span,
     };
   }, [ds]);
+
+  useEffect(() => {
+    fetch("/api/cohorts")
+      .then((r) => r.json())
+      .then((data: { cohorts?: CohortRecord[] }) => {
+        const rows = (data.cohorts ?? [])
+          .map((c) => cohortToScorecardMetrics(c))
+          .filter((x): x is LabScorecardMetrics => x != null);
+        setSavedCohorts(rows);
+      })
+      .catch(() => {});
+  }, [saveStatus]);
 
   const onFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -1071,7 +1096,11 @@ export default function LabPage() {
     });
   };
 
-  const persistCohort = async (mcResult: McResult, opts?: { allowDownload?: boolean }) => {
+  const persistCohort = async (
+    mcResult: McResult,
+    comparison?: ScorecardComparison | null,
+    opts?: { allowDownload?: boolean }
+  ) => {
     if (!studyReady(study)) return;
     setSaveStatus("saving");
     const preset = presetById(study.presetId);
@@ -1094,6 +1123,9 @@ export default function LabPage() {
       scratches: stats.scr,
       maxDd: equity.maxDd,
       tradesPerWeek: stats.tpw,
+      weeklyEdgeUsd: comparison?.current.weeklyEdgeUsd,
+      scorecardVerdict: comparison?.verdict,
+      compositeScore: comparison?.compositeScore,
       sims,
       maxTrades,
       payoutBuffer,
@@ -1130,7 +1162,7 @@ export default function LabPage() {
     }
   };
 
-  const run = async () => {
+  const run = () => {
     if (!canRun) return;
     setSaveStatus("idle");
     const mcResult = runMonteCarlo({
@@ -1147,11 +1179,43 @@ export default function LabPage() {
         payoutBuffer,
       },
     });
+    const secondHalfPass = mcPassRateSecondHalf(
+      ds.trades,
+      ds.dates,
+      rule,
+      sims,
+      maxTrades,
+      payoutBuffer
+    );
+    const metrics = buildScorecardMetrics({
+      id: `${study.presetId}-${dsId}`,
+      label: variantName,
+      dataset: datasetDisplayName(ds),
+      span: stats.span,
+      trades: ds.trades,
+      dates: ds.dates,
+      stats,
+      mc: mcResult,
+      consistency,
+      secondHalfPassRatePct: secondHalfPass,
+    });
+    const comparison = compareToBenchmark(metrics);
     setRes(mcResult);
+    setScorecardComparison(comparison);
+    const entry: ScorecardRunEntry = {
+      id: `${Date.now()}-${study.presetId}`,
+      at: new Date().toISOString(),
+      variant: variantName,
+      dataset: datasetDisplayName(ds),
+      verdict: comparison.verdict,
+      compositeScore: comparison.compositeScore,
+      metrics: comparison.current,
+    };
+    setScorecardHistory([entry, ...scorecardHistory].slice(0, 24));
     requestAnimationFrame(() => {
       mcResultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
-    if (autoSave) void persistCohort(mcResult);
+    if (autoSave) void persistCohort(mcResult, comparison);
   };
 
   const eco = res?.economics;
@@ -1261,11 +1325,11 @@ export default function LabPage() {
                 {saveStatus === "err" && (
                   <>
                     <span className="small neg">{saveMsg}</span>
-                    <button className="btn ghost" onClick={() => res && persistCohort(res)}>Retry save</button>
+                    <button className="btn ghost" onClick={() => res && persistCohort(res, scorecardComparison)}>Retry save</button>
                   </>
                 )}
                 {!autoSave && res && (
-                  <button className="btn ghost" onClick={() => persistCohort(res, { allowDownload: true })}>Save cohort note</button>
+                  <button className="btn ghost" onClick={() => persistCohort(res, scorecardComparison, { allowDownload: true })}>Save cohort note</button>
                 )}
               </div>
             </div>
@@ -1312,6 +1376,22 @@ export default function LabPage() {
               <div className="d">DD breach before pass · {(res.timeoutRate * 100).toFixed(1)}% unresolved</div>
             </div>
           </div>
+
+          {scorecardComparison && (
+            <div className="panel" style={{ marginBottom: 14 }}>
+              <div className="panel-title">
+                Experiment scorecard
+                <span className="sub">vs PRB v1.5 12mo control · ADVANCE / HOLD / REGRESS</span>
+              </div>
+              <div className="panel-body">
+                <LabScorecardPanel
+                  comparison={scorecardComparison}
+                  history={scorecardHistory}
+                  savedCohorts={savedCohorts}
+                />
+              </div>
+            </div>
+          )}
 
           <div className="panel">
             <div className="panel-title">

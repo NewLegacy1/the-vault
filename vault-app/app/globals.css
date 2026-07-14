@@ -105,7 +105,21 @@ details.panel > summary.panel-title .summary-badge {
 .stat .v { font-size: 20px; font-weight: 700; margin-top: 2px; }
 .stat .d { font-size: 10px; color: var(--sub); }
 
-.pos { color: var(--matrix); text-shadow: 0 0 6px var(--matrix-glow); }
+.scorecard-panel { font-size: 12px; }
+.scorecard-header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.scorecard-verdict-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 6px; }
+.scorecard-verdict { font-weight: 700; letter-spacing: 2px; font-size: 13px; }
+.scorecard-composite { color: var(--cyan); font-weight: 600; }
+.scorecard-table { margin-bottom: 10px; }
+.scorecard-table.compact td, .scorecard-table.compact th { padding: 4px 8px; font-size: 11px; }
+.scorecard-table tr.row-up td { background: rgba(0, 255, 65, 0.04); }
+.scorecard-table tr.row-down td { background: rgba(255, 51, 85, 0.04); }
+.kpi-priority { color: var(--dim); font-size: 10px; margin-right: 4px; }
+.scorecard-secondary { margin: 10px 0; }
+.scorecard-secondary summary { cursor: pointer; padding: 4px 0; }
+.scorecard-history { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+.scorecard-foot { margin-top: 12px; margin-bottom: 0; line-height: 1.5; }
+
 .neg { color: var(--red); }
 .warn { color: var(--yellow); }
 .accent { color: var(--matrix); }
