@@ -439,3 +439,35 @@ At **10 MNQ**, a 78-pt stop (Jun 22 loss) ≈ **$1,560 risk** — not TPT **$400
 - **PDL ↔ session high** frames discount as “lower half from **yesterday’s low** up through **today’s expansion**” — often better when the morning story is **sweep PDL / build from lows** or **short premium** under session high.
 
 Neither is universally right — **12mo A/B** both anchors with prem/disc ON.
+
+---
+
+## 18. Retest entry (v1.1 — how it works)
+
+**Problem with market-on-signal:** entry at signal `close`, stop below manipulation `wick` → huge entry→stop distance → $1,500 losses at 10 MNQ or need max-stop 80 to include the trade.
+
+**Retest pattern (same family as PRB leave-then-retest):**
+
+| Piece | Rule |
+|-------|------|
+| **Stop** | Frozen at **manipulation wick** on signal bar (invalidation unchanged) |
+| **Limit entry** | **CE of disrespected FVG** → else **swept TS level** → else **DOL** → else signal-bar CE |
+| **Leave** | Price must move **N×risk away** from limit before order arms (default 1×) |
+| **Size** | `floor($400 / (stopPts × pointvalue))` — prop-shaped, not fixed 10 lots |
+| **Target** | Still **40 pts from fill** (SOP) |
+
+```mermaid
+sequenceDiagram
+    participant Price
+    participant Script
+    Note over Price: Signal bar — sweep + disrespect
+    Script->>Script: Freeze stop below wick
+    Script->>Script: Set limit at FVG CE
+    Price->>Price: Leave (displace away)
+    Price->>Price: Retest limit
+    Script->>Script: Fill sized to $400 risk
+```
+
+**Why this beats max-stop 30:** you still **take** the wide-wick setup; you just **wait for a better fill** instead of skipping the trade.
+
+**Pine:** `Entry mode → Limit retest (CE)` (new default). A/B vs `Market on signal` on same MNQ window before locking live.

@@ -3,6 +3,8 @@
 //
 // SOP: strategies/Macro_Model_SOP.md
 //
+//   v1.1 — limit retest at FVG/TS CE + $400 risk sizing (PRB-style leave-then-retest)
+//
 // Two autopsy tables (paste into F4 LAB ghost panel):
 //   MISSED — failed exactly ONE live filter (PRB-style)
 //   CONFLUENCE — every core setup simulated by TS/SMT presence (answers "which combo worked")
@@ -42,7 +44,6 @@ i_requirePremDisc = input.bool(true, "Require premium/discount alignment", group
 i_requireTs = input.bool(false, "Require turtle soup confirmed", group = grpLive)
 i_requireSmt = input.bool(false, "Require SMT", group = grpLive)
 i_requireFvg = input.bool(false, "Require FVG disrespect", group = grpLive)
-i_halfSize = input.bool(false, "HALF size (red folder)", group = grpLive)
 
 grpTs = "Turtle soup (Strict indicator parity)"
 i_tsStart = input.int(900, "TS detect from (HHMM)", group = grpTs)
@@ -61,12 +62,18 @@ i_pdAnchor = input.string("PDL ↔ session high", "Dealing range anchor", option
 grpFvg = "FVG triggers"
 i_minFvgPts = input.float(3.0, "Min FVG (pts)", group = grpFvg)
 
-grpRisk = "Risk"
-i_targetPts = input.float(40.0, "Take profit (pts)", minval = 30.0, maxval = 50.0, group = grpRisk)
-i_stopBuf = input.float(1.0, "Stop buffer (pts)", group = grpRisk)
-i_maxStop = input.float(80.0, "Max stop (pts) — skip wider setups", minval = 5.0, maxval = 120.0, step = 5.0, group = grpRisk, tooltip = "Stop = signal-bar wick (manipulation leg). Macro bars often need 40–70+ pts. Max 30 = skips most setups (different trade set, often net ≤0). Max 80 = more fills but prop risk can exceed $400 at 10 MNQ — use risk USD cap when added.")
-i_qtyFull = input.int(10, "FULL MNQ", group = grpRisk)
-i_qtyHalf = input.int(5, "HALF MNQ", group = grpRisk)
+grpEntry = "Entry (SOP: rebalance to FVG / level)"
+i_entryMode = input.string("Limit retest (CE)", "Entry mode", options = ["Market on signal", "Limit retest (CE)"], group = grpEntry, tooltip = "Retest: stop stays beyond manipulation wick; limit at FVG CE or swept level. Shrinks entry→stop distance without skipping wide-wick setups.")
+i_leaveR = input.float(1.0, "Leave N×risk before limit arms (0 = instant)", minval = 0.0, step = 0.25, group = grpEntry)
+i_retestTimeout = input.int(24, "Setup expires after N bars", minval = 4, maxval = 80, group = grpEntry)
+
+grpRisk = "Risk (TPT $50K)"
+i_targetPts = input.float(40.0, "Take profit (pts from entry)", minval = 30.0, maxval = 50.0, group = grpRisk)
+i_stopBuf = input.float(1.0, "Stop buffer beyond manip wick (pts)", group = grpRisk)
+i_maxStop = input.float(80.0, "Max entry→stop (pts) — skip wider", minval = 5.0, maxval = 120.0, step = 5.0, group = grpRisk, tooltip = "Measured from LIMIT entry to stop, not signal close. Retest mode usually lands 15–35 pts here while stop still beyond the sweep wick.")
+i_riskUsd = input.float(400.0, "Risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk)
+i_maxContracts = input.int(60, "Max contracts (60 MNQ / 6 NQ)", minval = 1, maxval = 60, group = grpRisk)
+i_halfSize = input.bool(false, "HALF risk (50% USD)", group = grpRisk)
 
 grpGhost = "Missed-trade autopsy"
 i_ghost = input.bool(true, "Track ghost trades", group = grpGhost)
@@ -122,12 +129,16 @@ bool inDiscount = close < eq
 // ─── FVG disrespect ──────────────────────────────────────────────────────────
 bool newBisi = low[1] > math.max(high[2], high) and (low[1] - math.max(high[2], high)) >= i_minFvgPts
 bool newSibi = high[1] < math.min(low[2], low) and (math.min(low[2], low) - high[1]) >= i_minFvgPts
+var float actBisiTop = na
 var float actBisiBot = na
 var float actSibiTop = na
+var float actSibiBot = na
 if newBisi
+    actBisiTop := low[1]
     actBisiBot := math.max(high[2], high)
 if newSibi
     actSibiTop := math.min(low[2], low)
+    actSibiBot := high[1]
 bool bisiDisrespect = not na(actBisiBot) and close < actBisiBot
 bool sibiDisrespect = not na(actSibiTop) and close > actSibiTop
 
@@ -153,15 +164,19 @@ if not na(nqPh)
 
 bool tsBull = false
 bool tsBear = false
+var float tsBullPx = na
+var float tsBearPx = na
 if inTsWin
     for i = 0 to array.size(lowPool) - 1
         float px = array.get(lowPool, i)
         if low <= px - i_tsSweep and close > px
             tsBull := true
+            tsBullPx := px
     for i = 0 to array.size(highPool) - 1
         float px = array.get(highPool, i)
         if high >= px + i_tsSweep and close < px
             tsBear := true
+            tsBearPx := px
 
 bool tsBullOk = tsBull and (close - low) >= i_tsDisp
 bool tsBearOk = tsBear and (high - close) >= i_tsDisp
@@ -223,20 +238,129 @@ bool fvgOkShort = not i_requireFvg or bisiDisrespect
 bool liveLong = allow and coreLong and stagingOk and premOkLong and tsOkLong and smtOkLong and fvgOkLong
 bool liveShort = allow and coreShort and stagingOk and premOkShort and tsOkShort and smtOkShort and fvgOkShort
 
-float qty = i_halfSize ? i_qtyHalf : i_qtyFull
+// ─── Risk sizing + retest levels ─────────────────────────────────────────────
+float effRiskUsd = i_halfSize ? i_riskUsd * 0.5 : i_riskUsd
 
-if liveLong
-    float sl = low - i_stopBuf
-    if math.abs(close - sl) <= i_maxStop
-        strategy.entry("Long", strategy.long, qty = qty)
-        strategy.exit("LX", "Long", stop = sl, limit = close + i_targetPts)
-        tradesToday += 1
-if liveShort
-    float sl = high + i_stopBuf
-    if math.abs(sl - close) <= i_maxStop
-        strategy.entry("Short", strategy.short, qty = qty)
-        strategy.exit("SX", "Short", stop = sl, limit = close - i_targetPts)
-        tradesToday += 1
+f_qty(float stopPts) =>
+    if stopPts <= 0 or stopPts > i_maxStop
+        0
+    else
+        float pv = syminfo.pointvalue
+        int q = int(math.floor(effRiskUsd / (stopPts * pv)))
+        math.min(math.max(q, 0), i_maxContracts)
+
+f_ce(float top, float bot) =>
+    (top + bot) / 2.0
+
+// Retest limit: FVG CE → swept TS level → DOL → signal-bar CE (SOP rebalance stack)
+f_retestLong(float sigLo, float sigHi) =>
+    float lvl = na
+    if sibiDisrespect and not na(actSibiTop) and not na(actSibiBot)
+        lvl := f_ce(actSibiTop, actSibiBot)
+    else if tsBullOk and not na(tsBullPx)
+        lvl := tsBullPx
+    else if stagingDone and sweptLow
+        lvl := closestDol
+    else
+        lvl := f_ce(sigHi, sigLo)
+    math.min(lvl, close)
+
+f_retestShort(float sigLo, float sigHi) =>
+    float lvl = na
+    if bisiDisrespect and not na(actBisiTop) and not na(actBisiBot)
+        lvl := f_ce(actBisiTop, actBisiBot)
+    else if tsBearOk and not na(tsBearPx)
+        lvl := tsBearPx
+    else if stagingDone and sweptHigh
+        lvl := closestDol
+    else
+        lvl := f_ce(sigHi, sigLo)
+    math.max(lvl, close)
+
+// ─── Pending setup state (leave → limit retest) ──────────────────────────────
+var int   suDir = 0
+var float suEntry = na
+var float suStop = na
+var int   suBar = 0
+var bool  suLeft = false
+var bool  suOrd = false
+
+if newDay
+    suDir := 0
+    suOrd := false
+    strategy.cancel("Long")
+    strategy.cancel("Short")
+
+// Arm on signal (one setup at a time)
+if suDir == 0 and flat
+    if liveLong
+        float sl = low - i_stopBuf
+        float ent = i_entryMode == "Market on signal" ? close : f_retestLong(low, high)
+        float risk = ent - sl
+        if risk > 0 and risk <= i_maxStop
+            suDir := 1
+            suEntry := ent
+            suStop := sl
+            suBar := bar_index
+            suLeft := i_entryMode == "Market on signal" or i_leaveR == 0
+            if i_entryMode == "Market on signal"
+                int q = f_qty(risk)
+                if q > 0
+                    strategy.entry("Long", strategy.long, qty = q)
+                    strategy.exit("LX", "Long", stop = sl, limit = ent + i_targetPts)
+                    tradesToday += 1
+                suDir := 0
+    else if liveShort
+        float sl = high + i_stopBuf
+        float ent = i_entryMode == "Market on signal" ? close : f_retestShort(low, high)
+        float risk = sl - ent
+        if risk > 0 and risk <= i_maxStop
+            suDir := -1
+            suEntry := ent
+            suStop := sl
+            suBar := bar_index
+            suLeft := i_entryMode == "Market on signal" or i_leaveR == 0
+            if i_entryMode == "Market on signal"
+                int q = f_qty(risk)
+                if q > 0
+                    strategy.entry("Short", strategy.short, qty = q)
+                    strategy.exit("SX", "Short", stop = sl, limit = ent - i_targetPts)
+                    tradesToday += 1
+                suDir := 0
+
+// Leave-then-retest limit (PRB T03 pattern)
+if suDir != 0 and flat and i_entryMode == "Limit retest (CE)"
+    float riskPts = suDir == 1 ? suEntry - suStop : suStop - suEntry
+    bool inval = suDir == 1 ? close < suStop : close > suStop
+    if bar_index - suBar > i_retestTimeout or not canPlace or inval
+        strategy.cancel("Long")
+        strategy.cancel("Short")
+        suOrd := false
+        suDir := 0
+    else
+        if not suLeft
+            if suDir == 1 and high >= suEntry + i_leaveR * riskPts
+                suLeft := true
+            if suDir == -1 and low <= suEntry - i_leaveR * riskPts
+                suLeft := true
+        if suLeft and not suOrd
+            int q = f_qty(riskPts)
+            if q > 0
+                float tp = suDir == 1 ? suEntry + i_targetPts : suEntry - i_targetPts
+                if suDir == 1
+                    strategy.entry("Long", strategy.long, qty = q, limit = suEntry)
+                    strategy.exit("LX", "Long", stop = suStop, limit = tp)
+                else
+                    strategy.entry("Short", strategy.short, qty = q, limit = suEntry)
+                    strategy.exit("SX", "Short", stop = suStop, limit = tp)
+                suOrd := true
+            else
+                suDir := 0
+
+if strategy.position_size != 0 and suOrd
+    suOrd := false
+    suDir := 0
+    tradesToday += 1
 
 // ─── Ghost autopsy ───────────────────────────────────────────────────────────
 // Missed reasons 1–8 · Confluence reasons 21–24
