@@ -3,7 +3,7 @@
 //
 // SOP: strategies/Macro_Model_SOP.md
 //
-//   v1.3 — Vault-style TS (consumed levels) · SMT at sweep bar · tiered risk
+//   v1.3 — Vault-style TS (consumed levels) · SMT at sweep bar · tiered risk + TP
 //          A+ = TS+SMT · A = TS only · B = FVG-only HALF size (tight wick)
 //
 // Two autopsy tables (paste into F4 LAB ghost panel):
@@ -50,14 +50,14 @@ i_requireFvg = input.bool(false, "Require FVG disrespect (blocks A+/A)", group =
 grpTs = "Turtle soup (Vault engine — consumed levels)"
 i_tsStart = input.int(900, "TS detect from (HHMM)", group = grpTs)
 i_tsEnd = input.int(1100, "TS detect until (HHMM)", group = grpTs)
-i_tsPivot = input.int(10, "Pivot lookback (strength)", minval = 3, maxval = 50, group = grpTs)
+i_tsPivot = input.int(5, "Pivot lookback (strength)", minval = 3, maxval = 50, group = grpTs, tooltip = "Jul 14: pivot 5 improved 2mo sample vs 10 — more responsive swings for macro window.")
 i_tsSweep = input.float(1.0, "Min sweep beyond level (pts)", group = grpTs)
 i_tsDisp = input.float(10.0, "Min displacement (pts)", group = grpTs)
 i_usePdhPdl = input.bool(true, "Seed PDH/PDL at 9:30", group = grpTs)
 i_usePremkt = input.bool(true, "Seed premarket H/L at 9:30", group = grpTs)
 
 grpSmt = "SMT at sweep (Master ICT — 5m ES swing)"
-i_esSymbol = input.symbol("CME_MINI:ES1!", "ES symbol", group = grpSmt)
+i_esSymbol = input.symbol("CME_MINI:MES1!", "ES/MES symbol (pair with MNQ)", group = grpSmt)
 i_smtPivot = input.int(3, "ES swing pivot (5m)", minval = 2, maxval = 10, group = grpSmt)
 
 grpPd = "Premium / discount"
@@ -74,7 +74,9 @@ i_ceTolPts = input.float(2.0, "CE tap tolerance (pts)", minval = 0.0, step = 0.5
 i_ceLiftPts = input.float(2.0, "Min lift off CE for market (pts)", minval = 0.0, step = 0.5, group = grpEntry)
 
 grpRisk = "Risk (TPT $50K)"
-i_targetPts = input.float(50.0, "Take profit (pts from entry)", minval = 30.0, maxval = 80.0, group = grpRisk)
+i_targetAPlus = input.float(50.0, "A+ take profit (pts)", minval = 30.0, maxval = 80.0, group = grpRisk)
+i_targetA = input.float(40.0, "A-tier take profit (pts)", minval = 25.0, maxval = 60.0, group = grpRisk)
+i_targetB = input.float(30.0, "B-tier take profit (pts)", minval = 20.0, maxval = 50.0, group = grpRisk)
 i_stopBuf = input.float(1.0, "Stop buffer beyond manip wick (pts)", group = grpRisk)
 i_maxStop = input.float(80.0, "A+ max entry→stop (pts)", minval = 5.0, maxval = 120.0, step = 5.0, group = grpRisk)
 i_maxStopA = input.float(55.0, "A-tier max entry→stop (pts)", minval = 5.0, maxval = 100.0, step = 5.0, group = grpRisk)
@@ -288,6 +290,14 @@ f_tierMaxStop(int tier) =>
         2 => i_maxStopA
         1 => i_maxStopB
         => i_maxStop
+
+f_tierTarget(int tier) =>
+    switch tier
+        3 => i_targetAPlus
+        2 => i_targetA
+        1 => i_targetB
+        => i_targetAPlus
+
 f_qty(float stopPts, float riskUsd, float maxStop) =>
     if stopPts <= 0 or stopPts > maxStop
         0
@@ -329,6 +339,7 @@ var bool  suOrd = false
 var bool  suTapped = false
 var float suRiskUsd = na
 var float suMaxStop = na
+var float suTargetPts = na
 var int   suTier = 0
 
 bool isLimitMode = i_entryMode == "Limit retest (CE)"
@@ -354,11 +365,12 @@ if suDir == 0 and flat
         float maxStop = f_tierMaxStop(tier)
         float risk = ent - sl
         if risk > 0 and risk <= maxStop
+            float tgt = f_tierTarget(tier)
             if isSignalMkt
                 int q = f_qty(risk, riskUsd, maxStop)
                 if q > 0
                     strategy.entry("Long", strategy.long, qty = q)
-                    strategy.exit("LX", "Long", stop = sl, limit = close + i_targetPts)
+                    strategy.exit("LX", "Long", stop = sl, limit = close + tgt)
                     tradesToday += 1
             else
                 suDir := 1
@@ -368,6 +380,7 @@ if suDir == 0 and flat
                 suTier := tier
                 suRiskUsd := riskUsd
                 suMaxStop := maxStop
+                suTargetPts := tgt
                 suLeft := isLimitMode and i_leaveR == 0
                 suTapped := false
     else if liveShort
@@ -379,11 +392,12 @@ if suDir == 0 and flat
         float maxStop = f_tierMaxStop(tier)
         float risk = sl - ent
         if risk > 0 and risk <= maxStop
+            float tgt = f_tierTarget(tier)
             if isSignalMkt
                 int q = f_qty(risk, riskUsd, maxStop)
                 if q > 0
                     strategy.entry("Short", strategy.short, qty = q)
-                    strategy.exit("SX", "Short", stop = sl, limit = close - i_targetPts)
+                    strategy.exit("SX", "Short", stop = sl, limit = close - tgt)
                     tradesToday += 1
             else
                 suDir := -1
@@ -393,6 +407,7 @@ if suDir == 0 and flat
                 suTier := tier
                 suRiskUsd := riskUsd
                 suMaxStop := maxStop
+                suTargetPts := tgt
                 suLeft := isLimitMode and i_leaveR == 0
                 suTapped := false
 
@@ -414,7 +429,7 @@ if suDir != 0 and flat and isLimitMode
         if suLeft and not suOrd
             int q = f_qty(riskPts, suRiskUsd, suMaxStop)
             if q > 0
-                float tp = suDir == 1 ? suEntry + i_targetPts : suEntry - i_targetPts
+                float tp = suDir == 1 ? suEntry + suTargetPts : suEntry - suTargetPts
                 if suDir == 1
                     strategy.entry("Long", strategy.long, qty = q, limit = suEntry)
                     strategy.exit("LX", "Long", stop = suStop, limit = tp)
@@ -444,7 +459,7 @@ if suDir != 0 and flat and isCeMktMode
             float riskPts = suDir == 1 ? fillPx - suStop : suStop - fillPx
             int q = f_qty(riskPts, suRiskUsd, suMaxStop)
             if q > 0
-                float tp = suDir == 1 ? fillPx + i_targetPts : fillPx - i_targetPts
+                float tp = suDir == 1 ? fillPx + suTargetPts : fillPx - suTargetPts
                 if suDir == 1
                     strategy.entry("Long", strategy.long, qty = q)
                     strategy.exit("LX", "Long", stop = suStop, limit = tp)
@@ -515,7 +530,8 @@ if i_ghost and (coreLong or coreShort)
     float e = close
     float s = dir == 1 ? low - i_stopBuf : high + i_stopBuf
     float r = math.abs(e - s)
-    float t = dir == 1 ? e + i_targetPts : e - i_targetPts
+    float tgt = f_tierTarget(tier)
+    float t = dir == 1 ? e + tgt : e - tgt
     bool hasTs = dir == 1 ? tsBullOk : tsBearOk
     bool hasSmt = dir == 1 ? smtAtSweepBull : smtAtSweepBear
     int combo = (hasTs ? 1 : 0) + (hasSmt ? 2 : 0)
@@ -572,7 +588,8 @@ if i_ghost and array.size(gDir) > 0
         bool hitStop = d == 1 ? low <= s : high >= s
         bool hitTp = d == 1 ? high >= t : low <= t
         if hitStop or hitTp or nyHhmm >= i_flatTime
-            float exitR = hitTp and not hitStop ? i_targetPts / r : hitStop ? -1.0 : 0.0
+            float tgtDist = math.abs(t - e)
+            float exitR = hitTp and not hitStop ? tgtDist / r : hitStop ? -1.0 : 0.0
             f_gClose(gi, rs, exitR)
             array.remove(gDir, gi)
             array.remove(gEntry, gi)
