@@ -11,6 +11,17 @@
 | `prb-ytd-merged.csv` | Clean ledger: 1 trade/day after dedupe (PRB max 1/day) |
 | `prb-ytd-mc-report.json` | Stats + TPT $50K Monte Carlo + consistency check |
 
+## `macro-v1-ce-confirm-2026-07-14/`
+
+11 chunk CSVs (Macro v1 CE confirm, MNQ), imported 2026-07-14.
+
+| File | Description |
+|------|-------------|
+| `macro-v1-ce-confirm-merged.csv` | Clean ledger: 1 trade/day after dedupe |
+| `macro-v1-ce-confirm-mc-report.json` | Stats + TPT $50K Monte Carlo |
+
+Re-run: `npx tsx scripts/merge-macro-mc.ts`
+
 Re-run: `npx tsx scripts/merge-and-mc.ts`
 
 ## Dedupe rules
