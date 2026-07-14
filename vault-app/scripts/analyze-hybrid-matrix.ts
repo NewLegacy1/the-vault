@@ -144,7 +144,6 @@ function mcTpt(trades: ParsedTrade[]) {
     maxTrades: 80,
     passAt: rule.passAt,
     trailingDD: rule.trailingDD,
-    phase: "eval",
     consistency: { consistencyPct: 50, minDays: 5 },
     fees: {
       evalFee: rule.evalFee ?? 0,
@@ -405,7 +404,7 @@ function main() {
         [{ date: d, pnl: (p?.pnl ?? 0) + (m?.pnl ?? 0) }],
         events
       )[0];
-      const tags = joined.profile?.sopTags ?? [];
+      const tags = joined.profile?.tags ?? [];
       const tag = tags.includes("red-folder")
         ? "red-folder"
         : tags.includes("cpi-nfp-ppi")
@@ -468,7 +467,7 @@ function main() {
         prb: prbMap.get(d)!.pnl,
         macro: macMap.get(d)!.pnl,
         tag:
-          joinTradesWithNews([{ date: d, pnl: 0 }], events)[0].profile?.sopTags?.[0] ??
+          joinTradesWithNews([{ date: d, pnl: 0 }], events)[0].profile?.tags?.[0] ??
           "unknown",
       })),
     };

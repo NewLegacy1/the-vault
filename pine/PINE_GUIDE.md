@@ -70,6 +70,21 @@ The F2 bias panel then compares filter mismatches, "Both filter on a bearish rea
 
 **MNQ vs NQ:** MNQ outperformed by ~$3K purely from sizing granularity — NQ rounds $400 risk down to 1 contract (or 0 when stop > 20 pts). Stay on MNQ until risk unit ≥ ~$1,000. **v1.8 — Instrument / contract size** input: `Auto (chart symbol)` reads MNQ1! vs NQ1! from the chart; override `MNQ micro ($2/pt)` or `NQ mini ($20/pt)` for what-if only. NQ auto-caps at **6 contracts** (TPT 60-micro equivalent). Funnel row **Sizing** shows tag + max contracts. For real NQ backtests: chart `CME_MINI:NQ1!` + Auto, or stay on MNQ1! (recommended for $400 risk). **v1.9:** Auto now checks **ticker/root for MNQ/NQ** before `syminfo.pointvalue` — bar replay on `MNQ1!` sometimes reported `tv=20` and sized like NQ (~2 contracts instead of ~20). Funnel shows `tv=` raw value when Auto is on; if tag ≠ chart, lock **MNQ micro ($2/pt)** for the 12mo run.
 
+## Hybrid Sleeve v0 (`Hybrid_Sleeve_v0.pine`)
+
+PRB × Macro A portfolio in one strategy for Lab **H-series** (eval + funded).
+
+| Profile | Phase | PRB | Macro |
+|---|---|---|---|
+| **H0a** | Eval | BE@1R · RR5 · Both | A-tier CE confirm |
+| **H0b** | Funded | BE@1R · RR6 · Both | A-tier CE confirm |
+| **H1a** | Eval | same as H0a | Same + toggle skip on red days |
+| **H1b** | Funded | same as H0b | Same + toggle skip on red days |
+
+**Rules:** max 1 trade/day sleeve-wide · Macro window then PRB window · entry IDs `Long_A`/`Short_A` vs `Long_PRB`/`Short_PRB` for CSV Signal column.
+
+**YTD mock:** MNQ 5m · Deep Backtest · pick Profile → export → F4 Lab H0a/H0b. For H1 quiet-Macro MC without day-by-day toggles, prefer `matrix/hybrid-h1*.csv` (calendar-filtered).
+
 ## Powell Data H/L v0 (`Powell_DataHL_v0.pine`)
 
 **Manual replay only** — not a live strategy. Pine cannot read Forex Factory, so the script cannot know which days deserve an 8:30 trade. You pick CPI/PPI/NFP days in TV bar replay yourself.

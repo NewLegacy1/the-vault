@@ -1,0 +1,490 @@
+//@version=6
+// Hybrid Sleeve v0 — PRB × Macro A portfolio in one script
+//
+// Matrix profiles (match Lab H-series):
+//   H0a EVAL   — PRB BE@1R · RR5 · Both · Macro A (TS, CE confirm)
+//   H0b FUNDED — PRB BE@1R · RR6 · Both · Macro A
+//   H1a EVAL   — H0a + Macro red-folder skip (manual flag — Pine has no FF)
+//   H1b FUNDED — H0b + Macro red-folder skip
+//
+// Sleeve rules:
+//   · Max 1 trade/day across BOTH engines
+//   · Macro window first (9:50–10:10 / 10:50–11:10); PRB window 10:00–11:30
+//   · Macro A-tier only (TS required, no SMT boost, no half-wick)
+//   · Same-day conflict: first fill wins (Macro morning usually arms first)
+//
+// SOP refs: strategies/strategy-dev/hybrid-playbook.md · Macro_Model_SOP · PRB SOP
+// NOT codeable: FF red-folder auto-detect — toggle "Macro: skip (treat as red)"
+
+strategy(
+     title                   = "Hybrid Sleeve v0",
+     shorttitle              = "Hybrid v0",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 200,
+     max_boxes_count         = 100)
+
+// ─── Profile (matrix H-series) ───────────────────────────────────────────────
+grpProf = "Hybrid profile (Lab matrix)"
+i_profile = input.string("H0a · Eval", "Profile", options = [
+     "H0a · Eval",
+     "H0b · Funded",
+     "H1a · Eval quiet Macro",
+     "H1b · Funded quiet Macro",
+     "Custom"
+ ], group = grpProf, tooltip = "Locks PRB RR / Macro quiet skip to match Lab H0a–H1b. Custom exposes all knobs below.")
+
+grpEng = "Engines"
+i_useMacro = input.bool(true, "Enable Macro A engine", group = grpEng)
+i_usePrb   = input.bool(true, "Enable PRB engine", group = grpEng)
+i_macroSkipRed = input.bool(false, "Macro: skip today (red-folder / manual)", group = grpEng, tooltip = "ON for H1 profiles by default. Pine cannot read Forex Factory — flip this ON for CPI/NFP/FOMC days when running live or selective replay. Deep Backtest all-year with this ON blanks Macro every day — leave OFF for full-year mock, or use prebuilt hybrid-h1*.csv for quiet-only MC.")
+
+grpSess = "Session (NY ET)"
+i_macro1 = input.bool(true, "Macro 9:50–10:10", group = grpSess)
+i_macro2 = input.bool(true, "Macro 10:50–11:10", group = grpSess)
+i_prbStart = input.int(1000, "PRB entries from (HHMM)", group = grpSess)
+i_prbEnd   = input.int(1130, "PRB last order (HHMM)", group = grpSess)
+i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpSess)
+i_oneTrade = input.bool(true, "Max 1 trade / day (sleeve)", group = grpSess)
+i_skipMonday = input.bool(true, "Skip Mondays (PRB SOP)", group = grpSess)
+
+grpPrb = "PRB (control defaults)"
+i_prbRr = input.float(5.0, "PRB target R", minval = 1.0, step = 0.25, group = grpPrb)
+i_prbBe = input.float(1.0, "PRB BE at +N R (0 = off)", minval = 0.0, step = 0.25, group = grpPrb)
+i_prbRisk = input.float(400.0, "PRB risk USD", minval = 50.0, step = 50.0, group = grpPrb)
+i_prbMaxStop = input.float(20.0, "PRB max stop (pts)", group = grpPrb)
+i_prbMinStop = input.float(5.0, "PRB min stop (pts)", group = grpPrb)
+i_prbStopBuf = input.float(2.0, "PRB stop buffer (pts)", group = grpPrb)
+i_prbMinWick = input.float(5.0, "PRB min rejection wick (pts)", group = grpPrb)
+i_prbLocal = input.int(12, "PRB local extreme length", group = grpPrb)
+i_prbLeaveR = input.float(1.0, "PRB leave N×risk before limit", group = grpPrb)
+i_prbTimeout = input.int(24, "PRB setup timeout (bars)", group = grpPrb)
+i_prbReqSweep = input.bool(true, "PRB require sweep", group = grpPrb)
+i_prbConfClose = input.bool(true, "PRB confirming close", group = grpPrb)
+i_prbH4 = input.bool(true, "PRB require 4H wick", group = grpPrb)
+i_prbH4Min = input.float(8.0, "PRB min 4H wick (pts)", group = grpPrb)
+
+grpMac = "Macro A-tier"
+i_macRisk = input.float(800.0, "Macro A risk USD", minval = 50.0, step = 50.0, group = grpMac)
+i_macTp = input.float(40.0, "Macro A TP (pts)", group = grpMac)
+i_macMaxStop = input.float(80.0, "Macro max stop (pts)", group = grpMac)
+i_macStopBuf = input.float(1.0, "Macro stop buffer (pts)", group = grpMac)
+i_macWickFull = input.float(55.0, "Skip if signal wick > (pts) — A-tier", group = grpMac, tooltip = "A-tier = full risk only. Wicks above this are half/skip in Macro v1.4 — sleeve skips them.")
+i_tsPivot = input.int(5, "TS pivot strength", group = grpMac)
+i_tsSweep = input.float(1.0, "Min sweep (pts)", group = grpMac)
+i_tsDisp = input.float(10.0, "Min displacement (pts)", group = grpMac)
+i_ceTol = input.float(2.0, "CE tap tolerance (pts)", group = grpMac)
+i_ceLift = input.float(2.0, "CE lift for market (pts)", group = grpMac)
+i_macTimeout = input.int(24, "Macro setup timeout (bars)", group = grpMac)
+i_requirePrem = input.bool(true, "Macro require prem/disc align", group = grpMac)
+
+grpRisk = "Shared risk"
+i_maxContracts = input.int(60, "Max contracts", minval = 1, maxval = 60, group = grpRisk)
+i_dailyLoss = input.float(800.0, "Daily loss stop USD", group = grpRisk)
+i_dailyLock = input.float(1400.0, "Daily profit lock USD", group = grpRisk)
+
+grpVis = "Visuals"
+i_showLbl = input.bool(true, "Engine labels", group = grpVis)
+i_showTable = input.bool(true, "Status table", group = grpVis)
+
+// ─── Resolve profile → effective knobs ───────────────────────────────────────
+bool isH0a = i_profile == "H0a · Eval"
+bool isH0b = i_profile == "H0b · Funded"
+bool isH1a = i_profile == "H1a · Eval quiet Macro"
+bool isH1b = i_profile == "H1b · Funded quiet Macro"
+bool isCustom = i_profile == "Custom"
+
+float effPrbRr = isCustom ? i_prbRr : (isH0b or isH1b ? 6.0 : 5.0)
+float effPrbBe = isCustom ? i_prbBe : 1.0
+// Quiet Macro is NOT auto-forced on H1 — a year Deep Backtest with skip ON blanks Macro every day.
+// H1 quiet MC: use prebuilt hybrid-h1*.csv, or toggle "Macro: skip" only on known red days in replay.
+bool effMacroSkip = i_macroSkipRed
+string phaseTag = (isH0b or isH1b) ? "FUNDED" : "EVAL"
+bool h1Profile = isH1a or isH1b
+
+// ─── Time ────────────────────────────────────────────────────────────────────
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool dayAllowed = not i_skipMonday or dayofweek(time, "America/New_York") != dayofweek.monday
+bool inMacro = (i_macro1 and nyHhmm >= 950 and nyHhmm < 1010) or (i_macro2 and nyHhmm >= 1050 and nyHhmm < 1110)
+bool inPrbWin = nyHhmm >= i_prbStart and nyHhmm < i_prbEnd
+bool canPlace = nyHhmm < i_flatTime
+
+f_inWin(int t, int a, int b) => t >= a and t < b
+
+// ─── Day / sizing ────────────────────────────────────────────────────────────
+int totalTrades = strategy.opentrades + strategy.closedtrades
+var int tradesAtDayStart = 0
+var float dayStartEquity = na
+var string lastEngine = "—"
+if newDay
+    tradesAtDayStart := totalTrades
+    dayStartEquity := strategy.equity
+    lastEngine := "—"
+float dayPnl = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
+bool dayOk = (i_dailyLoss == 0 or dayPnl > -i_dailyLoss) and (i_dailyLock == 0 or dayPnl < i_dailyLock)
+bool roomToday = not i_oneTrade or totalTrades == tradesAtDayStart
+bool flat = strategy.position_size == 0
+
+f_pointVal() =>
+    string t = str.upper(syminfo.ticker)
+    string r = str.upper(syminfo.root)
+    str.contains(t, "MNQ") or str.contains(r, "MNQ") ? 2.0 : (str.contains(t, "NQ") or str.contains(r, "NQ") ? 20.0 : (syminfo.pointvalue > 0 ? syminfo.pointvalue : 2.0))
+
+f_qty(float stopPts, float riskUsd, float minStop, float maxStop) =>
+    if stopPts < minStop or stopPts > maxStop or stopPts <= 0
+        0
+    else
+        int q = int(math.floor(riskUsd / (stopPts * f_pointVal())))
+        math.min(math.max(q, 0), i_maxContracts)
+
+// ─── Shared PDH/PDL / PM ─────────────────────────────────────────────────────
+float pdh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
+float pdl = request.security(syminfo.tickerid, "D", low[1], lookahead = barmerge.lookahead_on)
+
+var float pmHigh = na
+var float pmLow = na
+var float sessHigh = na
+var float sessLow = na
+if newDay
+    pmHigh := na
+    pmLow := na
+    sessHigh := high
+    sessLow := low
+else
+    sessHigh := math.max(sessHigh, high)
+    sessLow := math.min(sessLow, low)
+if nyHhmm < 930
+    pmHigh := na(pmHigh) ? high : math.max(pmHigh, high)
+    pmLow := na(pmLow) ? low : math.min(pmLow, low)
+
+float eq = (sessHigh + pdl) / 2.0
+bool inDiscount = close < eq
+bool inPremium = close > eq
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MACRO A engine — TS required, A-tier only (no SMT AP, no half)
+// ═══════════════════════════════════════════════════════════════════════════════
+var array<float> lowLvl = array.new_float()
+var array<bool> lowSwept = array.new_bool()
+var array<float> highLvl = array.new_float()
+var array<bool> highSwept = array.new_bool()
+var bool sessionLevelsAdded = false
+
+float nqPivLow = ta.pivotlow(low, i_tsPivot, i_tsPivot)
+float nqPivHigh = ta.pivothigh(high, i_tsPivot, i_tsPivot)
+
+if newDay
+    array.clear(lowLvl)
+    array.clear(lowSwept)
+    array.clear(highLvl)
+    array.clear(highSwept)
+    sessionLevelsAdded := false
+
+if not sessionLevelsAdded and nyHhmm >= 930
+    sessionLevelsAdded := true
+    if not na(pdl)
+        array.push(lowLvl, pdl)
+        array.push(lowSwept, false)
+        array.push(highLvl, pdh)
+        array.push(highSwept, false)
+    if not na(pmLow)
+        array.push(lowLvl, pmLow)
+        array.push(lowSwept, false)
+        array.push(highLvl, pmHigh)
+        array.push(highSwept, false)
+
+if not na(nqPivLow)
+    array.push(lowLvl, nqPivLow)
+    array.push(lowSwept, false)
+    if array.size(lowLvl) > 12
+        array.shift(lowLvl)
+        array.shift(lowSwept)
+if not na(nqPivHigh)
+    array.push(highLvl, nqPivHigh)
+    array.push(highSwept, false)
+    if array.size(highLvl) > 12
+        array.shift(highLvl)
+        array.shift(highSwept)
+
+bool tsBull = false
+bool tsBear = false
+var float tsBullPx = na
+var float tsBearPx = na
+bool inTsWin = f_inWin(nyHhmm, 900, 1100)
+
+if inTsWin and array.size(lowLvl) > 0
+    for i = 0 to array.size(lowLvl) - 1
+        float px = array.get(lowLvl, i)
+        if not array.get(lowSwept, i)
+            if low <= px - i_tsSweep and close > px
+                tsBull := true
+                tsBullPx := px
+                array.set(lowSwept, i, true)
+            else if close < px - i_tsSweep
+                array.set(lowSwept, i, true)
+
+if inTsWin and array.size(highLvl) > 0
+    for i = 0 to array.size(highLvl) - 1
+        float px = array.get(highLvl, i)
+        if not array.get(highSwept, i)
+            if high >= px + i_tsSweep and close < px
+                tsBear := true
+                tsBearPx := px
+                array.set(highSwept, i, true)
+            else if close > px + i_tsSweep
+                array.set(highSwept, i, true)
+
+bool tsBullOk = tsBull and (close - low) >= i_tsDisp
+bool tsBearOk = tsBear and (high - close) >= i_tsDisp
+float sigWick = high - low
+bool macWickOk = sigWick <= i_macWickFull
+bool macLongCore = inMacro and tsBullOk and macWickOk and (not i_requirePrem or inDiscount)
+bool macShortCore = inMacro and tsBearOk and macWickOk and (not i_requirePrem or inPremium)
+bool macAllow = i_useMacro and not effMacroSkip and flat and roomToday and canPlace and dayOk
+
+var int macDir = 0
+var float macEntry = na
+var float macStop = na
+var int macBar = 0
+var bool macTapped = false
+
+if newDay
+    macDir := 0
+    macTapped := false
+
+if macDir == 0 and macAllow
+    if macLongCore
+        float sl = low - i_macStopBuf
+        float ent = not na(tsBullPx) ? tsBullPx : (high + low) / 2.0
+        float risk = ent - sl
+        if risk > 0 and risk <= i_macMaxStop
+            macDir := 1
+            macEntry := ent
+            macStop := sl
+            macBar := bar_index
+            macTapped := false
+    else if macShortCore
+        float slS = high + i_macStopBuf
+        float entS = not na(tsBearPx) ? tsBearPx : (high + low) / 2.0
+        float riskS = slS - entS
+        if riskS > 0 and riskS <= i_macMaxStop
+            macDir := -1
+            macEntry := entS
+            macStop := slS
+            macBar := bar_index
+            macTapped := false
+
+if macDir != 0 and flat and macAllow
+    bool inval = macDir == 1 ? close < macStop : close > macStop
+    if bar_index - macBar > i_macTimeout or not canPlace or inval
+        macDir := 0
+        macTapped := false
+    else
+        if not macTapped
+            if macDir == 1 and low <= macEntry + i_ceTol
+                macTapped := true
+            if macDir == -1 and high >= macEntry - i_ceTol
+                macTapped := true
+        bool goLong = macTapped and macDir == 1 and close >= macEntry + i_ceLift and close > open
+        bool goShort = macTapped and macDir == -1 and close <= macEntry - i_ceLift and close < open
+        if goLong or goShort
+            float fill = close
+            float riskPts = macDir == 1 ? fill - macStop : macStop - fill
+            int q = f_qty(riskPts, i_macRisk, 1.0, i_macMaxStop)
+            if q > 0
+                float tp = macDir == 1 ? fill + i_macTp : fill - i_macTp
+                if macDir == 1
+                    strategy.entry("Long_A", strategy.long, qty = q)
+                    strategy.exit("LX_A", "Long_A", stop = macStop, limit = tp)
+                else
+                    strategy.entry("Short_A", strategy.short, qty = q)
+                    strategy.exit("SX_A", "Short_A", stop = macStop, limit = tp)
+                lastEngine := "MAC"
+            macDir := 0
+            macTapped := false
+
+if i_showLbl and barstate.isconfirmed and macAllow and (macLongCore or macShortCore)
+    label.new(bar_index, macLongCore ? low : high, "MAC A", style = macLongCore ? label.style_label_up : label.style_label_down, color = color.new(color.teal, 20), textcolor = color.white, size = size.tiny)
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRB engine — simplified formal RB (A0a/D1 defaults via profile)
+// ═══════════════════════════════════════════════════════════════════════════════
+var float ko1800 = na
+var float ko0000 = na
+var float ko1000 = na
+if nyHhmm >= 1800 and nyHhmm[1] < 1800
+    ko1800 := open
+if newDay
+    ko0000 := open
+if nyHhmm >= 1000 and nyHhmm[1] < 1000
+    ko1000 := open
+
+f_soupAbove(float lvl) => not na(lvl) and high > lvl and close < lvl
+f_soupBelow(float lvl) => not na(lvl) and low < lvl and close > lvl
+bool sweptAbove = f_soupAbove(pmHigh) or f_soupAbove(pdh) or f_soupAbove(ko1800) or f_soupAbove(ko0000) or f_soupAbove(ko1000)
+bool sweptBelow = f_soupBelow(pmLow) or f_soupBelow(pdl) or f_soupBelow(ko1800) or f_soupBelow(ko0000) or f_soupBelow(ko1000)
+
+var float h4Open = na
+var float h4High = na
+var float h4Low = na
+if ta.change(time("240")) != 0
+    h4Open := open
+    h4High := high
+    h4Low := low
+else
+    h4High := math.max(nz(h4High, high), high)
+    h4Low := math.min(nz(h4Low, low), low)
+float h4UpperWick = nz(h4High, high) - math.max(nz(h4Open, open), close)
+float h4LowerWick = math.min(nz(h4Open, open), close) - nz(h4Low, low)
+bool h4OkBear = not i_prbH4 or h4UpperWick >= i_prbH4Min
+bool h4OkBull = not i_prbH4 or h4LowerWick >= i_prbH4Min
+
+float upperWick = high - math.max(open, close)
+float lowerWick = math.min(open, close) - low
+bool localHigh = high >= ta.highest(high, i_prbLocal)
+bool localLow = low <= ta.lowest(low, i_prbLocal)
+bool rbBear = inPrbWin and dayAllowed and localHigh and upperWick >= i_prbMinWick and (not i_prbConfClose or close < open) and h4OkBear and (not i_prbReqSweep or sweptAbove)
+bool rbBull = inPrbWin and dayAllowed and localLow and lowerWick >= i_prbMinWick and (not i_prbConfClose or close > open) and h4OkBull and (not i_prbReqSweep or sweptBelow)
+
+bool prbAllow = i_usePrb and flat and roomToday and canPlace and dayOk and dayAllowed
+
+var int prbDir = 0
+var float prbEntry = na
+var float prbStop = na
+var float prbTp = na
+var bool prbLeft = false
+var bool prbOrd = false
+var int prbBar = 0
+var float prbRiskPts = na
+var float peakR = na
+
+if newDay
+    prbDir := 0
+    prbOrd := false
+    prbLeft := false
+    peakR := na
+    if strategy.position_size == 0
+        strategy.cancel("Long_PRB")
+        strategy.cancel("Short_PRB")
+
+f_prbPlan(bool isShort) =>
+    float wickStart = isShort ? math.max(open, close) : math.min(open, close)
+    float extreme = isShort ? high : low
+    float ce = isShort ? (high + wickStart) / 2.0 : (low + wickStart) / 2.0
+    float stopPx = isShort ? extreme + i_prbStopBuf : extreme - i_prbStopBuf
+    float riskW = math.abs(wickStart - stopPx)
+    float riskC = math.abs(ce - stopPx)
+    float entryPx = riskW >= i_prbMinStop and riskW <= i_prbMaxStop ? wickStart : (riskC >= i_prbMinStop and riskC <= i_prbMaxStop ? ce : na)
+    [entryPx, stopPx]
+
+if prbDir == 0 and prbAllow and macDir == 0
+    if rbBear
+        [e, s] = f_prbPlan(true)
+        if not na(e)
+            float risk = math.abs(e - s)
+            prbDir := -1
+            prbEntry := e
+            prbStop := s
+            prbRiskPts := risk
+            prbTp := e - risk * effPrbRr
+            prbBar := bar_index
+            prbLeft := i_prbLeaveR == 0
+            prbOrd := false
+    else if rbBull
+        [e2, s2] = f_prbPlan(false)
+        if not na(e2)
+            float risk2 = math.abs(e2 - s2)
+            prbDir := 1
+            prbEntry := e2
+            prbStop := s2
+            prbRiskPts := risk2
+            prbTp := e2 + risk2 * effPrbRr
+            prbBar := bar_index
+            prbLeft := i_prbLeaveR == 0
+            prbOrd := false
+
+if prbDir != 0 and flat and prbAllow
+    bool invalP = prbDir == 1 ? close < prbStop : close > prbStop
+    if bar_index - prbBar > i_prbTimeout or not canPlace or invalP or not inPrbWin
+        strategy.cancel("Long_PRB")
+        strategy.cancel("Short_PRB")
+        prbDir := 0
+        prbOrd := false
+    else
+        if not prbLeft
+            if prbDir == 1 and high >= prbEntry + i_prbLeaveR * prbRiskPts
+                prbLeft := true
+            if prbDir == -1 and low <= prbEntry - i_prbLeaveR * prbRiskPts
+                prbLeft := true
+        if prbLeft and not prbOrd
+            int q = f_qty(prbRiskPts, i_prbRisk, i_prbMinStop, i_prbMaxStop)
+            if q > 0
+                if prbDir == 1
+                    strategy.entry("Long_PRB", strategy.long, qty = q, limit = prbEntry)
+                    strategy.exit("LX_PRB", "Long_PRB", stop = prbStop, limit = prbTp)
+                else
+                    strategy.entry("Short_PRB", strategy.short, qty = q, limit = prbEntry)
+                    strategy.exit("SX_PRB", "Short_PRB", stop = prbStop, limit = prbTp)
+                prbOrd := true
+                lastEngine := "PRB"
+            else
+                prbDir := 0
+
+// BE management for open PRB (Macro uses fixed TP/SL — no BE)
+bool prbLongOpen = strategy.position_size > 0 and strategy.opentrades.entry_id(0) == "Long_PRB"
+bool prbShortOpen = strategy.position_size < 0 and strategy.opentrades.entry_id(0) == "Short_PRB"
+if prbLongOpen or prbShortOpen
+    float entry = strategy.position_avg_price
+    float rPts = not na(prbRiskPts) and prbRiskPts > 0 ? prbRiskPts : math.abs(entry - prbStop)
+    if rPts > 0
+        float fav = prbLongOpen ? high - entry : entry - low
+        float curR = fav / rPts
+        peakR := na(peakR) ? curR : math.max(peakR, curR)
+        if effPrbBe > 0 and peakR >= effPrbBe
+            float tpKeep = prbLongOpen ? entry + rPts * effPrbRr : entry - rPts * effPrbRr
+            if prbLongOpen
+                strategy.exit("LX_PRB", "Long_PRB", stop = entry, limit = tpKeep)
+            else
+                strategy.exit("SX_PRB", "Short_PRB", stop = entry, limit = tpKeep)
+
+if strategy.position_size != 0 and prbOrd
+    prbOrd := false
+    prbDir := 0
+
+if nyHhmm >= i_flatTime and strategy.position_size != 0
+    strategy.close_all("Flat")
+
+if i_showLbl and barstate.isconfirmed and prbAllow and (rbBear or rbBull) and prbDir != 0
+    label.new(bar_index, rbBull ? low : high, "PRB", style = rbBull ? label.style_label_up : label.style_label_down, color = color.new(color.orange, 20), textcolor = color.white, size = size.tiny)
+
+// ─── Status table ────────────────────────────────────────────────────────────
+var table tbl = table.new(position.top_right, 2, 10, bgcolor = color.new(color.black, 75), border_width = 1)
+if i_showTable and barstate.islast
+    table.cell(tbl, 0, 0, "Hybrid v0", text_color = color.aqua, text_size = size.small)
+    table.cell(tbl, 1, 0, i_profile, text_color = color.white, text_size = size.small)
+    table.cell(tbl, 0, 1, "Phase", text_color = color.gray, text_size = size.tiny)
+    table.cell(tbl, 1, 1, phaseTag, text_color = color.yellow, text_size = size.tiny)
+    table.cell(tbl, 0, 2, "PRB R / BE", text_color = color.gray, text_size = size.tiny)
+    table.cell(tbl, 1, 2, str.tostring(effPrbRr, "#.#") + "R · BE@" + str.tostring(effPrbBe, "#.#"), text_color = color.white, text_size = size.tiny)
+    table.cell(tbl, 0, 3, "Macro quiet", text_color = color.gray, text_size = size.tiny)
+    table.cell(tbl, 1, 3, effMacroSkip ? "SKIP (flag ON)" : (h1Profile ? "H1 → toggle on red days" : "armed"), text_color = effMacroSkip ? color.orange : color.lime, text_size = size.tiny)
+    table.cell(tbl, 0, 4, "Room today", text_color = color.gray, text_size = size.tiny)
+    table.cell(tbl, 1, 4, roomToday ? "yes" : "used", text_color = roomToday ? color.lime : color.red, text_size = size.tiny)
+    table.cell(tbl, 0, 5, "Last engine", text_color = color.gray, text_size = size.tiny)
+    table.cell(tbl, 1, 5, lastEngine, text_color = color.aqua, text_size = size.tiny)
+    table.cell(tbl, 0, 6, "Pending", text_color = color.gray, text_size = size.tiny)
+    table.cell(tbl, 1, 6, macDir != 0 ? "MAC CE" : (prbDir != 0 ? "PRB limit" : "—"), text_color = color.white, text_size = size.tiny)
+    table.cell(tbl, 0, 7, "Day P&L", text_color = color.gray, text_size = size.tiny)
+    table.cell(tbl, 1, 7, str.tostring(dayPnl, "#"), text_color = dayPnl >= 0 ? color.lime : color.red, text_size = size.tiny)

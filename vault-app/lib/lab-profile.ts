@@ -172,18 +172,20 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
 ];
 
 function hybridRow(
-  partial: Omit<StrategyPreset, "matrixTrack" | "seriesId" | "inMatrix" | "family" | "phase" | "dataSource"> &
-    Partial<Pick<StrategyPreset, "phase" | "defaultRegimes">>
+  partial: Omit<
+    StrategyPreset,
+    "matrixTrack" | "seriesId" | "inMatrix" | "family" | "dataSource" | "defaultRegimes"
+  > &
+    Partial<Pick<StrategyPreset, "defaultRegimes" | "dataSource">> & { phase: StrategyPhase }
 ): StrategyPreset {
   return {
     family: "hybrid",
-    phase: "combined",
     inMatrix: true,
     matrixTrack: "experimental",
     seriesId: "hybrid-sleeve",
-    dataSource: "prebuilt-ledger",
-    defaultRegimes: ["baseline"],
+    dataSource: "tv-export",
     ...partial,
+    defaultRegimes: partial.defaultRegimes ?? ["baseline"],
   };
 }
 
@@ -191,46 +193,50 @@ function hybridRow(
 export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
   hybridRow({
     id: "matrix-h0a",
-    label: "H0a · A0a + B1a union",
+    label: "H0a · Eval · A0a + B1a",
     version: "h0",
     matrixBranch: "H0a",
-    config: "PRB control ∪ Macro A-tier · chronological merge",
+    phase: "eval",
+    config: "EVAL · PRB BE@1R RR5 ∪ Macro A · Hybrid_Sleeve_v0",
     uploadHint:
-      "Upload vault-app/data/tv-exports/matrix/hybrid-h0a.csv (built — no new TV run).",
-    defaultHypothesis: "Portfolio sleeve: more wins, RR diluted — pass ≈ A0a",
+      "TV: Hybrid_Sleeve_v0 · Profile H0a → export CSV. Or upload matrix/hybrid-h0a.csv.",
+    defaultHypothesis: "Eval pass rate — PRB control + Macro A sleeve",
   }),
   hybridRow({
     id: "matrix-h0b",
-    label: "H0b · D1 + B1a union",
+    label: "H0b · Funded · D1 + B1a",
     version: "h0",
     matrixBranch: "H0b",
-    config: "PRB RR6 ∪ Macro A-tier · funded sleeve",
+    phase: "funded",
+    config: "FUNDED · PRB RR6 ∪ Macro A · Hybrid_Sleeve_v0",
     defaultRegimes: ["runner", "baseline"],
     uploadHint:
-      "Upload vault-app/data/tv-exports/matrix/hybrid-h0b.csv (built — no new TV run).",
-    defaultHypothesis: "Funded money-max sleeve — D1 RR + Macro A fillers",
+      "TV: Hybrid_Sleeve_v0 · Profile H0b → export CSV. Or upload matrix/hybrid-h0b.csv.",
+    defaultHypothesis: "Funded payout / recycle — D1 RR + Macro A",
   }),
   hybridRow({
     id: "matrix-h1a",
-    label: "H1a · A0a + B1a quiet-only",
+    label: "H1a · Eval · quiet Macro",
     version: "h1",
     matrixBranch: "H1a",
-    config: "PRB full ∪ Macro A on quiet days only",
+    phase: "eval",
+    config: "EVAL · A0a ∪ Macro A quiet-only · Hybrid_Sleeve_v0",
     defaultRegimes: ["baseline", "news"],
     uploadHint:
-      "Upload vault-app/data/tv-exports/matrix/hybrid-h1a.csv (Macro red-folder rows dropped).",
-    defaultHypothesis: "Drop Macro red-folder bleed; keep PRB on news",
+      "TV: Hybrid_Sleeve_v0 · Profile H1a (Macro red skip ON). Or matrix/hybrid-h1a.csv.",
+    defaultHypothesis: "Eval — Macro skips red-folder; PRB unrestricted",
   }),
   hybridRow({
     id: "matrix-h1b",
-    label: "H1b · D1 + B1a quiet-only",
+    label: "H1b · Funded · quiet Macro",
     version: "h1",
     matrixBranch: "H1b",
-    config: "PRB RR6 ∪ Macro A quiet-only · funded",
+    phase: "funded",
+    config: "FUNDED · D1 ∪ Macro A quiet-only · Hybrid_Sleeve_v0",
     defaultRegimes: ["runner", "baseline", "news"],
     uploadHint:
-      "Upload vault-app/data/tv-exports/matrix/hybrid-h1b.csv (Macro red-folder rows dropped).",
-    defaultHypothesis: "Funded sleeve with Macro news filter",
+      "TV: Hybrid_Sleeve_v0 · Profile H1b (Macro red skip ON). Or matrix/hybrid-h1b.csv.",
+    defaultHypothesis: "Funded — Macro quiet-only + D1 RR6",
   }),
   {
     id: "datahl-v0-cisd",

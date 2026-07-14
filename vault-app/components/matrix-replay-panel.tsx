@@ -66,7 +66,13 @@ export function MatrixReplayPanel({ activePresetId, onSelectPreset }: MatrixRepl
                 </tr>
                 <tr>
                   <td className="dim">TV export?</td>
-                  <td>{recipe.needsTvExport ? "Yes — one CSV per row" : "No — derived from B0 in Lab"}</td>
+                  <td>
+                    {recipe.needsTvExport
+                      ? "Yes — one CSV per row"
+                      : recipe.derivedFromB0
+                        ? "No — derived from B0 in Lab"
+                        : "No — prebuilt vault ledger"}
+                  </td>
                 </tr>
                 <tr>
                   <td className="dim">Phase</td>

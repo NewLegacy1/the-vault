@@ -30,8 +30,21 @@ Ledger join: `vault-app/data/tv-exports/matrix/*` + `scripts/analyze-hybrid-matr
 
 **News split (missing FF day = quiet):** PRB makes money on red (+$3.5k / 10) *and* quiet. Macro B1a edge is quiet (+$5.0k / 12); red ≈ flat (−$38 / 2). Candidate rule: **PRB any day + Macro quiet-only**.
 
-- Joint MC in F4 LAB → save with preset `custom`, phase **combined**.
-- Cohort path: `strategies/cohorts/combined/`
+### Lab matrix — what to run
+
+| Branch | Phase | Preset | Pine profile | Upload / export |
+|---|---|---|---|---|
+| **H0a** | **eval** | `matrix-h0a` | H0a · Eval | TV export or `hybrid-h0a.csv` |
+| **H0b** | **funded** | `matrix-h0b` | H0b · Funded | TV export or `hybrid-h0b.csv` |
+| **H1a** | **eval** | `matrix-h1a` | H1a · Eval quiet | prefer `hybrid-h1a.csv` |
+| **H1b** | **funded** | `matrix-h1b` | H1b · Funded quiet | prefer `hybrid-h1b.csv` |
+
+1. Paste `pine/Hybrid_Sleeve_v0.pine` → set **Profile** → MNQ 5m Deep Backtest → export  
+2. F4 Lab → **Hybrid · Eval** or **Hybrid · Funded** → matching branch → upload → RUN  
+3. Cohorts: eval → `strategies/cohorts/eval/`; funded → `strategies/cohorts/funded/` (`experiment_series: hybrid-sleeve`)  
+4. Matrix section **H · PRB × Macro sleeve** shows pass % (eval rows) vs payout % (funded rows)
+
+Rebuild calendar ledgers: `npx tsx scripts/build-hybrid-matrix.ts`
 
 ### 3.2 Macro entries + PRB management
 

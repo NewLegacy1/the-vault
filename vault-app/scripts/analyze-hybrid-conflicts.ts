@@ -66,7 +66,6 @@ function mc(trades: T[]) {
     maxTrades: 80,
     passAt: rule.passAt,
     trailingDD: rule.trailingDD,
-    phase: "eval",
     consistency: { consistencyPct: 50, minDays: 5 },
     fees: {
       evalFee: rule.evalFee ?? 0,

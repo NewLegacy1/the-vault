@@ -22,7 +22,17 @@ See [[strategy-dev/cohort-hygiene]] — not surfaced in Lab UI. Canonical Macro:
 
 - `strategy_family`: `prb` | `macro` | `hybrid` | `datahl` | `custom`
 - `phase`: `eval` | `funded` | `combined` | `research`
+- `experiment_series`: `premium365` | `hybrid-sleeve` | `datahl` | `custom` — matrix grouping key
 - `mc_pass_pct`, `net_pnl`, `trades`, `hypothesis`, `regimes`
+
+## Experiment series (matrix sections)
+
+| Series | Folder | Branches |
+|---|---|---|
+| Premium 365d | `eval/` + `funded/` | A0a–A1c, D1, B0–B3b |
+| H · PRB × Macro sleeve | `eval/` (H0a, H1a) + `funded/` (H0b, H1b) | Hybrid_Sleeve_v0 |
+| X · Data H/L | `research/` | X0a |
+| Custom | `research/` | custom |
 
 ## Dataview — eval leaderboard
 
@@ -38,6 +48,23 @@ SORT mc_pass_pct DESC
 TABLE weekly_edge_usd, net_pnl, trades_per_week, mc_pass_pct
 FROM "strategies/cohorts/funded"
 SORT weekly_edge_usd DESC
+```
+
+## Dataview — hybrid sleeve
+
+```dataview
+TABLE net_pnl, mc_pass_pct, trades, hypothesis
+FROM "strategies/cohorts/combined"
+SORT mc_pass_pct DESC
+```
+
+## Dataview — by experiment series
+
+```dataview
+TABLE experiment_series, phase, net_pnl, mc_pass_pct, created
+FROM "strategies/cohorts"
+WHERE file.name != "_index" AND file.name != "README"
+SORT experiment_series ASC, created DESC
 ```
 
 ## Dataview — all cohorts by family

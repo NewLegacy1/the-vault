@@ -71,8 +71,9 @@ function pineFileForFamily(family: StrategyPreset["family"]): { file: string; la
     case "datahl":
       return { file: "pine/Powell_DataHL_v0.pine", label: "Data H/L v0" };
     case "hybrid":
+      return { file: "pine/Hybrid_Sleeve_v0.pine", label: "Hybrid Sleeve v0" };
     case "custom":
-      return { file: "—", label: "Custom / hybrid" };
+      return { file: "—", label: "Custom" };
     default: {
       const _exhaustive: never = family;
       return _exhaustive;
@@ -100,13 +101,24 @@ export function replayRecipeForPreset(presetId: string): MatrixReplayRecipe | nu
   ];
 
   let steps: string[];
-  if (prebuilt) {
+  if (preset.family === "hybrid") {
+    const profile = preset.matrixBranch ?? "H0a";
+    const ledger =
+      preset.matrixBranch?.toLowerCase().replace(/^h/, "hybrid-h") ?? "hybrid-h0a";
+    const phaseDir = preset.phase === "funded" ? "funded/" : "eval/";
+    steps = [
+      `Paste Hybrid Sleeve v0 from pine/Hybrid_Sleeve_v0.pine into a blank strategy`,
+      `Set input Profile = ${profile} (${preset.phase.toUpperCase()} phase MC)`,
+      `MNQ 5m · Deep Backtest ${REPLAY_365D.start} → ${REPLAY_365D.end} · export CSV`,
+      `F4 Lab → ${profile} → upload export (or shortcut ${ledger}.csv) → RUN → cohort ${phaseDir}`,
+    ];
+  } else if (prebuilt) {
     const ledger =
       preset.matrixBranch?.toLowerCase().replace(/^h/, "hybrid-h") ?? "hybrid-*.csv";
     steps = [
       "No new TradingView export — ledger is built from A0a/D1 + B1a matrix CSVs",
       `File: vault-app/data/tv-exports/matrix/${ledger}.csv (rebuild: npx tsx scripts/build-hybrid-matrix.ts)`,
-      `F4 Lab → select ${preset.matrixBranch} → upload that CSV → RUN (cohort saves to combined/)`,
+      `F4 Lab → select ${preset.matrixBranch} → upload that CSV → RUN`,
     ];
   } else if (derived) {
     steps = [

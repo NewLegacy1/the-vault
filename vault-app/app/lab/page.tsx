@@ -1441,27 +1441,36 @@ export default function LabPage() {
                   Strategy version
                   <select value={study.presetId} onChange={(e) => applyPreset(e.target.value)}>
                     <optgroup label="Eval">
-                      {labDropdownPresets().filter((p) => p.phase === "eval").map((p) => (
+                      {labDropdownPresets()
+                        .filter((p) => p.phase === "eval" && p.seriesId !== "hybrid-sleeve")
+                        .map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
                     <optgroup label="Funded">
-                      {labDropdownPresets().filter((p) => p.phase === "funded").map((p) => (
+                      {labDropdownPresets()
+                        .filter((p) => p.phase === "funded" && p.seriesId !== "hybrid-sleeve")
+                        .map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
-                    <optgroup label="Hybrid sleeve (H)">
-                      {labDropdownPresets().filter((p) => p.seriesId === "hybrid-sleeve").map((p) => (
+                    <optgroup label="Hybrid · Eval (H0a / H1a)">
+                      {labDropdownPresets()
+                        .filter((p) => p.seriesId === "hybrid-sleeve" && p.phase === "eval")
+                        .map((p) => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Hybrid · Funded (H0b / H1b)">
+                      {labDropdownPresets()
+                        .filter((p) => p.seriesId === "hybrid-sleeve" && p.phase === "funded")
+                        .map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
                     <optgroup label="Experimental">
                       {labDropdownPresets()
-                        .filter(
-                          (p) =>
-                            (p.phase === "research" || p.phase === "combined") &&
-                            p.seriesId !== "hybrid-sleeve"
-                        )
+                        .filter((p) => p.phase === "research" || p.phase === "combined")
                         .map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
