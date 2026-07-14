@@ -11,7 +11,12 @@ import {
   type MatrixCompareFirmId,
 } from "@/lib/firm-matrix-compare";
 import { cohortForPreset } from "@/lib/matrix-cohort";
-import { matrixPresetsBySeries, type StrategyPreset } from "@/lib/lab-profile";
+import {
+  matrixPresetsBySubgroup,
+  seriesDescription,
+  seriesProgress,
+} from "@/lib/matrix-results-groups";
+import { matrixPresetsBySeries, type StrategyPhase, type StrategyPreset } from "@/lib/lab-profile";
 import { seriesLabel } from "@/lib/experiment-series";
 import { ruleById } from "@/lib/prop-firms";
 
@@ -22,6 +27,9 @@ const FIRM_TABS: { id: MatrixCompareFirmId; label: string }[] = [
   { id: "alpha-premium-50", label: "Alpha Premium" },
   { id: "apex50-eod", label: "Apex EOD" },
 ];
+
+type StatusFilter = "all" | "saved" | "pending";
+type PhaseFilter = "all" | StrategyPhase;
 
 export interface MatrixResultsProps {
   activePresetId?: string;
@@ -51,6 +59,12 @@ function fmtWeeks(w: number | null | undefined): string {
   return `${w}w`;
 }
 
+function presetJumpLabel(p: StrategyPreset): string {
+  const branch = p.matrixBranch ?? p.id;
+  const tail = p.label.split(" · ").slice(1).join(" · ") || p.label;
+  return `${branch} · ${tail}`;
+}
+
 export function MatrixResults({
   activePresetId,
   onSelectPreset,
@@ -65,6 +79,9 @@ export function MatrixResults({
   const [loadingLocal, setLoadingLocal] = useState(!cohortsProp);
   const [firmTab, setFirmTab] = useState<MatrixCompareFirmId>("tpt50");
   const [pollKey, setPollKey] = useState(0);
+  const [seriesFilter, setSeriesFilter] = useState<string>("all");
+  const [phaseFilter, setPhaseFilter] = useState<PhaseFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const controlled = cohortsProp != null;
 
@@ -104,33 +121,72 @@ export function MatrixResults({
   const loadErr = loadErrProp ?? loadErrLocal;
 
   const seriesGroups = useMemo(() => matrixPresetsBySeries(), []);
-  const premiumRows = useMemo(
-    () => seriesGroups.find((g) => g.seriesId === "premium365")?.presets ?? [],
-    [seriesGroups]
+  const allMatrixPresets = useMemo(() => seriesGroups.flatMap((g) => g.presets), [seriesGroups]);
+
+  const primaryPctForPreset = useMemo(() => {
+    return (preset: StrategyPreset): number | null => {
+      const saved = cohortForPreset(cohorts, preset);
+      if (!saved) return null;
+      const mc = firmMcForTab(saved, firmTab);
+      return matrixPrimaryMcPct(preset.phase, mc);
+    };
+  }, [cohorts, firmTab]);
+
+  const visibleSeriesGroups = useMemo(() => {
+    const matchesFilters = (preset: StrategyPreset) => {
+      if (phaseFilter !== "all" && preset.phase !== phaseFilter) return false;
+      const saved = Boolean(cohortForPreset(cohorts, preset));
+      if (statusFilter === "saved" && !saved) return false;
+      if (statusFilter === "pending" && saved) return false;
+      return true;
+    };
+
+    return seriesGroups
+      .filter((g) => seriesFilter === "all" || g.seriesId === seriesFilter)
+      .map((g) => ({
+        ...g,
+        presets: g.presets.filter(matchesFilters),
+      }))
+      .filter((g) => g.presets.length > 0);
+  }, [seriesGroups, seriesFilter, phaseFilter, statusFilter, cohorts]);
+
+  const jumpPresets = useMemo(
+    () => visibleSeriesGroups.flatMap((g) => g.presets),
+    [visibleSeriesGroups]
   );
-  const filled = useMemo(
-    () => premiumRows.filter((p) => cohortForPreset(cohorts, p)).length,
-    [premiumRows, cohorts]
+
+  const totalSaved = useMemo(
+    () => allMatrixPresets.filter((p) => cohortForPreset(cohorts, p)).length,
+    [allMatrixPresets, cohorts]
   );
 
   const activeRule = ruleById(firmTab);
 
   const bestForFirm = useMemo(() => {
     let best: { presetId: string; passPct: number } | null = null;
-    for (const preset of premiumRows) {
-      const saved = cohortForPreset(cohorts, preset);
-      if (!saved) continue;
-      const mc = firmMcForTab(saved, firmTab);
-      const pct = matrixPrimaryMcPct(preset.phase, mc);
+    for (const preset of jumpPresets) {
+      const pct = primaryPctForPreset(preset);
       if (pct == null) continue;
       if (!best || pct > best.passPct) {
         best = { presetId: preset.id, passPct: pct };
       }
     }
     return best;
-  }, [premiumRows, cohorts, firmTab]);
+  }, [jumpPresets, primaryPctForPreset]);
 
-  const renderTable = (section: StrategyPreset[], title: string) => {
+  const seriesShouldOpen = (seriesId: string, presets: StrategyPreset[]) => {
+    if (seriesFilter !== "all" && seriesFilter === seriesId) return true;
+    if (activePresetId && presets.some((p) => p.id === activePresetId)) return true;
+    return seriesId === "premium365";
+  };
+
+  const subgroupShouldOpen = (presets: StrategyPreset[]) => {
+    if (presets.length <= 3) return true;
+    if (activePresetId && presets.some((p) => p.id === activePresetId)) return true;
+    return presets.some((p) => cohortForPreset(cohorts, p));
+  };
+
+  const renderTable = (section: StrategyPreset[]) => {
     const sectionFunded = section.some((p) => p.phase === "funded");
     const sectionEval = section.some((p) => p.phase !== "funded");
     const primaryHeader =
@@ -143,10 +199,6 @@ export function MatrixResults({
       sectionFunded && !sectionEval ? "Wk→payout" : sectionFunded && sectionEval ? "Wk" : "Wk→pass";
 
     return (
-    <>
-      <div className="small dim" style={{ margin: "12px 0 6px", letterSpacing: 0.5 }}>
-        {title}
-      </div>
       <table>
         <thead>
           <tr>
@@ -213,8 +265,7 @@ export function MatrixResults({
           })}
         </tbody>
       </table>
-    </>
-  );
+    );
   };
 
   return (
@@ -222,7 +273,11 @@ export function MatrixResults({
       <div className="frm-row" style={{ alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
         <div className="small">
           <span className="accent">Matrix progress</span>
-          <span className="dim"> — {filled}/{premiumRows.length} premium · click row for firm chart below</span>
+          <span className="dim">
+            {" "}
+            — {totalSaved}/{allMatrixPresets.length} saved · {visibleSeriesGroups.length} group
+            {visibleSeriesGroups.length === 1 ? "" : "s"} shown
+          </span>
         </div>
         <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
           {FIRM_TABS.map((tab) => (
@@ -243,10 +298,76 @@ export function MatrixResults({
         {loading && <span className="small dim">Loading…</span>}
       </div>
 
+      <div className="matrix-results-toolbar">
+        <div className="filter-field wide">
+          <label htmlFor="matrix-series-filter">Test group</label>
+          <select
+            id="matrix-series-filter"
+            value={seriesFilter}
+            onChange={(e) => setSeriesFilter(e.target.value)}
+          >
+            <option value="all">All test groups</option>
+            {seriesGroups.map((g) => (
+              <option key={g.seriesId} value={g.seriesId}>
+                {seriesLabel(g.seriesId)} ({g.presets.length})
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="filter-field">
+          <label htmlFor="matrix-phase-filter">Phase</label>
+          <select
+            id="matrix-phase-filter"
+            value={phaseFilter}
+            onChange={(e) => setPhaseFilter(e.target.value as PhaseFilter)}
+          >
+            <option value="all">All phases</option>
+            <option value="eval">Evaluation</option>
+            <option value="funded">Funded / PRO</option>
+            <option value="combined">Combined</option>
+            <option value="research">Research</option>
+          </select>
+        </div>
+        <div className="filter-field">
+          <label htmlFor="matrix-status-filter">Status</label>
+          <select
+            id="matrix-status-filter"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+          >
+            <option value="all">All rows</option>
+            <option value="saved">Saved only</option>
+            <option value="pending">Not run yet</option>
+          </select>
+        </div>
+        <div className="filter-field wide">
+          <label htmlFor="matrix-jump-preset">Jump to test</label>
+          <select
+            id="matrix-jump-preset"
+            value={activePresetId && jumpPresets.some((p) => p.id === activePresetId) ? activePresetId : ""}
+            onChange={(e) => {
+              if (e.target.value) onSelectPreset(e.target.value);
+            }}
+          >
+            <option value="">Select a branch…</option>
+            {visibleSeriesGroups.map((g) => (
+              <optgroup key={g.seriesId} label={seriesLabel(g.seriesId)}>
+                {g.presets.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {presetJumpLabel(p)}
+                    {cohortForPreset(cohorts, p) ? " ✓" : ""}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {activeRule && (
         <p className="small dim" style={{ marginTop: 0, marginBottom: 10, lineHeight: 1.55 }}>
           Table uses <span className="accent">{activeRule.name}</span> — eval rows show pass %, funded rows show payout %
-          (PRO survival + recycle). Full multi-firm chart loads below the selected row.
+          (PRO survival + recycle). Expand a test group, click a row for the firm chart below.
         </p>
       )}
 
@@ -255,9 +376,62 @@ export function MatrixResults({
         <p className="small warn">No cohorts yet — run MC in Lab with auto-save.</p>
       )}
 
-      {seriesGroups.map((g) =>
-        renderTable(g.presets, seriesLabel(g.seriesId))
+      {visibleSeriesGroups.length === 0 && !loading && (
+        <div className="matrix-results-empty">
+          No tests match these filters. Try <span className="accent">All test groups</span> or{" "}
+          <span className="accent">All rows</span>.
+        </div>
       )}
+
+      {visibleSeriesGroups.map((g) => {
+        const progress = seriesProgress(g.presets, cohorts, primaryPctForPreset);
+        const subgroups = matrixPresetsBySubgroup(g.seriesId, g.presets);
+        const desc = seriesDescription(g.seriesId);
+        const badgeParts = [`${progress.saved}/${progress.total} saved`];
+        if (progress.bestPassPct != null) badgeParts.push(`best ${progress.bestPassPct}%`);
+
+        return (
+          <details
+            key={g.seriesId}
+            className="panel matrix-series"
+            open={seriesShouldOpen(g.seriesId, g.presets) || undefined}
+          >
+            <summary className="panel-title">
+              {seriesLabel(g.seriesId)}
+              {desc && <span className="sub">{desc}</span>}
+              <span className="summary-badge">{badgeParts.join(" · ")}</span>
+            </summary>
+            <div className="panel-body" style={{ paddingTop: 8 }}>
+              {subgroups.map((sub) => {
+                const subProgress = seriesProgress(sub.presets, cohorts, primaryPctForPreset);
+                const showNested = subgroups.length > 1;
+                const subBadge =
+                  subProgress.saved > 0
+                    ? `${subProgress.saved}/${subProgress.total} saved`
+                    : `${subProgress.total} branches`;
+
+                if (!showNested) {
+                  return <div key={sub.id}>{renderTable(sub.presets)}</div>;
+                }
+
+                return (
+                  <details
+                    key={sub.id}
+                    className="panel matrix-subgroup"
+                    open={subgroupShouldOpen(sub.presets) || undefined}
+                  >
+                    <summary className="panel-title">
+                      {sub.label}
+                      <span className="summary-badge">{subBadge}</span>
+                    </summary>
+                    <div className="panel-body">{renderTable(sub.presets)}</div>
+                  </details>
+                );
+              })}
+            </div>
+          </details>
+        );
+      })}
     </div>
   );
 }

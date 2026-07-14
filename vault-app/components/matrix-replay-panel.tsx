@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { matrixPresetsBySeries, type StrategyPreset } from "@/lib/lab-profile";
 import { seriesLabel } from "@/lib/experiment-series";
+import { matrixPresetsBySubgroup, seriesDescription } from "@/lib/matrix-results-groups";
 import { replayRecipeForPreset } from "@/lib/matrix-replay";
 
 export interface MatrixReplayPanelProps {
@@ -19,35 +20,67 @@ export function MatrixReplayPanel({ activePresetId, onSelectPreset }: MatrixRepl
   const seriesGroups = useMemo(() => matrixPresetsBySeries(), []);
   const recipe = useMemo(() => replayRecipeForPreset(activePresetId), [activePresetId]);
 
-  const renderChips = (section: StrategyPreset[], title: string) => (
-    <div style={{ marginBottom: 12 }}>
-      <div className="small dim" style={{ marginBottom: 6 }}>
-        {title}
-      </div>
-      <div className="flex" style={{ gap: 8, flexWrap: "wrap" }}>
-        {section.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            className={`chip ${activePresetId === p.id ? "locked" : ""}`}
-            onClick={() => onSelectPreset(p.id)}
-            title={p.label}
-          >
-            {presetChipLabel(p)}
-            {p.dataSource === "derived-b0"
-              ? " · derived"
-              : p.dataSource === "prebuilt-ledger"
-                ? " · ledger"
-                : ""}
-          </button>
-        ))}
-      </div>
+  const renderChips = (section: StrategyPreset[]) => (
+    <div className="flex" style={{ gap: 8, flexWrap: "wrap" }}>
+      {section.map((p) => (
+        <button
+          key={p.id}
+          type="button"
+          className={`chip ${activePresetId === p.id ? "locked" : ""}`}
+          onClick={() => onSelectPreset(p.id)}
+          title={p.label}
+        >
+          {presetChipLabel(p)}
+          {p.dataSource === "derived-b0"
+            ? " · derived"
+            : p.dataSource === "prebuilt-ledger"
+              ? " · ledger"
+              : ""}
+        </button>
+      ))}
     </div>
   );
 
   return (
     <>
-      {seriesGroups.map((g) => renderChips(g.presets, seriesLabel(g.seriesId)))}
+      {seriesGroups.map((g) => {
+        const subgroups = matrixPresetsBySubgroup(g.seriesId, g.presets);
+        const desc = seriesDescription(g.seriesId);
+        const open =
+          g.presets.some((p) => p.id === activePresetId) || g.seriesId === "premium365";
+
+        return (
+          <details key={g.seriesId} className="panel matrix-series" open={open || undefined}>
+            <summary className="panel-title">
+              {seriesLabel(g.seriesId)}
+              {desc && <span className="sub">replay</span>}
+              <span className="summary-badge">{g.presets.length} branches</span>
+            </summary>
+            <div className="panel-body" style={{ paddingTop: 8 }}>
+              {subgroups.map((sub) => {
+                if (subgroups.length === 1) {
+                  return <div key={sub.id}>{renderChips(sub.presets)}</div>;
+                }
+                const subOpen = sub.presets.some((p) => p.id === activePresetId);
+                return (
+                  <details
+                    key={sub.id}
+                    className="panel matrix-subgroup"
+                    open={subOpen || undefined}
+                    style={{ marginBottom: 8 }}
+                  >
+                    <summary className="panel-title">
+                      {sub.label}
+                      <span className="summary-badge">{sub.presets.length}</span>
+                    </summary>
+                    <div className="panel-body">{renderChips(sub.presets)}</div>
+                  </details>
+                );
+              })}
+            </div>
+          </details>
+        );
+      })}
 
       {recipe && (
         <div className="panel" style={{ borderColor: "var(--accent)", marginTop: 8 }}>

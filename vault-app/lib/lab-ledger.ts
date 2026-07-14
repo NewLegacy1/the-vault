@@ -18,6 +18,8 @@ export interface ActiveLabDataset {
   fileName: string;
   trades: number[];
   dates: string[];
+  /** Full Premium / enriched trade rows — used for Lab stats + cohort enrichment. */
+  parsed: ParsedTrade[];
   sources: string[];
   derivedFromB0: boolean;
 }
@@ -57,6 +59,7 @@ export function buildActiveDataset(
       fileName: `${b0.fileName} → ${preset.matrixBranch}`,
       trades: filtered.map((t) => t.pnl),
       dates: filtered.map((t) => t.date),
+      parsed: filtered,
       sources: [`Derived from B0 (${b0.fileName}) — ${preset.matrixBranch} filter`],
       derivedFromB0: true,
     };
@@ -74,6 +77,7 @@ export function buildActiveDataset(
     fileName: entry.fileName,
     trades: parsed.map((t) => t.pnl),
     dates: parsed.map((t) => t.date),
+    parsed,
     sources: [entry.fileName],
     derivedFromB0: false,
   };

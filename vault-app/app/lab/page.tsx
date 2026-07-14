@@ -3,7 +3,9 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useLocal, fmtUsd } from "@/lib/store";
 import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
-import { parseLabLedger, tradesPerWeek } from "@/lib/csv";
+import { parseLabLedger, tradesPerWeek, type ParsedTrade } from "@/lib/csv";
+import { summarizeTradeEnrichment } from "@/lib/trade-enrichment";
+import { LedgerEnrichmentPanel } from "@/components/ledger-enrichment-panel";
 import { ALL_SEED_TRADES, TRADES_DEC_MAR, TRADES_APR_JUL } from "@/lib/prb-data";
 import { TRADES_YTD_FULL, TRADES_YTD_MAY17 } from "@/lib/prb-ytd-data";
 import { TRADES_BE2R_PDH_12MO } from "@/lib/prb-be2r-data";
@@ -45,6 +47,8 @@ interface Dataset {
   label?: string;
   trades: number[];
   dates: string[];
+  /** Premium / enriched rows aligned with trades[] / dates[] */
+  parsed?: ParsedTrade[];
   sources: string[];
   deduped?: number;
 }
@@ -82,32 +86,28 @@ function datasetBounds(dates: string[]): { min: string; max: string } {
   return { min: sorted[0] ?? "", max: sorted[sorted.length - 1] ?? "" };
 }
 
-function filterTradesByDate(
-  trades: number[],
-  dates: string[],
-  from: string,
-  to: string
-): { trades: number[]; dates: string[] } {
-  if (!from && !to) return { trades, dates };
-  const outT: number[] = [];
-  const outD: string[] = [];
-  for (let i = 0; i < trades.length; i++) {
-    const d = dates[i] ?? "";
-    if (!d) continue;
-    if (from && d < from) continue;
-    if (to && d > to) continue;
-    outT.push(trades[i]);
-    outD.push(d);
-  }
-  return { trades: outT, dates: outD };
-}
-
 function applyDateFilter(ds: Dataset, filter?: DateFilter): Dataset {
   const from = filter?.from ?? "";
   const to = filter?.to ?? "";
   if (!from && !to) return ds;
-  const { trades, dates } = filterTradesByDate(ds.trades, ds.dates, from, to);
-  return { ...ds, trades, dates };
+  const outT: number[] = [];
+  const outD: string[] = [];
+  const outP: ParsedTrade[] = [];
+  for (let i = 0; i < ds.trades.length; i++) {
+    const d = ds.dates[i] ?? "";
+    if (!d) continue;
+    if (from && d < from) continue;
+    if (to && d > to) continue;
+    outT.push(ds.trades[i]!);
+    outD.push(d);
+    if (ds.parsed?.[i]) outP.push(ds.parsed[i]!);
+  }
+  return {
+    ...ds,
+    trades: outT,
+    dates: outD,
+    parsed: ds.parsed ? outP : undefined,
+  };
 }
 
 function downloadCohortMarkdown(filename: string, markdown: string) {
@@ -931,6 +931,7 @@ function ledgerToDataset(active: NonNullable<ReturnType<typeof buildActiveDatase
     label: active.label,
     trades: active.trades,
     dates: active.dates,
+    parsed: active.parsed,
     sources: active.sources,
   };
 }
@@ -993,8 +994,15 @@ export default function LabPage() {
   const dateFilter = dateFilters[dataKey] ?? { from: "", to: "" };
   const dsBounds = useMemo(() => datasetBounds(ds?.dates ?? []), [ds?.dates]);
   const activeDs = useMemo(
-    () => (ds ? applyDateFilter(ds, dateFilter) : { id: "", name: "", trades: [], dates: [], sources: [] }),
+    () =>
+      ds
+        ? applyDateFilter(ds, dateFilter)
+        : { id: "", name: "", trades: [], dates: [], sources: [], parsed: undefined },
     [ds, dateFilter]
+  );
+  const enrichment = useMemo(
+    () => summarizeTradeEnrichment(activeDs.parsed ?? []),
+    [activeDs.parsed]
   );
   const dateFilterActive = Boolean(dateFilter.from || dateFilter.to);
   const displayName = ds ? datasetDisplayName(ds, datasetAliases) : "";
@@ -1333,6 +1341,7 @@ export default function LabPage() {
       firmMc: firmSnapshotsToCohortMc(snapshots),
       tradePnls: activeDs.trades,
       tradeDates: activeDs.dates,
+      enrichment,
     };
     try {
       const r = await fetch("/api/cohorts", {
@@ -1600,6 +1609,9 @@ export default function LabPage() {
                   {dateFilterActive && stats.fullN !== stats.n && (
                     <span className="warn"> (filtered from {stats.fullN})</span>
                   )}
+                  {ds.parsed && ds.parsed.length > 0 ? (
+                    <LedgerEnrichmentPanel summary={enrichment} />
+                  ) : null}
                 </div>
               ) : (
                 <p className="small warn" style={{ marginTop: 10, marginBottom: 0 }}>

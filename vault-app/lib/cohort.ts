@@ -1,6 +1,8 @@
 import { McEconomics, McResult } from "./monte-carlo";
 import type { StrategyFamily, StrategyPhase } from "./lab-profile";
 import { normalizeMcPct } from "./mc-pct";
+import type { TradeEnrichmentSummary } from "./trade-enrichment";
+import { enrichmentToYamlFields } from "./trade-enrichment";
 
 export type { StrategyFamily, StrategyPhase };
 
@@ -172,6 +174,8 @@ export interface CohortSaveInput {
   firmMc?: Record<string, CohortFirmMcEntry>;
   tradePnls?: number[];
   tradeDates?: string[];
+  /** Premium field summary from uploaded TV CSV (MFE/MAE/duration/…). */
+  enrichment?: TradeEnrichmentSummary | null;
 }
 
 function slug(s: string): string {
@@ -212,6 +216,12 @@ export function buildCohortMarkdown(input: CohortSaveInput): string {
     input.tradeDates?.length && input.tradeDates.length <= 500
       ? `trade_dates: ${JSON.stringify(input.tradeDates)}\n`
       : "";
+  const enrichFields = input.enrichment ? enrichmentToYamlFields(input.enrichment) : null;
+  const enrichYaml = enrichFields
+    ? Object.entries(enrichFields)
+        .map(([k, v]) => `${k}: ${v === null ? "null" : v}`)
+        .join("\n") + "\n"
+    : "";
 
   const frontmatter = `---
 variant: "${input.variant.replace(/"/g, '\\"')}"
@@ -248,7 +258,27 @@ created: "${new Date().toISOString()}"
 dataset: "${input.datasetName.replace(/"/g, '\\"')}"
 mc_max_trades: ${input.maxTrades}
 payout_buffer: ${input.payoutBuffer}
-${firmMcLine}${tradePnlsLine}${tradeDatesLine}---`;
+${firmMcLine}${tradePnlsLine}${tradeDatesLine}${enrichYaml}---`;
+
+  const enr = input.enrichment;
+  const enrichSection = enr
+    ? `
+## Premium trade stats (from CSV)
+
+| Metric | Value |
+|--------|-------|
+| Enrichment coverage | ${enr.coveragePct}% (${enr.enrichedN}/${enr.n}) |
+| Avg / median duration | ${enr.avgDurationBars ?? "—"} / ${enr.medianDurationBars ?? "—"} bars |
+| Same-bar exits (0 bars) | ${enr.duration0Pct != null ? `${enr.duration0Pct}%` : "—"} |
+| Avg MFE / MAE | $${enr.avgMfeUsd ?? "—"} / $${enr.avgMaeUsd ?? "—"} |
+| Median loser MAE | $${enr.medianLoserMaeUsd ?? "—"} |
+| BE-scratch candidates | ${enr.beScratchCandidates ?? "—"} (|PnL|<$50 & MFE≥$200) |
+| Winner give-back (MFE≥2×PnL) | ${enr.winnerGivebackN ?? "—"} |
+| Avg contracts | ${enr.avgQty ?? "—"} |
+
+_MC still uses shuffled PnL — these fields are for management / frequency diagnosis._
+`
+    : "";
 
   const body = `
 # ${input.variant}
@@ -278,7 +308,7 @@ ${firmMcLine}${tradePnlsLine}${tradeDatesLine}---`;
 | Max drawdown | $${Math.round(input.maxDd).toLocaleString()} |
 | Trades/week | ${input.tradesPerWeek} |
 | Sources | ${input.sources.join(", ") || "seed"} |
-
+${enrichSection}
 ## Monte Carlo (${input.firm})
 
 | Metric | Value |

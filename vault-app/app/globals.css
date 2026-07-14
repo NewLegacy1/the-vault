@@ -342,6 +342,53 @@ button.btn.danger { background: transparent; color: var(--red); border: 1px soli
 details.panel.lab-advanced { margin-top: 4px; border-style: dashed; }
 details.panel.lab-advanced > summary.panel-title { font-size: 11px; }
 
+/* Matrix results — grouped test series */
+.matrix-results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: flex-end;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+}
+.matrix-results-toolbar .filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+.matrix-results-toolbar .filter-field label {
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.matrix-results-toolbar .filter-field select {
+  min-width: 160px;
+  font-size: 12px;
+}
+.matrix-results-toolbar .filter-field.wide select { min-width: 220px; }
+details.panel.matrix-series { margin-bottom: 10px; }
+details.panel.matrix-subgroup {
+  margin: 8px 0 0;
+  border-style: dashed;
+  border-color: var(--border);
+}
+details.panel.matrix-subgroup > summary.panel-title {
+  font-size: 10px;
+  padding: 4px 10px;
+  letter-spacing: 1px;
+}
+details.panel.matrix-subgroup .panel-body { padding: 8px 10px 10px; }
+.matrix-results-empty {
+  padding: 16px 12px;
+  border: 1px dashed var(--border);
+  color: var(--sub);
+  font-size: 12px;
+}
+
 /* ── Chart row ──────────────────────────────────────── */
 .chart-row { display: grid; grid-template-columns: 1fr 280px; gap: 14px; }
 @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
