@@ -258,6 +258,8 @@ export function MatrixFirmCompare({
                     {!fundedMode && <th className="num">Payout %</th>}
                     {fundedMode && <th className="num">Recycle %</th>}
                     <th className="num">{fundedMode ? "Wk→payout" : "Wk→pass"}</th>
+                    <th className="num">Net $/acct</th>
+                    <th className="num">E[$]/acct</th>
                     <th className="num">DD</th>
                     <th>Consistency</th>
                   </tr>
@@ -377,6 +379,9 @@ function compareFirmsFromCohortOnly(cohort: CohortRecord): FirmMcSnapshot[] {
       bustPct: entry.bustPct,
       payoutPct: entry.payoutPct,
       recyclePct: entry.recyclePct,
+      medianNetPerAccountUsd: entry.medianNetPerAccountUsd,
+      expectedNetPerAccountUsd: entry.expectedNetPerAccountUsd,
+      medianWithdrawnUsd: entry.medianWithdrawnUsd,
       weeksToPassP50: entry.weeksToPassP50,
       weeksToPayoutP50: entry.weeksToPayoutP50,
       passAt: entry.passAt ?? rule.passAt,

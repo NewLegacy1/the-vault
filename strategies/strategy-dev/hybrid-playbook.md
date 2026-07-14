@@ -39,12 +39,15 @@ Ledger join: `vault-app/data/tv-exports/matrix/*` + `scripts/analyze-hybrid-matr
 | **H1a** | **eval** | `matrix-h1a` | H1a · Eval quiet | prefer `hybrid-h1a.csv` |
 | **H1b** | **funded** | `matrix-h1b` | H1b · Funded quiet | prefer `hybrid-h1b.csv` |
 
-1. Paste `pine/Hybrid_Sleeve_v0.pine` → set **Profile** → MNQ 5m Deep Backtest → export  
-2. F4 Lab → **Hybrid · Eval** or **Hybrid · Funded** → matching branch → upload → RUN  
-3. Cohorts: eval → `strategies/cohorts/eval/`; funded → `strategies/cohorts/funded/` (`experiment_series: hybrid-sleeve`)  
-4. Matrix section **H · PRB × Macro sleeve** shows pass % (eval rows) vs payout % (funded rows)
+1. Paste `pine/Hybrid_Sleeve_v0.pine` → Profile **H0a/H0b** · Macro skip **OFF** → Deep Backtest → export  
+2. F4 Lab → Hybrid Eval/Funded → upload → RUN (H0)  
+3. **Red-folder after the fact** (Deep Backtest cannot toggle days):  
+   - F7 News / Lab NewsDay panel on the same CSV, **or**  
+   - `npx tsx scripts/filter-hybrid-news.ts path/to/export.csv` → writes `*-h1-quiet-macro.csv`  
+4. Upload that H1 ledger on **H1a / H1b** for quiet-Macro MC  
 
-Rebuild calendar ledgers: `npx tsx scripts/build-hybrid-matrix.ts`
+Cohorts: eval → `cohorts/eval/`; funded → `cohorts/funded/`.  
+Shortcut ledgers from A0a/D1/B1a: `npx tsx scripts/build-hybrid-matrix.ts`
 
 ### 3.2 Macro entries + PRB management
 

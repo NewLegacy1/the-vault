@@ -1,6 +1,7 @@
 import type { CohortFirmMcEntry, CohortRecord } from "@/lib/cohort";
 import type { StrategyPhase } from "@/lib/lab-profile";
 import { mcRateToPct, normalizeMcPct } from "@/lib/mc-pct";
+import { payoutConfigForFirm, fundedPayoutConsistencyPct } from "@/lib/firm-payout-economics";
 import { runMonteCarlo } from "@/lib/monte-carlo";
 import type { PropPhaseRuleSet } from "@/lib/prop-phase-types";
 import { phaseById, ruleById } from "@/lib/prop-firms";
@@ -46,6 +47,12 @@ export interface FirmMcSnapshot {
   bustPct: number;
   payoutPct: number;
   recyclePct?: number;
+  /** Median net $ per account after payouts minus fees (payout paths). */
+  medianNetPerAccountUsd?: number;
+  /** Expected net $ per account across all MC sims. */
+  expectedNetPerAccountUsd?: number;
+  /** Median gross trader withdrawal before fees. */
+  medianWithdrawnUsd?: number;
   weeksToPassP50: number | null;
   weeksToPayoutP50: number | null;
   passAt: number;
@@ -86,6 +93,7 @@ function buildMcParamsForFirm(
   if (opts.compareMode === "funded") {
     const funded = fundedPhase ?? evalPhase;
     if (!funded) return null;
+    const payoutEconomics = payoutConfigForFirm(id, "funded");
     return {
       rule,
       evalPhase,
@@ -104,11 +112,12 @@ function buildMcParamsForFirm(
           payoutBuffer: opts.payoutBuffer,
         },
         simMode: "funded_only" as const,
+        payoutEconomics: payoutEconomics ?? undefined,
         funded: {
           payoutProfitTarget: opts.payoutBuffer,
           recycleProfitCap: rule.id === "tpt50" ? 5000 : undefined,
           accountRecycling: rule.id === "tpt50",
-          payoutConsistencyPct: parsePayoutConsistencyPct(funded),
+          payoutConsistencyPct: fundedPayoutConsistencyPct(id),
         },
         bootstrap: "week" as const,
       },
@@ -120,6 +129,7 @@ function buildMcParamsForFirm(
   const trailingDD = evalRules?.trailingDD ?? rule.trailingDD;
   const consistencyPct = evalRules?.evalConsistencyPct ?? rule.consistencyPct;
   const minDays = evalRules?.minTradingDays ?? rule.minDays;
+  const payoutEconomics = payoutConfigForFirm(id, "eval");
 
   return {
     rule,
@@ -141,6 +151,11 @@ function buildMcParamsForFirm(
       consistency:
         consistencyPct > 0 ? { consistencyPct, minDays } : undefined,
       simMode: "eval_path" as const,
+      payoutEconomics: payoutEconomics ?? undefined,
+      funded: {
+        payoutProfitTarget: opts.payoutBuffer,
+        payoutConsistencyPct: fundedPayoutConsistencyPct(id),
+      },
       bootstrap: "week" as const,
     },
   };
@@ -173,6 +188,9 @@ function snapshotFromMc(
       compareMode === "funded" && mc.recycleRate != null
         ? mcRateToPct(mc.recycleRate)
         : undefined,
+    medianNetPerAccountUsd: mc.economics.medianNetPerAccountUsd,
+    expectedNetPerAccountUsd: mc.economics.expectedNetPerAccountUsd,
+    medianWithdrawnUsd: mc.economics.medianWithdrawnUsd,
     weeksToPassP50:
       compareMode === "funded"
         ? mc.economics.weeksToPayoutP50
@@ -243,6 +261,9 @@ export function firmSnapshotsToCohortMc(
       bustPct: s.bustPct,
       payoutPct: s.payoutPct,
       recyclePct: s.recyclePct,
+      medianNetPerAccountUsd: s.medianNetPerAccountUsd,
+      expectedNetPerAccountUsd: s.expectedNetPerAccountUsd,
+      medianWithdrawnUsd: s.medianWithdrawnUsd,
       mcMode: s.mcMode,
       weeksToPassP50: s.weeksToPassP50,
       weeksToPayoutP50: s.weeksToPayoutP50,

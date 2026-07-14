@@ -83,7 +83,12 @@ PRB × Macro A portfolio in one strategy for Lab **H-series** (eval + funded).
 
 **Rules:** max 1 trade/day sleeve-wide · Macro window then PRB window · entry IDs `Long_A`/`Short_A` vs `Long_PRB`/`Short_PRB` for CSV Signal column.
 
-**YTD mock:** MNQ 5m · Deep Backtest · pick Profile → export → F4 Lab H0a/H0b. For H1 quiet-Macro MC without day-by-day toggles, prefer `matrix/hybrid-h1*.csv` (calendar-filtered).
+**Deep Backtest workflow (no day-to-day toggles):**
+1. Profile **H0a** or **H0b** · Macro skip **OFF** · export full year CSV  
+2. Red-folder compare **after** in Vault: F7 News panel on that CSV, or `npx tsx scripts/filter-hybrid-news.ts path/to/export.csv`  
+3. Script writes `*-h1-quiet-macro.csv` (Macro red days dropped) → Lab **H1a / H1b** MC  
+
+Calendar source: `vault-app/data/calendar-bundle.json` (same tags as F7).
 
 ## Powell Data H/L v0 (`Powell_DataHL_v0.pine`)
 

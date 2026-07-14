@@ -1,3 +1,6 @@
+import type { FirmPayoutConfig } from "./firm-payout-economics";
+import { pathFeesUsd, withdrawableAtEquity } from "./firm-payout-economics";
+
 export interface McFees {
   evalFee: number;
   activationFee: number;
@@ -44,6 +47,8 @@ export interface McParams {
   /** eval_path = eval → funded → payout (default). funded_only = PRO survival + recycle. */
   simMode?: McSimMode;
   funded?: McFundedRules;
+  /** Firm-specific payout split, buffer, caps — drives net $/account. */
+  payoutEconomics?: FirmPayoutConfig;
 }
 
 export interface McEconomics {
@@ -61,6 +66,12 @@ export interface McEconomics {
   expectedNetUntilPass: number;
   medianNetOnPass: number;
   payoutAt: number;
+  /** Median trader take-home $ after fees on sims that reached ≥1 payout. */
+  medianNetPerAccountUsd: number;
+  /** Expected (mean) net $ per MC sim — payouts minus eval/activation/monthly fees. */
+  expectedNetPerAccountUsd: number;
+  /** Median gross trader withdrawal before fees on payout paths. */
+  medianWithdrawnUsd: number;
 }
 
 export interface McResult {
@@ -249,6 +260,7 @@ type SimPhase = "eval" | "funded" | "bust" | "done";
 
 export function runMonteCarlo(params: McParams): McResult {
   const { trades, dates, sims, maxTrades, trailingDD, passAt } = params;
+  const payoutEcon = params.payoutEconomics;
   const fundedOnly = params.simMode === "funded_only";
   const fundedRules = params.funded;
   const fees: McFees = params.fees ?? {
@@ -287,6 +299,9 @@ export function runMonteCarlo(params: McParams): McResult {
     expectedNetUntilPass: 0,
     medianNetOnPass: 0,
     payoutAt,
+    medianNetPerAccountUsd: 0,
+    expectedNetPerAccountUsd: 0,
+    medianWithdrawnUsd: 0,
   };
 
   if (trades.length === 0 || sims <= 0 || maxTrades <= 0) {
@@ -312,6 +327,8 @@ export function runMonteCarlo(params: McParams): McResult {
   const tradesToPass: number[] = [];
   const tradesToPayout: number[] = [];
   const netOnPass: number[] = [];
+  const simNetPerAccount: number[] = [];
+  const grossWithdrawnPerSim: number[] = [];
   const maxDDs: number[] = [];
   const samplePaths: McSamplePath[] = [];
   const finalEquities: number[] = [];
@@ -340,6 +357,8 @@ export function runMonteCarlo(params: McParams): McResult {
     let cumulativeFundedProfit = 0;
     let recycleCycles = 0;
     let hadAnyPayout = false;
+    let totalWithdrawnUsd = 0;
+    let eventTrades = maxTrades;
     const pathTrace: number[] = [0];
     paths[0][s] = 0;
 
@@ -358,23 +377,26 @@ export function runMonteCarlo(params: McParams): McResult {
 
         if (peak - eq >= trailingDD) {
           phase = "bust";
+          eventTrades = t;
         } else if (!fundedOnly && phase === "eval" && evalPassReady(cumulative, bestDayPnl, tradingDays, passAt, consistency)) {
           phase = "funded";
           passed = true;
           tradesToPass.push(t);
         } else if (phase === "funded" && eq >= payoutAt) {
-          const payoutConsPct = fundedOnly ? (fundedRules?.payoutConsistencyPct ?? 0) : 0;
+          const payoutConsPct = fundedRules?.payoutConsistencyPct ?? 0;
           const payoutReady =
-            !fundedOnly || payoutConsistencyReady(cumulative, bestDayPnl, payoutConsPct);
+            payoutConsPct > 0
+              ? payoutConsistencyReady(cumulative, bestDayPnl, payoutConsPct)
+              : true;
 
           if (payoutReady) {
             tradesToPayout.push(t);
-            const wks = weeksFromTrades(t, tpw) ?? 0;
-            const evalMonths = evalMonthsForWeeks(wks, fees.monthlyFee);
-            const totalFees = fundedOnly
-              ? fees.activationFee
-              : fees.evalFee + fees.activationFee + evalMonths * fees.monthlyFee;
-            netOnPass.push(eq - totalFees);
+            eventTrades = t;
+
+            const withdrawn = payoutEcon
+              ? withdrawableAtEquity(eq, payoutEcon).traderReceivesUsd
+              : Math.max(0, eq - (fundedOnly ? fees.activationFee : fees.evalFee + fees.activationFee));
+            totalWithdrawnUsd += withdrawn;
             payouts++;
             hadAnyPayout = true;
             gotPayout = true;
@@ -415,6 +437,24 @@ export function runMonteCarlo(params: McParams): McResult {
     if (phase === "bust") busts++;
     if (fundedOnly && recycleCycles >= 1 && phase !== "bust") recycleCompletes++;
 
+    const weeksEvent = weeksFromTrades(eventTrades, tpw);
+    const pathFees = payoutEcon
+      ? pathFeesUsd({
+          config: payoutEcon,
+          weeksToEvent: weeksEvent,
+          fundedOnly,
+          passedEval: passed || hadAnyPayout,
+          recycleCycles,
+        })
+      : evalCost;
+
+    const simNet = totalWithdrawnUsd - pathFees;
+    simNetPerAccount.push(simNet);
+    grossWithdrawnPerSim.push(totalWithdrawnUsd);
+    if (hadAnyPayout) {
+      netOnPass.push(simNet);
+    }
+
     if (hadAnyPayout) outcomeCounts.payout++;
     else if (passed) outcomeCounts.pass++;
     else if (hitGrossPass) outcomeCounts.consBlock++;
@@ -452,6 +492,9 @@ export function runMonteCarlo(params: McParams): McResult {
   const ttpaySorted = [...tradesToPayout].sort((a, b) => a - b);
   const ddSorted = [...maxDDs].sort((a, b) => a - b);
   const netSorted = [...netOnPass].sort((a, b) => a - b);
+  const simNetSorted = [...simNetPerAccount].sort((a, b) => a - b);
+  const payoutSimNets = simNetPerAccount.filter((_, idx) => grossWithdrawnPerSim[idx] > 0);
+  const withdrawnSorted = grossWithdrawnPerSim.filter((w) => w > 0).sort((a, b) => a - b);
 
   const payoutRate = payouts / sims;
   const passRate = fundedOnly ? payoutRate : passes / sims;
@@ -468,7 +511,15 @@ export function runMonteCarlo(params: McParams): McResult {
   const weeksPassP50 = fundedOnly
     ? weeksFromTrades(ttpaySorted.length ? percentile(ttpaySorted, 0.5) : null, tpw)
     : weeksFromTrades(ttpSorted.length ? percentile(ttpSorted, 0.5) : null, tpw);
-  const medianNet = netSorted.length ? percentile(netSorted, 0.5) : 0;
+  const medianNet = payoutSimNets.length
+    ? percentile([...payoutSimNets].sort((a, b) => a - b), 0.5)
+    : 0;
+  const expectedNetPerAccount =
+    simNetPerAccount.length > 0
+      ? Math.round(simNetPerAccount.reduce((s, x) => s + x, 0) / simNetPerAccount.length)
+      : 0;
+  const medianNetPerAccount = simNetSorted.length ? Math.round(percentile(simNetSorted, 0.5)) : 0;
+  const medianWithdrawn = withdrawnSorted.length ? Math.round(percentile(withdrawnSorted, 0.5)) : 0;
   const costOnFail = evalCost;
 
   const expectedNetPerAttempt = payoutRate * medianNet - bustRate * costOnFail;
@@ -515,6 +566,9 @@ export function runMonteCarlo(params: McParams): McResult {
       expectedNetUntilPass,
       medianNetOnPass: Math.round(medianNet),
       payoutAt,
+      medianNetPerAccountUsd: medianNetPerAccount,
+      expectedNetPerAccountUsd: expectedNetPerAccount,
+      medianWithdrawnUsd: medianWithdrawn,
     },
     bands,
     samplePaths,

@@ -48,7 +48,7 @@ i_profile = input.string("H0a · Eval", "Profile", options = [
 grpEng = "Engines"
 i_useMacro = input.bool(true, "Enable Macro A engine", group = grpEng)
 i_usePrb   = input.bool(true, "Enable PRB engine", group = grpEng)
-i_macroSkipRed = input.bool(false, "Macro: skip today (red-folder / manual)", group = grpEng, tooltip = "ON for H1 profiles by default. Pine cannot read Forex Factory — flip this ON for CPI/NFP/FOMC days when running live or selective replay. Deep Backtest all-year with this ON blanks Macro every day — leave OFF for full-year mock, or use prebuilt hybrid-h1*.csv for quiet-only MC.")
+i_macroSkipRed = input.bool(false, "Macro: skip (debug only)", group = grpEng, tooltip = "Leave OFF for Deep Backtest. Pine cannot see Forex Factory. After export, compare red-folder days in Vault F7 / scripts/filter-hybrid-news.ts (builds H1 quiet-Macro ledger from calendar).")
 
 grpSess = "Session (NY ET)"
 i_macro1 = input.bool(true, "Macro 9:50–10:10", group = grpSess)

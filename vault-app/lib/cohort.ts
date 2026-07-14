@@ -85,6 +85,9 @@ export interface CohortFirmMcEntry {
   bustPct: number;
   payoutPct: number;
   recyclePct?: number;
+  medianNetPerAccountUsd?: number;
+  expectedNetPerAccountUsd?: number;
+  medianWithdrawnUsd?: number;
   mcMode?: "eval" | "funded";
   weeksToPassP50: number | null;
   weeksToPayoutP50: number | null;
