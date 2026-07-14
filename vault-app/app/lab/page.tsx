@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useLocal, fmtUsd } from "@/lib/store";
 import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
-import { mergeTvCsvs, parseLabLedger, tradesPerWeek } from "@/lib/csv";
+import { parseLabLedger, tradesPerWeek } from "@/lib/csv";
 import { ALL_SEED_TRADES, TRADES_DEC_MAR, TRADES_APR_JUL } from "@/lib/prb-data";
 import { TRADES_YTD_FULL, TRADES_YTD_MAY17 } from "@/lib/prb-ytd-data";
 import { TRADES_BE2R_PDH_12MO } from "@/lib/prb-be2r-data";
@@ -31,7 +31,9 @@ import { StrategyDevPanel } from "@/components/strategy-dev-panel";
 interface Dataset {
   id: string;
   name: string;
-  /** User label for A/B compares — e.g. "2025–26 BE" vs "2025–26 Trail" */
+  /** Strategy preset active when this file was uploaded */
+  presetId?: string;
+  /** User label for A/B compares — e.g. "25–26 · A0a" */
   label?: string;
   trades: number[];
   dates: string[];
@@ -54,16 +56,9 @@ function suggestDatasetLabel(dates: string[]): string {
   return a === b ? a : `${a}–${b}`;
 }
 
-function shortVariantName(variant: string): string {
-  const matrix = variant.match(/^([A-Z]\d+[a-z]?)\s·/);
-  if (matrix) return matrix[1];
-  return variant.replace(/^PRB v[\d.]+ — /, "").replace(/ \(live locked\)/, "");
-}
-
-function suggestDatasetName(dates: string[], variant: string, matrixBranch?: string): string {
+function suggestDatasetName(dates: string[], matrixBranch: string): string {
   const span = suggestDatasetLabel(dates);
-  const tag = matrixBranch ?? shortVariantName(variant);
-  return span ? `${span} · ${tag}` : tag;
+  return span ? `${span} · ${matrixBranch}` : matrixBranch;
 }
 
 function datasetDisplayName(d: Dataset, aliases?: Record<string, string>): string {
@@ -104,12 +99,6 @@ function applyDateFilter(ds: Dataset, filter?: DateFilter): Dataset {
   if (!from && !to) return ds;
   const { trades, dates } = filterTradesByDate(ds.trades, ds.dates, from, to);
   return { ...ds, trades, dates };
-}
-
-function datasetOptionSub(d: Dataset): string {
-  const span =
-    d.dates.length >= 2 ? `${d.dates[0].slice(0, 7)}→${d.dates[d.dates.length - 1].slice(0, 7)}` : "";
-  return `${d.trades.length} tr${span ? ` · ${span}` : ""}`;
 }
 
 function downloadCohortMarkdown(filename: string, markdown: string) {
@@ -231,6 +220,7 @@ import {
   LabStudy,
   REGIME_PRESETS,
   LAB_STRATEGY_PRESETS,
+  isLabPresetId,
   presetById,
   studyReady,
   studyVariantName,
@@ -969,20 +959,22 @@ function GhostAutopsyCard({
 
 function buildDatasetFromParsed(
   id: string,
-  name: string,
+  fileName: string,
   parsed: ReturnType<typeof parseLabLedger>,
-  sources: string[],
-  deduped = 0,
-  label?: string
+  presetId: string,
+  matrixBranch: string,
+  deduped = 0
 ): Dataset {
   const dates = parsed.map((t) => t.date);
+  const label = suggestDatasetName(dates, matrixBranch);
   return {
     id,
-    name,
-    label: label ?? (id.startsWith("m") ? suggestDatasetLabel(dates) : undefined),
+    name: fileName,
+    presetId,
+    label,
     trades: parsed.map((t) => t.pnl),
     dates,
-    sources,
+    sources: [fileName],
     deduped,
   };
 }
@@ -991,7 +983,6 @@ export default function LabPage() {
   const [uploads, setUploads] = useLocal<Dataset[]>("vault.lab.datasets", []);
   const [dsId, setDsId, dsReady] = useLocal<string>("vault.lab.dsId", "");
   const [datasetAliases, setDatasetAliases] = useLocal<Record<string, string>>("vault.lab.datasetAliases", {});
-  const [lastUploadFiles, setLastUploadFiles] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dateFilters, setDateFilters] = useLocal<Record<string, DateFilter>>("vault.lab.dateFilters", {});
   const [ruleId, setRuleId, ruleReady] = useLocal<string>("vault.lab.ruleId", PROP_RULES[0].id);
@@ -1018,22 +1009,18 @@ export default function LabPage() {
   const mcResultsRef = useRef<HTMLDivElement>(null);
 
   const activePreset = presetById(study.presetId);
+  const matrixBranch = activePreset?.matrixBranch ?? "—";
   const variantName = studyVariantName(study);
 
-  const uploadsById = useMemo(() => new Map(uploads.map((u) => [u.id, u])), [uploads]);
-
   const ds = useMemo(() => {
-    if (uploads.length > 0) {
-      const hit = uploadsById.get(typeof dsId === "string" ? dsId : "");
-      if (hit) return hit;
-      return uploads[uploads.length - 1];
-    }
+    if (uploads.length > 0) return uploads[0];
     if (typeof dsId === "string" && dsId && isSeedDataset(dsId)) {
-      return SEED_SETS.find((s) => s.id === dsId) ?? SEED_SETS[0];
+      return SEED_SETS.find((s) => s.id === dsId) ?? null;
     }
     return null;
-  }, [uploads, uploadsById, dsId]);
+  }, [uploads, dsId]);
 
+  const datasetMismatch = Boolean(ds?.presetId && ds.presetId !== study.presetId);
   const safeDsId = ds?.id ?? "";
   const dateFilter = dateFilters[safeDsId] ?? { from: "", to: "" };
   const dsBounds = useMemo(() => datasetBounds(ds?.dates ?? []), [ds?.dates]);
@@ -1044,7 +1031,7 @@ export default function LabPage() {
   const dateFilterActive = Boolean(dateFilter.from || dateFilter.to);
   const displayName = ds ? datasetDisplayName(ds, datasetAliases) : "";
   const rule = ruleById(typeof ruleId === "string" ? ruleId : PROP_RULES[0].id) ?? PROP_RULES[0];
-  const canRun = studyReady(study) && activeDs.trades.length > 0;
+  const canRun = studyReady(study) && activeDs.trades.length > 0 && !datasetMismatch;
   const storageReady = dsReady && ruleReady && simsReady && maxTradesReady && payoutReady && studyHydrated;
 
   const runKey = useMemo(
@@ -1202,172 +1189,70 @@ export default function LabPage() {
   }, [saveStatus]);
 
   useEffect(() => {
-    if (!dsReady || uploads.length === 0) return;
-    const current = typeof dsId === "string" ? dsId : "";
-    if (!uploadsById.has(current) || isSeedDataset(current)) {
-      setDsId(uploads[uploads.length - 1].id);
+    if (!studyHydrated) return;
+    if (!isLabPresetId(study.presetId)) {
+      setStudy(DEFAULT_STUDY);
+      setUploads([]);
+      setDsId("");
+      setDatasetAliases({});
     }
-  }, [dsReady, uploads, uploadsById, dsId, setDsId]);
+  }, [studyHydrated, study.presetId, setStudy, setUploads, setDsId, setDatasetAliases]);
 
   useEffect(() => {
-    if (!studyHydrated || !ds || isSeedDataset(ds.id)) return;
-    const autoName = suggestDatasetName(ds.dates, variantName, activePreset?.matrixBranch);
-    setDatasetAliases((prev) => ({ ...prev, [ds.id]: autoName }));
-    setUploads((prev) => prev.map((u) => (u.id === ds.id ? { ...u, label: autoName } : u)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- rename only when strategy preset changes
-  }, [study.presetId, studyHydrated]);
+    if (!dsReady) return;
+    if (uploads.length <= 1) return;
+    const pick =
+      uploads.find((u) => u.id === dsId) ?? uploads[uploads.length - 1];
+    setUploads([pick]);
+    setDsId(pick.id);
+  }, [dsReady, uploads.length, dsId, setUploads, setDsId]);
 
-  useEffect(() => {
-    if (ds?.sources[0]) setLastUploadFiles(ds.sources[0]);
-  }, [ds?.id, ds?.sources]);
-
-  const onFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const fileArr = [...files];
-    let pending = fileArr.length;
-    const texts: string[] = new Array(fileArr.length);
-    const names: string[] = new Array(fileArr.length);
-
-    fileArr.forEach((f, idx) => {
-      names[idx] = f.name;
-      const reader = new FileReader();
-      reader.onload = () => {
-        texts[idx] = String(reader.result);
-        pending--;
-        if (pending === 0) finishUpload(texts, names);
-      };
-      reader.readAsText(f);
-    });
-    e.target.value = "";
+  const clearDataset = () => {
+    setUploads([]);
+    setDsId("");
+    setDatasetAliases({});
+    setRes(null);
+    setScorecardComparison(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const finishUpload = (texts: string[], names: string[]) => {
-    const preset = presetById(study.presetId);
+  const onFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
 
-    if (texts.length === 1) {
-      const parsed = parseLabLedger(texts[0]);
+    const preset = presetById(study.presetId);
+    const branch = preset?.matrixBranch ?? "custom";
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const parsed = parseLabLedger(String(reader.result));
       if (parsed.length === 0) {
-        alert("No trades parsed — use a TradingView 'List of trades' CSV or vault enriched ledger.");
+        alert("No trades parsed — export TradingView Strategy Tester as 'List of trades' CSV.");
         return;
       }
       const id = "u" + Date.now();
-      const autoName = suggestDatasetName(
-        parsed.map((t) => t.date),
-        variantName,
-        preset?.matrixBranch
+      const dataset = buildDatasetFromParsed(
+        id,
+        file.name,
+        parsed,
+        study.presetId,
+        branch
       );
-      const dataset = buildDatasetFromParsed(id, names[0], parsed, [names[0]], 0, autoName);
-      setUploads((prev) => [...prev, dataset]);
-      setDatasetAliases((prev) => ({ ...prev, [id]: autoName }));
+      setUploads([dataset]);
+      setDatasetAliases({ [id]: dataset.label ?? file.name });
       setDsId(id);
-      setLastUploadFiles(names[0]);
-      return;
-    }
-
-    const newSets: Dataset[] = [];
-    // Multiple files — legacy chunk merge
-    {
-      texts.forEach((text, i) => {
-        const parsed = parseLabLedger(text);
-        if (parsed.length > 0) {
-          newSets.push(
-            buildDatasetFromParsed(
-              "u" + Date.now() + i,
-              `${names[i]} (${parsed.length} trades)`,
-              parsed,
-              [names[i]]
-            )
-          );
-        }
-      });
-      // Merged year dataset (dedupes overlapping bar-replay windows)
-      const rawCount = texts.reduce((n, tx) => n + parseLabLedger(tx).length, 0);
-      const merged = mergeTvCsvs(texts, { onePerDay: true, seed: ALL_SEED_TRADES });
-      if (merged.length > 0) {
-        const span =
-          merged[0].date && merged[merged.length - 1].date
-            ? `${merged[0].date} → ${merged[merged.length - 1].date}`
-            : "";
-        const deduped = rawCount - merged.length;
-        newSets.push(
-          buildDatasetFromParsed(
-            "m" + Date.now(),
-            `MERGED ${names.length} files — ${merged.length} trades${span ? ` · ${span}` : ""}${deduped > 0 ? ` · ${deduped} dupes dropped` : ""}`,
-            merged,
-            names,
-            deduped
-          )
-        );
-      }
-    }
-
-    if (newSets.length === 0) {
-      alert("No trades parsed from selected files — re-export from TradingView Strategy Tester.");
-      return;
-    }
-    const mergedPick = newSets.find((d) => d.id.startsWith("m")) ?? newSets[newSets.length - 1];
-    const autoName = suggestDatasetName(mergedPick.dates, variantName, preset?.matrixBranch);
-    const labeled = newSets.map((d) =>
-      d.id === mergedPick.id ? { ...d, label: autoName } : d
-    );
-    setUploads((prev) => [...prev, ...labeled]);
-    setDatasetAliases((prev) => ({ ...prev, [mergedPick.id]: autoName }));
-    setDsId(mergedPick.id);
-    setLastUploadFiles(names.join(", "));
-  };
-
-  const mergeAllUploads = () => {
-    const leaves = uploads.filter((u) => !u.id.startsWith("m"));
-    if (leaves.length < 2) return;
-    const allTrades = leaves.flatMap((u) =>
-      u.trades.map((pnl, i) => ({ num: i, date: u.dates[i] ?? "", pnl }))
-    );
-    const seen = new Set<string>();
-    const sorted = allTrades
-      .filter((t) => t.date)
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .filter((t) => {
-        const k = `${t.date}|${t.pnl.toFixed(2)}`;
-        if (seen.has(k)) return false;
-        seen.add(k);
-        return true;
-      });
-    const deduped = allTrades.filter((t) => t.date).length - sorted.length;
-    const merged = buildDatasetFromParsed(
-      "m" + Date.now(),
-      `MERGED all uploads — ${sorted.length} trades · ${sorted[0]?.date} → ${sorted[sorted.length - 1]?.date}${deduped > 0 ? ` · ${deduped} dupes dropped` : ""}`,
-      sorted,
-      leaves.flatMap((u) => u.sources),
-      deduped
-    );
-    const autoName = suggestDatasetName(merged.dates, variantName, activePreset?.matrixBranch);
-    const labeled = { ...merged, label: autoName };
-    setUploads([...uploads, labeled]);
-    setDatasetAliases({ ...datasetAliases, [labeled.id]: autoName });
-    setDsId(labeled.id);
-  };
-
-  const removeUpload = (id: string) => {
-    setUploads(uploads.filter((u) => u.id !== id));
-    const nextAliases = { ...datasetAliases };
-    delete nextAliases[id];
-    setDatasetAliases(nextAliases);
-    const nextFilters = { ...dateFilters };
-    delete nextFilters[id];
-    setDateFilters(nextFilters);
-    if (dsId === id) {
-      const rest = uploads.filter((u) => u.id !== id);
-      setDsId(rest.length > 0 ? rest[rest.length - 1].id : "");
-    }
+      setRes(null);
+      setScorecardComparison(null);
+    };
+    reader.readAsText(file);
   };
 
   const setDisplayName = (id: string, name: string) => {
     const trimmed = name.trim();
     setDatasetAliases({ ...datasetAliases, [id]: trimmed });
-    if (id.startsWith("u") || id.startsWith("m")) {
-      setUploads(uploads.map((u) => (u.id === id ? { ...u, label: trimmed || undefined } : u)));
+    if (uploads[0]?.id === id) {
+      setUploads([{ ...uploads[0], label: trimmed || undefined }]);
     }
   };
 
@@ -1383,15 +1268,14 @@ export default function LabPage() {
   };
 
   const applyStudyLabel = () => {
-    if (!ds) return;
-    setDisplayName(
-      ds.id,
-      suggestDatasetName(ds.dates, variantName, activePreset?.matrixBranch)
-    );
+    if (!ds || !activePreset?.matrixBranch) return;
+    setDisplayName(ds.id, suggestDatasetName(ds.dates, activePreset.matrixBranch));
   };
 
   const applyPreset = (presetId: string) => {
+    if (presetId === study.presetId) return;
     const preset = presetById(presetId);
+    clearDataset();
     setStudy({
       ...study,
       presetId,
@@ -1537,8 +1421,8 @@ export default function LabPage() {
   return (
     <>
       <div className="lab-intro">
-        Pick a strategy, load trades (upload TV CSV or use a seed), then <span className="accent">RUN</span>.
-        Monte Carlo results appear below after the first run.
+        Pick a strategy version, upload its TradingView CSV, then <span className="accent">RUN</span>.
+        One file = one dataset — named automatically from branch + date span.
       </div>
 
       <div className="panel lab-workflow">
@@ -1596,47 +1480,48 @@ export default function LabPage() {
           <div className="lab-step">
             <span className="lab-step-num">2</span>
             <div className="lab-step-body">
-              <div className="frm-row" style={{ alignItems: "flex-end" }}>
-                <div className="fld" style={{ flex: 1, minWidth: 280 }}>
-                  <span>Upload CSV for <span className="accent">{variantName}</span></span>
-                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 6 }}>
-                    <button
-                      type="button"
-                      className="btn ghost"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      Choose file
+              <div className="fld" style={{ maxWidth: 520 }}>
+                <span>
+                  TradingView CSV for{" "}
+                  <span className="accent cyan">{matrixBranch}</span>
+                  {activePreset && <span className="dim"> · {activePreset.label.split(" · ")[1] ?? activePreset.label}</span>}
+                </span>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
+                  <button
+                    type="button"
+                    className="btn ghost"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    Choose file
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".csv"
+                    hidden
+                    onChange={onFiles}
+                  />
+                  <span className={ds?.sources[0] ? "small accent" : "small dim"}>
+                    {ds?.sources[0] ?? "No file chosen"}
+                  </span>
+                  {ds && (
+                    <button type="button" className="btn ghost" onClick={clearDataset} style={{ fontSize: 11 }}>
+                      Clear
                     </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".csv"
-                      hidden
-                      onChange={onFiles}
-                    />
-                    <span className="small accent">
-                      {lastUploadFiles || (ds?.sources[0] ?? "No file chosen")}
-                    </span>
-                  </div>
+                  )}
                 </div>
-                {uploads.length > 1 && (
-                  <label className="fld" style={{ minWidth: 220 }}>
-                    Switch upload
-                    <select value={safeDsId} onChange={(e) => setDsId(e.target.value)}>
-                      {uploads.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {datasetDisplayName(d, datasetAliases)} — {datasetOptionSub(d)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                )}
               </div>
+
+              {datasetMismatch && (
+                <p className="small warn" style={{ marginTop: 8, marginBottom: 0 }}>
+                  This file was uploaded for a different strategy — pick {matrixBranch} in step 1, then upload again.
+                </p>
+              )}
 
               {ds ? (
                 <div className="lab-dataset-summary" style={{ marginTop: 10 }}>
                   <div className="small dim" style={{ marginBottom: 4 }}>
-                    Dataset — auto-named from strategy + date span
+                    Dataset
                   </div>
                   <span className="accent cyan">{displayName}</span>
                   <span className="dim"> — </span>
@@ -1648,7 +1533,7 @@ export default function LabPage() {
                 </div>
               ) : (
                 <p className="small warn" style={{ marginTop: 10, marginBottom: 0 }}>
-                  Choose one TradingView export — it becomes the dataset for this RUN (no seed picker needed).
+                  Select strategy in step 1, then upload one TradingView export — that file is your dataset.
                 </p>
               )}
 
@@ -1672,7 +1557,7 @@ export default function LabPage() {
                     ))}
                   </select>
                 </label>
-                <button className="btn" onClick={run} disabled={!canRun} title={!canRun ? "Set strategy version and load a dataset first" : ""}>
+                <button className="btn" onClick={run} disabled={!canRun} title={!canRun ? (datasetMismatch ? "Re-upload CSV for this strategy" : "Set strategy version and load a dataset first") : ""}>
                   RUN Monte Carlo
                 </button>
               </div>
@@ -1690,7 +1575,7 @@ export default function LabPage() {
 
           <CollapsiblePanel
             title="Advanced options"
-            sub="dates · sims · regimes · naming · uploads"
+            sub="dates · sims · regimes · naming"
             className="lab-advanced"
             defaultOpen={false}
           >
@@ -1798,41 +1683,6 @@ export default function LabPage() {
                 </select>
               </label>
             </details>
-            {uploads.length > 0 && (
-              <>
-                <hr className="hr" />
-                <div className="small dim" style={{ marginBottom: 6 }}>Manage uploads</div>
-                {uploads.length >= 2 && (
-                  <button className="btn ghost" onClick={mergeAllUploads} style={{ marginBottom: 8 }}>
-                    Merge all into one year
-                  </button>
-                )}
-                <ul className="upload-list">
-                  {uploads.map((u) => (
-                    <li key={u.id} style={{ flexWrap: "wrap", gap: 6 }}>
-                      <input
-                        type="text"
-                        value={datasetAliases[u.id] ?? u.label ?? ""}
-                        onChange={(e) => setDisplayName(u.id, e.target.value)}
-                        placeholder={suggestDatasetLabel(u.dates) || "name e.g. 25–26 BE"}
-                        style={{ width: 180, fontSize: 11 }}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <span className="dim" style={{ fontSize: 11 }}>{u.trades.length} tr · {u.name.slice(0, 48)}{u.name.length > 48 ? "…" : ""}</span>
-                      <button
-                        type="button"
-                        className="btn ghost"
-                        style={{ padding: "2px 8px", fontSize: 10 }}
-                        onClick={() => setDsId(u.id)}
-                      >
-                        use
-                      </button>
-                      <button className="btn danger" style={{ marginLeft: "auto", padding: "2px 8px", fontSize: 10 }} onClick={() => removeUpload(u.id)}>×</button>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
           </CollapsiblePanel>
         </div>
       </div>

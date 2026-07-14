@@ -284,6 +284,10 @@ export function isMatrixPreset(id: string): boolean {
   return id.startsWith("matrix-");
 }
 
+export function isLabPresetId(id: string): boolean {
+  return LAB_STRATEGY_PRESETS.some((p) => p.id === id);
+}
+
 export function presetById(id: string): StrategyPreset | undefined {
   return STRATEGY_PRESETS.find((p) => p.id === id);
 }
