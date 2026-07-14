@@ -60,3 +60,23 @@ For each 5R winner (May 21 11:25, May 22 12:40, May 29 10:05, Jun 5 10:05):
 | Minimum days | 5 — met naturally |
 | Risk until +$1,000 cushion | $300, then $400 |
 | Funded (PRO) | intraday trail — keep BE-at-1R on; scale to $600–800 only after $52K buffer |
+
+---
+
+## Eval vs funded — two exit profiles (same entries)
+
+Same PRB entries; eval and funded are different games because of the **50% consistency rule**.
+
+**Eval phase** — pass fastest, survive DD, spread profit across days:
+- RR 6 + eval max win cap **$1,490** (or RR **3.75** as alternative)
+- BE +1R ON · trail OFF · **$400** risk ($300 until +$1k cushion)
+- Check F4 consistency panel before trusting MC pass %
+- Expect more winning days, smaller per-day spikes
+
+**Funded / PRO** — maximize TNL after pass (no consistency cap on TPT PRO):
+- Target **5–6R** · eval cap **OFF**
+- Same entries, filters, BE +1R, trail OFF
+- Win rate stays low — one 5R offsets several full losses
+- This is where PRB economics actually work
+
+**Remember:** fastest pass ≠ highest RR on eval. MC pass rate = gross path; consistency checker = whether you can click Request Pass. Run both in F4 before trusting either number.

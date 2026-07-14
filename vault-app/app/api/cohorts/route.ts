@@ -18,7 +18,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "variant and mc results required" }, { status: 400 });
     }
     const result = await saveCohort(body);
-    return NextResponse.json({ ok: true, ...result });
+    return NextResponse.json({
+      ok: true,
+      filename: result.filename,
+      mode: result.mode,
+      markdown: result.mode === "download" ? result.markdown : undefined,
+      path: result.path,
+    });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }

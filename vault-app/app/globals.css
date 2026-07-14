@@ -70,6 +70,29 @@ a:hover { text-decoration: underline; text-shadow: 0 0 8px rgba(57, 255, 186, 0.
 .panel-title .sub { color: var(--sub); font-weight: 400; letter-spacing: 0.5px; text-transform: none; }
 .panel-body { padding: 12px; }
 
+/* Collapsible panels (<details>) */
+details.panel > summary.panel-title {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+details.panel > summary.panel-title::-webkit-details-marker { display: none; }
+details.panel > summary.panel-title::before {
+  content: "▸";
+  color: var(--dim);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+details.panel[open] > summary.panel-title::before { content: "▾"; color: var(--matrix); }
+details.panel > summary.panel-title .summary-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  color: var(--sub);
+}
+
 .grid { display: grid; gap: 14px; }
 .grid-2 { grid-template-columns: 1fr 1fr; }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }

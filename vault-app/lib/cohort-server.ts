@@ -33,11 +33,36 @@ export async function listCohorts(): Promise<CohortRecord[]> {
   return records.sort((a, b) => b.created.localeCompare(a.created));
 }
 
-export async function saveCohort(input: CohortSaveInput): Promise<{ filename: string; path: string }> {
-  const dir = await ensureCohortsDir();
+export type CohortSaveResult = {
+  filename: string;
+  markdown: string;
+  mode: "written" | "download";
+  path?: string;
+};
+
+function isReadOnlyFsError(e: unknown): boolean {
+  const code = (e as NodeJS.ErrnoException)?.code;
+  return code === "EROFS" || code === "EACCES";
+}
+
+export async function saveCohort(input: CohortSaveInput): Promise<CohortSaveResult> {
   const filename = cohortFilename(input);
-  const filepath = path.join(dir, filename);
-  const md = buildCohortMarkdown(input);
-  await writeFile(filepath, md, "utf-8");
-  return { filename, path: filepath };
+  const markdown = buildCohortMarkdown(input);
+
+  // Vercel/Lambda filesystem is read-only — return markdown for client download.
+  if (process.env.VERCEL === "1") {
+    return { filename, markdown, mode: "download" };
+  }
+
+  try {
+    const dir = await ensureCohortsDir();
+    const filepath = path.join(dir, filename);
+    await writeFile(filepath, markdown, "utf-8");
+    return { filename, markdown, path: filepath, mode: "written" };
+  } catch (e) {
+    if (isReadOnlyFsError(e)) {
+      return { filename, markdown, mode: "download" };
+    }
+    throw e;
+  }
 }
