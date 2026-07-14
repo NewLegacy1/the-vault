@@ -1,0 +1,9 @@
+{
+  "remoteURL": "https://github.com/NewLegacy1/the-vault.git",
+  "gitLocation": "",
+  "syncinterval": 5,
+  "isSyncOnLoad": true,
+  "checkStatusOnLoad": true,
+  "noticeLevel": "ALL",
+  "showSyncSuccessNotice": true
+}
