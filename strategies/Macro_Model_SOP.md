@@ -231,9 +231,9 @@ SD **2–2.5** can mark reversals or PXH/PXL continuation.
 | Reversal vs continuation choice | **No** | Narrative — use checklist score / manual bias |
 | 10 AM news trap | **No** | Only on red-folder @ 10:00 — calendar + manual |
 | Mon/Fri bias | **Partial** | Soft filter only (less reversal prob.) |
-| SMT (ES/NQ) | **Partial** | Needs ES symbol + divergence logic |
-| Premium/discount | **Partial** | Range anchor selection is discretionary |
-| OB + turtle soup quality | **Partial** | Formal OB yes; “manipulation must happen” is discretionary |
+| SMT (ES/NQ) | **Yes** | Lock to Master ICT settings (§14) — pivot 3, 5m TF |
+| Premium/discount | **Yes** | Equilibrium of chosen dealing range (§15) — anchor pick is discretionary |
+| OB + turtle soup quality | **Partial** | TS uses your Strict indicator (§14); OB rules TBD |
 
 **v0 Pine goal:** Code the **left column “Yes/Partial”** items as **filters**, not the narrative engine. Export ghosts for missed narrative trades.
 
@@ -263,3 +263,100 @@ Content above merges:
 - Manual trade journal PDF (`strategies/All Trades! …pdf`) — 20 discretionary fills Apr 2025–Feb 2026
 
 **Excluded:** Mech model, Motion Model (separate strategies, not part of Macro Model SOP).
+
+---
+
+## 14. Live indicator stack (handed off Jul 14)
+
+You run **two indicators** on TradingView. Screenshots captured — these are the locked defaults for Macro Model Pine parity.
+
+### A) Turtle Soup + Displacement [1m] Strict
+
+| Input | Your value | Notes |
+|-------|------------|-------|
+| Detection window | **9:00–11:00** NY | Matches `Vault_TS_SMT_v1` detect window |
+| Darkened BG window | **9:35–10:15** NY | Macro / 10 AM news-trap focus band — add to Macro v1 |
+| Timezone | America/New_York | |
+| Pivot lookback (strength) | **10** | Prominent swing liquidity |
+| Min displacement | **10 pts** | Confirms sweep wasn't noise |
+| Labels | **TS Bull Confirmed** / bear equivalent | Fires after sweep + displacement (see chart example) |
+| Swept levels | Lines ON | DOL / swing level visualization |
+
+**Chart example (your screenshot):** price sweeps dashed green level (prior low / DOL) → displacement up → **TS Bull Confirmed** label.
+
+**Repo overlap:** `pine/Vault_TS_SMT_v1.pine` already uses pivot **10**, min displacement **10**, detect **9:00–11:00**. Main gaps vs your indicator:
+- Your label says **"Confirmed"** (implies displacement gate already baked in)
+- Your **9:35–10:15** shaded band (not in Vault script yet)
+- Your indicator is tuned for **1m** chart; Vault strategy runs on chart TF
+
+### B) Master ICT Indicator (SMT)
+
+| Input | Your value | Notes |
+|-------|------------|-------|
+| Pivot lookback | **3** | Tighter than Vault's liquidity pivot (10) — SMT-specific |
+| SMT timeframe | **5 minutes** | HTF divergence read, not chart TF |
+| Symbol A | `CME_MINI:ES1!` | |
+| Symbol B | `CME_MINI:NQ1!` | Standard ES/NQ SMT pair |
+| Swing high SMT | Red | Bearish divergence at highs |
+| Swing low SMT | Blue | Bullish divergence at lows |
+| Labels | **SMT** ON | |
+
+**Visual reference (Jul 14 handoff):**
+
+| Label | Color | Meaning | Typical use |
+|-------|-------|---------|-------------|
+| **SMT** at swing low | Blue | Bullish SMT — NQ sweeps/makes LL while ES holds HL | Long bias after DOL sweep low |
+| **SMT** at swing high | Red | Bearish SMT — NQ makes HH while ES fails to confirm (trendline connects prior high → new high) | Short bias after sweep above old high (red horizontal line = liquidity level) |
+
+The bearish example shows: price breaks above prior high (red line) → **red SMT** prints at the extreme → sharp displacement down. Pair with **TS Bear Confirmed** on the same sweep for Macro v1 short gate.
+
+**Codable rule (5m, pivot 3, ES/NQ):**
+- At NQ pivot high confirmation: NQ `high` > prior NQ swing high AND ES `high` ≤ prior ES swing high → bearish SMT
+- At NQ pivot low confirmation: NQ `low` < prior NQ swing low AND ES `low` ≥ prior ES swing low → bullish SMT
+- Read pivots on **5m** series via `request.security`, pivot length **3** — matches your Master ICT inputs.
+
+**Repo gap:** `Vault_TS_SMT_v1.pine` evaluates SMT **at the sweep bar on chart TF** with pivot **10**. Your live stack uses **pivot 3 on 5m** — we should align Macro Model to **your** settings, not the Vault default.
+
+### Integration plan (Macro Model v1)
+
+```
+ICT macro window (9:50–10:10)
+  → premium/discount of dealing range (§15)
+  → DOL swept 9:30–9:45
+  → TS Bull/Bear Confirmed (Strict indicator logic)
+  → SMT label present (Master ICT, 5m / pivot 3)
+  → optional: BISI/SIBI disrespect + OB
+  → 30–50 pt target
+```
+
+**Still optional (helps but not required):** paste Pine source for **Turtle Soup + Displacement [1m] Strict** if you have it — then we copy logic 1:1 instead of approximating from settings.
+
+---
+
+## 15. Premium / discount (codable)
+
+Premium/discount is **fully codable** once the dealing range is chosen:
+
+```pine
+float eq = (rangeHigh + rangeLow) / 2
+bool inPremium  = close > eq
+bool inDiscount = close < eq
+float pct       = rangeHigh != rangeLow ? (close - rangeLow) / (rangeHigh - rangeLow) : 0.5
+// pct > 0.5 → premium · pct < 0.5 → discount
+```
+
+**Default anchors for Macro Model (input-selectable):**
+
+| Anchor | rangeHigh | rangeLow |
+|--------|-----------|----------|
+| Daily (SOP default) | PDH | current session low |
+| Daily inverse | current session high | PDL |
+| Manipulation leg | sweep swing high | sweep swing low |
+| 90m cycle 2 | highest high since 9:30 | lowest low since 9:30 |
+
+**Entry filter examples:**
+- Bullish TS + SMT → require `inDiscount` (or pct < 0.5)
+- Bearish TS + SMT → require `inPremium` (or pct > 0.5)
+- Continuation PXH/PXL → may intentionally enter in premium on bullish expansion (soft override)
+
+The discretionary part is **which anchor today** — not whether Pine can compute the half.
