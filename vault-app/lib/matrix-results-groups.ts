@@ -36,9 +36,11 @@ export function matrixPresetsBySubgroup(seriesId: string, presets: StrategyPrese
     case "hybrid-sleeve": {
       const h0 = presets.filter((p) => (p.matrixBranch ?? "").startsWith("H0"));
       const h1 = presets.filter((p) => (p.matrixBranch ?? "").startsWith("H1"));
+      const h2 = presets.filter((p) => (p.matrixBranch ?? "").startsWith("H2"));
       const out: MatrixSubgroup[] = [];
       if (h0.length) out.push({ id: "h0", label: "H0 · Baseline sleeve", presets: h0 });
       if (h1.length) out.push({ id: "h1", label: "H1 · Quiet Macro filter", presets: h1 });
+      if (h2.length) out.push({ id: "h2", label: "H2 · 9:50 Macro only", presets: h2 });
       return out.length ? out : [{ id: "all", label: "All branches", presets }];
     }
     case "macro-income":

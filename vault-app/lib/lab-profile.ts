@@ -250,7 +250,7 @@ export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "eval",
     config: "EVAL · PRB BE@1R RR5 ∪ Macro A · Hybrid_Sleeve_v0",
     uploadHint:
-      "TV: Hybrid_Sleeve_v0 · Profile H0a → export CSV. Or upload matrix/hybrid-h0a.csv.",
+      "TV: Hybrid_Sleeve_v0 · Profile H0a → export CSV. Or matrix/hybrid-h0a-3y.csv.",
     defaultHypothesis: "Eval pass rate — PRB control + Macro A sleeve",
   }),
   hybridRow({
