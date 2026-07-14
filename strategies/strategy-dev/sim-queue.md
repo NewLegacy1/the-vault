@@ -1,88 +1,83 @@
 ---
 updated: 2026-07-14
-tags: [playbook, simulations, strategy-dev]
+tags: [playbook, simulations, strategy-dev, 3y]
 ---
-# Next simulations queue
+# Simulations queue — 3-year reset
 
-> Run these **after** Lab shows business-loop metrics (`E[$/calendar week]`, P(payout|pass), median withdraw).  
-> Rank by: moves EV/week · one variable · uses Premium fields · firm gate aware.  
-> Primary scoreboard: [[prop-firm-math]] business loop — not raw P&L.
+> **Scoreboard:** [[prop-firm-math]] — `E[$/calendar week]` after fees (pass → payout → recycle).  
+> **Window:** Deep Backtest **~2023-07-01 → today** · Lab payout buffer **2000**.  
+> **OOS:** After each full RUN, Advanced dates → last **12 months** only · compare E[$/wk].  
+> **1y baselines archived:** `strategies/cohorts/_archive_365d_jul2026/` — do **not** MC-compare to new `*-3y-*` cohorts.  
+> **Calendar:** [[calendar-3y]] (2486 USD events · dense FF through 2025-04-07 · FRED gap after).
 
-## Settled evidence (do not re-litigate)
+## Settled from 1y premium (do not re-litigate unless 3y OOS reverses)
 
-| Result | Status | Implication |
-|---|---|---|
-| A0a PRB control ~80% pass · ~$104/wk EV | keep | Eval backbone |
-| A0b / A1c BE@2R + cap | **regress** vs A0a on EV/week | Cap/BE@2R hurts pass→payout speed on this year |
-| D1 RR6 funded | keep | Funded PRO extract |
-| H0a/H0b hybrid | keep (speed) | Faster weeks→payout; lower pass than A0a |
-| H1 quiet Macro | Lab duplicate of H0 — use filtered CSV | Re-run real quiet ledger |
-| B1a A-tier Macro | sparse edge · slow | Diversifier only |
-| B1c A+ Macro | kill | −$1.3k / 6.5% pass |
-| M0≡M1 Macro v2 | BE@2R never armed | Don't port PRB BE@2R onto point TPs |
-| M2 Macro volume | **kill** (−EV/week) | 10:50 + mid-window bleed |
-| Macro 9:50-only TOY | strong | First-class filter |
+| Result | Status |
+|---|---|
+| A0a PRB control · high pass / ~$100+/wk | keep candidate |
+| A0b / A1c polish | regress on EV/week |
+| H0a Hybrid vs A0a | faster payout · higher bust |
+| H2a 9:50-only | safer · slightly lower EV vs both-windows |
+| M2 volume Macro / A+ Macro | **kill** |
+| BE@2R on Macro point TPs | never armed |
 
-## Queue — Tier 1 (run first · highest EV/week leverage)
+## Tier 0 — Controls (run first · no Pine edits)
 
-| # | Sim ID | What to export / filter | Lab preset | Hypothesis (falsifiable) | Success gate |
-|---|---|---|---|---|---|
-| S1 | **True H1 quiet Macro** | `filter-hybrid-news` on H0a/H0b TV CSVs → upload H1a/H1b | matrix-h1a / h1b | Quiet Macro raises E[$/wk] vs H0 without killing cadence | E[$/wk] ≥ H0 · pass ≥ H0−3pt |
-| S2 | **Hybrid 9:50 Macro only** | Hybrid_Sleeve: Macro window 9:50–10:10 ON · 10:50 OFF | new H2a/H2b (or manual input) | Dropping 10:50 lifts pass + EV/wk | Bust ↓ · E[$/wk] ↑ vs H0 |
-| S3 | **A0a × firm matrix (payout buffer $2k)** | Re-RUN A0a with payoutBuffer **2000** (not 1000) | matrix-a0a | Buffer matching TPT $52k changes median withdraw | Record E[$/wk] as new control |
-| S4 | **PRB min-day pad overlay (analysis)** | No new TV — script: keep A0a trades + inject $0/$50 “pad” days to hit 5 days | research preset | Day pad doesn't hurt EV; may raise P(payout\|pass) on slow firms | Document EV/wk delta · then live test |
-| S5 | **Macro A-tier ∪ PRB same-day allow** | Hybrid v0.1: 1 Macro + 1 PRB/day when no conflict | Hybrid_Sleeve v0.1 | Cadence ↑ without DD blow-up (A-tier 0-overlap) | tr/wk ≥ 1.8 · bust ≤ H0+5pt · E[$/wk] ↑ |
+| # | ID | Pine / profile | Lab preset | Save CSV as |
+|---|-----|----------------|------------|-------------|
+| 1 | **A0a-3y** | PRB v1.5 · BE@1R · RR5 · $400 | `matrix-a0a` | `prb-a0a-3y.csv` |
+| 2 | **D1-3y** | Same · RR6 funded | `matrix-d1` | `prb-d1-3y.csv` |
+| 3 | **H0a-3y** | Hybrid_Sleeve · H0a · **both** Macro windows ON | `matrix-h0a` | `hybrid-h0a-3y.csv` |
+| 4 | **H0b-3y** | Hybrid_Sleeve · H0b | `matrix-h0b` | `hybrid-h0b-3y.csv` |
+| 5 | **H2a-3y** | Hybrid · 9:50 ON · **10:50 OFF** | `matrix-h0a` (note H2a in hypothesis) | `hybrid-h2a-3y.csv` |
+| 6 | **B1a-3y** | Macro A-tier only | `matrix-b1a` | `macro-b1a-3y.csv` |
 
-## Queue — Tier 2 (management / geometry · only if Tier 1 pays)
+### TV → Lab checklist (each Tier 0)
 
-| # | Sim ID | What | Why |
-|---|---|---|---|
-| S6 | Macro BE@**1R** $400 · **9:50 A-only** | New Macro_v2 profile M3 | Avg MFE ~$309 — 1R can arm; 2R cannot |
-| S7 | Macro A-tier TP = structure R (not 40pt fixed) | R-multiple TP | Aligns BE/TP with path geometry |
-| S8 | PRB BE@1R vs BE@2R **on same RR6 funded** | D1×BE A/B | Funded needs different BE than eval lore |
-| S9 | PRO scale ladder (MC size steps) | Post-cushion ×1.5–2 risk on D1/H0b ledger | Raises median withdraw without new entries |
+1. TradingView Deep Backtest · MNQ continuous · **2023-07-01 → today**.  
+2. Export list of trades → copy into `vault-app/data/tv-exports/matrix/` with the name above.  
+3. Lab → matching preset → upload → Advanced: buffer **2000** → **RUN** (full window).  
+4. Advanced dates → from `today−12m` → **RUN** again (OOS) · rename dataset / hypothesis `… · OOS 12m`.  
+5. Record **E[$/wk]**, pass/bust, weeks→payout — not pass% alone.
 
-## Queue — Tier 3 (firm / ops · parallel to R&D)
+## Tier 1 — Filters (after Tier 0 locked)
 
-| # | Sim ID | What | Why |
-|---|---|---|---|
-| S10 | Multi-firm A0a + H0b with **E[$/wk]** primary | Lab firm matrix after rebuild | Pick firm mix: fast min-days vs high pass |
-| S11 | Topstep / Alpha Zero min-day constraints | Same ledgers · firm MC | Day-pad value shows up here |
-| S12 | 2–3 concurrent accounts model | Spreadsheet/MC: n × E[$/wk] − fees | Income target without new edge |
+| # | ID | Change (one variable) | Success gate |
+|---|-----|----------------------|--------------|
+| 7 | **H1a-3y** | `npx tsx scripts/filter-hybrid-news.ts hybrid-h0a-3y.csv` → Lab H1a | E[$/wk] ≥ H0a-3y · pass ≥ H0a−3pt |
+| 8 | **H2a+H1** | Quiet filter on 9:50-only CSV | Bust ↓ without EV wipe |
+| 9 | **Seasonal stand-down** | A/B full vs skip worst months (data-driven) | Full-calendar E[$/wk] must still win |
+| 10 | **Min-day pad** | Overlay on A0a-3y | P(payout\|pass) ↑ |
 
-## Queue — Do **not** run (graveyard)
+## Tier 2 — Small variances (Premium-fast · max 4 until a gate hits)
 
-- M2 volume unlock / TS-optional expansion  
-- A+ Macro isolation  
-- Blind 10:50–11:10 / lunch macros before S2 settles  
-- More A0b/A1c polish for “eval purity” if E[$/wk] regresses  
-- Trail ratchet on Macro (PRB trail already failed long A/B)
+| ID | Variable | Bound by |
+|----|----------|----------|
+| V1 | PRB BE@1R vs BE@2R on **funded RR6** | E[$/wk] D1 / H0b |
+| V2 | Macro risk $400 vs $800 inside Hybrid | Bust / EV |
+| V3 | PRB session start 10:00 vs 9:50 | Cadence vs Macro conflict |
+| V4 | Max 1/day ON vs Macro+PRB same day | tr/wk ≥ 1.8 · bust ≤ H0+5pt |
 
-## Cohesive strategy target (assemble after Tier 1)
+## Graveyard (do not reopen)
+
+M2 volume · A+ Macro · blind 10:50 expansion · trail ratchet · A0b/A1c polish unless 3y OOS reverses.
+
+## Cohesive stack target (after Tier 0–1)
 
 ```text
-Eval engine:   A0a (or H0a if E[$/wk] wins after S1–S2)
-Funded engine: D1 or H0b with recycle-before-PRO+
-Macro role:    9:50 A-tier only · optional same-day with PRB (S5)
-Ops:           min-day pad · multi-account once E[$/wk] > $150 on one box
-Kill switch:   any book with E[$/wk] ≤ 0 after fees
+Eval:    A0a-3y or H0a/H2a-3y (winner on E[$/wk] + acceptable bust)
+Funded:  D1-3y or H0b-3y · recycle before PRO+
+Macro:   9:50 A-tier · optional quiet / same-day sleeve
+Ops:     min-day pad · multi-account once E[$/wk] > ~$150 / box
+Kill:    E[$/wk] ≤ 0 after fees
 ```
-
-## How to run each Lab session
-
-1. Rebuild Lab (`npm run build && npm run start`) so **E[$/calendar week]** strip is visible.  
-2. F3 recipe → TV Deep Backtest → CSV.  
-3. F4 upload matching preset → RUN.  
-4. Compare **E[$/wk]**, P(payout|pass), median withdraw, weeks→payout — not pass% alone.  
-5. Cohort auto-save now includes cycle YAML fields.  
-6. For eval presets with a funded pair (A0a→D1), check **Chain EV panel** after RUN — see [[chain-ev-spec]].
 
 ## Scripts
 
-- `npx tsx scripts/analyze-payout-cycle.ts` — batch EV/week across matrix CSVs  
-- `npx tsx scripts/filter-hybrid-news.ts <hybrid-tv.csv>` — true H1 ledgers (S1)  
-- `npx tsx scripts/analyze-macro-v2-m-series.ts` — Macro TOY/MFE autopsy  
+- `node scripts/backfill-calendar-3y.mjs` — refresh USD calendar ([[calendar-3y]])  
+- `npx tsx scripts/filter-hybrid-news.ts <hybrid.csv>` — H1 quiet Macro  
+- `npx tsx scripts/analyze-payout-cycle.ts` — batch EV/week  
 
 ## Links
 
-- [[prop-firm-math]] · [[roadmap]] · [[findings-prb]] · [[findings-macro]] · [[hybrid-playbook]]
+- [[prop-firm-math]] · [[calendar-3y]] · [[roadmap]] · [[findings-prb]] · [[findings-macro]] · [[hybrid-playbook]]

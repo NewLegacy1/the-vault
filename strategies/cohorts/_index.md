@@ -11,12 +11,17 @@ Monte Carlo + backtest results from **F4 LAB** auto-save here. YAML frontmatter 
 | `combined/` | Hybrid / portfolio | Joint MC, PRB×Macro blends |
 | `research/` | Exploratory | Bias splits, one-off tests |
 | `_archive_pre_premium/` | Archived | Pre-premium / duplicate — **agent ignore** |
+| `_archive_365d_jul2026/` | Archived | 1y premium matrix MC — **Lab blank for 3y reset** · do not MC-compare to new `*-3y-*` |
+
+Phase folders (`eval/`, `funded/`, …) are empty after the 2026-07-14 3y reset. New Lab auto-saves land here again.
 
 Legacy flat files at this folder root were moved to `_archive_pre_premium/` (Jul 2026).
 
 ## Agent-only hygiene
 
-See [[strategy-dev/cohort-hygiene]] — not surfaced in Lab UI. Canonical Macro: `funded/2026-07-14_macro_v1_4_premium_365d_canonical.md`.
+See [[strategy-dev/cohort-hygiene]] — not surfaced in Lab UI.  
+3y queue: [[strategy-dev/sim-queue]] · [[strategy-dev/tier0-3y-checklist]].  
+1y baselines: `_archive_365d_jul2026/` (e.g. former Macro canonical note lives there).
 
 ## YAML fields (new saves)
 

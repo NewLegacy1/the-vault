@@ -40,15 +40,16 @@ tags: [roadmap, hypotheses, strategy-dev]
 
 | # | Item | Phase | Status |
 |---|------|-------|--------|
-| 5.1 | Chain panel MVP in F4 Lab (A0a/D1, H0a/H0b pairs) | Phase 1 | **next** |
-| 5.2 | Cohort YAML `chain_*` fields + F8 Results chip | Phase 2 | not started |
+| 5.1 | Chain panel MVP in F4 Lab (A0a/D1, H0a/H0b pairs) | Phase 1 | **shipped** |
+| 5.2 | Cohort YAML `chain_*` fields + F8 Results chip | Phase 2 | partial (Results compact) |
 | 5.3 | Execution haircut bands + min-day pad (S4) | Phase 3 | not started |
 | 5.4 | Portfolio parallel (A0a+B1a) + MC `phase_split` v3 | Phase 4 | not started |
 
-## Simulation queue (post business-loop Lab)
+## Simulation queue (3-year reset · 2026-07-14)
 
-**Source of truth for next TV/Lab runs:** [[sim-queue]] — ranked S1–S12 by E[$/calendar week] leverage.  
-Lab primary metric is now **E[$/wk after fees]** (pass → payout → recycle), not pass% alone.
+**Source of truth:** [[sim-queue]] · start checklist [[tier0-3y-checklist]] · calendar [[calendar-3y]].  
+Lab primary metric: **E[$/wk after fees]** (pass → payout → recycle).  
+1y premium MC notes archived under `strategies/cohorts/_archive_365d_jul2026/` (Lab index blank until new auto-saves).
 
 ## Track 4 — Income acceleration (not pass-rate A/Bs)
 

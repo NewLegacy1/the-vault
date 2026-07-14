@@ -38,6 +38,8 @@ import { isDerivedMacroPreset } from "@/lib/macro-matrix";
 import { compareFirmsForTrades, firmSnapshotsToCohortMc, MATRIX_REFERENCE_FIRM_ID, type FirmMcSnapshot } from "@/lib/firm-matrix-compare";
 import { buildMcParamsForLab } from "@/lib/mc-params-builder";
 import { McCalibrationBanner } from "@/components/mc-calibration-banner";
+import { ChainEvPanel } from "@/components/chain-ev-panel";
+import { buildChainEvContext } from "@/lib/chain-ev";
 import { MatrixFirmCompare } from "@/components/matrix-firm-compare";
 import { derivePayoutCycle } from "@/lib/payout-cycle";
 
@@ -970,6 +972,7 @@ export default function LabPage() {
   const [scorecardComparison, setScorecardComparison] = useState<ScorecardComparison | null>(null);
   const [scorecardHistory, setScorecardHistory] = useLocal<ScorecardRunEntry[]>("vault.lab.scorecardHistory", []);
   const [savedCohorts, setSavedCohorts] = useState<LabScorecardMetrics[]>([]);
+  const [cohortRecords, setCohortRecords] = useState<CohortRecord[]>([]);
   const mcResultsRef = useRef<HTMLDivElement>(null);
 
   const activePreset = presetById(study.presetId);
@@ -1203,6 +1206,7 @@ export default function LabPage() {
           .map((c) => cohortToScorecardMetrics(c))
           .filter((x): x is LabScorecardMetrics => x != null);
         setSavedCohorts(rows);
+        setCohortRecords(data.cohorts ?? []);
       })
       .catch(() => {});
   }, [saveStatus]);
@@ -1452,6 +1456,29 @@ export default function LabPage() {
 
   const eco = res?.economics;
   const cycle = res ? derivePayoutCycle(res) : null;
+
+  const chainEvContext = useMemo(() => {
+    if (!res || !activePreset) return null;
+    return buildChainEvContext({
+      activePresetId: activePreset.id,
+      primaryMc: res,
+      cohorts: cohortRecords,
+      trades: activeDs.trades,
+      dates: activeDs.dates,
+      sims: Number(sims) || 2000,
+      maxTrades: Number(maxTrades) || 80,
+      payoutBuffer: Number(payoutBuffer) || 1000,
+    });
+  }, [
+    res,
+    activePreset,
+    cohortRecords,
+    activeDs.trades,
+    activeDs.dates,
+    sims,
+    maxTrades,
+    payoutBuffer,
+  ]);
 
   return (
     <>
@@ -1920,6 +1947,8 @@ export default function LabPage() {
               </div>
             </div>
           </div>
+
+          {chainEvContext && <ChainEvPanel context={chainEvContext} />}
 
           {scorecardComparison && (
             <CollapsiblePanel

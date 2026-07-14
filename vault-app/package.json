@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "index": "npx tsx scripts/build-vault-indexes.ts",
-    "test": "npx tsx --test lib/mc-golden.test.ts"
+    "test": "npx tsx --test lib/mc-golden.test.ts lib/chain-ev.test.ts"
   },
   "dependencies": {
     "next": "^15.1.0",

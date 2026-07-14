@@ -1,7 +1,7 @@
 ---
 updated: 2026-07-14
 tags: [spec, lab, monte-carlo, strategy-dev]
-status: approved-for-build
+status: phase-1-shipped
 ---
 # Chain EV panel — product & engineering spec
 

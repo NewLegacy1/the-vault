@@ -14,6 +14,9 @@ import {
 } from "@/lib/firm-matrix-compare";
 import { buildMcParamsForFirm } from "@/lib/mc-params-builder";
 import { McCalibrationBanner } from "@/components/mc-calibration-banner";
+import { ChainEvPanel } from "@/components/chain-ev-panel";
+import { buildChainEvFromCohorts } from "@/lib/chain-ev";
+import { chainPairForPreset } from "@/lib/strategy-chain";
 import { cohortForPreset } from "@/lib/matrix-cohort";
 import {
   matrixPresetsBySubgroup,
@@ -186,6 +189,11 @@ export function MatrixResults({
     if (!preset) return undefined;
     return cohortForPreset(cohorts, preset)?.mcEngineVersion;
   }, [activePresetId, allMatrixPresets, cohorts]);
+
+  const chainEvContext = useMemo(() => {
+    if (!activePresetId || !chainPairForPreset(activePresetId)) return null;
+    return buildChainEvFromCohorts({ activePresetId, cohorts });
+  }, [activePresetId, cohorts]);
 
   const bestForFirm = useMemo(() => {
     let best: { presetId: string; passPct: number } | null = null;
@@ -404,6 +412,7 @@ export function MatrixResults({
             cohortEngineVersion={activeCohortEngineVersion}
             compact
           />
+          {chainEvContext && <ChainEvPanel context={chainEvContext} compact />}
           <p className="small dim" style={{ marginTop: 0, marginBottom: 10, lineHeight: 1.55 }}>
           Table uses <span className="accent">{activeRule.name}</span> ({firmCompareLabel(firmTab)}) — eval rows show pass %, funded rows show payout %
           (PRO survival + recycle). Expand a test group, click a row for the firm chart below.
