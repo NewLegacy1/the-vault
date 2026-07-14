@@ -3,6 +3,7 @@ import type { StrategyFamily, StrategyPhase } from "./lab-profile";
 import { normalizeMcPct } from "./mc-pct";
 import type { TradeEnrichmentSummary } from "./trade-enrichment";
 import { enrichmentToYamlFields } from "./trade-enrichment";
+import { derivePayoutCycle, payoutCycleYamlFields } from "./payout-cycle";
 
 export type { StrategyFamily, StrategyPhase };
 

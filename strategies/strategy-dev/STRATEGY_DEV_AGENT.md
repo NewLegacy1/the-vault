@@ -4,7 +4,7 @@
 
 ## Prime directives
 
-1. **Prop math first.** A strategy that makes +$16k/year but busts 70% of TPT evals is worse than one that makes +$8k/year with a 55% pass rate. Optimize `mc_pass_pct`, `expected_accounts`, and `net after fees` — not net P&L alone.
+1. **Prop math first — the business loop.** Optimize **expected $ after fees per calendar week** from `pass → payout(s) → recycle`, not raw backtest P&L and not pass% alone. Core fields: `expectedNetPerAccountUsd`, `payoutRate` / `passRate` (= P(payout\|pass)), `medianWithdrawnUsd`, `weeksToPayoutP50`, `recycleRate`. Account churn is OK if EV/week stays positive after fees. See [[prop-firm-math]].
 2. **Never modify `pine/Powell_Rejection_Block_v1.pine`** (locked live). Create new variant files for experiments.
 3. **Every claim needs a cohort.** No promotion without a saved cohort note in `strategies/cohorts/` and MC run in F4 LAB.
 4. **One variable per experiment.** Mixed-input exports (e.g. pivot 5 on one chunk, pivot 10 on others) are not clean A/Bs.

@@ -37,6 +37,7 @@ import {
 import { isDerivedMacroPreset } from "@/lib/macro-matrix";
 import { compareFirmsForTrades, firmSnapshotsToCohortMc, MATRIX_REFERENCE_FIRM_ID, type FirmMcSnapshot } from "@/lib/firm-matrix-compare";
 import { MatrixFirmCompare } from "@/components/matrix-firm-compare";
+import { derivePayoutCycle } from "@/lib/payout-cycle";
 
 interface Dataset {
   id: string;
@@ -1421,6 +1422,7 @@ export default function LabPage() {
   };
 
   const eco = res?.economics;
+  const cycle = res ? derivePayoutCycle(res) : null;
 
   return (
     <>
@@ -1802,14 +1804,49 @@ export default function LabPage() {
 
           <div className="stat-strip">
             <div className="stat">
-              <div className="k">Pass probability · TPT</div>
-              <div className={"v " + (res.passRate >= 0.7 ? "pos" : res.passRate >= 0.4 ? "warn" : "neg")}>
-                {(res.passRate * 100).toFixed(1)}%
+              <div className="k">E[$ / calendar week]</div>
+              <div
+                className={
+                  "v " +
+                  ((cycle?.expectedUsdPerCalendarWeek ?? 0) > 50
+                    ? "pos"
+                    : (cycle?.expectedUsdPerCalendarWeek ?? 0) > 0
+                      ? "warn"
+                      : "neg")
+                }
+              >
+                {cycle?.expectedUsdPerCalendarWeek != null
+                  ? fmtUsd(cycle.expectedUsdPerCalendarWeek, true)
+                  : "—"}
               </div>
               <div className="d">
-                {res.consistencyAware
-                  ? `consistency pass · ${rule.consistencyPct}% rule · ${rule.minDays}+ days`
-                  : `reach ${fmtUsd(rule.passAt)} before DD`}
+                primary · E[$/acct] ÷ wks→payout · after fees
+              </div>
+            </div>
+            <div className="stat">
+              <div className="k">E[$ / account]</div>
+              <div
+                className={
+                  "v " + ((cycle?.expectedNetPerAccountUsd ?? 0) >= 0 ? "pos" : "neg")
+                }
+              >
+                {cycle ? fmtUsd(cycle.expectedNetPerAccountUsd, true) : "—"}
+              </div>
+              <div className="d">
+                mean across all sims · median withdraw{" "}
+                {cycle ? fmtUsd(cycle.medianWithdrawnUsd) : "—"}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="k">Pass → payout</div>
+              <div className={"v " + (res.passRate >= 0.55 ? "pos" : res.passRate >= 0.4 ? "warn" : "neg")}>
+                {(res.passRate * 100).toFixed(1)}%
+                {cycle?.payoutGivenPassPct != null
+                  ? ` → ${cycle.payoutGivenPassPct}%`
+                  : ""}
+              </div>
+              <div className="d">
+                pass · then P(payout|pass) · payout {(eco.payoutRate * 100).toFixed(1)}% of all sims
               </div>
               {res.consistencyAware && res.grossPassRate != null && (
                 <div className="d dim" style={{ marginTop: 2 }}>
@@ -1821,36 +1858,27 @@ export default function LabPage() {
               )}
             </div>
             <div className="stat">
-              <div className="k">Time to pass</div>
-              <div className="v cyan">{eco.weeksToPassP50 ?? "—"} wks</div>
-              <div className="d">median · p90 {eco.weeksToPassP90 ?? "—"} wks · {res.tradesToPassP50 ?? "—"} trades</div>
-            </div>
-            <div className="stat">
-              <div className="k">Time to payout</div>
-              <div className="v magenta">{eco.weeksToPayoutP50 ?? "—"} wks</div>
-              <div className="d">at {fmtUsd(eco.payoutAt)} · p90 {eco.weeksToPayoutP90 ?? "—"} wks</div>
-            </div>
-            <div className="stat">
-              <div className="k">Accounts needed</div>
-              <div className="v orange">{Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "∞"}</div>
-              <div className="d">expected · 90% chance ≤ {eco.accountsFor90Pct} tries</div>
-            </div>
-            <div className="stat">
-              <div className="k">Net after fees</div>
-              <div className={"v " + (eco.expectedNetUntilPass >= 0 ? "pos" : "neg")}>
-                {fmtUsd(eco.expectedNetUntilPass, true)}
+              <div className="k">Wks → payout</div>
+              <div className="v magenta">{eco.weeksToPayoutP50 ?? "—"}</div>
+              <div className="d">
+                median · pass @ {eco.weeksToPassP50 ?? "—"} wks · p90 {eco.weeksToPayoutP90 ?? "—"}
               </div>
-              <div className="d">amortized until pass · per attempt {fmtUsd(eco.expectedNetPerAttempt, true)}</div>
             </div>
             <div className="stat">
-              <div className="k">Payout rate</div>
-              <div className="v magenta">{((eco.payoutRate ?? 0) * 100).toFixed(1)}%</div>
-              <div className="d">reach {fmtUsd(eco.payoutAt)} within {maxTrades} trades</div>
-            </div>
-            <div className="stat">
-              <div className="k">Bust rate</div>
-              <div className="v neg">{(res.bustRate * 100).toFixed(1)}%</div>
-              <div className="d">DD breach before pass · {(res.timeoutRate * 100).toFixed(1)}% unresolved</div>
+              <div className="k">Recycle / bust</div>
+              <div className="v">
+                {res.recycleRate != null ? (
+                  <span className="cyan">{(res.recycleRate * 100).toFixed(0)}%</span>
+                ) : (
+                  <span className="dim">—</span>
+                )}
+                <span className="dim"> / </span>
+                <span className="neg">{(res.bustRate * 100).toFixed(1)}%</span>
+              </div>
+              <div className="d">
+                recycle before PRO+ · bust before extract ·{" "}
+                {Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "∞"} accts expected
+              </div>
             </div>
           </div>
 

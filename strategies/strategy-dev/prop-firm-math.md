@@ -6,6 +6,48 @@ tags: [prop-math, reference, strategy-dev]
 
 > The optimization target. Every strategy decision routes through this file.
 
+## Primary business loop (what we actually optimize)
+
+**Pass % alone is not the product.** The product is cash after fees from:
+
+```text
+buy account → pass eval → fund → withdraw (×N) → recycle → buy next
+```
+
+| Metric | Meaning | MC field |
+|---|---|---|
+| Pass rate | Fraction of sims that clear eval (or stay alive enough to extract in funded-only) | `passRate` |
+| **P(payout \| pass)** | Of those that pass, who actually withdraw | `payoutRate / passRate` |
+| **Median payout $** | Trader take-home on paths that paid (≥1 withdraw) | `medianWithdrawnUsd` / `medianNetPerAccountUsd` |
+| Recycle rate | Funded: finished ≥1 withdraw+reset before PRO+ cap | `recycleRate` |
+| Weeks / cycle | Calendar time to first payout (or pass) | `weeksToPayoutP50` |
+| **E[$/account]** | Mean net after fees across *all* sims (busts count as −fees) | `expectedNetPerAccountUsd` |
+| **E[$/calendar week]** | `E[$/account] / weeksToPayoutP50` — the money rate | derived |
+
+**Account churn is fine** if `E[$/calendar week] > 0` after eval/activation/recycle fees. A slower 80% passer can beat a fast 50% passer; a fast passer with tiny extracts can lose to a medium passer with larger withdrawals.
+
+Script: `npx tsx scripts/analyze-payout-cycle.ts` (TPT $50K matrix books).
+
+### Illative snapshot (TPT $50K, 2000 sims, Jul 2026)
+
+| Book | Mode | Pass | P(pay\|pass) | Median withdraw | E[$/acct] | Wks→pay | **E[$/wk]** |
+|---|---|---|---|---|---|---|---|
+| A0a PRB | eval→pay | 79% | 91% | ~$3.8k | ~$1.9k | ~18 | **~$104** |
+| H0a Hybrid | eval→pay | 63% | 83% | ~$3.7k | ~$1.3k | ~11 | **~$120** |
+| H0b Hybrid | funded recycle | — | ~100% of survivors | ~$1.2k | ~$0.7k | ~5 | **~$136** |
+| D1 PRB RR6 | funded recycle | — | ~100% | ~$1.5k | ~$1.0k | ~9 | **~$116** |
+| M2 Macro vol | funded | — | survivors pay tiny | ~$0.4k | **−$23** | ~5 | **−$5** |
+
+M2 is negative EV even with fast cycles — volume without controlled losses burns fees.
+
+### Ops levers that move E[$/wk] without a new entry model
+
+1. **Min-day padding** — firms with 3–5 day minimums: micro risk ($50–100) on dead days to bank the day count, full size only on A+/best window. MC does *not* model this yet — treat as live overlay after pass MC looks good.
+2. **Hyper time-of-day** — already evidence-backed (Macro 9:50 only). Fewer toxic fills → higher pass + larger median extract.
+3. **Win cap / consistency pack** — eval: keep best day &lt;50% so P(payout\|pass) doesn't collapse on “passed equity but blocked.”
+4. **Recycle before PRO+** — multiple mid payouts beat one long climb if pass rate holds.
+5. **Multi-account parallel** — scales E[$/wk] linearly when EV/account &gt; 0.
+
 ## TPT $50K Test → PRO (primary firm)
 
 Full Zendesk scrape: [[tpt-rules]]. Agent hygiene for cohorts: [[cohort-hygiene]] (not shown in UI).
