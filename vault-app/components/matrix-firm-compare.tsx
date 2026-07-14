@@ -202,7 +202,8 @@ export function MatrixFirmCompare({
 
               {computeSource !== "none" && (
             <p className="small dim" style={{ marginTop: 0, lineHeight: 1.55 }}>
-              Net $/acct uses each firm&apos;s official split, buffer, payout caps, and eval/activation/monthly fees.
+              Net $/acct uses each firm&apos;s official split, buffer, and payout caps. Fees: eval +
+              activation + monthly <span className="accent">during eval only</span> (no monthly on funded PRO).
               {" "}
               {embeddedInLab && (
                 <>

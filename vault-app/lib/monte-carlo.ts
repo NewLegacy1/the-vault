@@ -359,6 +359,7 @@ export function runMonteCarlo(params: McParams): McResult {
     let hadAnyPayout = false;
     let totalWithdrawnUsd = 0;
     let eventTrades = maxTrades;
+    let passAtTrade: number | null = null;
     const pathTrace: number[] = [0];
     paths[0][s] = 0;
 
@@ -381,6 +382,7 @@ export function runMonteCarlo(params: McParams): McResult {
         } else if (!fundedOnly && phase === "eval" && evalPassReady(cumulative, bestDayPnl, tradingDays, passAt, consistency)) {
           phase = "funded";
           passed = true;
+          passAtTrade = t;
           tradesToPass.push(t);
         } else if (phase === "funded" && eq >= payoutAt) {
           const payoutConsPct = fundedRules?.payoutConsistencyPct ?? 0;
@@ -438,10 +440,16 @@ export function runMonteCarlo(params: McParams): McResult {
     if (fundedOnly && recycleCycles >= 1 && phase !== "bust") recycleCompletes++;
 
     const weeksEvent = weeksFromTrades(eventTrades, tpw);
+    const weeksInEval = passed
+      ? weeksFromTrades(passAtTrade, tpw)
+      : fundedOnly
+        ? null
+        : weeksEvent;
     const pathFees = payoutEcon
       ? pathFeesUsd({
           config: payoutEcon,
           weeksToEvent: weeksEvent,
+          weeksInEval,
           fundedOnly,
           passedEval: passed || hadAnyPayout,
           recycleCycles,

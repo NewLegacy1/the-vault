@@ -25,6 +25,7 @@ export interface FirmPayoutConfig {
   evalFeeUsd: number;
   activationFeeUsd: number;
   monthlyFeeUsd: number;
+  /** Eval subscription only — $0 once account is activated (funded/PRO). */
   /** TPT recycle: new test fee when restarting after withdraw. */
   recycleEvalFeeUsd?: number;
   source: string;
@@ -82,7 +83,7 @@ export function withdrawableAtEquity(
   };
 }
 
-const TPT_FUNDED: FirmPayoutConfig = {
+const TPT_EVAL: FirmPayoutConfig = {
   traderKeepPct: 0.8,
   profitBufferUsd: 2000,
   evalFeeUsd: 170,
@@ -92,6 +93,11 @@ const TPT_FUNDED: FirmPayoutConfig = {
   source: "takeprofittraderhelp.zendesk.com — PRO profit split & buffer",
 };
 
+const TPT_FUNDED: FirmPayoutConfig = {
+  ...TPT_EVAL,
+  monthlyFeeUsd: 0,
+};
+
 const ALPHA_ZERO_FUNDED: FirmPayoutConfig = {
   traderKeepPct: 0.9,
   profitBufferUsd: 0,
@@ -99,7 +105,7 @@ const ALPHA_ZERO_FUNDED: FirmPayoutConfig = {
   maxWithdrawFractionOfProfit: 0.5,
   evalFeeUsd: 0,
   activationFeeUsd: 0,
-  monthlyFeeUsd: 77,
+  monthlyFeeUsd: 0,
   source: "help.alpha-futures.com — Zero qualified payout policy",
 };
 
@@ -110,7 +116,7 @@ const ALPHA_PREMIUM_FUNDED: FirmPayoutConfig = {
   maxWithdrawFractionOfProfit: 0.5,
   evalFeeUsd: 0,
   activationFeeUsd: 149,
-  monthlyFeeUsd: 79,
+  monthlyFeeUsd: 0,
   source: "help.alpha-futures.com — Premium qualified payout policy",
 };
 
@@ -130,7 +136,7 @@ const MATRIX_PAYOUT_CONFIG: Record<
   { eval: FirmPayoutConfig; funded: FirmPayoutConfig }
 > = {
   tpt50: {
-    eval: { ...TPT_FUNDED, profitBufferUsd: 2000 },
+    eval: TPT_EVAL,
     funded: TPT_FUNDED,
   },
   "alpha-zero-50": {
@@ -194,14 +200,21 @@ export function payoutConfigForFirm(
 export function pathFeesUsd(opts: {
   config: FirmPayoutConfig;
   weeksToEvent: number | null;
+  /** Weeks in eval only — monthly subscription stops once activated. */
+  weeksInEval?: number | null;
   fundedOnly: boolean;
   passedEval: boolean;
   recycleCycles: number;
 }): number {
-  const months =
-    opts.weeksToEvent != null && opts.weeksToEvent > 0
-      ? Math.max(1, Math.ceil(opts.weeksToEvent / 4))
-      : 1;
+  const evalWeeks =
+    opts.weeksInEval != null
+      ? opts.weeksInEval
+      : opts.passedEval
+        ? null
+        : opts.weeksToEvent;
+
+  const evalMonths =
+    evalWeeks != null && evalWeeks > 0 ? Math.max(1, Math.ceil(evalWeeks / 4)) : 0;
 
   if (opts.fundedOnly) {
     return (
@@ -211,11 +224,14 @@ export function pathFeesUsd(opts: {
   }
 
   let fees = opts.config.evalFeeUsd;
-  if (opts.passedEval || opts.weeksToEvent != null) {
+
+  if (opts.passedEval) {
     fees += opts.config.activationFeeUsd;
-    fees += months * opts.config.monthlyFeeUsd;
-  } else {
-    fees += Math.min(months, 2) * opts.config.monthlyFeeUsd;
+    if (opts.config.monthlyFeeUsd > 0 && evalMonths > 0) {
+      fees += evalMonths * opts.config.monthlyFeeUsd;
+    }
+  } else if (evalMonths > 0 && opts.config.monthlyFeeUsd > 0) {
+    fees += Math.min(evalMonths, 2) * opts.config.monthlyFeeUsd;
   }
 
   if (opts.recycleCycles > 0) {
