@@ -18,9 +18,18 @@
 | File | Description |
 |------|-------------|
 | `macro-v1-ce-confirm-merged.csv` | Clean ledger: 1 trade/day after dedupe |
-| `macro-v1-ce-confirm-mc-report.json` | Stats + TPT $50K Monte Carlo |
+| `macro-v1-ce-confirm-mc-report.json` | v1.2 CE confirm baseline stats + MC |
 
-Re-run: `npx tsx scripts/merge-macro-mc.ts`
+## `macro-v1-tiered-2026-07-14/`
+
+10 chunk CSVs (Macro v1.3 tiered, MNQ), imported 2026-07-14. Chunk (11) = TS pivot 5; (12)–(20) = pivot 10.
+
+| File | Description |
+|------|-------------|
+| `macro-v1-tiered-merged.csv` | Merged v1.3 ledger |
+| `macro-v1-tiered-mc-report.json` | Stats + MC + v1.2 comparison |
+
+Re-run: `npx tsx scripts/merge-macro-v13-compare.ts`
 
 Re-run: `npx tsx scripts/merge-and-mc.ts`
 

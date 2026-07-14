@@ -3,7 +3,7 @@
 //
 // SOP: strategies/Macro_Model_SOP.md
 //
-//   v1.3 — Vault-style TS (consumed levels) · SMT at sweep bar · tiered risk + TP
+//   v1.4 — TS required · SMT sizes up (not gates) · wide wick = half risk (not skip)
 //          A+ = TS+SMT · A = TS only · B = FVG-only HALF size (tight wick)
 //
 // Two autopsy tables (paste into F4 LAB ghost panel):
@@ -35,12 +35,10 @@ i_stagingEnd = input.int(945, "DOL staging ends (HHMM)", minval = 930, maxval = 
 i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpMacro)
 i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpMacro)
 
-grpTier = "Tiered quality (v1.3)"
-i_allowBGrade = input.bool(true, "Allow B-tier (FVG-only, HALF risk)", group = grpTier, tooltip = "B = FVG disrespect without TS on a tight-wick bar. A+ = TS+SMT at sweep. A = TS only.")
-i_wickAPlus = input.float(80.0, "A+ max signal wick (pts)", minval = 20.0, maxval = 120.0, step = 5.0, group = grpTier)
-i_wickA = input.float(55.0, "A max signal wick (pts)", minval = 15.0, maxval = 100.0, step = 5.0, group = grpTier)
-i_wickB = input.float(40.0, "B max signal wick (pts)", minval = 10.0, maxval = 80.0, step = 5.0, group = grpTier)
-i_riskHalfPct = input.float(50.0, "B-tier risk (% of full)", minval = 25.0, maxval = 75.0, step = 5.0, group = grpTier)
+grpTier = "Quality sizing (v1.4)"
+i_wickFull = input.float(55.0, "Full-risk max signal wick (pts)", minval = 20.0, maxval = 100.0, step = 5.0, group = grpTier, tooltip = "Signal bar wick at or below this → full $ risk. Above → half risk (still take the trade).")
+i_wickSkip = input.float(80.0, "Skip wick above (pts) unless SMT", minval = 40.0, maxval = 120.0, step = 5.0, group = grpTier, tooltip = "Giant manipulation wicks only allowed when SMT confirms at sweep.")
+i_riskHalfPct = input.float(50.0, "Wide-wick risk (% of full)", minval = 25.0, maxval = 75.0, step = 5.0, group = grpTier)
 
 grpLive = "Live entry (optional extra filters)"
 i_requireStaging = input.bool(false, "Require 9:30–9:45 DOL sweep", group = grpLive)
@@ -50,7 +48,7 @@ i_requireFvg = input.bool(false, "Require FVG disrespect (blocks A+/A)", group =
 grpTs = "Turtle soup (Vault engine — consumed levels)"
 i_tsStart = input.int(900, "TS detect from (HHMM)", group = grpTs)
 i_tsEnd = input.int(1100, "TS detect until (HHMM)", group = grpTs)
-i_tsPivot = input.int(5, "Pivot lookback (strength)", minval = 3, maxval = 50, group = grpTs, tooltip = "Jul 14: pivot 5 improved 2mo sample vs 10 — more responsive swings for macro window.")
+i_tsPivot = input.int(5, "Pivot lookback (strength)", minval = 3, maxval = 50, group = grpTs)
 i_tsSweep = input.float(1.0, "Min sweep beyond level (pts)", group = grpTs)
 i_tsDisp = input.float(10.0, "Min displacement (pts)", group = grpTs)
 i_usePdhPdl = input.bool(true, "Seed PDH/PDL at 9:30", group = grpTs)
@@ -74,13 +72,11 @@ i_ceTolPts = input.float(2.0, "CE tap tolerance (pts)", minval = 0.0, step = 0.5
 i_ceLiftPts = input.float(2.0, "Min lift off CE for market (pts)", minval = 0.0, step = 0.5, group = grpEntry)
 
 grpRisk = "Risk (TPT $50K)"
-i_targetAPlus = input.float(50.0, "A+ take profit (pts)", minval = 30.0, maxval = 80.0, group = grpRisk)
-i_targetA = input.float(40.0, "A-tier take profit (pts)", minval = 25.0, maxval = 60.0, group = grpRisk)
-i_targetB = input.float(30.0, "B-tier take profit (pts)", minval = 20.0, maxval = 50.0, group = grpRisk)
+i_targetAPlus = input.float(50.0, "TP with SMT at sweep (pts)", minval = 30.0, maxval = 80.0, group = grpRisk)
+i_targetA = input.float(40.0, "TP without SMT (pts)", minval = 25.0, maxval = 60.0, group = grpRisk)
+i_targetHalf = input.float(30.0, "TP on wide-wick half risk (pts)", minval = 20.0, maxval = 50.0, group = grpRisk)
 i_stopBuf = input.float(1.0, "Stop buffer beyond manip wick (pts)", group = grpRisk)
-i_maxStop = input.float(80.0, "A+ max entry→stop (pts)", minval = 5.0, maxval = 120.0, step = 5.0, group = grpRisk)
-i_maxStopA = input.float(55.0, "A-tier max entry→stop (pts)", minval = 5.0, maxval = 100.0, step = 5.0, group = grpRisk)
-i_maxStopB = input.float(40.0, "B-tier max entry→stop (pts)", minval = 5.0, maxval = 80.0, step = 5.0, group = grpRisk)
+i_maxStop = input.float(80.0, "Max entry→stop (pts)", minval = 5.0, maxval = 120.0, step = 5.0, group = grpRisk)
 i_riskUsd = input.float(800.0, "Full risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk)
 i_maxContracts = input.int(60, "Max contracts (60 MNQ / 6 NQ)", minval = 1, maxval = 60, group = grpRisk)
 i_halfSize = input.bool(false, "Global HALF risk override (50%)", group = grpRisk)
@@ -252,7 +248,7 @@ if newDay
 if inStaging and (sweptHigh or sweptLow)
     stagingDone := true
 
-// ─── Tiered core signal (v1.3) ───────────────────────────────────────────────
+// ─── Core signal (v1.4) — TS required, SMT boosts, wide wick halves ───────────
 bool flat = strategy.position_size == 0
 bool room = not i_oneTradeDay or tradesToday == 0
 bool allow = canPlace and flat and room
@@ -264,39 +260,36 @@ bool stagingOk = not i_requireStaging or stagingDone
 bool fvgOkLong = not i_requireFvg or sibiDisrespect
 bool fvgOkShort = not i_requireFvg or bisiDisrespect
 
-bool tierLongAPlus = inMacro and tsBullOk and smtAtSweepBull and premOkLong and sigWick <= i_wickAPlus
-bool tierLongA = inMacro and tsBullOk and not smtAtSweepBull and premOkLong and sigWick <= i_wickA
-bool tierLongB = i_allowBGrade and inMacro and not tsBullOk and sibiDisrespect and premOkLong and sigWick <= i_wickB
-bool tierShortAPlus = inMacro and tsBearOk and smtAtSweepBear and premOkShort and sigWick <= i_wickAPlus
-bool tierShortA = inMacro and tsBearOk and not smtAtSweepBear and premOkShort and sigWick <= i_wickA
-bool tierShortB = i_allowBGrade and inMacro and not tsBearOk and bisiDisrespect and premOkShort and sigWick <= i_wickB
+bool tsCoreLong = inMacro and tsBullOk and premOkLong
+bool tsCoreShort = inMacro and tsBearOk and premOkShort
+bool skipLong = sigWick > i_wickSkip and not smtAtSweepBull
+bool skipShort = sigWick > i_wickSkip and not smtAtSweepBear
+bool wideLong = sigWick > i_wickFull
+bool wideShort = sigWick > i_wickFull
 
-bool coreLong = tierLongAPlus or tierLongA or tierLongB
-bool coreShort = tierShortAPlus or tierShortA or tierShortB
+bool coreLong = tsCoreLong and not skipLong
+bool coreShort = tsCoreShort and not skipShort
 
 bool liveLong = allow and coreLong and stagingOk and fvgOkLong
 bool liveShort = allow and coreShort and stagingOk and fvgOkShort
 
-int sigTierLong = tierLongAPlus ? 3 : tierLongA ? 2 : tierLongB ? 1 : 0
-int sigTierShort = tierShortAPlus ? 3 : tierShortA ? 2 : tierShortB ? 1 : 0
+// Tier: 3 = TS+SMT · 2 = TS only · 1 = wide wick (half risk)
+int sigTierLong = coreLong ? (smtAtSweepBull ? (wideLong ? 1 : 3) : (wideLong ? 1 : 2)) : 0
+int sigTierShort = coreShort ? (smtAtSweepBear ? (wideShort ? 1 : 3) : (wideShort ? 1 : 2)) : 0
 
 f_tierRisk(int tier) =>
     float base = i_halfSize ? i_riskUsd * 0.5 : i_riskUsd
     tier == 1 ? base * (i_riskHalfPct / 100.0) : base
 
 f_tierMaxStop(int tier) =>
-    switch tier
-        3 => i_maxStop
-        2 => i_maxStopA
-        1 => i_maxStopB
-        => i_maxStop
+    i_maxStop
 
 f_tierTarget(int tier) =>
     switch tier
         3 => i_targetAPlus
         2 => i_targetA
-        1 => i_targetB
-        => i_targetAPlus
+        1 => i_targetHalf
+        => i_targetA
 
 f_qty(float stopPts, float riskUsd, float maxStop) =>
     if stopPts <= 0 or stopPts > maxStop

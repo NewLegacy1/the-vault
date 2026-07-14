@@ -1,0 +1,311 @@
+{
+  "generatedAt": "2026-07-14T16:49:41.807Z",
+  "strategy": "Macro Model v1.3 — tiered TS/SMT + CE confirm",
+  "settingsNote": "Tiered A+/A/B · MES SMT · tiered TP 50/40/30 · MIXED export: chunk (11) pivot 5 recent, chunks (12)–(20) pivot 10",
+  "sourceDir": "data/tv-exports/macro-v1-tiered-2026-07-14",
+  "filesImported": 10,
+  "rawTradeRows": 25,
+  "dedupedRows": 0,
+  "sameDayCollisions": 0,
+  "pivotSplitNote": "File (11) tagged pivot 5 (May–Jul 2026 recent). Files (12)–(20) tagged pivot 10.",
+  "mergedTrades": 25,
+  "span": "2025-01-28 → 2026-07-10",
+  "wins": 12,
+  "losses": 13,
+  "scratches": 0,
+  "winRatePct": 48,
+  "netPnlUsd": 4968.58,
+  "avgPerTrade": 198.74,
+  "avgWinUsd": 1294,
+  "avgLossUsd": -812,
+  "tradesPerWeek": 0.3,
+  "maxDrawdownUsd": 3739,
+  "peakEquityUsd": 4969,
+  "monteCarlo": {
+    "firm": "TPT $50K Test → PRO",
+    "passRatePct": 42.1,
+    "bustRatePct": 58,
+    "payoutRatePct": 34.6,
+    "tradesToPassP50": 7,
+    "weeksToPassP50": 21.1,
+    "expectedAccounts": 2.4,
+    "accountsFor90Pct": 5,
+    "expectedNetUntilPass": 3202
+  },
+  "evalConsistency": {
+    "applicable": true,
+    "passRequestReady": true,
+    "totalPnl": 4969,
+    "bestDayPctOfTotal": 39.6,
+    "recommendation": "Ready to request pass: $4969 total, best day 39.6% (< 50%), 25 trading days."
+  },
+  "pivot5Subset": {
+    "mergedTrades": 2,
+    "span": "2026-05-28 → 2026-07-10",
+    "wins": 2,
+    "losses": 0,
+    "scratches": 0,
+    "winRatePct": 100,
+    "netPnlUsd": 2259.98,
+    "avgPerTrade": 1129.99,
+    "avgWinUsd": 1130,
+    "avgLossUsd": 0,
+    "tradesPerWeek": 0.3,
+    "maxDrawdownUsd": 0,
+    "peakEquityUsd": 2260,
+    "monteCarlo": {
+      "firm": "TPT $50K Test → PRO",
+      "passRatePct": 100,
+      "bustRatePct": 0,
+      "payoutRatePct": 100,
+      "tradesToPassP50": 4,
+      "weeksToPassP50": 12.3,
+      "expectedAccounts": 1,
+      "accountsFor90Pct": 0,
+      "expectedNetUntilPass": 3980
+    }
+  },
+  "pivot10Subset": {
+    "mergedTrades": 23,
+    "span": "2025-01-28 → 2026-05-07",
+    "wins": 10,
+    "losses": 13,
+    "scratches": 0,
+    "winRatePct": 43.5,
+    "netPnlUsd": 2708.6,
+    "avgPerTrade": 117.77,
+    "avgWinUsd": 1327,
+    "avgLossUsd": -812,
+    "tradesPerWeek": 0.3,
+    "maxDrawdownUsd": 3739,
+    "peakEquityUsd": 3503,
+    "monteCarlo": {
+      "firm": "TPT $50K Test → PRO",
+      "passRatePct": 33.5,
+      "bustRatePct": 66.6,
+      "payoutRatePct": 24.7,
+      "tradesToPassP50": 7,
+      "weeksToPassP50": 20.2,
+      "expectedAccounts": 3,
+      "accountsFor90Pct": 6,
+      "expectedNetUntilPass": 3100
+    }
+  },
+  "perFile": [
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (11).csv",
+      "tsPivot": 5,
+      "trades": 2,
+      "span": "2026-05-28 → 2026-07-10",
+      "netPnlUsd": 2259.98
+    },
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (12).csv",
+      "tsPivot": 10,
+      "trades": 4,
+      "span": "2026-03-31 → 2026-05-07",
+      "netPnlUsd": 1632.64
+    },
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (13).csv",
+      "tsPivot": 10,
+      "trades": 1,
+      "span": "—",
+      "netPnlUsd": 982.6
+    },
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (14).csv",
+      "tsPivot": 10,
+      "trades": 2,
+      "span": "2025-12-10 → 2025-12-31",
+      "netPnlUsd": 3144.32
+    },
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (15).csv",
+      "tsPivot": 10,
+      "trades": 1,
+      "span": "—",
+      "netPnlUsd": 687.82
+    },
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (16).csv",
+      "tsPivot": 10,
+      "trades": 6,
+      "span": "2025-08-12 → 2025-10-03",
+      "netPnlUsd": -1054.26
+    },
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (17).csv",
+      "tsPivot": 10,
+      "trades": 3,
+      "span": "2025-07-07 → 2025-07-29",
+      "netPnlUsd": 256.98
+    },
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (18).csv",
+      "tsPivot": 10,
+      "trades": 3,
+      "span": "2025-04-29 → 2025-05-21",
+      "netPnlUsd": -2398.8
+    },
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (19).csv",
+      "tsPivot": 10,
+      "trades": 1,
+      "span": "—",
+      "netPnlUsd": 982.6
+    },
+    {
+      "file": "Macro_v1_CME_MINI_MNQ1!_2026-07-14 (20).csv",
+      "tsPivot": 10,
+      "trades": 2,
+      "span": "2025-01-28 → 2025-02-11",
+      "netPnlUsd": -1525.3
+    }
+  ],
+  "baselineV12": {
+    "strategy": "Macro Model v1 — CE confirm (tap + lift)",
+    "mergedTrades": 229,
+    "stats": {
+      "wins": 127,
+      "losses": 102,
+      "scratches": 0,
+      "winRatePct": 55.5,
+      "netPnlUsd": 16749.24,
+      "avgPerTrade": 73.14,
+      "avgWinUsd": 775.33,
+      "avgLossUsd": -801.15,
+      "tradesPerWeek": 2.9,
+      "maxDrawdownUsd": 13296,
+      "peakEquityUsd": 16749
+    },
+    "monteCarlo": {
+      "firm": "TPT $50K Test → PRO",
+      "sims": 2000,
+      "passAt": 4000,
+      "trailingDD": 2000,
+      "passRatePct": 30.5,
+      "bustRatePct": 69.6,
+      "timeoutRatePct": 0,
+      "tradesToPassP50": 11,
+      "tradesToPassP90": 19,
+      "weeksToPassP50": 3.8,
+      "weeksToPassP90": 6.6,
+      "expectedAccounts": 3.3,
+      "accountsFor90Pct": 7,
+      "payoutRatePct": 23.8,
+      "expectedNetUntilPass": 3949
+    }
+  },
+  "comparison": {
+    "netPnlDelta": -11780.66,
+    "winRateDelta": -7.5,
+    "tradesDelta": -204,
+    "maxDdDelta": -9557,
+    "passRateDelta": 11.6,
+    "bustRateDelta": -11.6,
+    "verdict": "mixed — review tier frequency before promoting"
+  },
+  "tradeList": [
+    {
+      "date": "2025-01-28",
+      "pnl": -722.68
+    },
+    {
+      "date": "2025-02-11",
+      "pnl": -802.62
+    },
+    {
+      "date": "2025-04-16",
+      "pnl": 982.6
+    },
+    {
+      "date": "2025-04-29",
+      "pnl": -749.16
+    },
+    {
+      "date": "2025-05-05",
+      "pnl": -841.28
+    },
+    {
+      "date": "2025-05-21",
+      "pnl": -808.36
+    },
+    {
+      "date": "2025-07-07",
+      "pnl": 1965.2
+    },
+    {
+      "date": "2025-07-28",
+      "pnl": -851.24
+    },
+    {
+      "date": "2025-07-29",
+      "pnl": -856.98
+    },
+    {
+      "date": "2025-08-12",
+      "pnl": 884.34
+    },
+    {
+      "date": "2025-08-18",
+      "pnl": -807.4
+    },
+    {
+      "date": "2025-09-03",
+      "pnl": 1375.64
+    },
+    {
+      "date": "2025-09-17",
+      "pnl": -829.36
+    },
+    {
+      "date": "2025-09-22",
+      "pnl": -794.36
+    },
+    {
+      "date": "2025-10-03",
+      "pnl": -883.12
+    },
+    {
+      "date": "2025-11-17",
+      "pnl": 687.82
+    },
+    {
+      "date": "2025-12-10",
+      "pnl": 1375.64
+    },
+    {
+      "date": "2025-12-31",
+      "pnl": 1768.68
+    },
+    {
+      "date": "2026-03-05",
+      "pnl": 982.6
+    },
+    {
+      "date": "2026-03-31",
+      "pnl": 1670.42
+    },
+    {
+      "date": "2026-04-21",
+      "pnl": -815.36
+    },
+    {
+      "date": "2026-04-23",
+      "pnl": 1572.16
+    },
+    {
+      "date": "2026-05-07",
+      "pnl": -794.58
+    },
+    {
+      "date": "2026-05-28",
+      "pnl": 1080.86
+    },
+    {
+      "date": "2026-07-10",
+      "pnl": 1179.12
+    }
+  ]
+}
