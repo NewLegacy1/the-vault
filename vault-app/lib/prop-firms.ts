@@ -184,7 +184,7 @@ const APEX_50K_EOD_PHASES = [
       minPayoutUsd: undefined,
       maxPerPayout: "Tiered by account — 8 trading days between payouts on many plans",
       frequency: "~8 trading days between payout requests (Apex typical)",
-      payoutConsistency: "30% consistency on many payout tiers (verify dashboard)",
+      payoutConsistency: "50% consistency on PA (Apex 4.0, Mar 2026)",
       minDaysBeforeFirstPayout: "8 trading days + minimum profit threshold",
       minWinningDays: "Varies by payout number (1st vs 5th payout)",
       extras: ["Payout rules change by payout count — read Apex dashboard for your PA.", "Contract limits scale with profit."],

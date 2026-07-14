@@ -93,7 +93,7 @@ function buildMcParamsForFirm(
   if (opts.compareMode === "funded") {
     const funded = fundedPhase ?? evalPhase;
     if (!funded) return null;
-    const payoutEconomics = payoutConfigForFirm(id, "funded");
+    const payoutEconomics = payoutConfigForFirm(ruleId, "funded");
     return {
       rule,
       evalPhase,
@@ -117,7 +117,7 @@ function buildMcParamsForFirm(
           payoutProfitTarget: opts.payoutBuffer,
           recycleProfitCap: rule.id === "tpt50" ? 5000 : undefined,
           accountRecycling: rule.id === "tpt50",
-          payoutConsistencyPct: fundedPayoutConsistencyPct(id),
+          payoutConsistencyPct: fundedPayoutConsistencyPct(ruleId),
         },
         bootstrap: "week" as const,
       },
@@ -129,7 +129,7 @@ function buildMcParamsForFirm(
   const trailingDD = evalRules?.trailingDD ?? rule.trailingDD;
   const consistencyPct = evalRules?.evalConsistencyPct ?? rule.consistencyPct;
   const minDays = evalRules?.minTradingDays ?? rule.minDays;
-  const payoutEconomics = payoutConfigForFirm(id, "eval");
+  const payoutEconomics = payoutConfigForFirm(ruleId, "eval");
 
   return {
     rule,
@@ -154,7 +154,7 @@ function buildMcParamsForFirm(
       payoutEconomics: payoutEconomics ?? undefined,
       funded: {
         payoutProfitTarget: opts.payoutBuffer,
-        payoutConsistencyPct: fundedPayoutConsistencyPct(id),
+        payoutConsistencyPct: fundedPayoutConsistencyPct(ruleId),
       },
       bootstrap: "week" as const,
     },

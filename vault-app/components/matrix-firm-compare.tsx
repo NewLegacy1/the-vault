@@ -200,8 +200,10 @@ export function MatrixFirmCompare({
             </p>
           )}
 
-          {computeSource !== "none" && (
+              {computeSource !== "none" && (
             <p className="small dim" style={{ marginTop: 0, lineHeight: 1.55 }}>
+              Net $/acct uses each firm&apos;s official split, buffer, payout caps, and eval/activation/monthly fees.
+              {" "}
               {embeddedInLab && (
                 <>
                   <span className="accent">All firms</span> from one RUN — same trades, each prop&apos;s rules.
@@ -295,6 +297,12 @@ export function MatrixFirmCompare({
                           <td className="num">{r.recyclePct != null ? `${r.recyclePct}%` : "—"}</td>
                         )}
                         <td className="num">{r.weeksToPassP50 ?? "—"}</td>
+                        <td className={"num " + (r.medianNetPerAccountUsd != null && r.medianNetPerAccountUsd >= 0 ? "pos" : r.medianNetPerAccountUsd != null ? "neg" : "")}>
+                          {r.medianNetPerAccountUsd != null ? fmtUsd(r.medianNetPerAccountUsd, true) : "—"}
+                        </td>
+                        <td className={"num " + (r.expectedNetPerAccountUsd != null && r.expectedNetPerAccountUsd >= 0 ? "pos" : r.expectedNetPerAccountUsd != null ? "neg" : "")}>
+                          {r.expectedNetPerAccountUsd != null ? fmtUsd(r.expectedNetPerAccountUsd, true) : "—"}
+                        </td>
                         <td className="num">{fmtUsd(r.trailingDD)}</td>
                         <td className="small dim">
                           {r.consistencyPct > 0
@@ -339,6 +347,29 @@ export function MatrixFirmCompare({
                     <div className="v neg">{activeSnap.bustPct}%</div>
                     <div className="d">DD breach · {fmtUsd(activeSnap.trailingDD)} trail</div>
                   </div>
+                  {activeSnap.medianNetPerAccountUsd != null && (
+                    <div className="stat">
+                      <div className="k">Net per account</div>
+                      <div className={"v " + (activeSnap.medianNetPerAccountUsd >= 0 ? "pos" : "neg")}>
+                        {fmtUsd(activeSnap.medianNetPerAccountUsd, true)}
+                      </div>
+                      <div className="d">
+                        median after payouts − fees
+                        {activeSnap.medianWithdrawnUsd != null && (
+                          <> · gross {fmtUsd(activeSnap.medianWithdrawnUsd, true)}</>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {activeSnap.expectedNetPerAccountUsd != null && (
+                    <div className="stat">
+                      <div className="k">E[$] per account</div>
+                      <div className={"v " + (activeSnap.expectedNetPerAccountUsd >= 0 ? "pos" : "neg")}>
+                        {fmtUsd(activeSnap.expectedNetPerAccountUsd, true)}
+                      </div>
+                      <div className="d">mean across all {sims.toLocaleString()} sims incl. busts</div>
+                    </div>
+                  )}
                 </div>
               )}
             </>
