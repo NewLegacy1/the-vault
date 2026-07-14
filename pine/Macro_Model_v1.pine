@@ -1,10 +1,10 @@
 //@version=6
-// Macro Model v1.3 — tiered TS/SMT quality + CE confirm entry
+// Macro Model v1.4 — TS required + wick-based sizing + CE confirm
 //
 // SOP: strategies/Macro_Model_SOP.md
 //
-//   v1.4 — TS required · SMT sizes up (not gates) · wide wick = half risk (not skip)
-//          A+ = TS+SMT · A = TS only · B = FVG-only HALF size (tight wick)
+//   v1.4 — TS required in macro · SMT boosts TP/size · wide wick = half risk
+//          Skip only: wick > 80 without SMT at sweep
 //
 // Two autopsy tables (paste into F4 LAB ghost panel):
 //   MISSED — failed exactly ONE live filter
@@ -273,9 +273,9 @@ bool coreShort = tsCoreShort and not skipShort
 bool liveLong = allow and coreLong and stagingOk and fvgOkLong
 bool liveShort = allow and coreShort and stagingOk and fvgOkShort
 
-// Tier: 3 = TS+SMT · 2 = TS only · 1 = wide wick (half risk)
-int sigTierLong = coreLong ? (smtAtSweepBull ? (wideLong ? 1 : 3) : (wideLong ? 1 : 2)) : 0
-int sigTierShort = coreShort ? (smtAtSweepBear ? (wideShort ? 1 : 3) : (wideShort ? 1 : 2)) : 0
+// Tier: 3 = TS+SMT full · 2 = TS only full · 1 = wide wick half (no SMT)
+int sigTierLong = coreLong ? (wideLong and not smtAtSweepBull ? 1 : smtAtSweepBull ? 3 : 2) : 0
+int sigTierShort = coreShort ? (wideShort and not smtAtSweepBear ? 1 : smtAtSweepBear ? 3 : 2) : 0
 
 f_tierRisk(int tier) =>
     float base = i_halfSize ? i_riskUsd * 0.5 : i_riskUsd
@@ -470,18 +470,12 @@ if strategy.position_size != 0 and suOrd
 
 // ─── Tier labels ───────────────────────────────────────────────────────────────
 if i_showTierLbl and barstate.isconfirmed
-    if tierLongAPlus
-        label.new(bar_index, low, "A+", style = label.style_label_up, color = color.new(color.teal, 20), textcolor = color.white, size = size.tiny)
-    else if tierLongA
-        label.new(bar_index, low, "A", style = label.style_label_up, color = color.new(color.green, 30), textcolor = color.white, size = size.tiny)
-    else if tierLongB
-        label.new(bar_index, low, "B", style = label.style_label_up, color = color.new(color.orange, 30), textcolor = color.white, size = size.tiny)
-    if tierShortAPlus
-        label.new(bar_index, high, "A+", style = label.style_label_down, color = color.new(color.teal, 20), textcolor = color.white, size = size.tiny)
-    else if tierShortA
-        label.new(bar_index, high, "A", style = label.style_label_down, color = color.new(color.green, 30), textcolor = color.white, size = size.tiny)
-    else if tierShortB
-        label.new(bar_index, high, "B", style = label.style_label_down, color = color.new(color.orange, 30), textcolor = color.white, size = size.tiny)
+    if coreLong
+        string lbl = sigTierLong == 3 ? "A+" : sigTierLong == 2 ? "A" : "½"
+        label.new(bar_index, low, lbl, style = label.style_label_up, color = color.new(sigTierLong == 1 ? color.orange : color.teal, 25), textcolor = color.white, size = size.tiny)
+    if coreShort
+        string lblS = sigTierShort == 3 ? "A+" : sigTierShort == 2 ? "A" : "½"
+        label.new(bar_index, high, lblS, style = label.style_label_down, color = color.new(sigTierShort == 1 ? color.orange : color.teal, 25), textcolor = color.white, size = size.tiny)
 
 // ─── Ghost autopsy ───────────────────────────────────────────────────────────
 var array<int>   gDir = array.new_int()
@@ -550,10 +544,10 @@ if i_ghost and (coreLong or coreShort)
         if i_requirePremDisc and (dir == 1 ? not inDiscount : not inPremium)
             fails += 1
             missR := 3
-        if not hasTs and tier < 2
+        if not hasTs
             fails += 1
             missR := 4
-        if tier == 3 and not hasSmt
+        if hasTs and not hasSmt and tier == 3
             fails += 1
             missR := 5
         if dir == 1 ? i_requireFvg and not sibiDisrespect : i_requireFvg and not bisiDisrespect
