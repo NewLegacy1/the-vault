@@ -34,6 +34,20 @@ tags: [roadmap, hypotheses, strategy-dev]
 
 **Correlation check first (3.1):** count days both strategies traded in the shared year; if same-day losses cluster, blending doesn't diversify.
 
+## Track 4 — Income acceleration (not pass-rate A/Bs)
+
+> Current ceiling: ~1.2 trades/wk · recycle extract ~$1k take-home / 8w ≈ **$1k/mo**. Target path: **≥$1k/wk realized** before split → need ~3–5× frequency and/or size after cushion. Small PRB toggles will not get there.
+
+| # | Experiment | Why it moves $/wk | Effort | Status |
+|---|---|---|---|---|
+| 4.1 | **Macro v1.2 volume @ $400 + BE@2R** (roadmap 2.2+3.2 merge) | 229 trades/yr → ~4–5× frequency; BE kills $800 trail busts | Pine `Macro_Model_v2` + MC | **priority** |
+| 4.2 | **Second Macro window unlocked** (10:50–11:10 always; test 11:50–12:10) | Same edge, second daily slot — frequency without new model | Pine input flip + export | next |
+| 4.3 | **Sleeve: allow 1 Macro + 1 PRB same day** (when Macro AM filled, PRB still arms) | Exploits 0-overlap on A-tier; doubles peak cadence | Hybrid_Sleeve v0.1 | next |
+| 4.4 | **True H1 quiet-Macro ledger MC** (filter-hybrid-news) | +5pt pass vs H0 without slowing much | CSV only — re-run H1a/H1b | quick win |
+| 4.5 | **PRO scale ladder** after +$1.5k cushion: risk $400→$800→$1,200 | Same edge, 2–3× extract per cycle before recycle | playbook + MC size scale | analysis |
+| 4.6 | **Multi-account / larger size** (3× $50k or $150k if DD scales) | Parallelism is the only lever that doesn't need new edge | ops | parallel to R&D |
+| 4.7 | Lunch / PM macro exploratory (1:10–1:40) | Untapped SOP windows — only if 4.2 pays | research | later |
+
 ## Rules for this backlog
 
 - Winner promotion follows [[STRATEGY_DEV_AGENT]] promotion rule.
