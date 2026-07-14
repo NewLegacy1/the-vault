@@ -1,8 +1,7 @@
-import type { McResult } from "./monte-carlo";
-import type { ScorecardComparison } from "./lab-scorecard";
+import type { ScorecardVerdict } from "./lab-scorecard";
 
 const CACHE_KEY = "vault.lab.runCache";
-const MAX_ENTRIES = 16;
+const MAX_ENTRIES = 24;
 
 export interface LabRunKeyInput {
   dsId: string;
@@ -16,13 +15,15 @@ export interface LabRunKeyInput {
   winCapUsd: number;
 }
 
+/** Slim cache — flags only; MC is re-run on restore (avoids huge/corrupt JSON). */
 export interface LabRunCacheEntry {
   runKey: string;
-  res: McResult;
-  comparison: ScorecardComparison;
+  hasRun: boolean;
   cohortSaved: boolean;
   saveMsg: string;
   savedAt: string;
+  verdict?: ScorecardVerdict;
+  compositeScore?: number;
 }
 
 function storage(): Storage | null {
@@ -50,8 +51,18 @@ function readAll(): Record<string, LabRunCacheEntry> {
   try {
     const raw = ls.getItem(CACHE_KEY);
     if (!raw) return {};
-    return JSON.parse(raw) as Record<string, LabRunCacheEntry>;
+    const parsed = JSON.parse(raw) as Record<string, LabRunCacheEntry>;
+    const out: Record<string, LabRunCacheEntry> = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (v && typeof v === "object" && v.hasRun) out[k] = v;
+    }
+    return out;
   } catch {
+    try {
+      ls.removeItem(CACHE_KEY);
+    } catch {
+      // ignore
+    }
     return {};
   }
 }
@@ -67,14 +78,10 @@ function writeAll(map: Record<string, LabRunCacheEntry>): void {
   try {
     ls.setItem(CACHE_KEY, JSON.stringify(trimmed));
   } catch {
-    // quota — drop oldest half and retry once
-    const half = entries.slice(0, Math.floor(MAX_ENTRIES / 2));
-    const fallback: Record<string, LabRunCacheEntry> = {};
-    for (const e of half) fallback[e.runKey] = e;
     try {
-      ls.setItem(CACHE_KEY, JSON.stringify(fallback));
+      ls.removeItem(CACHE_KEY);
     } catch {
-      // give up silently
+      // ignore
     }
   }
 }
@@ -85,19 +92,23 @@ export function loadLabRunCache(runKey: string): LabRunCacheEntry | null {
 
 export function saveLabRunCache(
   runKey: string,
-  res: McResult,
-  comparison: ScorecardComparison,
-  opts?: { cohortSaved?: boolean; saveMsg?: string }
+  opts: {
+    cohortSaved?: boolean;
+    saveMsg?: string;
+    verdict?: ScorecardVerdict;
+    compositeScore?: number;
+  }
 ): void {
   const map = readAll();
   const prev = map[runKey];
   map[runKey] = {
     runKey,
-    res,
-    comparison,
-    cohortSaved: opts?.cohortSaved ?? prev?.cohortSaved ?? false,
-    saveMsg: opts?.saveMsg ?? prev?.saveMsg ?? "",
+    hasRun: true,
+    cohortSaved: opts.cohortSaved ?? prev?.cohortSaved ?? false,
+    saveMsg: opts.saveMsg ?? prev?.saveMsg ?? "",
     savedAt: new Date().toISOString(),
+    verdict: opts.verdict ?? prev?.verdict,
+    compositeScore: opts.compositeScore ?? prev?.compositeScore,
   };
   writeAll(map);
 }
@@ -105,11 +116,24 @@ export function saveLabRunCache(
 export function markLabRunCohortSaved(runKey: string, saveMsg: string): void {
   const map = readAll();
   const entry = map[runKey];
-  if (!entry) return;
-  map[runKey] = { ...entry, cohortSaved: true, saveMsg, savedAt: entry.savedAt };
+  if (!entry) {
+    map[runKey] = {
+      runKey,
+      hasRun: true,
+      cohortSaved: true,
+      saveMsg,
+      savedAt: new Date().toISOString(),
+    };
+  } else {
+    map[runKey] = { ...entry, cohortSaved: true, saveMsg };
+  }
   writeAll(map);
 }
 
 export function isLabRunCohortSaved(runKey: string): boolean {
   return readAll()[runKey]?.cohortSaved ?? false;
+}
+
+export function clearLabRunCache(): void {
+  storage()?.removeItem(CACHE_KEY);
 }

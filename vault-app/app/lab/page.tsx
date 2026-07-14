@@ -271,14 +271,15 @@ function FanChart({
   const PAD_T = 28;
   const PAD_R = 16;
   const HIST_H = 48;
-  const n = res.bands.p50.length;
+  const n = res.bands?.p50?.length ?? 0;
   if (n === 0) return null;
 
+  const finals = res.finalEquities ?? [];
   const chartH = H - PAD_B - PAD_T - HIST_H;
-  const all = [...res.bands.p05, ...res.bands.p95, ...res.finalEquities, passAt, payoutAt, -dd];
+  const all = [...(res.bands?.p05 ?? []), ...(res.bands?.p95 ?? []), ...finals, passAt, payoutAt, -dd];
   const yMin = Math.min(...all) * 1.12;
   const yMax = Math.max(...all) * 1.12;
-  const x = (i: number) => PAD_L + (i / (n - 1)) * (W - PAD_L - PAD_R);
+  const x = (i: number) => PAD_L + (i / Math.max(n - 1, 1)) * (W - PAD_L - PAD_R);
   const y = (v: number) => PAD_T + (1 - (v - yMin) / (yMax - yMin)) * chartH;
   const path = (vals: number[]) =>
     vals.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
@@ -289,10 +290,9 @@ function FanChart({
     " Z";
 
   // Terminal histogram of final equity
-  const finals = res.finalEquities;
   const buckets = 24;
-  const fMin = Math.min(...finals);
-  const fMax = Math.max(...finals);
+  const fMin = finals.length ? Math.min(...finals) : 0;
+  const fMax = finals.length ? Math.max(...finals) : 0;
   const fRange = fMax - fMin || 1;
   const counts = Array.from({ length: buckets }, () => 0);
   for (const v of finals) {
@@ -322,11 +322,11 @@ function FanChart({
       </defs>
 
       <text x={PAD_L} y={16} fill="#39ffba" fontSize={11} fontFamily="monospace" letterSpacing={2}>
-        MONTE CARLO — {res.samplePaths.length} paths shown · {res.sims.toLocaleString()} total sims
+        MONTE CARLO — {(res.samplePaths ?? []).length} paths shown · {res.sims.toLocaleString()} total sims
       </text>
 
       {/* Spaghetti paths — classic MC look */}
-      {res.samplePaths.map((sp, i) => {
+      {(res.samplePaths ?? []).map((sp, i) => {
         const st = PATH_STYLE[sp.outcome];
         return (
           <path
@@ -416,9 +416,11 @@ function FanChart({
 }
 
 function OutcomeChart({ hist, sims }: { hist: McResult["outcomeHist"]; sims: number }) {
+  const rows = hist ?? [];
+  if (rows.length === 0) return null;
   const W = 260;
   const H = 200;
-  const max = Math.max(...hist.map((h) => h.count), 1);
+  const max = Math.max(...rows.map((h) => h.count), 1);
   const barH = 36;
   const gap = 14;
   const startY = 24;
@@ -428,7 +430,7 @@ function OutcomeChart({ hist, sims }: { hist: McResult["outcomeHist"]; sims: num
       <text x={W / 2} y={14} fill="#9a9a9a" fontSize={10} textAnchor="middle" fontFamily="monospace" letterSpacing={1}>
         OUTCOME DISTRIBUTION
       </text>
-      {hist.map((h, i) => {
+      {rows.map((h, i) => {
         const bw = (h.count / max) * (W - 80);
         const y = startY + i * (barH + gap);
         const pct = ((h.count / sims) * 100).toFixed(1);
@@ -881,13 +883,13 @@ function buildDatasetFromParsed(
 
 export default function LabPage() {
   const [uploads, setUploads] = useLocal<Dataset[]>("vault.lab.datasets", []);
-  const [dsId, setDsId] = useLocal<string>("vault.lab.dsId", "be2r-pdh-12mo");
-  const [ruleId, setRuleId] = useLocal<string>("vault.lab.ruleId", PROP_RULES[0].id);
-  const [sims, setSims] = useLocal<number>("vault.lab.sims", 2000);
-  const [maxTrades, setMaxTrades] = useLocal<number>("vault.lab.maxTrades", 80);
-  const [payoutBuffer, setPayoutBuffer] = useLocal<number>("vault.lab.payoutBuffer", 1000);
+  const [dsId, setDsId, dsReady] = useLocal<string>("vault.lab.dsId", "be2r-pdh-12mo");
+  const [ruleId, setRuleId, ruleReady] = useLocal<string>("vault.lab.ruleId", PROP_RULES[0].id);
+  const [sims, setSims, simsReady] = useLocal<number>("vault.lab.sims", 2000);
+  const [maxTrades, setMaxTrades, maxTradesReady] = useLocal<number>("vault.lab.maxTrades", 80);
+  const [payoutBuffer, setPayoutBuffer, payoutReady] = useLocal<number>("vault.lab.payoutBuffer", 1000);
   const [res, setRes] = useState<McResult | null>(null);
-  const [study, setStudy] = useLocal<LabStudy>("vault.lab.study", DEFAULT_STUDY);
+  const [study, setStudy, studyHydrated] = useLocal<LabStudy>("vault.lab.study", DEFAULT_STUDY);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "ok" | "err">("idle");
   const [saveMsg, setSaveMsg] = useState("");
   const [autoSave, setAutoSave] = useLocal<boolean>("vault.lab.autosave", true);
@@ -903,56 +905,33 @@ export default function LabPage() {
   const variantName = studyVariantName(study);
 
   const datasets = [...SEED_SETS, ...uploads];
-  const ds = datasets.find((d) => d.id === dsId) ?? SEED_SETS[0];
-  const rule = ruleById(ruleId) ?? PROP_RULES[0];
+  const safeDsId = typeof dsId === "string" ? dsId : SEED_SETS[0].id;
+  const ds = datasets.find((d) => d.id === safeDsId) ?? SEED_SETS[0];
+  const rule = ruleById(typeof ruleId === "string" ? ruleId : PROP_RULES[0].id) ?? PROP_RULES[0];
   const canRun = studyReady(study) && ds.trades.length > 0;
+  const storageReady = dsReady && ruleReady && simsReady && maxTradesReady && payoutReady && studyHydrated;
 
   const runKey = useMemo(
     () =>
       buildLabRunKey({
-        dsId,
+        dsId: safeDsId,
         presetId: study.presetId,
         customLabel: study.customLabel,
         hypothesis: study.hypothesis,
-        ruleId,
-        sims,
-        maxTrades,
-        payoutBuffer,
+        ruleId: typeof ruleId === "string" ? ruleId : PROP_RULES[0].id,
+        sims: Number(sims) || 2000,
+        maxTrades: Number(maxTrades) || 80,
+        payoutBuffer: Number(payoutBuffer) || 1000,
         winCapUsd,
       }),
-    [dsId, study, ruleId, sims, maxTrades, payoutBuffer, winCapUsd]
+    [safeDsId, study, ruleId, sims, maxTrades, payoutBuffer, winCapUsd]
   );
-
-  useEffect(() => {
-    const cached = loadLabRunCache(runKey);
-    if (cached) {
-      setRes(cached.res);
-      setScorecardComparison(cached.comparison);
-      if (cached.cohortSaved) {
-        setSaveStatus("ok");
-        setSaveMsg(cached.saveMsg || "Cohort already saved for this dataset + variant");
-      } else {
-        setSaveStatus("idle");
-        setSaveMsg("");
-      }
-    } else {
-      setRes(null);
-      setScorecardComparison(null);
-      setSaveStatus("idle");
-      setSaveMsg("");
-    }
-  }, [runKey]);
 
   const equity = useMemo(() => buildEquityCurve(ds.trades, ds.dates), [ds]);
 
   const consistency = useMemo(
     () => analyzeEvalConsistency(ds.trades, ds.dates, rule, { winCapUsd }),
     [ds, rule, winCapUsd]
-  );
-
-  const ghostReport = useMemo(
-    () => analyzeGhostAutopsy(parseGhostAutopsyPaste(ghostPaste), ghostPaste),
-    [ghostPaste]
   );
 
   const stats = useMemo(() => {
@@ -976,6 +955,81 @@ export default function LabPage() {
       span,
     };
   }, [ds]);
+
+  const computeMcRun = useMemo(() => {
+    return () => {
+      const mcResult = runMonteCarlo({
+        trades: ds.trades,
+        dates: ds.dates,
+        sims: Number(sims) || 2000,
+        maxTrades: Number(maxTrades) || 80,
+        passAt: rule.passAt,
+        trailingDD: rule.trailingDD,
+        fees: {
+          evalFee: rule.evalFee ?? 0,
+          activationFee: rule.activationFee ?? 0,
+          monthlyFee: rule.monthlyFee ?? 0,
+          payoutBuffer: Number(payoutBuffer) || 1000,
+        },
+      });
+      const secondHalfPass = mcPassRateSecondHalf(
+        ds.trades,
+        ds.dates,
+        rule,
+        Number(sims) || 2000,
+        Number(maxTrades) || 80,
+        Number(payoutBuffer) || 1000
+      );
+      const metrics = buildScorecardMetrics({
+        id: `${study.presetId}-${safeDsId}`,
+        label: variantName,
+        dataset: datasetDisplayName(ds),
+        span: stats.span,
+        trades: ds.trades,
+        dates: ds.dates,
+        stats,
+        mc: mcResult,
+        consistency,
+        secondHalfPassRatePct: secondHalfPass,
+      });
+      const comparison = compareToBenchmark(metrics);
+      return { mcResult, comparison };
+    };
+  }, [ds, rule, sims, maxTrades, payoutBuffer, stats, consistency, study.presetId, safeDsId, variantName]);
+
+  useEffect(() => {
+    if (!storageReady) return;
+    const cached = loadLabRunCache(runKey);
+    if (!cached?.hasRun || !canRun) {
+      setRes(null);
+      setScorecardComparison(null);
+      setSaveStatus("idle");
+      setSaveMsg("");
+      return;
+    }
+    try {
+      const { mcResult, comparison } = computeMcRun();
+      setRes(mcResult);
+      setScorecardComparison(comparison);
+      if (cached.cohortSaved) {
+        setSaveStatus("ok");
+        setSaveMsg(cached.saveMsg || "Cohort already saved for this dataset + variant");
+      } else {
+        setSaveStatus("idle");
+        setSaveMsg("");
+      }
+    } catch {
+      setRes(null);
+      setScorecardComparison(null);
+      setSaveStatus("idle");
+      setSaveMsg("");
+    }
+  }, [runKey, storageReady, canRun, computeMcRun]);
+
+  const ghostReport = useMemo(
+    () => analyzeGhostAutopsy(parseGhostAutopsyPaste(ghostPaste), ghostPaste),
+    [ghostPaste]
+  );
 
   useEffect(() => {
     fetch("/api/cohorts")
@@ -1193,9 +1247,12 @@ export default function LabPage() {
       setSaveStatus("ok");
       setSaveMsg(okMsg);
       markLabRunCohortSaved(runKey, okMsg);
-      if (comparison) {
-        saveLabRunCache(runKey, mcResult, comparison, { cohortSaved: true, saveMsg: okMsg });
-      }
+      saveLabRunCache(runKey, {
+        cohortSaved: true,
+        saveMsg: okMsg,
+        verdict: comparison?.verdict,
+        compositeScore: comparison?.compositeScore,
+      });
       if (data.mode === "download" && data.markdown && opts?.allowDownload) {
         downloadCohortMarkdown(data.filename, data.markdown);
       } else if (data.mode === "download" && data.markdown && !opts?.allowDownload) {
@@ -1214,41 +1271,7 @@ export default function LabPage() {
   const run = () => {
     if (!canRun) return;
     setSaveStatus("idle");
-    const mcResult = runMonteCarlo({
-      trades: ds.trades,
-      dates: ds.dates,
-      sims,
-      maxTrades,
-      passAt: rule.passAt,
-      trailingDD: rule.trailingDD,
-      fees: {
-        evalFee: rule.evalFee ?? 0,
-        activationFee: rule.activationFee ?? 0,
-        monthlyFee: rule.monthlyFee ?? 0,
-        payoutBuffer,
-      },
-    });
-    const secondHalfPass = mcPassRateSecondHalf(
-      ds.trades,
-      ds.dates,
-      rule,
-      sims,
-      maxTrades,
-      payoutBuffer
-    );
-    const metrics = buildScorecardMetrics({
-      id: `${study.presetId}-${dsId}`,
-      label: variantName,
-      dataset: datasetDisplayName(ds),
-      span: stats.span,
-      trades: ds.trades,
-      dates: ds.dates,
-      stats,
-      mc: mcResult,
-      consistency,
-      secondHalfPassRatePct: secondHalfPass,
-    });
-    const comparison = compareToBenchmark(metrics);
+    const { mcResult, comparison } = computeMcRun();
     setRes(mcResult);
     setScorecardComparison(comparison);
     const entry: ScorecardRunEntry = {
@@ -1263,9 +1286,11 @@ export default function LabPage() {
     setScorecardHistory([entry, ...scorecardHistory].slice(0, 24));
     const alreadySaved = isLabRunCohortSaved(runKey);
     const prevCache = loadLabRunCache(runKey);
-    saveLabRunCache(runKey, mcResult, comparison, {
+    saveLabRunCache(runKey, {
       cohortSaved: alreadySaved,
       saveMsg: alreadySaved ? prevCache?.saveMsg ?? "" : "",
+      verdict: comparison.verdict,
+      compositeScore: comparison.compositeScore,
     });
     requestAnimationFrame(() => {
       mcResultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1299,7 +1324,7 @@ export default function LabPage() {
           <div className="frm-row">
             <label className="fld">
               Dataset
-              <select value={dsId} onChange={(e) => setDsId(e.target.value)}>
+              <select value={safeDsId} onChange={(e) => setDsId(e.target.value)}>
                 {datasets.map((d) => (
                   <option key={d.id} value={d.id}>
                     {datasetDisplayName(d)} — {datasetOptionSub(d)}
