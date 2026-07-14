@@ -189,8 +189,58 @@ function hybridRow(
   };
 }
 
+function macroIncomeRow(
+  partial: Omit<
+    StrategyPreset,
+    "matrixTrack" | "seriesId" | "inMatrix" | "family" | "dataSource" | "defaultRegimes" | "version"
+  > &
+    Partial<Pick<StrategyPreset, "defaultRegimes" | "dataSource" | "version">> & { phase: StrategyPhase }
+): StrategyPreset {
+  return {
+    family: "macro",
+    version: partial.version ?? "v2",
+    inMatrix: true,
+    matrixTrack: "experimental",
+    seriesId: "macro-income",
+    dataSource: "tv-export",
+    ...partial,
+    defaultRegimes: partial.defaultRegimes ?? ["baseline", "be-only"],
+  };
+}
+
 /** New strategies under development — add rows here; they appear in matrix + dropdown. */
 export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
+  macroIncomeRow({
+    id: "matrix-m0",
+    label: "M0 · Macro $400 · BE OFF",
+    matrixBranch: "M0",
+    phase: "funded",
+    config: "Macro_Model_v2 · Profile M0 · v1.4 entries · $400 · BE OFF",
+    uploadHint:
+      "TV: Macro_Model_v2 · Profile M0 → Deep Backtest List of Trades CSV.",
+    defaultHypothesis: "Control — $400 alone (no BE) vs v1.4 $800 parent",
+  }),
+  macroIncomeRow({
+    id: "matrix-m1",
+    label: "M1 · Macro $400 · BE@2R",
+    matrixBranch: "M1",
+    phase: "funded",
+    config: "Macro_Model_v2 · Profile M1 · v1.4 entries · $400 · BE@2R",
+    uploadHint:
+      "TV: Macro_Model_v2 · Profile M1 → Deep Backtest List of Trades CSV. PRIMARY Track 4.1 test.",
+    defaultHypothesis: "BE@2R kills symmetric-loss trail busts at $400 risk",
+  }),
+  macroIncomeRow({
+    id: "matrix-m2",
+    label: "M2 · Volume · $400 · BE@2R",
+    matrixBranch: "M2",
+    phase: "funded",
+    config: "Macro_Model_v2 · Profile M2 · TS optional · $400 · BE@2R",
+    defaultRegimes: ["runner", "baseline", "be-only"],
+    uploadHint:
+      "TV: Macro_Model_v2 · Profile M2 → Deep Backtest CSV. Volume unlock after M1 settles.",
+    defaultHypothesis: "Frequency unlock — TS optional + same management as M1",
+  }),
   hybridRow({
     id: "matrix-h0a",
     label: "H0a · Eval · A0a + B1a",
@@ -423,7 +473,7 @@ export function matrixPresetsBySeries(): { seriesId: string; presets: StrategyPr
     by.set(sid, list);
   }
   // Lazy import avoided — keep order via known ids + leftovers
-  const ORDER = ["premium365", "hybrid-sleeve", "datahl", "custom"];
+  const ORDER = ["premium365", "hybrid-sleeve", "macro-income", "datahl", "custom"];
   const seen = new Set<string>();
   const out: { seriesId: string; presets: StrategyPreset[] }[] = [];
   for (const id of ORDER) {

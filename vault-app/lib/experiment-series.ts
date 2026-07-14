@@ -24,6 +24,13 @@ export const EXPERIMENT_SERIES: ExperimentSeries[] = [
       "Portfolio union of PRB + Macro A-tier (0 same-day overlap on A). Quiet-only Macro filter variants.",
   },
   {
+    id: "macro-income",
+    label: "M · Macro income ($400 + BE)",
+    order: 15,
+    description:
+      "Track 4.1 — Macro_Model_v2: $400 risk + BE@2R vs control; M2 volume unlock (TS optional).",
+  },
+  {
     id: "datahl",
     label: "X · Data H/L",
     order: 20,

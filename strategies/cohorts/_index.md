@@ -22,7 +22,7 @@ See [[strategy-dev/cohort-hygiene]] — not surfaced in Lab UI. Canonical Macro:
 
 - `strategy_family`: `prb` | `macro` | `hybrid` | `datahl` | `custom`
 - `phase`: `eval` | `funded` | `combined` | `research`
-- `experiment_series`: `premium365` | `hybrid-sleeve` | `datahl` | `custom` — matrix grouping key
+- `experiment_series`: `premium365` | `hybrid-sleeve` | `macro-income` | `datahl` | `custom` — matrix grouping key
 - `mc_pass_pct`, `net_pnl`, `trades`, `hypothesis`, `regimes`
 
 ## Experiment series (matrix sections)
@@ -31,6 +31,7 @@ See [[strategy-dev/cohort-hygiene]] — not surfaced in Lab UI. Canonical Macro:
 |---|---|---|
 | Premium 365d | `eval/` + `funded/` | A0a–A1c, D1, B0–B3b |
 | H · PRB × Macro sleeve | `eval/` (H0a, H1a) + `funded/` (H0b, H1b) | Hybrid_Sleeve_v0 |
+| M · Macro income | `funded/` (M0, M1, M2) | Macro_Model_v2 — $400 ± BE@2R |
 | X · Data H/L | `research/` | X0a |
 | Custom | `research/` | custom |
 

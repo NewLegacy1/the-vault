@@ -49,10 +49,22 @@ tags: [playbook, funded, strategy-dev]
 | Avg win / avg loss | Funded can tolerate lower WR if R is right |
 | Max DD vs growing trail | Less brittle than eval's fixed $2k |
 
+## Income acceleration — M-series (Track 4.1)
+
+**Priority funded R&D.** Pine: `Macro_Model_v2.pine` · Lab: **Macro income · M0 / M1 / M2**.
+
+| Order | TV Profile | Lab row | Question |
+|---|---|---|---|
+| 1 | M0 | M0 · $400 · BE OFF | Does $400 alone raise pass vs B0 $800? |
+| 2 | M1 | M1 · $400 · BE@2R | Does BE@2R cut busts without killing edge? |
+| 3 | M2 | M2 · Volume · BE@2R | Can TS-optional restore v1.2-class frequency? |
+
+Do **not** hybridize (H0/H1) until M1 settles. Full TV recipe: `pine/PINE_GUIDE.md` → Macro Model v2.
+
 ## What to run in F4 LAB
 
-1. Strategy preset: `macro-v14-ce` or other `macro-*` (phase **funded**)
-2. Upload enriched TV CSV (`macro-v1.4-premium-merged.csv` has tier/MFE/MAE)
+1. Strategy preset: `matrix-m1` (primary) or other `macro-*` / matrix B rows (phase **funded**)
+2. Upload TV CSV from Macro_Model_v2 profile export (or `macro-v1.4-premium-merged.csv` for tier filters)
 3. RUN → cohort saves to `strategies/cohorts/funded/`
 
 ## Tier-filter experiments (no re-export needed)

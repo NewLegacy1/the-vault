@@ -1442,14 +1442,31 @@ export default function LabPage() {
                   <select value={study.presetId} onChange={(e) => applyPreset(e.target.value)}>
                     <optgroup label="Eval">
                       {labDropdownPresets()
-                        .filter((p) => p.phase === "eval" && p.seriesId !== "hybrid-sleeve")
+                        .filter(
+                          (p) =>
+                            p.phase === "eval" &&
+                            p.seriesId !== "hybrid-sleeve" &&
+                            p.seriesId !== "macro-income"
+                        )
                         .map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
                     <optgroup label="Funded">
                       {labDropdownPresets()
-                        .filter((p) => p.phase === "funded" && p.seriesId !== "hybrid-sleeve")
+                        .filter(
+                          (p) =>
+                            p.phase === "funded" &&
+                            p.seriesId !== "hybrid-sleeve" &&
+                            p.seriesId !== "macro-income"
+                        )
+                        .map((p) => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Macro income · M0 / M1 / M2">
+                      {labDropdownPresets()
+                        .filter((p) => p.seriesId === "macro-income")
                         .map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}

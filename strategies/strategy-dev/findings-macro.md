@@ -45,8 +45,14 @@ tags: [findings, macro, strategy-dev]
 4. Pivot 5 vs 10 is marginal (+1 trade) — not a lever.
 5. Manual 6-week forward test: 4 trades, 3 wins, +$1,900 (small sample, direction agrees).
 
+## Day-0 sim (Track 4) — risk scale alone is not enough
+
+v1.2 ledger ×0.5 ($400 risk, **no BE** — PnL scale only): pass **30.5% → 35.2%**, bust still **~63%**. Halving risk does not break the trail-bust pattern of long loss streaks. **BE@2R must be tested in Pine** (`Macro_Model_v2` M0 vs M1).
+
 ## Open questions
 
+- **M1 ($400 + BE@2R):** does PRB-style BE move pass above ~45% on v1.4 entries?
+- **M2 (TS optional):** can volume return without destroying the BE-managed book?
 - **A+ with A-tier TP (40pt):** does killing the SMT TP boost fix the −$2,410 leak?
 - **A-tier only** (drop A+ and H entirely): higher pass rate at ~14 trades/year?
 - MAE data now available per trade — is there a tighter stop that survives winners?

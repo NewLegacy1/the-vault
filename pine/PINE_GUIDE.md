@@ -70,6 +70,26 @@ The F2 bias panel then compares filter mismatches, "Both filter on a bearish rea
 
 **MNQ vs NQ:** MNQ outperformed by ~$3K purely from sizing granularity — NQ rounds $400 risk down to 1 contract (or 0 when stop > 20 pts). Stay on MNQ until risk unit ≥ ~$1,000. **v1.8 — Instrument / contract size** input: `Auto (chart symbol)` reads MNQ1! vs NQ1! from the chart; override `MNQ micro ($2/pt)` or `NQ mini ($20/pt)` for what-if only. NQ auto-caps at **6 contracts** (TPT 60-micro equivalent). Funnel row **Sizing** shows tag + max contracts. For real NQ backtests: chart `CME_MINI:NQ1!` + Auto, or stay on MNQ1! (recommended for $400 risk). **v1.9:** Auto now checks **ticker/root for MNQ/NQ** before `syminfo.pointvalue` — bar replay on `MNQ1!` sometimes reported `tv=20` and sized like NQ (~2 contracts instead of ~20). Funnel shows `tv=` raw value when Auto is on; if tag ≠ chart, lock **MNQ micro ($2/pt)** for the 12mo run.
 
+## Macro Model v2 (`Macro_Model_v2.pine`) — income track
+
+v1.4 entry engine + PRB-style BE ratchet. Does **not** replace `Macro_Model_v1.pine`. Lab series **M · Macro income**.
+
+| Profile | Entries | Risk | BE | Use |
+|---|---|---|---|---|
+| **M0** | v1.4 (TS required) | $400 | OFF | Control |
+| **M1** | v1.4 (TS required) | $400 | @2R | **Primary** — one variable vs M0 |
+| **M2** | TS optional (volume) | $400 | @2R | Run only after M1 settles |
+
+**Deep Backtest workflow:**
+1. Chart `CME_MINI:MNQ1!` · paste `Macro_Model_v2.pine` → Save → Add to chart  
+2. Inputs → **Profile M0** · confirm chip top-left (`$400` · `BE OFF` · `TS YES`)  
+3. Strategy Tester → Deep Backtest → full premium year → **List of Trades** → Export CSV  
+4. F4 LAB → **M0 · Macro $400 · BE OFF** → upload → MC (funded)  
+5. Repeat with **Profile M1** (same date range) → Lab **M1**  
+6. Compare: pass %, weeks-to-payout, bust %, net. Gate for M2: M1 pass ≥ ~45% **or** clear bust drop vs M0 with competitive weeks-to-payout  
+
+Hypothesis: BE@2R converts symmetric ~1R scratch exits and cuts trail-bust streaks that killed v1.2 at $800.
+
 ## Hybrid Sleeve v0 (`Hybrid_Sleeve_v0.pine`)
 
 PRB × Macro A portfolio in one strategy for Lab **H-series** (eval + funded).
