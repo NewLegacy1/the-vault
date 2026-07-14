@@ -72,6 +72,20 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["news", "be-only"],
   },
   {
+    id: "macro-v0-journal",
+    label: "Macro Model v0 — manual journal (Apr 25–Feb 26)",
+    version: "v0",
+    config: "ICT macros 9:50–10:10 · DOL sweep 9:30–9:45 · BISI/SIBI · 30–50 pt · HALF/FULL tiers",
+    defaultRegimes: ["baseline", "news"],
+  },
+  {
+    id: "macro-v0-pine",
+    label: "Macro Model v0 — Pine scaffold (not yet exported)",
+    version: "v0",
+    config: "Geometry filters only · narrative manual · compare vs PRB v1.5 on same firm profile",
+    defaultRegimes: ["baseline", "be-only"],
+  },
+  {
     id: "custom",
     label: "Custom experiment",
     version: "custom",

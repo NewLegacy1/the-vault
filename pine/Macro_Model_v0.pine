@@ -1,0 +1,266 @@
+//@version=6
+// Macro Model v0 — ICT macro windows + DOL + BISI/SIBI geometry (scaffold)
+//
+// SOP: strategies/Macro_Model_SOP.md
+//
+// CODED (v0):
+//   · ICT macro windows (9:50–10:10, 10:50–11:10, optional 8:50–9:10)
+//   · Closest DOL among PDH/PDL, premarket H/L, current week H/L
+//   · 9:30–9:45 DOL sweep staging flag
+//   · BISI/SIBI FVG + disrespect (close through)
+//   · 30–50 pt target (default 40) · stop beyond manipulation wick
+//   · BE gated until 5m internal H/L sweep (pivot-based proxy)
+//
+// NOT CODEABLE (manual — see SOP §11):
+//   · 90m cycle narrative · reversal vs continuation choice
+//   · 10 AM news trap · Mon/Fri soft bias · SMT quality grading
+//   · OB turtle-soup narrative · premium/discount anchor choice
+//   · PXH/PXL full continuation state machine (v1)
+
+strategy(
+     title                   = "Macro Model v0",
+     shorttitle              = "Macro v0",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 10,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1)
+
+// ─── Session / macro windows (NY ET) ─────────────────────────────────────────
+grpMacro = "ICT macro windows (NY ET)"
+i_useMacro1   = input.bool(true, "Enable 9:50–10:10 macro", group = grpMacro)
+i_useMacro2   = input.bool(true, "Enable 10:50–11:10 macro", group = grpMacro)
+i_usePreMacro = input.bool(false, "Enable 8:50–9:10 pre-open macro", group = grpMacro)
+i_stagingEnd  = input.int(945, "DOL sweep staging ends (HHMM)", minval = 930, maxval = 959, group = grpMacro)
+i_flatTime    = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpMacro)
+i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpMacro)
+i_halfSize    = input.bool(false, "HALF size mode (red folder — set manually)", group = grpMacro)
+
+grpDol = "Draw on liquidity (closest pool)"
+i_usePdhPdl = input.bool(true, "PDH / PDL", group = grpDol)
+i_usePmHl   = input.bool(true, "Premarket H/L (4:00–9:30 NY)", group = grpDol)
+i_useCwhCwl = input.bool(true, "Current week H/L", group = grpDol)
+i_sweepBuf  = input.float(1.0, "Min sweep beyond DOL (pts)", minval = 0.0, step = 0.25, group = grpDol)
+
+grpFvg = "BISI / SIBI (FVG)"
+i_minFvgPts   = input.float(3.0, "Min FVG size (pts)", minval = 0.0, step = 0.25, group = grpFvg)
+i_entryMode   = input.string("Disrespect + macro", "Entry mode (v0)", options = ["Disrespect + macro", "Disrespect + DOL sweep", "Manual only"], group = grpFvg)
+i_fvgLookback = input.int(60, "FVG valid for N bars", minval = 10, maxval = 200, group = grpFvg)
+
+grpRisk = "Risk (SOP: 30–50 pts)"
+i_targetPts  = input.float(40.0, "Take profit (pts)", minval = 30.0, maxval = 50.0, step = 1.0, group = grpRisk)
+i_stopBufPts = input.float(1.0, "Stop buffer beyond wick (pts)", minval = 0.25, step = 0.25, group = grpRisk)
+i_qtyFull    = input.int(10, "FULL size (MNQ)", minval = 1, maxval = 60, group = grpRisk)
+i_qtyHalf    = input.int(5, "HALF size (MNQ)", minval = 1, maxval = 60, group = grpRisk)
+i_beAfterInternal = input.bool(true, "BE only after internal H/L sweep", group = grpRisk)
+i_internalPivot   = input.int(5, "Internal pivot len (5m proxy)", minval = 3, maxval = 20, group = grpRisk)
+
+grpVis = "Visuals"
+i_showMacro = input.bool(true, "Shade macro windows", group = grpVis)
+i_showDol   = input.bool(true, "Show closest DOL", group = grpVis)
+i_showTable = input.bool(true, "Show funnel table", group = grpVis)
+
+// ─── Time helpers ────────────────────────────────────────────────────────────
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+
+f_inWin(int t, int a, int b) =>
+    t >= a and t < b
+
+bool inMacro1 = i_useMacro1 and f_inWin(nyHhmm, 950, 1010)
+bool inMacro2 = i_useMacro2 and f_inWin(nyHhmm, 1050, 1110)
+bool inPreMacro = i_usePreMacro and f_inWin(nyHhmm, 850, 910)
+bool inMacro = inMacro1 or inMacro2 or inPreMacro
+bool inStaging = f_inWin(nyHhmm, 930, i_stagingEnd)
+bool canPlace = nyHhmm < i_flatTime
+
+var int tradesToday = 0
+if newDay
+    tradesToday := 0
+
+// ─── Liquidity pools ─────────────────────────────────────────────────────────
+float pdh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
+float pdl = request.security(syminfo.tickerid, "D", low[1],  lookahead = barmerge.lookahead_on)
+
+// Current week H/L (Mon-start week on daily)
+float cwh = request.security(syminfo.tickerid, "W", high, lookahead = barmerge.lookahead_off)
+float cwl = request.security(syminfo.tickerid, "W", low,  lookahead = barmerge.lookahead_off)
+
+// Premarket H/L reset at 4:00 NY
+var float pmHigh = na
+var float pmLow  = na
+bool premarketSession = nyHhmm >= 400 and nyHhmm < 930
+if newDay or (nyHhmm >= 400 and nyHhmm < 405)
+    pmHigh := high
+    pmLow  := low
+else if premarketSession
+    pmHigh := math.max(nz(pmHigh, high), high)
+    pmLow  := math.min(nz(pmLow, low), low)
+
+// ─── Closest DOL ─────────────────────────────────────────────────────────────
+f_dist(float lvl) =>
+    na(lvl) ? 1e10 : math.abs(close - lvl)
+
+var float closestDol = na
+var string closestTag = ""
+
+float dPdh = i_usePdhPdl ? f_dist(pdh) : 1e10
+float dPdl = i_usePdhPdl ? f_dist(pdl) : 1e10
+float dPmH = i_usePmHl and not na(pmHigh) ? f_dist(pmHigh) : 1e10
+float dPmL = i_usePmHl and not na(pmLow) ? f_dist(pmLow) : 1e10
+float dCwh = i_useCwhCwl ? f_dist(cwh) : 1e10
+float dCwl = i_useCwhCwl ? f_dist(cwl) : 1e10
+
+float minD = math.min(math.min(dPdh, dPdl), math.min(math.min(dPmH, dPmL), math.min(dCwh, dCwl)))
+
+if minD == dPdh
+    closestDol := pdh
+    closestTag := "PDH"
+else if minD == dPdl
+    closestDol := pdl
+    closestTag := "PDL"
+else if minD == dPmH
+    closestDol := pmHigh
+    closestTag := "PMH"
+else if minD == dPmL
+    closestDol := pmLow
+    closestTag := "PML"
+else if minD == dCwh
+    closestDol := cwh
+    closestTag := "CWH"
+else
+    closestDol := cwl
+    closestTag := "CWL"
+
+// ─── DOL sweep detection ─────────────────────────────────────────────────────
+bool sweptHigh = not na(closestDol) and high > closestDol + i_sweepBuf and close < closestDol
+bool sweptLow  = not na(closestDol) and low < closestDol - i_sweepBuf and close > closestDol
+
+var bool stagingSweepDone = false
+if newDay
+    stagingSweepDone := false
+if inStaging and (sweptHigh or sweptLow)
+    stagingSweepDone := true
+
+// ─── FVG (BISI = bull gap, SIBI = bear gap) ──────────────────────────────────
+f_bisiTop() => low[1]
+f_bisiBot() => math.max(high[2], high)
+f_sibiTop() => math.min(low[2], low)
+f_sibiBot() => high[1]
+
+bool newBisi = low[1] > math.max(high[2], high) and (f_bisiTop() - f_bisiBot()) >= i_minFvgPts
+bool newSibi = high[1] < math.min(low[2], low) and (f_sibiTop() - f_sibiBot()) >= i_minFvgPts
+
+var float actBisiTop = na
+var float actBisiBot = na
+var float actSibiTop = na
+var float actSibiBot = na
+var int actBisiBar = na
+var int actSibiBar = na
+
+if newBisi
+    actBisiTop := f_bisiTop()
+    actBisiBot := f_bisiBot()
+    actBisiBar := bar_index
+if newSibi
+    actSibiTop := f_sibiTop()
+    actSibiBot := f_sibiBot()
+    actSibiBar := bar_index
+
+if not na(actBisiBar) and bar_index - actBisiBar > i_fvgLookback
+    actBisiTop := na
+    actBisiBot := na
+    actBisiBar := na
+if not na(actSibiBar) and bar_index - actSibiBar > i_fvgLookback
+    actSibiTop := na
+    actSibiBot := na
+    actSibiBar := na
+
+// Disrespect = close through gap (BISI closed below → bearish; SIBI closed above → bullish)
+bool bisiDisrespect = not na(actBisiBot) and close < actBisiBot
+bool sibiDisrespect = not na(actSibiTop) and close > actSibiTop
+
+// ─── Internal manipulation proxy (pivot sweep) ───────────────────────────────
+float intHigh = ta.pivothigh(high, i_internalPivot, i_internalPivot)
+float intLow  = ta.pivotlow(low, i_internalPivot, i_internalPivot)
+
+var float lastIntHigh = na
+var float lastIntLow  = na
+if not na(intHigh)
+    lastIntHigh := intHigh
+if not na(intLow)
+    lastIntLow := intLow
+
+var bool internalSweepDone = false
+if strategy.position_size != 0 and not internalSweepDone
+    if strategy.position_size > 0 and not na(lastIntLow) and low < lastIntLow
+        internalSweepDone := true
+    if strategy.position_size < 0 and not na(lastIntHigh) and high > lastIntHigh
+        internalSweepDone := true
+if strategy.position_size == 0
+    internalSweepDone := false
+
+// ─── Entries (v0 — geometry only, no narrative gate) ─────────────────────────
+bool allowEntry = canPlace and (not i_oneTradeDay or tradesToday == 0) and strategy.position_size == 0
+
+bool longDolSweep = i_entryMode == "Disrespect + DOL sweep" and stagingSweepDone and sweptLow
+bool shortDolSweep = i_entryMode == "Disrespect + DOL sweep" and stagingSweepDone and sweptHigh
+
+bool longSetup = allowEntry and inMacro and (
+     (i_entryMode == "Disrespect + macro" and sibiDisrespect) or
+     longDolSweep)
+bool shortSetup = allowEntry and inMacro and (
+     (i_entryMode == "Disrespect + macro" and bisiDisrespect) or
+     shortDolSweep)
+
+float entryQty = i_halfSize ? i_qtyHalf : i_qtyFull
+
+if longSetup
+    float sl = low - i_stopBufPts
+    float tp = close + i_targetPts
+    strategy.entry("Long", strategy.long, qty = entryQty)
+    strategy.exit("LX", "Long", stop = sl, limit = tp)
+    tradesToday += 1
+
+if shortSetup
+    float sl = high + i_stopBufPts
+    float tp = close - i_targetPts
+    strategy.entry("Short", strategy.short, qty = entryQty)
+    strategy.exit("SX", "Short", stop = sl, limit = tp)
+    tradesToday += 1
+
+// BE gate — move stop to entry only after internal sweep
+if i_beAfterInternal and internalSweepDone and strategy.position_size > 0
+    strategy.exit("LX", "Long", stop = strategy.position_avg_price, limit = strategy.position_avg_price + i_targetPts)
+if i_beAfterInternal and internalSweepDone and strategy.position_size < 0
+    strategy.exit("SX", "Short", stop = strategy.position_avg_price, limit = strategy.position_avg_price - i_targetPts)
+
+// ─── Visuals ─────────────────────────────────────────────────────────────────
+bgcolor(i_showMacro and inMacro ? color.new(color.teal, 92) : na, title = "Macro window")
+bgcolor(i_showMacro and inStaging ? color.new(color.orange, 94) : na, title = "9:30–9:45 staging")
+
+plot(i_showDol ? closestDol : na, "Closest DOL", color = color.yellow, linewidth = 2, style = plot.style_circles)
+
+if i_showTable
+    var table t = table.new(position.bottom_right, 2, 7, bgcolor = color.new(color.black, 15), border_width = 1)
+    if barstate.islast
+        table.cell(t, 0, 0, "Macro v0", text_color = color.white, text_size = size.small)
+        table.cell(t, 1, 0, inMacro ? "IN MACRO" : "—", text_color = inMacro ? color.lime : color.gray, text_size = size.small)
+        table.cell(t, 0, 1, "Closest DOL", text_color = color.gray, text_size = size.tiny)
+        table.cell(t, 1, 1, closestTag + " " + str.tostring(closestDol, "#.##"), text_color = color.yellow, text_size = size.tiny)
+        table.cell(t, 0, 2, "Staging sweep", text_color = color.gray, text_size = size.tiny)
+        table.cell(t, 1, 2, stagingSweepDone ? "Y" : "N", text_color = stagingSweepDone ? color.lime : color.gray, text_size = size.tiny)
+        table.cell(t, 0, 3, "BISI disrespect", text_color = color.gray, text_size = size.tiny)
+        table.cell(t, 1, 3, bisiDisrespect ? "Y" : "N", text_color = bisiDisrespect ? color.red : color.gray, text_size = size.tiny)
+        table.cell(t, 0, 4, "SIBI disrespect", text_color = color.gray, text_size = size.tiny)
+        table.cell(t, 1, 4, sibiDisrespect ? "Y" : "N", text_color = sibiDisrespect ? color.lime : color.gray, text_size = size.tiny)
+        table.cell(t, 0, 5, "Internal manip", text_color = color.gray, text_size = size.tiny)
+        table.cell(t, 1, 5, internalSweepDone ? "Y" : "N", text_color = internalSweepDone ? color.lime : color.gray, text_size = size.tiny)
+        table.cell(t, 0, 6, "Narrative", text_color = color.gray, text_size = size.tiny)
+        table.cell(t, 1, 6, "MANUAL", text_color = color.orange, text_size = size.tiny)

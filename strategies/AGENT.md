@@ -27,8 +27,11 @@ The agent reads the markdown files in this repo — same files Obsidian shows.
 
 ## Key strategy docs
 
-- [[Powell_Rejection_Block_SOP]] — live playbook
-- [[PRB_Trade_Checklist]] — execution checklist
+- [[Powell_Rejection_Block_SOP]] — Powell/PRB live playbook
+- [[PRB_Trade_Checklist]] — PRB execution checklist
+- [[Macro_Model_SOP]] — Macro model playbook (separate strategy; test vs PRB in LAB)
+- [[Macro_Trade_Checklist]] — Macro execution checklist
+- `strategies/legacy-manual/trade-log.csv` — discretionary Macro journal (from All Trades PDF)
 - [[cohorts/_index]] — cohort library index
 
 ## Promotion rule (reference)

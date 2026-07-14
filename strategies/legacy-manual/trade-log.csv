@@ -1,0 +1,22 @@
+date,time_et,pair,direction,lots,setup,logic,exit_type,net_pnl_usd,risk_tier,outcome,macro_window
+2025-04-11,15:06,MNQ,SHORT,5,macro-reversal,sweep PSH at macro start; continued lower; disrespected 5m BISI; entry off break candle,TP,326,HALF,WIN,pm
+2025-04-28,10:15,MNQ,LONG,2,fvg-respect,1h BISI respect; swept 5m SIBI; entry off disrespect targeting internal highs + 15m FVG,TP,213,HALF,WIN,950-1010
+2025-04-28,10:15,MNQ,SHORT,3,pxl,PXL off 5m FVG; entry on rejection,TP,201,HALF,WIN,950-1010
+2025-04-30,10:05,MNQ,SHORT,5,turtle-soup,turtle soup + inverse BISI; entry off disrespect candle,TP,314,HALF,WIN,950-1010
+2025-05-05,09:45,MNQ,SHORT,3,confluence,15m FVG respect + SMT + VWAP,TP,254,HALF,WIN,930-945
+2025-05-05,09:48,MNQ,LONG,10,error,accidental entry — not a model trade,SL,-1000,FULL,LOSS,930-945
+2025-05-06,10:07,MNQ,LONG,8,turtle-soup,turtle soup at lows,SL,-400,FULL,LOSS,950-1010
+2025-05-07,09:58,MNQ,LONG,3,turtle-soup,TS at 15m SIBI + SMT,TP,213,HALF,WIN,950-1010
+2025-05-08,10:21,MNQ,SHORT,4,fvg-run,5m FVG run — poor execution,SL,-212,HALF,LOSS,1050-1110
+2025-05-12,10:45,MNQ,LONG,2,execution-error,should have TP at 40 pts,SL,-162,HALF,LOSS,1050-1110
+2025-05-13,10:05,MNQ,LONG,1,pxh,PXH continuation,TP,62,HALF,WIN,950-1010
+2025-05-15,10:03,NQ,LONG,1,turtle-soup,TS + SMT; respect of FVG run to internal highs,TP,750,FULL,WIN,950-1010
+2025-05-27,09:56,NQ,LONG,2,dol-inverse,sweep PDH; inverse 5m BISI; target CE of SIBI,TP,930,FULL,WIN,950-1010
+2025-05-28,10:05,NQ,LONG,2,pxl,PXL continuation,TP,770,FULL,WIN,950-1010
+2025-05-30,10:12,NQ,LONG,1,reversal-news,reversal + news day; should have stuck with first entry,TP,680,FULL,WIN,1050-1110
+2025-07-16,16:17,MNQ,SHORT,5,fvg-respect,respect on 1m SIBI — below model TF preference,SL,-250,HALF,LOSS,pm
+2025-07-16,16:17,MNQ,SHORT,5,inverse-bisi,inverse 1h BISI rejection off 1m SIBI,TP,266,HALF,WIN,pm
+2026-01-27,09:54,MNQ,SHORT,10,ob-inverse,OB + 5m inverse,SL,-395,FULL,LOSS,950-1010
+2026-01-29,09:47,MNQ,SHORT,15,nwog-inverse,rejection off NWOG + 1m inverse,TP,990,FULL,WIN,950-1010
+2026-02-02,10:07,MNQ,LONG,10,fvg-respect,respect of 5m; targeting 15m RW + SIBI,BE,-239,FULL,BE,1050-1110
+2026-02-06,09:53,MNQ,LONG,10,unknown,incomplete in PDF export — verify in Notion,UNKNOWN,0,UNKNOWN,UNKNOWN,950-1010
