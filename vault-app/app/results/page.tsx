@@ -1,42 +1,58 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { MatrixResults } from "@/components/matrix-results";
+import { useCallback, useEffect, useState } from "react";
+import { MatrixResultsHub } from "@/components/matrix-results-hub";
+import type { CohortRecord } from "@/lib/cohort";
 
 export default function ResultsPage() {
-  const router = useRouter();
+  const [cohorts, setCohorts] = useState<CohortRecord[]>([]);
+  const [loadErr, setLoadErr] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [activePresetId, setActivePresetId] = useState("matrix-b1a");
+
+  const loadCohorts = useCallback(() => {
+    setLoading(true);
+    fetch("/api/cohorts", { cache: "no-store" })
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+        return data as { cohorts?: CohortRecord[] };
+      })
+      .then((data) => {
+        setCohorts(data.cohorts ?? []);
+        setLoadErr("");
+      })
+      .catch((e) => setLoadErr(String(e)))
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    loadCohorts();
+    const id = window.setInterval(loadCohorts, 45000);
+    return () => window.clearInterval(id);
+  }, [loadCohorts]);
 
   return (
     <>
       <div className="panel" style={{ borderColor: "var(--accent)" }}>
         <div className="panel-title">
           Matrix results
-          <span className="sub">F8 — saved Monte Carlo cohorts</span>
+          <span className="sub">F8 — cohorts · firm comparison · replay</span>
         </div>
         <div className="panel-body">
           <p className="small dim" style={{ marginTop: 0, lineHeight: 1.65 }}>
-            Each row is a strategy branch from the premium 365d matrix. Use the <span className="accent">firm tabs</span>{" "}
-            (TPT, Alpha Zero, Apex, etc.) to compare pass rates — new Lab runs save all firms at once.{" "}
-            <span className="accent">★</span> marks the best pass % for the selected firm. Click a row for replay steps and speed-to-pass.
+            Click a matrix row to open the <span className="accent">firm comparison chart</span> (pass rate across TPT,
+            Alpha Zero, Alpha Premium, Apex on the <em>same trades</em>). If your Lab CSV is still in this browser, all
+            firms compute instantly — no re-run. One Lab RUN saves trades + all firms to Obsidian permanently.
           </p>
-          <MatrixResults
-            onSelectPreset={(id) => router.push(`/lab?preset=${encodeURIComponent(id)}`)}
+          <MatrixResultsHub
+            cohorts={cohorts}
+            loading={loading}
+            loadErr={loadErr}
+            onRefresh={loadCohorts}
+            activePresetId={activePresetId}
+            onSelectPreset={setActivePresetId}
           />
-        </div>
-      </div>
-
-      <div className="panel" style={{ marginTop: 14 }}>
-        <div className="panel-title">
-          Replay recipes
-          <span className="sub">what to export from TradingView</span>
-        </div>
-        <div className="panel-body small dim" style={{ lineHeight: 1.65 }}>
-          TV export steps live on{" "}
-          <Link href="/strategies" className="accent">
-            F3 Strategy
-          </Link>
-          . Upload each TV CSV once per preset in Lab (A0a, A0b, D1, B0, etc.). Macro B1/B3 need only B0 — select B1a/B3b in Lab and RUN with no second upload.
         </div>
       </div>
     </>

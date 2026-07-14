@@ -9,7 +9,6 @@ import { TRADES_YTD_FULL, TRADES_YTD_MAY17 } from "@/lib/prb-ytd-data";
 import { TRADES_BE2R_PDH_12MO } from "@/lib/prb-be2r-data";
 import { TRADES_YTD_CHUNKS_3039 } from "@/lib/prb-chunks-3039-data";
 import { PROP_RULES, ruleById } from "@/lib/prop-firms";
-import { PropRule } from "@/lib/types";
 import { buildEquityCurve, EquityStats } from "@/lib/equity-curve";
 import { CohortSaveInput, mcToSummary, McSummary, CohortRecord } from "@/lib/cohort";
 import { analyzeEvalConsistency, EvalConsistencyReport } from "@/lib/eval-consistency";
@@ -27,6 +26,7 @@ import {
   analyzeBeRetest,
 } from "@/lib/lab-findings";
 import { FirmRulesCard } from "@/components/firm-rules-card";
+import { NewsDayPanel } from "@/components/news-day-panel";
 import Link from "next/link";
 import {
   buildActiveDataset,
