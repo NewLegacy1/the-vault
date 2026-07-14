@@ -1,14 +1,22 @@
 //@version=6
-// Macro Model v1.4 — TS required + wick-based sizing + CE confirm
+// Macro Model v1.4 - TS required + wick-based sizing + CE confirm
 //
 // SOP: strategies/Macro_Model_SOP.md
 //
-//   v1.4 — TS required in macro · SMT boosts TP/size · wide wick = half risk
+//   v1.4 - TS required in macro - SMT boosts TP/size - wide wick = half risk
 //          Skip only: wick > 80 without SMT at sweep
+//   v1.4.1 - Tier filter input (All / A only / A+ only / A+ and A) for Lab B1a
+//           ASCII-only input strings (TV paste safe)
+//
+// Inputs -> Tier filter -> Allowed tiers:
+//   A only     = Lab B1a (full TS, no SMT)  <-- use this for A-tier book
+//   A+ only    = SMT confluence only
+//   A+ and A   = drop Half-risk legs
+//   All tiers  = live default
 //
 // Two autopsy tables (paste into F4 LAB ghost panel):
-//   MISSED — failed exactly ONE live filter
-//   CONFLUENCE — core setup outcomes by TS/SMT combo at sweep
+//   MISSED - failed exactly ONE live filter
+//   CONFLUENCE - core setup outcomes by TS/SMT combo at sweep
 
 strategy(
      title                   = "Macro Model v1",
@@ -28,7 +36,7 @@ strategy(
      margin_long             = 0,
      margin_short            = 0)
 
-// ─── Macro session ───────────────────────────────────────────────────────────
+// --- Macro session -----------------------------------------------------------
 grpMacro = "ICT macro windows (NY ET)"
 i_useMacro1 = input.bool(true, "9:50-10:10 macro", group = grpMacro)
 i_useMacro2 = input.bool(true, "10:50-11:10 macro", group = grpMacro)
@@ -94,7 +102,7 @@ grpVis = "Visuals"
 i_showBands = input.bool(true, "Shade macro + 9:35-10:15 band", group = grpVis)
 i_showTierLbl = input.bool(false, "Show A+/A/H tier labels", group = grpVis)
 
-// ─── Time ────────────────────────────────────────────────────────────────────
+// --- Time --------------------------------------------------------------------
 int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
 bool newDay = ta.change(time("D", "America/New_York")) != 0
 
@@ -111,7 +119,7 @@ var int tradesToday = 0
 if newDay
     tradesToday := 0
 
-// ─── Liquidity + DOL ─────────────────────────────────────────────────────────
+// --- Liquidity + DOL ---------------------------------------------------------
 float pdh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
 float pdl = request.security(syminfo.tickerid, "D", low[1],  lookahead = barmerge.lookahead_on)
 
@@ -137,7 +145,7 @@ float eq = (rangeHi + rangeLo) / 2.0
 bool inPremium = close > eq
 bool inDiscount = close < eq
 
-// ─── FVG disrespect ──────────────────────────────────────────────────────────
+// --- FVG disrespect ----------------------------------------------------------
 bool newBisi = low[1] > math.max(high[2], high) and (low[1] - math.max(high[2], high)) >= i_minFvgPts
 bool newSibi = high[1] < math.min(low[2], low) and (math.min(low[2], low) - high[1]) >= i_minFvgPts
 var float actBisiTop = na
@@ -153,7 +161,7 @@ if newSibi
 bool bisiDisrespect = not na(actBisiBot) and close < actBisiBot
 bool sibiDisrespect = not na(actSibiTop) and close > actSibiTop
 
-// ─── Turtle soup (Vault engine — levels consumed after sweep/breakout) ─────────
+// --- Turtle soup (Vault engine - levels consumed after sweep/breakout) ---------
 var array<float> lowLvl = array.new_float()
 var array<bool> lowSwept = array.new_bool()
 var array<float> highLvl = array.new_float()
@@ -226,7 +234,7 @@ if inTsWin and array.size(highLvl) > 0
 bool tsBullOk = tsBull and (close - low) >= i_tsDisp
 bool tsBearOk = tsBear and (high - close) >= i_tsDisp
 
-// ─── SMT at sweep bar (5m ES swing — Master ICT parity) ──────────────────────
+// --- SMT at sweep bar (5m ES swing - Master ICT parity) ----------------------
 float esH5 = request.security(i_esSymbol, "5", high, gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
 float esL5 = request.security(i_esSymbol, "5", low, gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
 float esPl5 = request.security(i_esSymbol, "5", ta.pivotlow(low, i_smtPivot, i_smtPivot), gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)
@@ -242,7 +250,7 @@ if not na(esPh5)
 bool smtAtSweepBull = tsBull and not na(esSwingLow5) and esL5 > esSwingLow5
 bool smtAtSweepBear = tsBear and not na(esSwingHigh5) and esH5 < esSwingHigh5
 
-// ─── DOL staging sweep ───────────────────────────────────────────────────────
+// --- DOL staging sweep -------------------------------------------------------
 float closestDol = math.abs(close - pdh) < math.abs(close - pdl) ? pdh : pdl
 bool sweptHigh = high > closestDol + i_tsSweep and close < closestDol
 bool sweptLow = low < closestDol - i_tsSweep and close > closestDol
@@ -252,7 +260,7 @@ if newDay
 if inStaging and (sweptHigh or sweptLow)
     stagingDone := true
 
-// ─── Core signal (v1.4) — TS required, SMT boosts, wide wick halves ───────────
+// --- Core signal (v1.4) - TS required, SMT boosts, wide wick halves -----------
 bool flat = strategy.position_size == 0
 bool room = not i_oneTradeDay or tradesToday == 0
 bool allow = canPlace and flat and room
@@ -274,17 +282,12 @@ bool wideShort = sigWick > i_wickFull
 bool coreLong = tsCoreLong and not skipLong
 bool coreShort = tsCoreShort and not skipShort
 
-// Tier: 3 = A+ (TS+SMT) · 2 = A (TS only) · 1 = H (wide wick half, no SMT)
+// Tier: 3 = A+ (TS+SMT) - 2 = A (TS only) - 1 = H (wide wick half, no SMT)
 int sigTierLong = coreLong ? (wideLong and not smtAtSweepBull ? 1 : smtAtSweepBull ? 3 : 2) : 0
 int sigTierShort = coreShort ? (wideShort and not smtAtSweepBear ? 1 : smtAtSweepBear ? 3 : 2) : 0
 
 f_tierAllowed(int tier) =>
-    switch i_tierFilter
-        "A only" => tier == 2
-        "A+ only" => tier == 3
-        "A+ and A" => tier == 2 or tier == 3
-        "All tiers" => tier > 0
-        => tier > 0
+    i_tierFilter == "A only" ? tier == 2 : i_tierFilter == "A+ only" ? tier == 3 : i_tierFilter == "A+ and A" ? (tier == 2 or tier == 3) : tier > 0
 
 bool liveLong = allow and coreLong and stagingOk and fvgOkLong and f_tierAllowed(sigTierLong)
 bool liveShort = allow and coreShort and stagingOk and fvgOkShort and f_tierAllowed(sigTierShort)
@@ -342,7 +345,7 @@ f_retestShort(float sigLo, float sigHi) =>
         lvl := f_ce(sigHi, sigLo)
     math.max(lvl, close)
 
-// ─── Pending setup state ─────────────────────────────────────────────────────
+// --- Pending setup state -----------------------------------------------------
 var int   suDir = 0
 var float suEntry = na
 var float suStop = na
@@ -463,7 +466,7 @@ if suDir != 0 and flat and isLimitMode
             else
                 suDir := 0
 
-// CE tap + lift → market
+// CE tap + lift -> market
 if suDir != 0 and flat and isCeMktMode
     bool inval = suDir == 1 ? close < suStop : close > suStop
     if bar_index - suBar > i_retestTimeout or not canPlace or inval
@@ -498,7 +501,7 @@ if strategy.position_size != 0 and suOrd
     suDir := 0
     tradesToday += 1
 
-// ─── Tier labels ───────────────────────────────────────────────────────────────
+// --- Tier labels ---------------------------------------------------------------
 if i_showTierLbl and barstate.isconfirmed
     if coreLong
         string lbl = sigTierLong == 3 ? "A+" : sigTierLong == 2 ? "A" : "H"
@@ -507,7 +510,7 @@ if i_showTierLbl and barstate.isconfirmed
         string lblS = sigTierShort == 3 ? "A+" : sigTierShort == 2 ? "A" : "H"
         label.new(bar_index, high, lblS, style = label.style_label_down, color = color.new(sigTierShort == 1 ? color.orange : color.teal, 25), textcolor = color.white, size = size.tiny)
 
-// ─── Ghost autopsy ───────────────────────────────────────────────────────────
+// --- Ghost autopsy -----------------------------------------------------------
 var array<int>   gDir = array.new_int()
 var array<float> gEntry = array.new_float()
 var array<float> gStop = array.new_float()
@@ -615,7 +618,7 @@ if i_ghost and array.size(gDir) > 0
             array.remove(gRisk, gi)
             array.remove(gReason, gi)
 
-// ─── Tables ──────────────────────────────────────────────────────────────────
+// --- Tables ------------------------------------------------------------------
 var string[] missNames = array.from("", "Outside macro window", "No staging DOL sweep", "Premium/discount mismatch", "No turtle soup", "No SMT at sweep", "No FVG disrespect", "Slot used (1/day)", "Stop too wide")
 var string[] confNames = array.from("", "Neither TS nor SMT", "TS only (no SMT)", "SMT only (no TS)", "TS + SMT both")
 
@@ -646,5 +649,13 @@ if i_ghost and i_showTable and barstate.islast
 bgcolor(i_showBands and inMacro ? color.new(color.teal, 92) : na)
 bgcolor(i_showBands and inFocusBand ? color.new(color.purple, 94) : na)
 bgcolor(i_showBands and inStaging ? color.new(color.orange, 94) : na)
+
+// Tier chip - verify before Deep Backtest export
+var table tierT = table.new(position.top_left, 2, 2, bgcolor = color.new(color.black, 15), border_width = 1)
+if barstate.islast
+    table.cell(tierT, 0, 0, "Macro v1", text_color = color.teal, text_size = size.tiny)
+    table.cell(tierT, 1, 0, "v1.4", text_color = color.white, text_size = size.tiny)
+    table.cell(tierT, 0, 1, "Tiers", text_color = color.gray, text_size = size.tiny)
+    table.cell(tierT, 1, 1, i_tierFilter, text_color = color.white, text_size = size.tiny)
 
 plot(eq, "Equilibrium", color = color.new(color.gray, 50), linewidth = 1)
