@@ -21,9 +21,12 @@ tags: [playbook, eval, strategy-dev]
 
 ## Consistency rule (TPT)
 
-- Best day must stay **< 50%** of total profit at pass request.
+Source: [[tpt-rules]] Rule 5.
+
+- **5 minimum trading days** (≥1 trade each day).
+- Best day must stay **< 50%** of total net P/L at PRO request.
 - Practical cap: **~$1,490/win day** → plan for **3+ green days**, not one hero day.
-- F4 LAB eval consistency checker lives under **Actual replay** (collapsed).
+- MC uses `passAt: 4000`, `consistencyPct: 50`, `minDays: 5` — see `vault-app/lib/prop-firms.ts`.
 
 ## What to run in F4 LAB
 

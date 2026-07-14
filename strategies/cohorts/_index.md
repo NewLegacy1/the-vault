@@ -10,8 +10,13 @@ Monte Carlo + backtest results from **F4 LAB** auto-save here. YAML frontmatter 
 | `funded/` | Funded | Weekly edge $, expectancy, payout rate |
 | `combined/` | Hybrid / portfolio | Joint MC, PRB×Macro blends |
 | `research/` | Exploratory | Bias splits, one-off tests |
+| `_archive_pre_premium/` | Archived | Pre-premium / duplicate — **agent ignore** |
 
-Legacy flat files at this folder root are still valid; new saves land in subfolders.
+Legacy flat files at this folder root were moved to `_archive_pre_premium/` (Jul 2026).
+
+## Agent-only hygiene
+
+See [[strategy-dev/cohort-hygiene]] — not surfaced in Lab UI. Canonical Macro: `funded/2026-07-14_macro_v1_4_premium_365d_canonical.md`.
 
 ## YAML fields (new saves)
 

@@ -5,7 +5,24 @@ tags: [playbook, funded, strategy-dev]
 ---
 # Funded-phase playbook
 
-> **Goal:** Maximize **weekly edge** ($/week) after eval pass. Survive to payouts; DD room grows with equity.
+> **Goal:** Maximize **weekly edge** on TPT PRO. Survive intraday trail; withdraw at $52k; **recycle before PRO+** ($5k cumulative). See [[tpt-rules]].
+
+## PRO vs eval — rule change that matters
+
+| | Eval (test) | PRO (funded sim) |
+|---|---|---|
+| DD | EOD trailing | **Intraday** trailing (unrealized counts) |
+| Consistency | 50% + 5 min days | **None** |
+| Sizing | Cap wins for consistency | **Scale RR / size** after cushion |
+| Exit | Pass at ~$4k net | Withdraw 80% above **$52,000** balance |
+| Avoid | Bust on 2–3 losses | PRO+ at **$5,000** cumulative — recycle instead |
+
+## Recycle-before-PRO+ strategy
+
+1. Pass eval with distributed days (PRB BE@2R or successor).
+2. Week 1 PRO: baseline risk, BE at +1R (intraday peak is the enemy).
+3. After +$1k–$1.5k cushion vs peak: allow higher R and stepped contracts (no consistency cap).
+4. Target **$2k–$4.5k** realized; hit buffer, withdraw 80%, start fresh test — do not accept PRO+ invite.
 
 ## Winning formula candidates
 

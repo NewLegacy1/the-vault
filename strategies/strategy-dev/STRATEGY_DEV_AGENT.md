@@ -19,7 +19,7 @@ The same strategy is NOT optimal for both phases. Development targets:
 | Goal | Reach +$4,000 before $2,000 trailing DD | Maximize $/week; survive to payouts |
 | Enemy | Bust (2–3 max losses ≈ dead) | Give-back, oversized losses |
 | Favors | High win rate, small losses, asymmetric R | Expectancy, runners, higher R multiples |
-| Consistency | Best day < 50% of total (TPT) → cap wins ~$1,490 | Looser — protect payout buffer |
+| Consistency | Best day < 50% + 5 min days (TPT) → cap wins ~$1,490 | **None on PRO** — higher RR / size OK; recycle before $5k PRO+ |
 | Candidate today | PRB v1.5 BE@2R + PDH/PDL (54.9% pass) | Macro A-tier / PRB runners (higher $/trade) |
 
 See [[prop-firm-math]] for full rules and current MC standings.
@@ -28,7 +28,9 @@ See [[prop-firm-math]] for full rules and current MC standings.
 
 - [[findings-prb]] — PRB winning trade formula + settled A/B results
 - [[findings-macro]] — Macro Model winning trade formula + tier data
-- [[prop-firm-math]] — TPT rules, MC methodology, current leaderboard
+- [[prop-firm-math]] — TPT rules summary, MC methodology, leaderboard
+- [[tpt-rules]] — full TPT Zendesk rules (test, PRO, withdrawals, PRO+ recycle)
+- [[cohort-hygiene]] — which cohorts to trust (agent only — not in UI)
 - [[roadmap]] — eval/funded split plan + PRB×Macro hybrid backlog
 - [[eval-playbook]] — eval-phase development (pass rate, consistency)
 - [[funded-playbook]] — funded-phase development (weekly edge)
@@ -38,6 +40,8 @@ See [[prop-firm-math]] for full rules and current MC standings.
   - `cohorts/funded/` — expectancy experiments (Macro primary)
   - `cohorts/combined/` — portfolio / hybrid MC
   - `cohorts/research/` — exploratory
+  - `cohorts/_archive_pre_premium/` — contaminated pre-premium runs (**do not compare**)
+- [[cohort-hygiene]] — duplicate detection, date mismatches, canonical Macro anchor
 - `strategies/Powell_Rejection_Block_SOP.md`, `strategies/Macro_Model_SOP.md` — live playbooks
 
 ## Data inventory (raw evidence)

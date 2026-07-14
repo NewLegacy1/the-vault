@@ -8,12 +8,15 @@ tags: [prop-math, reference, strategy-dev]
 
 ## TPT $50K Test → PRO (primary firm)
 
-| Rule | Value | Design consequence |
-|---|---|---|
-| Pass target | +$4,000 | ~5 avg Macro wins or ~2 good PRB runners |
-| Trailing DD | $2,000 | **2–3 max losses ≈ bust.** Loss size matters more than win rate |
-| Consistency | Best day < 50% of total | Cap win days ~$1,490; need 3+ green days minimum |
-| Fees | eval + activation + monthly | Failed attempts compound — see `expected_accounts` |
+Full Zendesk scrape: [[tpt-rules]]. Agent hygiene for cohorts: [[cohort-hygiene]] (not shown in UI).
+
+| Rule | Test (eval) | PRO (funded sim) | Design consequence |
+|---|---|---|---|
+| Pass / payout line | +$4,000 MC (`passAt`) | Withdraw at **$52,000** balance (80% above buffer) | Eval needs consistency buffer; PRO needs +$2k profit |
+| Trailing DD | $2,000 **EOD** | $2,000 **intraday** | PRO is stricter — unrealized peaks raise floor |
+| Consistency | Best day < 50% + **5 min days** | **None** | Eval: cap wins ~$1,490; PRO: can size up / higher RR |
+| PRO+ trigger | — | **$5,000** cumulative on PRO | Recycle account before opt-in — see [[tpt-rules]] |
+| Fees | eval + activation + monthly | No monthly on PRO | Failed evals compound — see `expected_accounts` |
 
 ## Why raw P&L lies
 
@@ -45,5 +48,17 @@ Macro v1.2: +$16,749/yr but 30.5% pass — symmetric $800 wins/losses inside a $
 
 ## Phase-split implication
 
-- **Eval:** run the highest-pass-rate strategy exclusively (currently PRB BE@2R). Cap win days for consistency. Stop trading day after target buffer reached.
-- **Funded:** blend in higher-expectancy trades (Macro A-tier, PRB runners) once payout buffer ($1,000+) established. DD room grows with equity.
+- **Eval:** highest-pass-rate strategy (PRB BE@2R target). Enforce 5 min trading days + 50% consistency in MC. Cap win days; never request PRO at $3,001.
+- **PRO:** no consistency — step up RR/size after intraday trail cushion. Target $2k–$4.5k profit, withdraw at $52k, **recycle before $5k** PRO+ eligibility.
+- **Funded MC:** use intraday DD mode when modeling PRO survival; eval MC stays EOD.
+
+## Other firms (summary)
+
+Detailed phases in `vault-app/lib/prop-firms.ts` — expand Obsidian when those Zendesk/help pages are scraped:
+
+| Firm | Eval consistency | Funded DD | Funded payout quirk |
+|---|---|---|---|
+| Topstep $50K | None (5 winning days ≥$150) | EOD MLL + $1k DLL | Path choice at activation (Standard vs 40% consistency) |
+| Apex $50K EOD | None | EOD + DLL | ~30% payout consistency on many tiers |
+| Alpha Premium | 50% (2 min days) | EOD | No funded consistency on Premium |
+| Alpha Zero | None | EOD + DLL | ~40% payout consistency on funded |
