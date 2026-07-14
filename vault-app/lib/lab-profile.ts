@@ -86,6 +86,13 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline", "be-only"],
   },
   {
+    id: "macro-v14-ce",
+    label: "Macro Model v1.4 — CE confirm + tiered risk",
+    version: "v1.4",
+    config: "TS required · SMT boosts TP · wick 56–80 half risk · CE tap+lift · $800 risk",
+    defaultRegimes: ["baseline", "be-only"],
+  },
+  {
     id: "custom",
     label: "Custom experiment",
     version: "custom",

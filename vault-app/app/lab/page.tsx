@@ -123,16 +123,18 @@ function CollapsiblePanel({
   sub,
   badge,
   defaultOpen = false,
+  className,
   children,
 }: {
   title: string;
   sub?: string;
   badge?: string;
   defaultOpen?: boolean;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <details className="panel" open={defaultOpen || undefined}>
+    <details className={"panel" + (className ? ` ${className}` : "")} open={defaultOpen || undefined}>
       <summary className="panel-title">
         {title}
         {sub && <span className="sub">{sub}</span>}
@@ -141,6 +143,10 @@ function CollapsiblePanel({
       <div className="panel-body">{children}</div>
     </details>
   );
+}
+
+function isRecommendedSeed(d: Dataset): boolean {
+  return d.name.includes("★");
 }
 
 const SEED_SETS: Dataset[] = [
@@ -1409,135 +1415,278 @@ export default function LabPage() {
 
   const eco = res?.economics;
 
-  const consistencyBadge = !consistency.applicable
-    ? undefined
-    : consistency.passRequestReady
-      ? `READY · ${fmtUsd(consistency.totalPnl, true)} · best day ${consistency.bestDayPctOfTotal.toFixed(0)}%`
-      : `NOT YET · ${fmtUsd(consistency.totalPnl, true)} · best day ${consistency.bestDayPctOfTotal.toFixed(0)}% (need <${consistency.consistencyPct}%)`;
-
   return (
     <>
-      <div className="panel">
+      <div className="lab-intro">
+        Pick a strategy, load trades (upload TV CSV or use a seed), then <span className="accent">RUN</span>.
+        Monte Carlo results appear below after the first run.
+      </div>
+
+      <div className="panel lab-workflow">
         <div className="panel-title">
-          Monte Carlo — prop pass simulator
-          <span className="sub">dataset · firm · run</span>
+          Run a study
+          <span className="sub">strategy · data · firm</span>
         </div>
         <div className="panel-body">
-          <div className="frm-row">
-            <label className="fld">
-              Dataset
-              <select value={safeDsId} onChange={(e) => setDsId(e.target.value)}>
-                {datasets.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {datasetDisplayName(d, datasetAliases)} — {datasetOptionSub(d)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="fld" style={{ minWidth: 220 }}>
-              Display name
-              <input
-                value={datasetAliases[safeDsId] ?? ds.label ?? ""}
-                onChange={(e) => setDisplayName(safeDsId, e.target.value)}
-                placeholder={
-                  suggestDatasetLabel(ds.dates)
-                    ? `e.g. ${suggestDatasetLabel(ds.dates)} BE-only`
-                    : "e.g. 25–26 Trail experiment"
-                }
-              />
-            </label>
-            <button type="button" className="btn ghost" onClick={applyStudyLabel} title="Set name from date span + strategy version">
-              Name from study
-            </button>
-            {dsBounds.min && dsBounds.max && (
-              <>
-                <label className="fld">
-                  From
-                  <input
-                    type="date"
-                    min={dsBounds.min}
-                    max={dateFilter.to || dsBounds.max}
-                    value={dateFilter.from}
-                    onChange={(e) => setDateFilterFor(safeDsId, { from: e.target.value })}
-                  />
+          <div className="lab-step">
+            <span className="lab-step-num">1</span>
+            <div className="lab-step-body">
+              <div className="frm-row">
+                <label className="fld" style={{ minWidth: 280, flex: 1 }}>
+                  Strategy version
+                  <select value={study.presetId} onChange={(e) => applyPreset(e.target.value)}>
+                    <optgroup label="PRB">
+                      {STRATEGY_PRESETS.filter((p) => p.id.startsWith("prb") || p.id === "custom").map((p) => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Macro">
+                      {STRATEGY_PRESETS.filter((p) => p.id.startsWith("macro")).map((p) => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Other">
+                      {STRATEGY_PRESETS.filter((p) => p.id.startsWith("datahl")).map((p) => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </optgroup>
+                  </select>
                 </label>
-                <label className="fld">
-                  To
-                  <input
-                    type="date"
-                    min={dateFilter.from || dsBounds.min}
-                    max={dsBounds.max}
-                    value={dateFilter.to}
-                    onChange={(e) => setDateFilterFor(safeDsId, { to: e.target.value })}
-                  />
-                </label>
-                {dateFilterActive && (
-                  <button type="button" className="btn ghost" onClick={() => clearDateFilterFor(safeDsId)}>
-                    All dates
-                  </button>
+                {study.presetId === "custom" && (
+                  <label className="fld" style={{ flex: 1, minWidth: 200 }}>
+                    Custom variant name
+                    <input
+                      value={study.customLabel}
+                      onChange={(e) => setStudy({ ...study, customLabel: e.target.value })}
+                      placeholder="e.g. Macro v1.4 — pivot 5 only"
+                    />
+                  </label>
                 )}
-              </>
-            )}
-            <label className="fld">
-              Upload TV CSVs
-              <input type="file" accept=".csv" multiple onChange={onFiles} />
-            </label>
-            <label className="fld">
-              Firm preset
-              <select value={ruleId} onChange={(e) => setRuleId(e.target.value)}>
-                {PROP_RULES.map((r) => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))}
-              </select>
-            </label>
-            <label className="fld">
-              Sims
-              <input type="number" value={sims} onChange={(e) => setSims(parseInt(e.target.value) || 1000)} style={{ width: 80 }} />
-            </label>
-            <label className="fld">
-              Max trades
-              <input type="number" value={maxTrades} onChange={(e) => setMaxTrades(parseInt(e.target.value) || 60)} style={{ width: 80 }} />
-            </label>
-            <label className="fld">
-              Payout buffer
-              <input type="number" value={payoutBuffer} onChange={(e) => setPayoutBuffer(parseInt(e.target.value) || 1000)} style={{ width: 80 }} title="Extra funded profit before first payout" />
-            </label>
-            <button className="btn" onClick={run} disabled={!canRun} title={!canRun ? "Set strategy version and load a dataset first" : ""}>
-              RUN
-            </button>
+              </div>
+              <label className="fld" style={{ marginTop: 8 }}>
+                Hypothesis <span className="dim">(optional — saved to cohort notes)</span>
+                <input
+                  value={study.hypothesis}
+                  onChange={(e) => setStudy({ ...study, hypothesis: e.target.value })}
+                  placeholder="e.g. v1.4 A-tier only beats v1.2 baseline on TPT pass rate"
+                />
+              </label>
+              {activePreset && (
+                <div className="small dim" style={{ marginTop: 6 }}>
+                  <span className="cyan">Pine {activePreset.version}</span> · {activePreset.config}
+                </div>
+              )}
+              {!studyReady(study) && (
+                <p className="small warn" style={{ marginTop: 6, marginBottom: 0 }}>
+                  Select a strategy version (or name your custom experiment) before running.
+                </p>
+              )}
+            </div>
           </div>
 
-          <div className="small subtext">
-            <span className="accent">{variantName}</span>
-            {displayName && displayName !== ds.name && <span className="cyan"> · {displayName}</span>}
-            {study.regimes.length > 0 && <span className="dim"> · {study.regimes.join(", ")}</span>}
+          <div className="lab-step">
+            <span className="lab-step-num">2</span>
+            <div className="lab-step-body">
+              <div className="frm-row">
+                <label className="fld" style={{ minWidth: 280, flex: 1 }}>
+                  Dataset
+                  <select value={safeDsId} onChange={(e) => setDsId(e.target.value)}>
+                    <optgroup label="Recommended seeds">
+                      {SEED_SETS.filter(isRecommendedSeed).map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {datasetDisplayName(d, datasetAliases)} — {datasetOptionSub(d)}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Archive seeds">
+                      {SEED_SETS.filter((d) => !isRecommendedSeed(d)).map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {datasetDisplayName(d, datasetAliases)} — {datasetOptionSub(d)}
+                        </option>
+                      ))}
+                    </optgroup>
+                    {uploads.length > 0 && (
+                      <optgroup label="Your uploads">
+                        {uploads.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {datasetDisplayName(d, datasetAliases)} — {datasetOptionSub(d)}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </select>
+                </label>
+                <label className="fld">
+                  Upload TV CSVs
+                  <input type="file" accept=".csv" multiple onChange={onFiles} />
+                </label>
+              </div>
+              <div className="lab-dataset-summary">
+                <span className="accent">{variantName}</span>
+                {displayName && displayName !== ds.name && <span className="cyan"> · {displayName}</span>}
+                <span className="dim"> — </span>
+                {stats.n} trades · {stats.wins}W/{stats.losses}L · net {fmtUsd(stats.net, true)}
+                {activeDs.dates.length >= 2 && <span className="dim"> · {stats.span}</span>}
+                {dateFilterActive && stats.fullN !== stats.n && (
+                  <span className="warn"> (filtered from {stats.fullN})</span>
+                )}
+              </div>
+              {ds.trades.length > 0 && activeDs.trades.length === 0 && (
+                <p className="small warn" style={{ marginTop: 6, marginBottom: 0 }}>
+                  No trades in selected date range — widen dates in Advanced options.
+                </p>
+              )}
+            </div>
           </div>
-          <div className="small subtext" style={{ marginTop: 4 }}>
-            {stats.n} trades
-            {dateFilterActive && stats.fullN !== stats.n && (
-              <span className="warn"> (filtered from {stats.fullN})</span>
+
+          <div className="lab-step lab-step-run">
+            <span className="lab-step-num">3</span>
+            <div className="lab-step-body">
+              <div className="frm-row">
+                <label className="fld" style={{ minWidth: 220 }}>
+                  Firm preset
+                  <select value={ruleId} onChange={(e) => setRuleId(e.target.value)}>
+                    {PROP_RULES.map((r) => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </label>
+                <button className="btn" onClick={run} disabled={!canRun} title={!canRun ? "Set strategy version and load a dataset first" : ""}>
+                  RUN Monte Carlo
+                </button>
+              </div>
+              <div className="small dim" style={{ marginTop: 6 }}>
+                {rule.name}: pass {fmtUsd(rule.passAt)} · DD {fmtUsd(rule.trailingDD)}
+                {rule.consistencyPct > 0 ? ` · ${rule.consistencyPct}% consistency` : ""}
+              </div>
+              {!res && (
+                <p className="small dim" style={{ marginTop: 6, marginBottom: 0 }}>
+                  Pass %, fan chart, and scorecard appear below after RUN.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <CollapsiblePanel
+            title="Advanced options"
+            sub="dates · sims · regimes · naming · uploads"
+            className="lab-advanced"
+            defaultOpen={false}
+          >
+            <div className="frm-row">
+              <label className="fld" style={{ minWidth: 220 }}>
+                Display name
+                <input
+                  value={datasetAliases[safeDsId] ?? ds.label ?? ""}
+                  onChange={(e) => setDisplayName(safeDsId, e.target.value)}
+                  placeholder={
+                    suggestDatasetLabel(ds.dates)
+                      ? `e.g. ${suggestDatasetLabel(ds.dates)} BE-only`
+                      : "e.g. 25–26 Trail experiment"
+                  }
+                />
+              </label>
+              <button type="button" className="btn ghost" onClick={applyStudyLabel} title="Set name from date span + strategy version">
+                Name from study
+              </button>
+              {dsBounds.min && dsBounds.max && (
+                <>
+                  <label className="fld">
+                    From
+                    <input
+                      type="date"
+                      min={dsBounds.min}
+                      max={dateFilter.to || dsBounds.max}
+                      value={dateFilter.from}
+                      onChange={(e) => setDateFilterFor(safeDsId, { from: e.target.value })}
+                    />
+                  </label>
+                  <label className="fld">
+                    To
+                    <input
+                      type="date"
+                      min={dateFilter.from || dsBounds.min}
+                      max={dsBounds.max}
+                      value={dateFilter.to}
+                      onChange={(e) => setDateFilterFor(safeDsId, { to: e.target.value })}
+                    />
+                  </label>
+                  {dateFilterActive && (
+                    <button type="button" className="btn ghost" onClick={() => clearDateFilterFor(safeDsId)}>
+                      All dates
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+            <div className="frm-row">
+              <label className="fld">
+                Sims
+                <input type="number" value={sims} onChange={(e) => setSims(parseInt(e.target.value) || 1000)} style={{ width: 80 }} />
+              </label>
+              <label className="fld">
+                Max trades
+                <input type="number" value={maxTrades} onChange={(e) => setMaxTrades(parseInt(e.target.value) || 60)} style={{ width: 80 }} />
+              </label>
+              <label className="fld">
+                Payout buffer
+                <input type="number" value={payoutBuffer} onChange={(e) => setPayoutBuffer(parseInt(e.target.value) || 1000)} style={{ width: 80 }} title="Extra funded profit before first payout" />
+              </label>
+            </div>
+            <div className="small dim" style={{ marginBottom: 6 }}>Market / test conditions (optional)</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+              {REGIME_PRESETS.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className={"chip" + (study.regimes.includes(r) ? " active-acct" : "")}
+                  style={{ cursor: "pointer", background: study.regimes.includes(r) ? undefined : "transparent" }}
+                  onClick={() => toggleRegime(r)}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <label className="small" style={{ display: "flex", gap: 8, alignItems: "center", cursor: "pointer" }}>
+              <input type="checkbox" checked={autoSave} onChange={(e) => setAutoSave(e.target.checked)} />
+              Auto-save once per dataset + variant <span className="dim">(GitHub → strategies/cohorts/)</span>
+            </label>
+            {uploads.length > 0 && (
+              <>
+                <hr className="hr" />
+                <div className="small dim" style={{ marginBottom: 6 }}>Manage uploads</div>
+                {uploads.length >= 2 && (
+                  <button className="btn ghost" onClick={mergeAllUploads} style={{ marginBottom: 8 }}>
+                    Merge all into one year
+                  </button>
+                )}
+                <ul className="upload-list">
+                  {uploads.map((u) => (
+                    <li key={u.id} style={{ flexWrap: "wrap", gap: 6 }}>
+                      <input
+                        type="text"
+                        value={datasetAliases[u.id] ?? u.label ?? ""}
+                        onChange={(e) => setDisplayName(u.id, e.target.value)}
+                        placeholder={suggestDatasetLabel(u.dates) || "name e.g. 25–26 BE"}
+                        style={{ width: 180, fontSize: 11 }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="dim" style={{ fontSize: 11 }}>{u.trades.length} tr · {u.name.slice(0, 48)}{u.name.length > 48 ? "…" : ""}</span>
+                      <button
+                        type="button"
+                        className="btn ghost"
+                        style={{ padding: "2px 8px", fontSize: 10 }}
+                        onClick={() => setDsId(u.id)}
+                      >
+                        use
+                      </button>
+                      <button className="btn danger" style={{ marginLeft: "auto", padding: "2px 8px", fontSize: 10 }} onClick={() => removeUpload(u.id)}>×</button>
+                    </li>
+                  ))}
+                </ul>
+              </>
             )}
-            {" "}· {stats.wins}W / {stats.losses}L / {stats.scr}scr · net {fmtUsd(stats.net, true)} ·
-            avg {fmtUsd(Math.round(stats.avg), true)}/trade · ~{stats.tpw} trades/wk
-            {activeDs.dates.length >= 2 && <span className="dim"> · {stats.span}</span>}
-            {dateFilterActive && stats.fullSpan !== stats.span && (
-              <span className="dim"> · full {stats.fullSpan}</span>
-            )}
-          </div>
-          {ds.trades.length > 0 && activeDs.trades.length === 0 && (
-            <p className="small warn" style={{ marginTop: 6, marginBottom: 0 }}>
-              No trades in selected date range — widen From/To or click All dates.
-            </p>
-          )}
-          <div className="small dim" style={{ marginTop: 6 }}>
-            {rule.name}: pass {fmtUsd(rule.passAt)} · DD {fmtUsd(rule.trailingDD)}
-            {rule.consistencyPct > 0 ? ` · ${rule.consistencyPct}% consistency` : ""}
-          </div>
-          {!res && (
-            <p className="small dim" style={{ marginTop: 8, marginBottom: 0 }}>
-              Hit <span className="accent">RUN</span> — pass %, fan chart, and outcome distribution appear directly below.
-            </p>
-          )}
+          </CollapsiblePanel>
         </div>
       </div>
 
@@ -1623,19 +1772,17 @@ export default function LabPage() {
           </div>
 
           {scorecardComparison && (
-            <div className="panel" style={{ marginBottom: 14 }}>
-              <div className="panel-title">
-                Experiment scorecard
-                <span className="sub">vs PRB v1.5 12mo control (legacy gross pass benchmark) · ADVANCE / HOLD / REGRESS</span>
-              </div>
-              <div className="panel-body">
-                <LabScorecardPanel
-                  comparison={scorecardComparison}
-                  history={scorecardHistory}
-                  savedCohorts={savedCohorts}
-                />
-              </div>
-            </div>
+            <CollapsiblePanel
+              title="Experiment scorecard"
+              sub="vs PRB v1.5 12mo control · ADVANCE / HOLD / REGRESS"
+              defaultOpen={false}
+            >
+              <LabScorecardPanel
+                comparison={scorecardComparison}
+                history={scorecardHistory}
+                savedCohorts={savedCohorts}
+              />
+            </CollapsiblePanel>
           )}
 
           <div className="panel">
@@ -1676,104 +1823,14 @@ export default function LabPage() {
         </div>
       )}
 
-      <CollapsiblePanel title="Study setup" sub="strategy version · hypothesis · auto-save">
-        <div className="frm-row">
-          <label className="fld" style={{ minWidth: 280 }}>
-            Strategy version
-            <select value={study.presetId} onChange={(e) => applyPreset(e.target.value)}>
-              {STRATEGY_PRESETS.map((p) => (
-                <option key={p.id} value={p.id}>{p.label}</option>
-              ))}
-            </select>
-          </label>
-          {study.presetId === "custom" && (
-            <label className="fld" style={{ flex: 1, minWidth: 200 }}>
-              Custom variant name
-              <input
-                value={study.customLabel}
-                onChange={(e) => setStudy({ ...study, customLabel: e.target.value })}
-                placeholder="e.g. PRB v1.5 — IFVG entry experiment"
-              />
-            </label>
-          )}
-        </div>
-        {activePreset && (
-          <div className="small subtext" style={{ marginBottom: 10 }}>
-            <span className="cyan">Pine {activePreset.version}</span> · {activePreset.config}
-          </div>
-        )}
-        <div className="small dim" style={{ marginBottom: 6 }}>Market / test conditions (optional)</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-          {REGIME_PRESETS.map((r) => (
-            <button
-              key={r}
-              type="button"
-              className={"chip" + (study.regimes.includes(r) ? " active-acct" : "")}
-              style={{ cursor: "pointer", background: study.regimes.includes(r) ? undefined : "transparent" }}
-              onClick={() => toggleRegime(r)}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-        <label className="fld">
-          Hypothesis — what are you testing vs baseline?
-          <input
-            value={study.hypothesis}
-            onChange={(e) => setStudy({ ...study, hypothesis: e.target.value })}
-            placeholder="e.g. Trail 2.0/1.5 beats BE-only in Feb–Mar give-back months"
-          />
-        </label>
-        {!studyReady(study) && (
-          <p className="small warn mt">Select a strategy version (or name your custom experiment) before running.</p>
-        )}
-        <label className="small" style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 10, cursor: "pointer" }}>
-          <input type="checkbox" checked={autoSave} onChange={(e) => setAutoSave(e.target.checked)} />
-          Auto-save once per dataset + variant <span className="dim">(GitHub → strategies/cohorts/ · won&apos;t re-commit on re-RUN)</span>
-        </label>
-      </CollapsiblePanel>
-
-      {uploads.length > 0 && (
-        <CollapsiblePanel title="Your CSV uploads" sub={`${uploads.length} file${uploads.length === 1 ? "" : "s"}`}>
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
-            {uploads.length >= 2 && (
-              <button className="btn ghost" onClick={mergeAllUploads}>Merge all into one year</button>
-            )}
-          </div>
-          <ul className="upload-list">
-            {uploads.map((u) => (
-              <li key={u.id} style={{ flexWrap: "wrap", gap: 6 }}>
-                <input
-                  type="text"
-                  value={datasetAliases[u.id] ?? u.label ?? ""}
-                  onChange={(e) => setDisplayName(u.id, e.target.value)}
-                  placeholder={suggestDatasetLabel(u.dates) || "name e.g. 25–26 BE"}
-                  style={{ width: 180, fontSize: 11 }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <span className="dim" style={{ fontSize: 11 }}>{u.trades.length} tr · {u.name.slice(0, 48)}{u.name.length > 48 ? "…" : ""}</span>
-                <button
-                  type="button"
-                  className="btn ghost"
-                  style={{ padding: "2px 8px", fontSize: 10 }}
-                  onClick={() => setDsId(u.id)}
-                >
-                  use
-                </button>
-                <button className="btn danger" style={{ marginLeft: "auto", padding: "2px 8px", fontSize: 10 }} onClick={() => removeUpload(u.id)}>×</button>
-              </li>
-            ))}
-          </ul>
-        </CollapsiblePanel>
-      )}
-
-      <CollapsiblePanel title="Firm rules detail" sub={rule.name}>
-        <FirmRulesCard rule={rule} />
-      </CollapsiblePanel>
-
       {activeDs.trades.length > 0 && (
-        <>
-          <div className="stat-strip">
+        <CollapsiblePanel
+          title="Actual replay"
+          sub="real P&L · equity curve · consistency"
+          badge={`${stats.n} tr · ${fmtUsd(equity.net, true)}`}
+          defaultOpen={false}
+        >
+          <div className="stat-strip" style={{ marginBottom: 14 }}>
             <div className="stat">
               <div className="k">Actual net P&L</div>
               <div className={"v " + (equity.net >= 0 ? "pos" : "neg")}>{fmtUsd(equity.net, true)}</div>
@@ -1800,58 +1857,50 @@ export default function LabPage() {
               <div className="d">~{stats.tpw} trades per week</div>
             </div>
           </div>
-
-          <div className="panel">
-            <div className="panel-title">
-              Actual equity curve
-              <span className="sub">real replay P&L — not simulated</span>
-            </div>
-            <div className="panel-body">
-              <EquityCurveChart curve={equity} passAt={rule.passAt} trailingDd={rule.trailingDD} />
-            </div>
-          </div>
-
+          <EquityCurveChart curve={equity} passAt={rule.passAt} trailingDd={rule.trailingDD} />
           {rule.consistencyPct > 0 && (
-            <CollapsiblePanel
-              title="Eval consistency checker"
-              sub="daily P&L path · trade lists"
-              badge={consistencyBadge}
-            >
+            <>
+              <hr className="hr" />
               <EvalConsistencyCard
                 report={consistency}
                 winCapUsd={winCapUsd}
                 onWinCapChange={setWinCapUsd}
               />
-            </CollapsiblePanel>
+            </>
           )}
-        </>
+        </CollapsiblePanel>
       )}
 
-      <CollapsiblePanel title="Settled chart findings" sub="reference only · see F3 for graveyard">
-        <ChartFindingsCard />
-      </CollapsiblePanel>
-
-      <CollapsiblePanel
-        title="Missed-trade autopsy + BE retest"
-        sub="paste Pine tables after replay"
-        badge={ghostReport.rows.length > 0 ? `${ghostReport.totalN} ghosts` : undefined}
-      >
-        <GhostAutopsyCard
-          report={ghostReport}
-          paste={ghostPaste}
-          onPasteChange={setGhostPaste}
-          onLoadTemplate={() =>
-            setGhostPaste(study.presetId.startsWith("macro") ? MACRO_GHOST_PASTE_TEMPLATE : GHOST_PASTE_TEMPLATE)
-          }
-          screenshotName={ghostScreenshot}
-          onScreenshot={(file) => {
-            if (!file) {
-              setGhostScreenshot(null);
-              return;
+      <CollapsiblePanel title="Reference & tools" sub="firm rules · chart findings · ghost autopsy" defaultOpen={false}>
+        <div className="lab-ref-section">
+          <div className="lab-ref-heading">Firm rules — {rule.name}</div>
+          <FirmRulesCard rule={rule} />
+        </div>
+        <hr className="hr" />
+        <div className="lab-ref-section">
+          <div className="lab-ref-heading">Settled chart findings</div>
+          <ChartFindingsCard />
+        </div>
+        <hr className="hr" />
+        <div className="lab-ref-section">
+          <div className="lab-ref-heading">Missed-trade autopsy + BE retest</div>
+          <GhostAutopsyCard
+            report={ghostReport}
+            paste={ghostPaste}
+            onPasteChange={setGhostPaste}
+            onLoadTemplate={() =>
+              setGhostPaste(study.presetId.startsWith("macro") ? MACRO_GHOST_PASTE_TEMPLATE : GHOST_PASTE_TEMPLATE)
             }
-            setGhostScreenshot(file.name);
-          }}
-        />
+            screenshotName={ghostScreenshot}
+            onScreenshot={(file) => {
+              if (!file) {
+                setGhostScreenshot(null);
+                return;
+              }
+              setGhostScreenshot(file.name);
+            }}
+          />
+        </div>
       </CollapsiblePanel>
     </>
   );

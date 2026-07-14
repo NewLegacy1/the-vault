@@ -305,6 +305,40 @@ button.btn.danger { background: transparent; color: var(--red); border: 1px soli
 }
 .upload-list li input[type="text"]::placeholder { color: var(--dim); }
 
+/* ── F4 LAB workflow ────────────────────────────────── */
+.lab-intro {
+  margin-bottom: 12px; padding: 8px 12px;
+  border: 1px solid var(--border); background: #080808;
+  font-size: 11px; color: var(--sub);
+}
+.lab-workflow .panel-body { display: flex; flex-direction: column; gap: 14px; }
+.lab-step {
+  display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start;
+  padding-bottom: 14px; border-bottom: 1px solid var(--border);
+}
+.lab-step:last-of-type { border-bottom: none; padding-bottom: 0; }
+.lab-step-num {
+  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border-hi); color: var(--matrix); font-size: 11px; font-weight: 700;
+  margin-top: 2px;
+}
+.lab-step-body { min-width: 0; }
+.lab-step-run .frm-row { align-items: center; }
+.lab-step-run .btn:not(.ghost) { min-width: 120px; font-size: 13px; padding: 10px 20px; }
+.lab-dataset-summary {
+  margin-top: 6px; font-size: 11px; color: var(--sub);
+  padding: 6px 8px; background: #080808; border: 1px solid var(--border);
+}
+.lab-dataset-summary .accent { color: var(--matrix); }
+.lab-ref-section { margin-bottom: 14px; }
+.lab-ref-section:last-child { margin-bottom: 0; }
+.lab-ref-heading {
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 8px;
+}
+details.panel.lab-advanced { margin-top: 4px; border-style: dashed; }
+details.panel.lab-advanced > summary.panel-title { font-size: 11px; }
+
 /* ── Chart row ──────────────────────────────────────── */
 .chart-row { display: grid; grid-template-columns: 1fr 280px; gap: 14px; }
 @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
