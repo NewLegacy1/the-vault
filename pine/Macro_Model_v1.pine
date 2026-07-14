@@ -291,6 +291,14 @@ f_tierTarget(int tier) =>
         1 => i_targetHalf
         => i_targetA
 
+// Entry/exit IDs encode tier in TV export Signal column (AP = A+, A, H = half)
+f_tradeIds(int dir, int tier) =>
+    string side = dir == 1 ? "Long" : "Short"
+    string tag = tier == 3 ? "AP" : tier == 2 ? "A" : "H"
+    string eid = side + "_" + tag
+    string xid = (dir == 1 ? "LX" : "SX") + "_" + tag
+    [eid, xid]
+
 f_qty(float stopPts, float riskUsd, float maxStop) =>
     if stopPts <= 0 or stopPts > maxStop
         0
@@ -334,6 +342,8 @@ var float suRiskUsd = na
 var float suMaxStop = na
 var float suTargetPts = na
 var int   suTier = 0
+var string suEntryId = ""
+var string suExitId = ""
 
 bool isLimitMode = i_entryMode == "Limit retest (CE)"
 bool isCeMktMode = i_entryMode == "Market on CE confirm (tap + lift)"
@@ -344,8 +354,9 @@ if newDay
     suOrd := false
     suTapped := false
     suTier := 0
-    strategy.cancel("Long")
-    strategy.cancel("Short")
+    suEntryId := ""
+    suExitId := ""
+    strategy.cancel_all()
 
 // Arm on signal (one setup at a time)
 if suDir == 0 and flat
@@ -362,10 +373,12 @@ if suDir == 0 and flat
             if isSignalMkt
                 int q = f_qty(risk, riskUsd, maxStop)
                 if q > 0
-                    strategy.entry("Long", strategy.long, qty = q)
-                    strategy.exit("LX", "Long", stop = sl, limit = close + tgt)
+                    [eid, xid] = f_tradeIds(1, tier)
+                    strategy.entry(eid, strategy.long, qty = q)
+                    strategy.exit(xid, eid, stop = sl, limit = close + tgt)
                     tradesToday += 1
             else
+                [eid, xid] = f_tradeIds(1, tier)
                 suDir := 1
                 suEntry := ceLvl
                 suStop := sl
@@ -374,6 +387,8 @@ if suDir == 0 and flat
                 suRiskUsd := riskUsd
                 suMaxStop := maxStop
                 suTargetPts := tgt
+                suEntryId := eid
+                suExitId := xid
                 suLeft := isLimitMode and i_leaveR == 0
                 suTapped := false
     else if liveShort
@@ -389,10 +404,12 @@ if suDir == 0 and flat
             if isSignalMkt
                 int q = f_qty(risk, riskUsd, maxStop)
                 if q > 0
-                    strategy.entry("Short", strategy.short, qty = q)
-                    strategy.exit("SX", "Short", stop = sl, limit = close - tgt)
+                    [eid, xid] = f_tradeIds(-1, tier)
+                    strategy.entry(eid, strategy.short, qty = q)
+                    strategy.exit(xid, eid, stop = sl, limit = close - tgt)
                     tradesToday += 1
             else
+                [eid, xid] = f_tradeIds(-1, tier)
                 suDir := -1
                 suEntry := ceLvl
                 suStop := sl
@@ -401,6 +418,8 @@ if suDir == 0 and flat
                 suRiskUsd := riskUsd
                 suMaxStop := maxStop
                 suTargetPts := tgt
+                suEntryId := eid
+                suExitId := xid
                 suLeft := isLimitMode and i_leaveR == 0
                 suTapped := false
 
@@ -409,8 +428,7 @@ if suDir != 0 and flat and isLimitMode
     float riskPts = suDir == 1 ? suEntry - suStop : suStop - suEntry
     bool inval = suDir == 1 ? close < suStop : close > suStop
     if bar_index - suBar > i_retestTimeout or not canPlace or inval
-        strategy.cancel("Long")
-        strategy.cancel("Short")
+        strategy.cancel_all()
         suOrd := false
         suDir := 0
     else
@@ -424,11 +442,11 @@ if suDir != 0 and flat and isLimitMode
             if q > 0
                 float tp = suDir == 1 ? suEntry + suTargetPts : suEntry - suTargetPts
                 if suDir == 1
-                    strategy.entry("Long", strategy.long, qty = q, limit = suEntry)
-                    strategy.exit("LX", "Long", stop = suStop, limit = tp)
+                    strategy.entry(suEntryId, strategy.long, qty = q, limit = suEntry)
+                    strategy.exit(suExitId, suEntryId, stop = suStop, limit = tp)
                 else
-                    strategy.entry("Short", strategy.short, qty = q, limit = suEntry)
-                    strategy.exit("SX", "Short", stop = suStop, limit = tp)
+                    strategy.entry(suEntryId, strategy.short, qty = q, limit = suEntry)
+                    strategy.exit(suExitId, suEntryId, stop = suStop, limit = tp)
                 suOrd := true
             else
                 suDir := 0
@@ -454,11 +472,11 @@ if suDir != 0 and flat and isCeMktMode
             if q > 0
                 float tp = suDir == 1 ? fillPx + suTargetPts : fillPx - suTargetPts
                 if suDir == 1
-                    strategy.entry("Long", strategy.long, qty = q)
-                    strategy.exit("LX", "Long", stop = suStop, limit = tp)
+                    strategy.entry(suEntryId, strategy.long, qty = q)
+                    strategy.exit(suExitId, suEntryId, stop = suStop, limit = tp)
                 else
-                    strategy.entry("Short", strategy.short, qty = q)
-                    strategy.exit("SX", "Short", stop = suStop, limit = tp)
+                    strategy.entry(suEntryId, strategy.short, qty = q)
+                    strategy.exit(suExitId, suEntryId, stop = suStop, limit = tp)
                 tradesToday += 1
             suDir := 0
             suTapped := false

@@ -4,7 +4,7 @@
  */
 import fs from "fs";
 import path from "path";
-import { mergeTvCsvs, parseTvCsv, tradesPerWeek, dedupeOnePerDay } from "../lib/csv";
+import { mergeTvCsvs, parseTvCsv, tradesPerWeek, dedupeOnePerDay, ENRICHED_TRADE_CSV_HEADER, enrichedTradeToCsvRow } from "../lib/csv";
 import { runMonteCarlo } from "../lib/monte-carlo";
 import { analyzeEvalConsistency } from "../lib/eval-consistency";
 import { buildEquityCurve } from "../lib/equity-curve";
@@ -65,8 +65,8 @@ function main() {
   const equity = buildEquityCurve(trades, dates);
 
   const mergedCsvLines = [
-    "date,pnl_usd,trade_num",
-    ...merged.map((t) => `${t.date},${t.pnl.toFixed(2)},${t.num}`),
+    ENRICHED_TRADE_CSV_HEADER,
+    ...merged.map((t) => enrichedTradeToCsvRow(t)),
   ];
   fs.writeFileSync(path.join(OUT_DIR, "macro-v1-ce-confirm-merged.csv"), mergedCsvLines.join("\n"), "utf8");
 
