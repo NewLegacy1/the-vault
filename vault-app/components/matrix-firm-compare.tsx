@@ -9,6 +9,7 @@ import {
   compareFirmsForTrades,
   firmMcForTab,
   MATRIX_COMPARE_FIRM_IDS,
+  normalizeStoredMcPct,
   type FirmMcSnapshot,
   type MatrixCompareFirmId,
 } from "@/lib/firm-matrix-compare";
