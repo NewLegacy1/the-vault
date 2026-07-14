@@ -1,0 +1,5616 @@
+{
+  "generated": "2026-07-14T22:57:02.529Z",
+  "oosStart": "2025-07-14",
+  "books": [
+    {
+      "id": "A0a",
+      "phase": "eval",
+      "overall": {
+        "n": 120,
+        "net": 8528,
+        "w": 16,
+        "l": 62,
+        "s": 42,
+        "wr": 13.3,
+        "avgWin": 1917,
+        "avgLoss": 341,
+        "rr": 5.63,
+        "expectancy": 80,
+        "maxDd": 5663,
+        "rawPerWeek": 55,
+        "weeks": 155.7
+      },
+      "mc": {
+        "passPct": 35.6,
+        "bustPct": 64.4,
+        "expectPerWeek": 4,
+        "weeksToPayout": 26,
+        "expectNet": 110
+      },
+      "byYear": {
+        "2023": {
+          "n": 22,
+          "net": -3723,
+          "w": 1,
+          "l": 15,
+          "s": 6,
+          "wr": 4.5,
+          "avgWin": 1894,
+          "avgLoss": 362,
+          "rr": 5.23,
+          "expectancy": -161,
+          "maxDd": 3892,
+          "rawPerWeek": -165,
+          "weeks": 22.6
+        },
+        "2024": {
+          "n": 39,
+          "net": 1607,
+          "w": 4,
+          "l": 20,
+          "s": 15,
+          "wr": 10.3,
+          "avgWin": 1909,
+          "avgLoss": 284,
+          "rr": 6.71,
+          "expectancy": 50,
+          "maxDd": 3000,
+          "rawPerWeek": 34,
+          "weeks": 47.7
+        },
+        "2025": {
+          "n": 34,
+          "net": 5689,
+          "w": 6,
+          "l": 14,
+          "s": 14,
+          "wr": 17.6,
+          "avgWin": 1916,
+          "avgLoss": 390,
+          "rr": 4.91,
+          "expectancy": 177,
+          "maxDd": 4864,
+          "rawPerWeek": 116,
+          "weeks": 48.9
+        },
+        "2026": {
+          "n": 25,
+          "net": 4955,
+          "w": 5,
+          "l": 13,
+          "s": 7,
+          "wr": 20,
+          "avgWin": 1930,
+          "avgLoss": 349,
+          "rr": 5.53,
+          "expectancy": 204,
+          "maxDd": 1636,
+          "rawPerWeek": 185,
+          "weeks": 26.7
+        }
+      },
+      "byHalf": {
+        "2023-H2": {
+          "n": 22,
+          "net": -3723,
+          "w": 1,
+          "l": 15,
+          "s": 6,
+          "wr": 4.5,
+          "avgWin": 1894,
+          "avgLoss": 362,
+          "rr": 5.23,
+          "expectancy": -161,
+          "maxDd": 3892,
+          "rawPerWeek": -165,
+          "weeks": 22.6
+        },
+        "2024-H1": {
+          "n": 16,
+          "net": 1223,
+          "w": 2,
+          "l": 9,
+          "s": 5,
+          "wr": 12.5,
+          "avgWin": 1900,
+          "avgLoss": 275,
+          "rr": 6.91,
+          "expectancy": 83,
+          "maxDd": 1940,
+          "rawPerWeek": 77,
+          "weeks": 15.9
+        },
+        "2024-H2": {
+          "n": 23,
+          "net": 384,
+          "w": 2,
+          "l": 11,
+          "s": 10,
+          "wr": 8.7,
+          "avgWin": 1918,
+          "avgLoss": 292,
+          "rr": 6.56,
+          "expectancy": 27,
+          "maxDd": 3000,
+          "rawPerWeek": 15,
+          "weeks": 25
+        },
+        "2025-H1": {
+          "n": 17,
+          "net": -1316,
+          "w": 1,
+          "l": 7,
+          "s": 9,
+          "wr": 5.9,
+          "avgWin": 1845,
+          "avgLoss": 419,
+          "rr": 4.41,
+          "expectancy": -64,
+          "maxDd": 3161,
+          "rawPerWeek": -54,
+          "weeks": 24.3
+        },
+        "2025-H2": {
+          "n": 17,
+          "net": 7004,
+          "w": 5,
+          "l": 7,
+          "s": 5,
+          "wr": 29.4,
+          "avgWin": 1930,
+          "avgLoss": 362,
+          "rr": 5.34,
+          "expectancy": 419,
+          "maxDd": 1703,
+          "rawPerWeek": 294,
+          "weeks": 23.9
+        },
+        "2026-H1": {
+          "n": 24,
+          "net": 5371,
+          "w": 5,
+          "l": 12,
+          "s": 7,
+          "wr": 20.8,
+          "avgWin": 1930,
+          "avgLoss": 344,
+          "rr": 5.61,
+          "expectancy": 230,
+          "maxDd": 1622,
+          "rawPerWeek": 217,
+          "weeks": 24.7
+        },
+        "2026-H2": {
+          "n": 1,
+          "net": -416,
+          "w": 0,
+          "l": 1,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 416,
+          "rr": 0,
+          "expectancy": -416,
+          "maxDd": 416,
+          "rawPerWeek": null,
+          "weeks": 0
+        }
+      },
+      "byMonth": {
+        "2023-07": {
+          "n": 4,
+          "net": -801,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 258,
+          "rr": 0,
+          "expectancy": -194,
+          "maxDd": 801,
+          "rawPerWeek": -510,
+          "weeks": 1.6
+        },
+        "2023-08": {
+          "n": 4,
+          "net": -1276,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 418,
+          "rr": 0,
+          "expectancy": -313,
+          "maxDd": 1276,
+          "rawPerWeek": -388,
+          "weeks": 3.3
+        },
+        "2023-09": {
+          "n": 1,
+          "net": -406,
+          "w": 0,
+          "l": 1,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 406,
+          "rr": 0,
+          "expectancy": -406,
+          "maxDd": 406,
+          "rawPerWeek": null,
+          "weeks": 0
+        },
+        "2023-10": {
+          "n": 5,
+          "net": -1345,
+          "w": 0,
+          "l": 4,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 327,
+          "rr": 0,
+          "expectancy": -262,
+          "maxDd": 1345,
+          "rawPerWeek": -376,
+          "weeks": 3.6
+        },
+        "2023-11": {
+          "n": 4,
+          "net": 1417,
+          "w": 1,
+          "l": 1,
+          "s": 2,
+          "wr": 25,
+          "avgWin": 1894,
+          "avgLoss": 412,
+          "rr": 4.6,
+          "expectancy": 370,
+          "maxDd": 412,
+          "rawPerWeek": 763,
+          "weeks": 1.9
+        },
+        "2023-12": {
+          "n": 4,
+          "net": -1312,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 426,
+          "rr": 0,
+          "expectancy": -320,
+          "maxDd": 1312,
+          "rawPerWeek": -707,
+          "weeks": 1.9
+        },
+        "2024-02": {
+          "n": 5,
+          "net": -602,
+          "w": 0,
+          "l": 2,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 269,
+          "rr": 0,
+          "expectancy": -107,
+          "maxDd": 602,
+          "rawPerWeek": -192,
+          "weeks": 3.1
+        },
+        "2024-03": {
+          "n": 4,
+          "net": -926,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 302,
+          "rr": 0,
+          "expectancy": -227,
+          "maxDd": 926,
+          "rawPerWeek": -324,
+          "weeks": 2.9
+        },
+        "2024-04": {
+          "n": 4,
+          "net": 3388,
+          "w": 2,
+          "l": 1,
+          "s": 1,
+          "wr": 50,
+          "avgWin": 1900,
+          "avgLoss": 392,
+          "rr": 4.84,
+          "expectancy": 852,
+          "maxDd": 412,
+          "rawPerWeek": 878,
+          "weeks": 3.9
+        },
+        "2024-05": {
+          "n": 3,
+          "net": -636,
+          "w": 0,
+          "l": 3,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 212,
+          "rr": 0,
+          "expectancy": -212,
+          "maxDd": 636,
+          "rawPerWeek": -297,
+          "weeks": 2.1
+        },
+        "2024-07": {
+          "n": 1,
+          "net": -24,
+          "w": 0,
+          "l": 0,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 0,
+          "maxDd": 24,
+          "rawPerWeek": null,
+          "weeks": 0
+        },
+        "2024-08": {
+          "n": 5,
+          "net": 1400,
+          "w": 1,
+          "l": 1,
+          "s": 3,
+          "wr": 20,
+          "avgWin": 1873,
+          "avgLoss": 405,
+          "rr": 4.63,
+          "expectancy": 294,
+          "maxDd": 428,
+          "rawPerWeek": 576,
+          "weeks": 2.4
+        },
+        "2024-09": {
+          "n": 6,
+          "net": -739,
+          "w": 0,
+          "l": 3,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 223,
+          "rr": 0,
+          "expectancy": -112,
+          "maxDd": 739,
+          "rawPerWeek": -323,
+          "weeks": 2.3
+        },
+        "2024-10": {
+          "n": 4,
+          "net": -615,
+          "w": 0,
+          "l": 2,
+          "s": 2,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 283,
+          "rr": 0,
+          "expectancy": -141,
+          "maxDd": 615,
+          "rawPerWeek": -159,
+          "weeks": 3.9
+        },
+        "2024-11": {
+          "n": 2,
+          "net": -615,
+          "w": 0,
+          "l": 2,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 308,
+          "rr": 0,
+          "expectancy": -308,
+          "maxDd": 615,
+          "rawPerWeek": -215,
+          "weeks": 2.9
+        },
+        "2024-12": {
+          "n": 5,
+          "net": 978,
+          "w": 1,
+          "l": 3,
+          "s": 1,
+          "wr": 20,
+          "avgWin": 1963,
+          "avgLoss": 320,
+          "rr": 6.13,
+          "expectancy": 200,
+          "maxDd": 603,
+          "rawPerWeek": 244,
+          "weeks": 4
+        },
+        "2025-01": {
+          "n": 4,
+          "net": 575,
+          "w": 1,
+          "l": 3,
+          "s": 0,
+          "wr": 25,
+          "avgWin": 1845,
+          "avgLoss": 424,
+          "rr": 4.36,
+          "expectancy": 144,
+          "maxDd": 1271,
+          "rawPerWeek": 183,
+          "weeks": 3.1
+        },
+        "2025-02": {
+          "n": 1,
+          "net": -431,
+          "w": 0,
+          "l": 1,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 431,
+          "rr": 0,
+          "expectancy": -431,
+          "maxDd": 431,
+          "rawPerWeek": null,
+          "weeks": 0
+        },
+        "2025-03": {
+          "n": 4,
+          "net": -478,
+          "w": 0,
+          "l": 1,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 412,
+          "rr": 0,
+          "expectancy": -103,
+          "maxDd": 478,
+          "rawPerWeek": -257,
+          "weeks": 1.9
+        },
+        "2025-04": {
+          "n": 2,
+          "net": -456,
+          "w": 0,
+          "l": 1,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 423,
+          "rr": 0,
+          "expectancy": -212,
+          "maxDd": 456,
+          "rawPerWeek": -145,
+          "weeks": 3.1
+        },
+        "2025-05": {
+          "n": 2,
+          "net": -414,
+          "w": 0,
+          "l": 1,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 393,
+          "rr": 0,
+          "expectancy": -196,
+          "maxDd": 414,
+          "rawPerWeek": -138,
+          "weeks": 3
+        },
+        "2025-06": {
+          "n": 4,
+          "net": -111,
+          "w": 0,
+          "l": 0,
+          "s": 4,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 0,
+          "maxDd": 111,
+          "rawPerWeek": -46,
+          "weeks": 2.4
+        },
+        "2025-07": {
+          "n": 5,
+          "net": -1703,
+          "w": 0,
+          "l": 5,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 341,
+          "rr": 0,
+          "expectancy": -341,
+          "maxDd": 1703,
+          "rawPerWeek": -518,
+          "weeks": 3.3
+        },
+        "2025-08": {
+          "n": 3,
+          "net": 1841,
+          "w": 1,
+          "l": 0,
+          "s": 2,
+          "wr": 33.3,
+          "avgWin": 1888,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 629,
+          "maxDd": 47,
+          "rawPerWeek": 2147,
+          "weeks": 0.9
+        },
+        "2025-09": {
+          "n": 3,
+          "net": 1926,
+          "w": 1,
+          "l": 0,
+          "s": 2,
+          "wr": 33.3,
+          "avgWin": 1975,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 658,
+          "maxDd": 49,
+          "rawPerWeek": 499,
+          "weeks": 3.9
+        },
+        "2025-11": {
+          "n": 5,
+          "net": 3005,
+          "w": 2,
+          "l": 2,
+          "s": 1,
+          "wr": 40,
+          "avgWin": 1926,
+          "avgLoss": 415,
+          "rr": 4.64,
+          "expectancy": 604,
+          "maxDd": 428,
+          "rawPerWeek": 956,
+          "weeks": 3.1
+        },
+        "2025-12": {
+          "n": 1,
+          "net": 1935,
+          "w": 1,
+          "l": 0,
+          "s": 0,
+          "wr": 100,
+          "avgWin": 1935,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 1935,
+          "maxDd": 0,
+          "rawPerWeek": null,
+          "weeks": 0
+        },
+        "2026-01": {
+          "n": 8,
+          "net": 283,
+          "w": 1,
+          "l": 5,
+          "s": 2,
+          "wr": 12.5,
+          "avgWin": 1905,
+          "avgLoss": 315,
+          "rr": 6.04,
+          "expectancy": 41,
+          "maxDd": 1622,
+          "rawPerWeek": 76,
+          "weeks": 3.7
+        },
+        "2026-02": {
+          "n": 2,
+          "net": 1540,
+          "w": 1,
+          "l": 1,
+          "s": 0,
+          "wr": 50,
+          "avgWin": 1943,
+          "avgLoss": 402,
+          "rr": 4.83,
+          "expectancy": 770,
+          "maxDd": 402,
+          "rawPerWeek": 1540,
+          "weeks": 1
+        },
+        "2026-03": {
+          "n": 3,
+          "net": -61,
+          "w": 0,
+          "l": 0,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 0,
+          "maxDd": 61,
+          "rawPerWeek": -61,
+          "weeks": 1
+        },
+        "2026-04": {
+          "n": 4,
+          "net": -951,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 308,
+          "rr": 0,
+          "expectancy": -231,
+          "maxDd": 952,
+          "rawPerWeek": -238,
+          "weeks": 4
+        },
+        "2026-05": {
+          "n": 3,
+          "net": 3841,
+          "w": 2,
+          "l": 0,
+          "s": 1,
+          "wr": 66.7,
+          "avgWin": 1931,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 1287,
+          "maxDd": 21,
+          "rawPerWeek": 3361,
+          "weeks": 1.1
+        },
+        "2026-06": {
+          "n": 4,
+          "net": 719,
+          "w": 1,
+          "l": 3,
+          "s": 0,
+          "wr": 25,
+          "avgWin": 1939,
+          "avgLoss": 407,
+          "rr": 4.77,
+          "expectancy": 180,
+          "maxDd": 1220,
+          "rawPerWeek": 265,
+          "weeks": 2.7
+        },
+        "2026-07": {
+          "n": 1,
+          "net": -416,
+          "w": 0,
+          "l": 1,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 416,
+          "rr": 0,
+          "expectancy": -416,
+          "maxDd": 416,
+          "rawPerWeek": null,
+          "weeks": 0
+        }
+      },
+      "byCalMonth": {
+        "10": {
+          "n": 9,
+          "net": -1959,
+          "w": 0,
+          "l": 6,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 312,
+          "rr": 0,
+          "expectancy": -208,
+          "maxDd": 1959,
+          "rawPerWeek": -35,
+          "weeks": 55.6
+        },
+        "11": {
+          "n": 11,
+          "net": 3807,
+          "w": 3,
+          "l": 5,
+          "s": 3,
+          "wr": 27.3,
+          "avgWin": 1915,
+          "avgLoss": 371,
+          "rr": 5.16,
+          "expectancy": 354,
+          "maxDd": 1027,
+          "rawPerWeek": 36,
+          "weeks": 107
+        },
+        "12": {
+          "n": 10,
+          "net": 1600,
+          "w": 2,
+          "l": 6,
+          "s": 2,
+          "wr": 20,
+          "avgWin": 1949,
+          "avgLoss": 373,
+          "rr": 5.22,
+          "expectancy": 166,
+          "maxDd": 1915,
+          "rawPerWeek": 15,
+          "weeks": 105.9
+        },
+        "01": {
+          "n": 12,
+          "net": 858,
+          "w": 2,
+          "l": 8,
+          "s": 2,
+          "wr": 16.7,
+          "avgWin": 1875,
+          "avgLoss": 356,
+          "rr": 5.27,
+          "expectancy": 75,
+          "maxDd": 1622,
+          "rawPerWeek": 16,
+          "weeks": 55
+        },
+        "02": {
+          "n": 8,
+          "net": 507,
+          "w": 1,
+          "l": 4,
+          "s": 3,
+          "wr": 12.5,
+          "avgWin": 1943,
+          "avgLoss": 343,
+          "rr": 5.67,
+          "expectancy": 71,
+          "maxDd": 1033,
+          "rawPerWeek": 5,
+          "weeks": 106.7
+        },
+        "03": {
+          "n": 11,
+          "net": -1465,
+          "w": 0,
+          "l": 4,
+          "s": 7,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 330,
+          "rr": 0,
+          "expectancy": -120,
+          "maxDd": 1466,
+          "rawPerWeek": -14,
+          "weeks": 106.9
+        },
+        "04": {
+          "n": 10,
+          "net": 1980,
+          "w": 2,
+          "l": 5,
+          "s": 3,
+          "wr": 20,
+          "avgWin": 1900,
+          "avgLoss": 348,
+          "rr": 5.46,
+          "expectancy": 206,
+          "maxDd": 1408,
+          "rawPerWeek": 18,
+          "weeks": 108.1
+        },
+        "05": {
+          "n": 8,
+          "net": 2791,
+          "w": 2,
+          "l": 4,
+          "s": 2,
+          "wr": 25,
+          "avgWin": 1931,
+          "avgLoss": 257,
+          "rr": 7.51,
+          "expectancy": 354,
+          "maxDd": 1050,
+          "rawPerWeek": 26,
+          "weeks": 107.4
+        },
+        "06": {
+          "n": 8,
+          "net": 608,
+          "w": 1,
+          "l": 3,
+          "s": 4,
+          "wr": 12.5,
+          "avgWin": 1939,
+          "avgLoss": 407,
+          "rr": 4.77,
+          "expectancy": 90,
+          "maxDd": 1220,
+          "rawPerWeek": 11,
+          "weeks": 54.1
+        },
+        "07": {
+          "n": 11,
+          "net": -2944,
+          "w": 0,
+          "l": 9,
+          "s": 2,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 321,
+          "rr": 0,
+          "expectancy": -263,
+          "maxDd": 2944,
+          "rawPerWeek": -19,
+          "weeks": 155.7
+        },
+        "08": {
+          "n": 12,
+          "net": 1964,
+          "w": 2,
+          "l": 4,
+          "s": 6,
+          "wr": 16.7,
+          "avgWin": 1880,
+          "avgLoss": 415,
+          "rr": 4.53,
+          "expectancy": 175,
+          "maxDd": 1322,
+          "rawPerWeek": 19,
+          "weeks": 105.1
+        },
+        "09": {
+          "n": 10,
+          "net": 781,
+          "w": 1,
+          "l": 4,
+          "s": 5,
+          "wr": 10,
+          "avgWin": 1975,
+          "avgLoss": 269,
+          "rr": 7.34,
+          "expectancy": 90,
+          "maxDd": 1194,
+          "rawPerWeek": 7,
+          "weeks": 108
+        }
+      },
+      "byWeekday": {
+        "Fri": {
+          "n": 26,
+          "net": 1143,
+          "w": 3,
+          "l": 14,
+          "s": 9,
+          "wr": 11.5,
+          "avgWin": 1927,
+          "avgLoss": 317,
+          "rr": 6.09,
+          "expectancy": 52,
+          "maxDd": 4439,
+          "rawPerWeek": 8,
+          "weeks": 151
+        },
+        "Thu": {
+          "n": 27,
+          "net": 4030,
+          "w": 4,
+          "l": 11,
+          "s": 12,
+          "wr": 14.8,
+          "avgWin": 1917,
+          "avgLoss": 304,
+          "rr": 6.3,
+          "expectancy": 160,
+          "maxDd": 1493,
+          "rawPerWeek": 27,
+          "weeks": 148
+        },
+        "Tue": {
+          "n": 37,
+          "net": 7761,
+          "w": 7,
+          "l": 15,
+          "s": 15,
+          "wr": 18.9,
+          "avgWin": 1929,
+          "avgLoss": 357,
+          "rr": 5.4,
+          "expectancy": 220,
+          "maxDd": 2190,
+          "rawPerWeek": 52,
+          "weeks": 148
+        },
+        "Wed": {
+          "n": 30,
+          "net": -4406,
+          "w": 2,
+          "l": 22,
+          "s": 6,
+          "wr": 6.7,
+          "avgWin": 1859,
+          "avgLoss": 363,
+          "rr": 5.12,
+          "expectancy": -142,
+          "maxDd": 5743,
+          "rawPerWeek": -28,
+          "weeks": 155
+        }
+      },
+      "monthRank": [
+        {
+          "m": "07",
+          "n": 11,
+          "net": -2944,
+          "w": 0,
+          "l": 9,
+          "s": 2,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 321,
+          "rr": 0,
+          "expectancy": -263,
+          "maxDd": 2944,
+          "rawPerWeek": -19,
+          "weeks": 155.7
+        },
+        {
+          "m": "10",
+          "n": 9,
+          "net": -1959,
+          "w": 0,
+          "l": 6,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 312,
+          "rr": 0,
+          "expectancy": -208,
+          "maxDd": 1959,
+          "rawPerWeek": -35,
+          "weeks": 55.6
+        },
+        {
+          "m": "03",
+          "n": 11,
+          "net": -1465,
+          "w": 0,
+          "l": 4,
+          "s": 7,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 330,
+          "rr": 0,
+          "expectancy": -120,
+          "maxDd": 1466,
+          "rawPerWeek": -14,
+          "weeks": 106.9
+        },
+        {
+          "m": "02",
+          "n": 8,
+          "net": 507,
+          "w": 1,
+          "l": 4,
+          "s": 3,
+          "wr": 12.5,
+          "avgWin": 1943,
+          "avgLoss": 343,
+          "rr": 5.67,
+          "expectancy": 71,
+          "maxDd": 1033,
+          "rawPerWeek": 5,
+          "weeks": 106.7
+        },
+        {
+          "m": "01",
+          "n": 12,
+          "net": 858,
+          "w": 2,
+          "l": 8,
+          "s": 2,
+          "wr": 16.7,
+          "avgWin": 1875,
+          "avgLoss": 356,
+          "rr": 5.27,
+          "expectancy": 75,
+          "maxDd": 1622,
+          "rawPerWeek": 16,
+          "weeks": 55
+        },
+        {
+          "m": "06",
+          "n": 8,
+          "net": 608,
+          "w": 1,
+          "l": 3,
+          "s": 4,
+          "wr": 12.5,
+          "avgWin": 1939,
+          "avgLoss": 407,
+          "rr": 4.77,
+          "expectancy": 90,
+          "maxDd": 1220,
+          "rawPerWeek": 11,
+          "weeks": 54.1
+        },
+        {
+          "m": "09",
+          "n": 10,
+          "net": 781,
+          "w": 1,
+          "l": 4,
+          "s": 5,
+          "wr": 10,
+          "avgWin": 1975,
+          "avgLoss": 269,
+          "rr": 7.34,
+          "expectancy": 90,
+          "maxDd": 1194,
+          "rawPerWeek": 7,
+          "weeks": 108
+        },
+        {
+          "m": "12",
+          "n": 10,
+          "net": 1600,
+          "w": 2,
+          "l": 6,
+          "s": 2,
+          "wr": 20,
+          "avgWin": 1949,
+          "avgLoss": 373,
+          "rr": 5.22,
+          "expectancy": 166,
+          "maxDd": 1915,
+          "rawPerWeek": 15,
+          "weeks": 105.9
+        },
+        {
+          "m": "08",
+          "n": 12,
+          "net": 1964,
+          "w": 2,
+          "l": 4,
+          "s": 6,
+          "wr": 16.7,
+          "avgWin": 1880,
+          "avgLoss": 415,
+          "rr": 4.53,
+          "expectancy": 175,
+          "maxDd": 1322,
+          "rawPerWeek": 19,
+          "weeks": 105.1
+        },
+        {
+          "m": "04",
+          "n": 10,
+          "net": 1980,
+          "w": 2,
+          "l": 5,
+          "s": 3,
+          "wr": 20,
+          "avgWin": 1900,
+          "avgLoss": 348,
+          "rr": 5.46,
+          "expectancy": 206,
+          "maxDd": 1408,
+          "rawPerWeek": 18,
+          "weeks": 108.1
+        },
+        {
+          "m": "11",
+          "n": 11,
+          "net": 3807,
+          "w": 3,
+          "l": 5,
+          "s": 3,
+          "wr": 27.3,
+          "avgWin": 1915,
+          "avgLoss": 371,
+          "rr": 5.16,
+          "expectancy": 354,
+          "maxDd": 1027,
+          "rawPerWeek": 36,
+          "weeks": 107
+        },
+        {
+          "m": "05",
+          "n": 8,
+          "net": 2791,
+          "w": 2,
+          "l": 4,
+          "s": 2,
+          "wr": 25,
+          "avgWin": 1931,
+          "avgLoss": 257,
+          "rr": 7.51,
+          "expectancy": 354,
+          "maxDd": 1050,
+          "rawPerWeek": 26,
+          "weeks": 107.4
+        }
+      ],
+      "oos": {
+        "start": "2025-07-14",
+        "inSample": {
+          "n": 80,
+          "net": -4226,
+          "w": 6,
+          "l": 44,
+          "s": 30,
+          "wr": 7.5,
+          "avgWin": 1896,
+          "avgLoss": 337,
+          "rr": 5.62,
+          "expectancy": -43,
+          "maxDd": 5663,
+          "rawPerWeek": -41,
+          "weeks": 103.6
+        },
+        "oos": {
+          "n": 40,
+          "net": 12754,
+          "w": 10,
+          "l": 18,
+          "s": 12,
+          "wr": 25,
+          "avgWin": 1930,
+          "avgLoss": 349,
+          "rr": 5.53,
+          "expectancy": 325,
+          "maxDd": 1636,
+          "rawPerWeek": 250,
+          "weeks": 51
+        },
+        "mcInSample": {
+          "passPct": 9.7,
+          "bustPct": 90.4,
+          "expectPerWeek": -18,
+          "weeksToPayout": 27.2,
+          "expectNet": -478
+        },
+        "mcOos": {
+          "passPct": 78.6,
+          "bustPct": 21.5,
+          "expectPerWeek": 103,
+          "weeksToPayout": 17.9,
+          "expectNet": 1849
+        }
+      },
+      "winners": {
+        "n": 16,
+        "bigN": 16,
+        "list": [
+          {
+            "date": "2025-09-30",
+            "pnl": 1975,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2024-12-19",
+            "pnl": 1963,
+            "dir": "long",
+            "weekday": "Thu",
+            "red": true,
+            "headlines": [
+              "Final GDP q/q",
+              "Core PCE Price Index m/m"
+            ]
+          },
+          {
+            "date": "2026-02-10",
+            "pnl": 1943,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": true,
+            "headlines": [
+              "Advance Monthly Sales for Retail and Food Services"
+            ]
+          },
+          {
+            "date": "2026-06-05",
+            "pnl": 1939,
+            "dir": "long",
+            "weekday": "Fri",
+            "red": true,
+            "headlines": [
+              "Employment Situation"
+            ]
+          },
+          {
+            "date": "2026-05-29",
+            "pnl": 1938,
+            "dir": "short",
+            "weekday": "Fri",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2025-11-18",
+            "pnl": 1935,
+            "dir": "long",
+            "weekday": "Tue",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2025-12-16",
+            "pnl": 1935,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": true,
+            "headlines": [
+              "Employment Situation",
+              "Advance Monthly Sales for Retail and Food Services"
+            ]
+          },
+          {
+            "date": "2026-05-21",
+            "pnl": 1924,
+            "dir": "short",
+            "weekday": "Thu",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2025-11-04",
+            "pnl": 1916,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2024-04-30",
+            "pnl": 1908,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": true,
+            "headlines": [
+              "CB Consumer Confidence",
+              "JOLTS Job Openings"
+            ]
+          },
+          {
+            "date": "2026-01-02",
+            "pnl": 1905,
+            "dir": "long",
+            "weekday": "Fri",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2023-11-16",
+            "pnl": 1894,
+            "dir": "short",
+            "weekday": "Thu",
+            "red": true,
+            "headlines": [
+              "Unemployment Claims"
+            ]
+          },
+          {
+            "date": "2024-04-16",
+            "pnl": 1891,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2025-08-07",
+            "pnl": 1888,
+            "dir": "short",
+            "weekday": "Thu",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2024-08-21",
+            "pnl": 1873,
+            "dir": "long",
+            "weekday": "Wed",
+            "red": true,
+            "headlines": [
+              "FOMC Meeting Minutes",
+              "Flash Services PMI"
+            ]
+          },
+          {
+            "date": "2025-01-08",
+            "pnl": 1845,
+            "dir": "long",
+            "weekday": "Wed",
+            "red": true,
+            "headlines": [
+              "ADP Non-Farm Employment Change",
+              "Unemployment Claims"
+            ]
+          }
+        ],
+        "byMonth": {
+          "2025-09": 1,
+          "2024-12": 1,
+          "2026-02": 1,
+          "2026-06": 1,
+          "2026-05": 2,
+          "2025-11": 2,
+          "2025-12": 1,
+          "2024-04": 2,
+          "2026-01": 1,
+          "2023-11": 1,
+          "2025-08": 1,
+          "2024-08": 1,
+          "2025-01": 1
+        },
+        "byNews": {
+          "unknown": 7,
+          "red": 8,
+          "quiet": 1
+        }
+      },
+      "lossStreaks": [
+        {
+          "start": "2025-07-02",
+          "end": "2025-07-25",
+          "len": 5,
+          "sum": -1703,
+          "trades": [
+            {
+              "date": "2025-07-02",
+              "pnl": -382
+            },
+            {
+              "date": "2025-07-08",
+              "pnl": -412
+            },
+            {
+              "date": "2025-07-16",
+              "pnl": -395
+            },
+            {
+              "date": "2025-07-23",
+              "pnl": -429
+            },
+            {
+              "date": "2025-07-25",
+              "pnl": -84
+            }
+          ]
+        },
+        {
+          "start": "2025-01-14",
+          "end": "2025-02-28",
+          "len": 4,
+          "sum": -1702,
+          "trades": [
+            {
+              "date": "2025-01-14",
+              "pnl": -434
+            },
+            {
+              "date": "2025-01-28",
+              "pnl": -424
+            },
+            {
+              "date": "2025-01-30",
+              "pnl": -413
+            },
+            {
+              "date": "2025-02-28",
+              "pnl": -431
+            }
+          ]
+        },
+        {
+          "start": "2026-06-10",
+          "end": "2026-07-08",
+          "len": 4,
+          "sum": -1636,
+          "trades": [
+            {
+              "date": "2026-06-10",
+              "pnl": -404
+            },
+            {
+              "date": "2026-06-17",
+              "pnl": -405
+            },
+            {
+              "date": "2026-06-24",
+              "pnl": -411
+            },
+            {
+              "date": "2026-07-08",
+              "pnl": -416
+            }
+          ]
+        },
+        {
+          "start": "2023-08-31",
+          "end": "2023-10-12",
+          "len": 4,
+          "sum": -1317,
+          "trades": [
+            {
+              "date": "2023-08-31",
+              "pnl": -412
+            },
+            {
+              "date": "2023-09-05",
+              "pnl": -406
+            },
+            {
+              "date": "2023-10-06",
+              "pnl": -419
+            },
+            {
+              "date": "2023-10-12",
+              "pnl": -80
+            }
+          ]
+        },
+        {
+          "start": "2026-01-16",
+          "end": "2026-01-28",
+          "len": 4,
+          "sum": -1173,
+          "trades": [
+            {
+              "date": "2026-01-16",
+              "pnl": -177
+            },
+            {
+              "date": "2026-01-21",
+              "pnl": -337
+            },
+            {
+              "date": "2026-01-22",
+              "pnl": -231
+            },
+            {
+              "date": "2026-01-28",
+              "pnl": -427
+            }
+          ]
+        },
+        {
+          "start": "2024-09-20",
+          "end": "2024-10-04",
+          "len": 3,
+          "sum": -968,
+          "trades": [
+            {
+              "date": "2024-09-20",
+              "pnl": -402
+            },
+            {
+              "date": "2024-10-02",
+              "pnl": -162
+            },
+            {
+              "date": "2024-10-04",
+              "pnl": -404
+            }
+          ]
+        },
+        {
+          "start": "2026-04-02",
+          "end": "2026-04-28",
+          "len": 3,
+          "sum": -925,
+          "trades": [
+            {
+              "date": "2026-04-02",
+              "pnl": -409
+            },
+            {
+              "date": "2026-04-21",
+              "pnl": -399
+            },
+            {
+              "date": "2026-04-28",
+              "pnl": -117
+            }
+          ]
+        },
+        {
+          "start": "2023-07-14",
+          "end": "2023-07-20",
+          "len": 3,
+          "sum": -775,
+          "trades": [
+            {
+              "date": "2023-07-14",
+              "pnl": -94
+            },
+            {
+              "date": "2023-07-19",
+              "pnl": -276
+            },
+            {
+              "date": "2023-07-20",
+              "pnl": -404
+            }
+          ]
+        },
+        {
+          "start": "2024-05-07",
+          "end": "2024-05-22",
+          "len": 3,
+          "sum": -636,
+          "trades": [
+            {
+              "date": "2024-05-07",
+              "pnl": -153
+            },
+            {
+              "date": "2024-05-10",
+              "pnl": -424
+            },
+            {
+              "date": "2024-05-22",
+              "pnl": -60
+            }
+          ]
+        },
+        {
+          "start": "2023-12-14",
+          "end": "2023-12-19",
+          "len": 2,
+          "sum": -848,
+          "trades": [
+            {
+              "date": "2023-12-14",
+              "pnl": -416
+            },
+            {
+              "date": "2023-12-19",
+              "pnl": -432
+            }
+          ]
+        },
+        {
+          "start": "2023-11-21",
+          "end": "2023-12-06",
+          "len": 2,
+          "sum": -843,
+          "trades": [
+            {
+              "date": "2023-11-21",
+              "pnl": -412
+            },
+            {
+              "date": "2023-12-06",
+              "pnl": -431
+            }
+          ]
+        },
+        {
+          "start": "2023-08-08",
+          "end": "2023-08-09",
+          "len": 2,
+          "sum": -842,
+          "trades": [
+            {
+              "date": "2023-08-08",
+              "pnl": -417
+            },
+            {
+              "date": "2023-08-09",
+              "pnl": -425
+            }
+          ]
+        }
+      ],
+      "trailDeaths": [
+        {
+          "from": "2023-07-14",
+          "to": "2023-08-31",
+          "drop": 2077,
+          "n": 8,
+          "pathPreview": [
+            {
+              "date": "2023-07-14",
+              "pnl": -94,
+              "eq": -94
+            },
+            {
+              "date": "2023-07-19",
+              "pnl": -276,
+              "eq": -370
+            },
+            {
+              "date": "2023-07-20",
+              "pnl": -404,
+              "eq": -775
+            },
+            {
+              "date": "2023-07-25",
+              "pnl": -26,
+              "eq": -801
+            },
+            {
+              "date": "2023-08-08",
+              "pnl": -417,
+              "eq": -1218
+            },
+            {
+              "date": "2023-08-09",
+              "pnl": -425,
+              "eq": -1642
+            },
+            {
+              "date": "2023-08-18",
+              "pnl": -23,
+              "eq": -1665
+            },
+            {
+              "date": "2023-08-31",
+              "pnl": -412,
+              "eq": -2077
+            }
+          ]
+        },
+        {
+          "from": "2023-11-21",
+          "to": "2024-02-09",
+          "drop": 2304,
+          "n": 10,
+          "pathPreview": [
+            {
+              "date": "2023-11-16",
+              "pnl": 1894,
+              "eq": -1998
+            },
+            {
+              "date": "2023-11-21",
+              "pnl": -412,
+              "eq": -2410
+            },
+            {
+              "date": "2023-12-06",
+              "pnl": -431,
+              "eq": -2841
+            },
+            {
+              "date": "2023-12-12",
+              "pnl": -33,
+              "eq": -2874
+            },
+            {
+              "date": "2023-12-14",
+              "pnl": -416,
+              "eq": -3291
+            },
+            {
+              "date": "2023-12-19",
+              "pnl": -432,
+              "eq": -3723
+            },
+            {
+              "date": "2024-02-01",
+              "pnl": -19,
+              "eq": -3742
+            },
+            {
+              "date": "2024-02-02",
+              "pnl": -23,
+              "eq": -3765
+            }
+          ]
+        },
+        {
+          "from": "2024-08-22",
+          "to": "2024-11-01",
+          "drop": 2184,
+          "n": 14,
+          "pathPreview": [
+            {
+              "date": "2024-08-21",
+              "pnl": 1873,
+              "eq": -697
+            },
+            {
+              "date": "2024-08-22",
+              "pnl": -405,
+              "eq": -1101
+            },
+            {
+              "date": "2024-08-30",
+              "pnl": -23,
+              "eq": -1124
+            },
+            {
+              "date": "2024-09-04",
+              "pnl": -147,
+              "eq": -1271
+            },
+            {
+              "date": "2024-09-10",
+              "pnl": -24,
+              "eq": -1295
+            },
+            {
+              "date": "2024-09-12",
+              "pnl": -28,
+              "eq": -1323
+            },
+            {
+              "date": "2024-09-13",
+              "pnl": -121,
+              "eq": -1444
+            },
+            {
+              "date": "2024-09-18",
+              "pnl": -17,
+              "eq": -1461
+            }
+          ]
+        },
+        {
+          "from": "2025-01-14",
+          "to": "2025-03-26",
+          "drop": 2180,
+          "n": 9,
+          "pathPreview": [
+            {
+              "date": "2025-01-08",
+              "pnl": 1845,
+              "eq": -271
+            },
+            {
+              "date": "2025-01-14",
+              "pnl": -434,
+              "eq": -705
+            },
+            {
+              "date": "2025-01-28",
+              "pnl": -424,
+              "eq": -1129
+            },
+            {
+              "date": "2025-01-30",
+              "pnl": -413,
+              "eq": -1541
+            },
+            {
+              "date": "2025-02-28",
+              "pnl": -431,
+              "eq": -1972
+            },
+            {
+              "date": "2025-03-13",
+              "pnl": -30,
+              "eq": -2002
+            },
+            {
+              "date": "2025-03-18",
+              "pnl": -17,
+              "eq": -2019
+            },
+            {
+              "date": "2025-03-25",
+              "pnl": -19,
+              "eq": -2038
+            }
+          ]
+        },
+        {
+          "from": "2025-04-02",
+          "to": "2025-07-16",
+          "drop": 2171,
+          "n": 11,
+          "pathPreview": [
+            {
+              "date": "2025-04-02",
+              "pnl": -423,
+              "eq": -2874
+            },
+            {
+              "date": "2025-04-24",
+              "pnl": -33,
+              "eq": -2907
+            },
+            {
+              "date": "2025-05-07",
+              "pnl": -393,
+              "eq": -3300
+            },
+            {
+              "date": "2025-05-28",
+              "pnl": -21,
+              "eq": -3320
+            },
+            {
+              "date": "2025-06-10",
+              "pnl": -30,
+              "eq": -3350
+            },
+            {
+              "date": "2025-06-17",
+              "pnl": -38,
+              "eq": -3388
+            },
+            {
+              "date": "2025-06-26",
+              "pnl": -23,
+              "eq": -3411
+            },
+            {
+              "date": "2025-06-27",
+              "pnl": -21,
+              "eq": -3432
+            }
+          ]
+        }
+      ],
+      "news": {
+        "quiet": {
+          "label": "quiet",
+          "trades": 13,
+          "wins": 1,
+          "losses": 7,
+          "netPnl": -556.8999999999997,
+          "avgPnl": -42.838461538461516
+        },
+        "red": {
+          "label": "red-folder",
+          "trades": 67,
+          "wins": 8,
+          "losses": 39,
+          "netPnl": 1582.5400000000004,
+          "avgPnl": 23.620000000000005
+        },
+        "cpi": {
+          "label": "cpi-nfp-ppi",
+          "trades": 20,
+          "wins": 3,
+          "losses": 13,
+          "netPnl": 1362.7399999999998,
+          "avgPnl": 68.13699999999999
+        },
+        "headline": "Red-folder: 67 trades · +$1,583 net · Quiet: 13 trades · $557 net",
+        "verdict": "A0a is profitable on red-folder days (+$1,583 on 67 trades). News days are not a drag in this window."
+      },
+      "gates": [
+        {
+          "name": "STAND_DOWN red-folder days",
+          "kept": 53,
+          "dropped": 67,
+          "droppedNet": 1583,
+          "full": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 53,
+            "net": 6945,
+            "w": 8,
+            "l": 23,
+            "s": 22,
+            "wr": 15.1,
+            "avgWin": 1922,
+            "avgLoss": 344,
+            "rr": 5.59,
+            "expectancy": 141,
+            "maxDd": 2988,
+            "rawPerWeek": 46,
+            "weeks": 152.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 30,
+              "net": 9208,
+              "w": 7,
+              "l": 12,
+              "s": 11,
+              "wr": 23.3,
+              "avgWin": 1926,
+              "avgLoss": 336,
+              "rr": 5.73,
+              "expectancy": 315,
+              "maxDd": 2381,
+              "rawPerWeek": 184,
+              "weeks": 50
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 35,
+              "bustPct": 65.1,
+              "expectPerWeek": 3,
+              "weeksToPayout": 27.3,
+              "expectNet": 77
+            },
+            "gated": {
+              "passPct": 52.8,
+              "bustPct": 47.3,
+              "expectPerWeek": 0,
+              "weeksToPayout": 60.3,
+              "expectNet": -30
+            },
+            "oosAll": {
+              "passPct": 78.2,
+              "bustPct": 21.9,
+              "expectPerWeek": 103,
+              "weeksToPayout": 17.9,
+              "expectNet": 1835
+            },
+            "oosGated": {
+              "passPct": 83.3,
+              "bustPct": 16.7,
+              "expectPerWeek": 67,
+              "weeksToPayout": 26.7,
+              "expectNet": 1795
+            }
+          },
+          "liftEvWeek": -3,
+          "liftOosEvWeek": -36
+        },
+        {
+          "name": "STAND_DOWN calendar months 08+09 (Aug–Sep)",
+          "kept": 98,
+          "dropped": 22,
+          "droppedNet": 2745,
+          "full": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 98,
+            "net": 5783,
+            "w": 13,
+            "l": 54,
+            "s": 31,
+            "wr": 13.3,
+            "avgWin": 1918,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 67,
+            "maxDd": 4864,
+            "rawPerWeek": 37,
+            "weeks": 155.7
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 34,
+              "net": 8987,
+              "w": 8,
+              "l": 18,
+              "s": 8,
+              "wr": 23.5,
+              "avgWin": 1929,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 269,
+              "maxDd": 1636,
+              "rawPerWeek": 176,
+              "weeks": 51
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 34.6,
+              "bustPct": 65.4,
+              "expectPerWeek": 4,
+              "weeksToPayout": 26,
+              "expectNet": 92
+            },
+            "gated": {
+              "passPct": 31.5,
+              "bustPct": 68.6,
+              "expectPerWeek": -2,
+              "weeksToPayout": 30.2,
+              "expectNet": -71
+            },
+            "oosAll": {
+              "passPct": 77.3,
+              "bustPct": 22.7,
+              "expectPerWeek": 102,
+              "weeksToPayout": 17.9,
+              "expectNet": 1824
+            },
+            "oosGated": {
+              "passPct": 66.5,
+              "bustPct": 33.5,
+              "expectPerWeek": 59,
+              "weeksToPayout": 21,
+              "expectNet": 1241
+            }
+          },
+          "liftEvWeek": -6,
+          "liftOosEvWeek": -43
+        },
+        {
+          "name": "STAND_DOWN calendar months 02+03 (Feb–Mar)",
+          "kept": 101,
+          "dropped": 19,
+          "droppedNet": -958,
+          "full": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 101,
+            "net": 9486,
+            "w": 15,
+            "l": 54,
+            "s": 32,
+            "wr": 14.9,
+            "avgWin": 1915,
+            "avgLoss": 341,
+            "rr": 5.61,
+            "expectancy": 102,
+            "maxDd": 4134,
+            "rawPerWeek": 61,
+            "weeks": 155.7
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 35,
+              "net": 11274,
+              "w": 9,
+              "l": 17,
+              "s": 9,
+              "wr": 25.7,
+              "avgWin": 1928,
+              "avgLoss": 346,
+              "rr": 5.58,
+              "expectancy": 328,
+              "maxDd": 2573,
+              "rawPerWeek": 221,
+              "weeks": 51
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 36.7,
+              "bustPct": 63.4,
+              "expectPerWeek": 6,
+              "weeksToPayout": 24.7,
+              "expectNet": 147
+            },
+            "gated": {
+              "passPct": 40.3,
+              "bustPct": 59.7,
+              "expectPerWeek": 7,
+              "weeksToPayout": 29.3,
+              "expectNet": 193
+            },
+            "oosAll": {
+              "passPct": 79,
+              "bustPct": 21.1,
+              "expectPerWeek": 103,
+              "weeksToPayout": 17.9,
+              "expectNet": 1844
+            },
+            "oosGated": {
+              "passPct": 77.6,
+              "bustPct": 22.4,
+              "expectPerWeek": 85,
+              "weeksToPayout": 20.4,
+              "expectNet": 1724
+            }
+          },
+          "liftEvWeek": 1,
+          "liftOosEvWeek": -18
+        },
+        {
+          "name": "STAND_DOWN months 07+10 (Jul+Oct) — primary candidate",
+          "kept": 100,
+          "dropped": 20,
+          "droppedNet": -4903,
+          "full": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 100,
+            "net": 13431,
+            "w": 16,
+            "l": 47,
+            "s": 37,
+            "wr": 16,
+            "avgWin": 1917,
+            "avgLoss": 348,
+            "rr": 5.51,
+            "expectancy": 143,
+            "maxDd": 3664,
+            "rawPerWeek": 89,
+            "weeks": 150.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 36,
+              "net": 14078,
+              "w": 10,
+              "l": 14,
+              "s": 12,
+              "wr": 27.8,
+              "avgWin": 1930,
+              "avgLoss": 354,
+              "rr": 5.45,
+              "expectancy": 398,
+              "maxDd": 1622,
+              "rawPerWeek": 307,
+              "weeks": 45.9
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 34.1,
+              "bustPct": 66,
+              "expectPerWeek": 1,
+              "weeksToPayout": 26,
+              "expectNet": 29
+            },
+            "gated": {
+              "passPct": 52.2,
+              "bustPct": 47.9,
+              "expectPerWeek": 17,
+              "weeksToPayout": 30,
+              "expectNet": 521
+            },
+            "oosAll": {
+              "passPct": 79.3,
+              "bustPct": 20.8,
+              "expectPerWeek": 103,
+              "weeksToPayout": 17.9,
+              "expectNet": 1852
+            },
+            "oosGated": {
+              "passPct": 87.4,
+              "bustPct": 12.7,
+              "expectPerWeek": 139,
+              "weeksToPayout": 16.6,
+              "expectNet": 2307
+            }
+          },
+          "liftEvWeek": 16,
+          "liftOosEvWeek": 36
+        },
+        {
+          "name": "STAND_DOWN month 07 only (Jul)",
+          "kept": 109,
+          "dropped": 11,
+          "droppedNet": -2944,
+          "full": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 109,
+            "net": 11472,
+            "w": 16,
+            "l": 53,
+            "s": 40,
+            "wr": 14.7,
+            "avgWin": 1917,
+            "avgLoss": 344,
+            "rr": 5.57,
+            "expectancy": 114,
+            "maxDd": 4862,
+            "rawPerWeek": 76,
+            "weeks": 150.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 36,
+              "net": 14078,
+              "w": 10,
+              "l": 14,
+              "s": 12,
+              "wr": 27.8,
+              "avgWin": 1930,
+              "avgLoss": 354,
+              "rr": 5.45,
+              "expectancy": 398,
+              "maxDd": 1622,
+              "rawPerWeek": 307,
+              "weeks": 45.9
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 35.8,
+              "bustPct": 64.2,
+              "expectPerWeek": 4,
+              "weeksToPayout": 26,
+              "expectNet": 101
+            },
+            "gated": {
+              "passPct": 44.1,
+              "bustPct": 55.9,
+              "expectPerWeek": 10,
+              "weeksToPayout": 28.9,
+              "expectNet": 279
+            },
+            "oosAll": {
+              "passPct": 77.6,
+              "bustPct": 22.5,
+              "expectPerWeek": 102,
+              "weeksToPayout": 17.9,
+              "expectNet": 1817
+            },
+            "oosGated": {
+              "passPct": 88.4,
+              "bustPct": 11.6,
+              "expectPerWeek": 143,
+              "weeksToPayout": 16.6,
+              "expectNet": 2374
+            }
+          },
+          "liftEvWeek": 6,
+          "liftOosEvWeek": 41
+        },
+        {
+          "name": "STAND_DOWN months 07+10+03 (Jul+Oct+Mar)",
+          "kept": 89,
+          "dropped": 31,
+          "droppedNet": -6369,
+          "full": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 89,
+            "net": 14896,
+            "w": 16,
+            "l": 43,
+            "s": 30,
+            "wr": 18,
+            "avgWin": 1917,
+            "avgLoss": 350,
+            "rr": 5.48,
+            "expectancy": 176,
+            "maxDd": 2738,
+            "rawPerWeek": 99,
+            "weeks": 150.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 33,
+              "net": 14139,
+              "w": 10,
+              "l": 14,
+              "s": 9,
+              "wr": 30.3,
+              "avgWin": 1930,
+              "avgLoss": 354,
+              "rr": 5.45,
+              "expectancy": 435,
+              "maxDd": 1622,
+              "rawPerWeek": 308,
+              "weeks": 45.9
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 35,
+              "bustPct": 65,
+              "expectPerWeek": 4,
+              "weeksToPayout": 26,
+              "expectNet": 103
+            },
+            "gated": {
+              "passPct": 55.9,
+              "bustPct": 44.2,
+              "expectPerWeek": 22,
+              "weeksToPayout": 30.4,
+              "expectNet": 674
+            },
+            "oosAll": {
+              "passPct": 78.5,
+              "bustPct": 21.6,
+              "expectPerWeek": 97,
+              "weeksToPayout": 19.1,
+              "expectNet": 1844
+            },
+            "oosGated": {
+              "passPct": 89.2,
+              "bustPct": 10.8,
+              "expectPerWeek": 143,
+              "weeksToPayout": 16.7,
+              "expectNet": 2381
+            }
+          },
+          "liftEvWeek": 18,
+          "liftOosEvWeek": 46
+        },
+        {
+          "name": "STAND_DOWN Mondays",
+          "kept": 120,
+          "dropped": 0,
+          "droppedNet": 0,
+          "full": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 35.1,
+              "bustPct": 65,
+              "expectPerWeek": 2,
+              "weeksToPayout": 27.3,
+              "expectNet": 60
+            },
+            "gated": {
+              "passPct": 35.2,
+              "bustPct": 64.8,
+              "expectPerWeek": 3,
+              "weeksToPayout": 24.7,
+              "expectNet": 79
+            },
+            "oosAll": {
+              "passPct": 76.9,
+              "bustPct": 23.2,
+              "expectPerWeek": 103,
+              "weeksToPayout": 17.9,
+              "expectNet": 1845
+            },
+            "oosGated": {
+              "passPct": 80.6,
+              "bustPct": 19.5,
+              "expectPerWeek": 100,
+              "weeksToPayout": 19.1,
+              "expectNet": 1913
+            }
+          },
+          "liftEvWeek": 1,
+          "liftOosEvWeek": -3
+        },
+        {
+          "name": "STAND_DOWN IS-worst months 07+10 (exploratory)",
+          "kept": 100,
+          "dropped": 20,
+          "droppedNet": -4903,
+          "full": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 100,
+            "net": 13431,
+            "w": 16,
+            "l": 47,
+            "s": 37,
+            "wr": 16,
+            "avgWin": 1917,
+            "avgLoss": 348,
+            "rr": 5.51,
+            "expectancy": 143,
+            "maxDd": 3664,
+            "rawPerWeek": 89,
+            "weeks": 150.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 36,
+              "net": 14078,
+              "w": 10,
+              "l": 14,
+              "s": 12,
+              "wr": 27.8,
+              "avgWin": 1930,
+              "avgLoss": 354,
+              "rr": 5.45,
+              "expectancy": 398,
+              "maxDd": 1622,
+              "rawPerWeek": 307,
+              "weeks": 45.9
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 35.8,
+              "bustPct": 64.3,
+              "expectPerWeek": 3,
+              "weeksToPayout": 26,
+              "expectNet": 71
+            },
+            "gated": {
+              "passPct": 52.6,
+              "bustPct": 47.5,
+              "expectPerWeek": 17,
+              "weeksToPayout": 30,
+              "expectNet": 521
+            },
+            "oosAll": {
+              "passPct": 79.6,
+              "bustPct": 20.4,
+              "expectPerWeek": 106,
+              "weeksToPayout": 17.9,
+              "expectNet": 1891
+            },
+            "oosGated": {
+              "passPct": 87.7,
+              "bustPct": 12.4,
+              "expectPerWeek": 141,
+              "weeksToPayout": 16.6,
+              "expectNet": 2333
+            }
+          },
+          "liftEvWeek": 14,
+          "liftOosEvWeek": 35
+        },
+        {
+          "name": "STAND_DOWN IS-worst half 2023-H2 (historical one-shot)",
+          "kept": 98,
+          "dropped": 22,
+          "droppedNet": -3723,
+          "full": {
+            "n": 120,
+            "net": 8528,
+            "w": 16,
+            "l": 62,
+            "s": 42,
+            "wr": 13.3,
+            "avgWin": 1917,
+            "avgLoss": 341,
+            "rr": 5.63,
+            "expectancy": 80,
+            "maxDd": 5663,
+            "rawPerWeek": 55,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 98,
+            "net": 12250,
+            "w": 15,
+            "l": 47,
+            "s": 36,
+            "wr": 15.3,
+            "avgWin": 1918,
+            "avgLoss": 334,
+            "rr": 5.75,
+            "expectancy": 134,
+            "maxDd": 4864,
+            "rawPerWeek": 97,
+            "weeks": 126.9
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 40,
+              "net": 12754,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 1930,
+              "avgLoss": 349,
+              "rr": 5.53,
+              "expectancy": 325,
+              "maxDd": 1636,
+              "rawPerWeek": 250,
+              "weeks": 51
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 37.4,
+              "bustPct": 62.7,
+              "expectPerWeek": 2,
+              "weeksToPayout": 26,
+              "expectNet": 63
+            },
+            "gated": {
+              "passPct": 49.3,
+              "bustPct": 50.7,
+              "expectPerWeek": 21,
+              "weeksToPayout": 25.9,
+              "expectNet": 549
+            },
+            "oosAll": {
+              "passPct": 78.3,
+              "bustPct": 21.8,
+              "expectPerWeek": 97,
+              "weeksToPayout": 19.1,
+              "expectNet": 1850
+            },
+            "oosGated": {
+              "passPct": 78.7,
+              "bustPct": 21.3,
+              "expectPerWeek": 95,
+              "weeksToPayout": 19.1,
+              "expectNet": 1809
+            }
+          },
+          "liftEvWeek": 19,
+          "liftOosEvWeek": -2
+        }
+      ]
+    },
+    {
+      "id": "D1",
+      "phase": "funded",
+      "overall": {
+        "n": 120,
+        "net": 10056,
+        "w": 14,
+        "l": 62,
+        "s": 44,
+        "wr": 11.7,
+        "avgWin": 2303,
+        "avgLoss": 341,
+        "rr": 6.76,
+        "expectancy": 93,
+        "maxDd": 7489,
+        "rawPerWeek": 65,
+        "weeks": 155.7
+      },
+      "mc": {
+        "passPct": 91.7,
+        "bustPct": 44.5,
+        "expectPerWeek": 27,
+        "weeksToPayout": 11.7,
+        "expectNet": 313
+      },
+      "byYear": {
+        "2023": {
+          "n": 22,
+          "net": -3340,
+          "w": 1,
+          "l": 15,
+          "s": 6,
+          "wr": 4.5,
+          "avgWin": 2276,
+          "avgLoss": 362,
+          "rr": 6.28,
+          "expectancy": -144,
+          "maxDd": 3892,
+          "rawPerWeek": -148,
+          "weeks": 22.6
+        },
+        "2024": {
+          "n": 39,
+          "net": -1503,
+          "w": 2,
+          "l": 20,
+          "s": 17,
+          "wr": 5.1,
+          "avgWin": 2283,
+          "avgLoss": 284,
+          "rr": 8.03,
+          "expectancy": -29,
+          "maxDd": 4129,
+          "rawPerWeek": -31,
+          "weeks": 47.7
+        },
+        "2025": {
+          "n": 34,
+          "net": 8003,
+          "w": 6,
+          "l": 14,
+          "s": 14,
+          "wr": 17.6,
+          "avgWin": 2302,
+          "avgLoss": 390,
+          "rr": 5.9,
+          "expectancy": 246,
+          "maxDd": 4864,
+          "rawPerWeek": 164,
+          "weeks": 48.9
+        },
+        "2026": {
+          "n": 25,
+          "net": 6895,
+          "w": 5,
+          "l": 13,
+          "s": 7,
+          "wr": 20,
+          "avgWin": 2318,
+          "avgLoss": 349,
+          "rr": 6.64,
+          "expectancy": 282,
+          "maxDd": 1636,
+          "rawPerWeek": 258,
+          "weeks": 26.7
+        }
+      },
+      "byHalf": {
+        "2023-H2": {
+          "n": 22,
+          "net": -3340,
+          "w": 1,
+          "l": 15,
+          "s": 6,
+          "wr": 4.5,
+          "avgWin": 2276,
+          "avgLoss": 362,
+          "rr": 6.28,
+          "expectancy": -144,
+          "maxDd": 3892,
+          "rawPerWeek": -148,
+          "weeks": 22.6
+        },
+        "2024-H1": {
+          "n": 16,
+          "net": 1991,
+          "w": 2,
+          "l": 9,
+          "s": 5,
+          "wr": 12.5,
+          "avgWin": 2283,
+          "avgLoss": 275,
+          "rr": 8.31,
+          "expectancy": 131,
+          "maxDd": 1940,
+          "rawPerWeek": 126,
+          "weeks": 15.9
+        },
+        "2024-H2": {
+          "n": 23,
+          "net": -3493,
+          "w": 0,
+          "l": 11,
+          "s": 12,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 292,
+          "rr": 0,
+          "expectancy": -140,
+          "maxDd": 3493,
+          "rawPerWeek": -140,
+          "weeks": 25
+        },
+        "2025-H1": {
+          "n": 17,
+          "net": -944,
+          "w": 1,
+          "l": 7,
+          "s": 9,
+          "wr": 5.9,
+          "avgWin": 2217,
+          "avgLoss": 419,
+          "rr": 5.3,
+          "expectancy": -42,
+          "maxDd": 3161,
+          "rawPerWeek": -39,
+          "weeks": 24.3
+        },
+        "2025-H2": {
+          "n": 17,
+          "net": 8947,
+          "w": 5,
+          "l": 7,
+          "s": 5,
+          "wr": 29.4,
+          "avgWin": 2318,
+          "avgLoss": 362,
+          "rr": 6.41,
+          "expectancy": 533,
+          "maxDd": 1703,
+          "rawPerWeek": 375,
+          "weeks": 23.9
+        },
+        "2026-H1": {
+          "n": 24,
+          "net": 7312,
+          "w": 5,
+          "l": 12,
+          "s": 7,
+          "wr": 20.8,
+          "avgWin": 2318,
+          "avgLoss": 344,
+          "rr": 6.74,
+          "expectancy": 311,
+          "maxDd": 1622,
+          "rawPerWeek": 296,
+          "weeks": 24.7
+        },
+        "2026-H2": {
+          "n": 1,
+          "net": -416,
+          "w": 0,
+          "l": 1,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 416,
+          "rr": 0,
+          "expectancy": -416,
+          "maxDd": 416,
+          "rawPerWeek": null,
+          "weeks": 0
+        }
+      },
+      "byMonth": {
+        "2023-07": {
+          "n": 4,
+          "net": -801,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 258,
+          "rr": 0,
+          "expectancy": -194,
+          "maxDd": 801,
+          "rawPerWeek": -510,
+          "weeks": 1.6
+        },
+        "2023-08": {
+          "n": 4,
+          "net": -1276,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 418,
+          "rr": 0,
+          "expectancy": -313,
+          "maxDd": 1276,
+          "rawPerWeek": -388,
+          "weeks": 3.3
+        },
+        "2023-09": {
+          "n": 1,
+          "net": -406,
+          "w": 0,
+          "l": 1,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 406,
+          "rr": 0,
+          "expectancy": -406,
+          "maxDd": 406,
+          "rawPerWeek": null,
+          "weeks": 0
+        },
+        "2023-10": {
+          "n": 5,
+          "net": -1345,
+          "w": 0,
+          "l": 4,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 327,
+          "rr": 0,
+          "expectancy": -262,
+          "maxDd": 1345,
+          "rawPerWeek": -376,
+          "weeks": 3.6
+        },
+        "2023-11": {
+          "n": 4,
+          "net": 1800,
+          "w": 1,
+          "l": 1,
+          "s": 2,
+          "wr": 25,
+          "avgWin": 2276,
+          "avgLoss": 412,
+          "rr": 5.52,
+          "expectancy": 466,
+          "maxDd": 412,
+          "rawPerWeek": 969,
+          "weeks": 1.9
+        },
+        "2023-12": {
+          "n": 4,
+          "net": -1312,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 426,
+          "rr": 0,
+          "expectancy": -320,
+          "maxDd": 1312,
+          "rawPerWeek": -707,
+          "weeks": 1.9
+        },
+        "2024-02": {
+          "n": 5,
+          "net": -602,
+          "w": 0,
+          "l": 2,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 269,
+          "rr": 0,
+          "expectancy": -107,
+          "maxDd": 602,
+          "rawPerWeek": -192,
+          "weeks": 3.1
+        },
+        "2024-03": {
+          "n": 4,
+          "net": -926,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 302,
+          "rr": 0,
+          "expectancy": -227,
+          "maxDd": 926,
+          "rawPerWeek": -324,
+          "weeks": 2.9
+        },
+        "2024-04": {
+          "n": 4,
+          "net": 4155,
+          "w": 2,
+          "l": 1,
+          "s": 1,
+          "wr": 50,
+          "avgWin": 2283,
+          "avgLoss": 392,
+          "rr": 5.82,
+          "expectancy": 1044,
+          "maxDd": 412,
+          "rawPerWeek": 1077,
+          "weeks": 3.9
+        },
+        "2024-05": {
+          "n": 3,
+          "net": -636,
+          "w": 0,
+          "l": 3,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 212,
+          "rr": 0,
+          "expectancy": -212,
+          "maxDd": 636,
+          "rawPerWeek": -297,
+          "weeks": 2.1
+        },
+        "2024-07": {
+          "n": 1,
+          "net": -24,
+          "w": 0,
+          "l": 0,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 0,
+          "maxDd": 24,
+          "rawPerWeek": null,
+          "weeks": 0
+        },
+        "2024-08": {
+          "n": 5,
+          "net": -497,
+          "w": 0,
+          "l": 1,
+          "s": 4,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 405,
+          "rr": 0,
+          "expectancy": -81,
+          "maxDd": 497,
+          "rawPerWeek": -205,
+          "weeks": 2.4
+        },
+        "2024-09": {
+          "n": 6,
+          "net": -739,
+          "w": 0,
+          "l": 3,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 223,
+          "rr": 0,
+          "expectancy": -112,
+          "maxDd": 739,
+          "rawPerWeek": -323,
+          "weeks": 2.3
+        },
+        "2024-10": {
+          "n": 4,
+          "net": -615,
+          "w": 0,
+          "l": 2,
+          "s": 2,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 283,
+          "rr": 0,
+          "expectancy": -141,
+          "maxDd": 615,
+          "rawPerWeek": -159,
+          "weeks": 3.9
+        },
+        "2024-11": {
+          "n": 2,
+          "net": -615,
+          "w": 0,
+          "l": 2,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 308,
+          "rr": 0,
+          "expectancy": -308,
+          "maxDd": 615,
+          "rawPerWeek": -215,
+          "weeks": 2.9
+        },
+        "2024-12": {
+          "n": 5,
+          "net": -1002,
+          "w": 0,
+          "l": 3,
+          "s": 2,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 320,
+          "rr": 0,
+          "expectancy": -192,
+          "maxDd": 1002,
+          "rawPerWeek": -251,
+          "weeks": 4
+        },
+        "2025-01": {
+          "n": 4,
+          "net": 947,
+          "w": 1,
+          "l": 3,
+          "s": 0,
+          "wr": 25,
+          "avgWin": 2217,
+          "avgLoss": 424,
+          "rr": 5.24,
+          "expectancy": 237,
+          "maxDd": 1271,
+          "rawPerWeek": 301,
+          "weeks": 3.1
+        },
+        "2025-02": {
+          "n": 1,
+          "net": -431,
+          "w": 0,
+          "l": 1,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 431,
+          "rr": 0,
+          "expectancy": -431,
+          "maxDd": 431,
+          "rawPerWeek": null,
+          "weeks": 0
+        },
+        "2025-03": {
+          "n": 4,
+          "net": -478,
+          "w": 0,
+          "l": 1,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 412,
+          "rr": 0,
+          "expectancy": -103,
+          "maxDd": 478,
+          "rawPerWeek": -257,
+          "weeks": 1.9
+        },
+        "2025-04": {
+          "n": 2,
+          "net": -456,
+          "w": 0,
+          "l": 1,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 423,
+          "rr": 0,
+          "expectancy": -212,
+          "maxDd": 456,
+          "rawPerWeek": -145,
+          "weeks": 3.1
+        },
+        "2025-05": {
+          "n": 2,
+          "net": -414,
+          "w": 0,
+          "l": 1,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 393,
+          "rr": 0,
+          "expectancy": -196,
+          "maxDd": 414,
+          "rawPerWeek": -138,
+          "weeks": 3
+        },
+        "2025-06": {
+          "n": 4,
+          "net": -111,
+          "w": 0,
+          "l": 0,
+          "s": 4,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 0,
+          "maxDd": 111,
+          "rawPerWeek": -46,
+          "weeks": 2.4
+        },
+        "2025-07": {
+          "n": 5,
+          "net": -1703,
+          "w": 0,
+          "l": 5,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 341,
+          "rr": 0,
+          "expectancy": -341,
+          "maxDd": 1703,
+          "rawPerWeek": -518,
+          "weeks": 3.3
+        },
+        "2025-08": {
+          "n": 3,
+          "net": 2221,
+          "w": 1,
+          "l": 0,
+          "s": 2,
+          "wr": 33.3,
+          "avgWin": 2268,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 756,
+          "maxDd": 47,
+          "rawPerWeek": 2591,
+          "weeks": 0.9
+        },
+        "2025-09": {
+          "n": 3,
+          "net": 2326,
+          "w": 1,
+          "l": 0,
+          "s": 2,
+          "wr": 33.3,
+          "avgWin": 2375,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 792,
+          "maxDd": 49,
+          "rawPerWeek": 603,
+          "weeks": 3.9
+        },
+        "2025-11": {
+          "n": 5,
+          "net": 3777,
+          "w": 2,
+          "l": 2,
+          "s": 1,
+          "wr": 40,
+          "avgWin": 2312,
+          "avgLoss": 415,
+          "rr": 5.58,
+          "expectancy": 759,
+          "maxDd": 428,
+          "rawPerWeek": 1202,
+          "weeks": 3.1
+        },
+        "2025-12": {
+          "n": 1,
+          "net": 2325,
+          "w": 1,
+          "l": 0,
+          "s": 0,
+          "wr": 100,
+          "avgWin": 2325,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 2325,
+          "maxDd": 0,
+          "rawPerWeek": null,
+          "weeks": 0
+        },
+        "2026-01": {
+          "n": 8,
+          "net": 667,
+          "w": 1,
+          "l": 5,
+          "s": 2,
+          "wr": 12.5,
+          "avgWin": 2289,
+          "avgLoss": 315,
+          "rr": 7.26,
+          "expectancy": 89,
+          "maxDd": 1622,
+          "rawPerWeek": 180,
+          "weeks": 3.7
+        },
+        "2026-02": {
+          "n": 2,
+          "net": 1932,
+          "w": 1,
+          "l": 1,
+          "s": 0,
+          "wr": 50,
+          "avgWin": 2335,
+          "avgLoss": 402,
+          "rr": 5.8,
+          "expectancy": 966,
+          "maxDd": 402,
+          "rawPerWeek": 1932,
+          "weeks": 1
+        },
+        "2026-03": {
+          "n": 3,
+          "net": -61,
+          "w": 0,
+          "l": 0,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 0,
+          "maxDd": 61,
+          "rawPerWeek": -61,
+          "weeks": 1
+        },
+        "2026-04": {
+          "n": 4,
+          "net": -951,
+          "w": 0,
+          "l": 3,
+          "s": 1,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 308,
+          "rr": 0,
+          "expectancy": -231,
+          "maxDd": 952,
+          "rawPerWeek": -238,
+          "weeks": 4
+        },
+        "2026-05": {
+          "n": 3,
+          "net": 4615,
+          "w": 2,
+          "l": 0,
+          "s": 1,
+          "wr": 66.7,
+          "avgWin": 2318,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 1545,
+          "maxDd": 21,
+          "rawPerWeek": 4038,
+          "weeks": 1.1
+        },
+        "2026-06": {
+          "n": 4,
+          "net": 1109,
+          "w": 1,
+          "l": 3,
+          "s": 0,
+          "wr": 25,
+          "avgWin": 2329,
+          "avgLoss": 407,
+          "rr": 5.73,
+          "expectancy": 277,
+          "maxDd": 1220,
+          "rawPerWeek": 409,
+          "weeks": 2.7
+        },
+        "2026-07": {
+          "n": 1,
+          "net": -416,
+          "w": 0,
+          "l": 1,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 416,
+          "rr": 0,
+          "expectancy": -416,
+          "maxDd": 416,
+          "rawPerWeek": null,
+          "weeks": 0
+        }
+      },
+      "byCalMonth": {
+        "10": {
+          "n": 9,
+          "net": -1959,
+          "w": 0,
+          "l": 6,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 312,
+          "rr": 0,
+          "expectancy": -208,
+          "maxDd": 1959,
+          "rawPerWeek": -35,
+          "weeks": 55.6
+        },
+        "11": {
+          "n": 11,
+          "net": 4962,
+          "w": 3,
+          "l": 5,
+          "s": 3,
+          "wr": 27.3,
+          "avgWin": 2300,
+          "avgLoss": 371,
+          "rr": 6.19,
+          "expectancy": 459,
+          "maxDd": 1027,
+          "rawPerWeek": 46,
+          "weeks": 107
+        },
+        "12": {
+          "n": 10,
+          "net": 10,
+          "w": 1,
+          "l": 6,
+          "s": 3,
+          "wr": 10,
+          "avgWin": 2325,
+          "avgLoss": 373,
+          "rr": 6.23,
+          "expectancy": 8,
+          "maxDd": 2315,
+          "rawPerWeek": 0,
+          "weeks": 105.9
+        },
+        "01": {
+          "n": 12,
+          "net": 1614,
+          "w": 2,
+          "l": 8,
+          "s": 2,
+          "wr": 16.7,
+          "avgWin": 2253,
+          "avgLoss": 356,
+          "rr": 6.33,
+          "expectancy": 138,
+          "maxDd": 1622,
+          "rawPerWeek": 29,
+          "weeks": 55
+        },
+        "02": {
+          "n": 8,
+          "net": 899,
+          "w": 1,
+          "l": 4,
+          "s": 3,
+          "wr": 12.5,
+          "avgWin": 2335,
+          "avgLoss": 343,
+          "rr": 6.81,
+          "expectancy": 120,
+          "maxDd": 1033,
+          "rawPerWeek": 8,
+          "weeks": 106.7
+        },
+        "03": {
+          "n": 11,
+          "net": -1465,
+          "w": 0,
+          "l": 4,
+          "s": 7,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 330,
+          "rr": 0,
+          "expectancy": -120,
+          "maxDd": 1466,
+          "rawPerWeek": -14,
+          "weeks": 106.9
+        },
+        "04": {
+          "n": 10,
+          "net": 2747,
+          "w": 2,
+          "l": 5,
+          "s": 3,
+          "wr": 20,
+          "avgWin": 2283,
+          "avgLoss": 348,
+          "rr": 6.56,
+          "expectancy": 283,
+          "maxDd": 1408,
+          "rawPerWeek": 25,
+          "weeks": 108.1
+        },
+        "05": {
+          "n": 8,
+          "net": 3565,
+          "w": 2,
+          "l": 4,
+          "s": 2,
+          "wr": 25,
+          "avgWin": 2318,
+          "avgLoss": 257,
+          "rr": 9.01,
+          "expectancy": 451,
+          "maxDd": 1050,
+          "rawPerWeek": 33,
+          "weeks": 107.4
+        },
+        "06": {
+          "n": 8,
+          "net": 998,
+          "w": 1,
+          "l": 3,
+          "s": 4,
+          "wr": 12.5,
+          "avgWin": 2329,
+          "avgLoss": 407,
+          "rr": 5.73,
+          "expectancy": 139,
+          "maxDd": 1220,
+          "rawPerWeek": 18,
+          "weeks": 54.1
+        },
+        "07": {
+          "n": 11,
+          "net": -2944,
+          "w": 0,
+          "l": 9,
+          "s": 2,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 321,
+          "rr": 0,
+          "expectancy": -263,
+          "maxDd": 2944,
+          "rawPerWeek": -19,
+          "weeks": 155.7
+        },
+        "08": {
+          "n": 12,
+          "net": 447,
+          "w": 1,
+          "l": 4,
+          "s": 7,
+          "wr": 8.3,
+          "avgWin": 2268,
+          "avgLoss": 415,
+          "rr": 5.47,
+          "expectancy": 51,
+          "maxDd": 1773,
+          "rawPerWeek": 4,
+          "weeks": 105.1
+        },
+        "09": {
+          "n": 10,
+          "net": 1181,
+          "w": 1,
+          "l": 4,
+          "s": 5,
+          "wr": 10,
+          "avgWin": 2375,
+          "avgLoss": 269,
+          "rr": 8.83,
+          "expectancy": 130,
+          "maxDd": 1194,
+          "rawPerWeek": 11,
+          "weeks": 108
+        }
+      },
+      "byWeekday": {
+        "Fri": {
+          "n": 26,
+          "net": 2307,
+          "w": 3,
+          "l": 14,
+          "s": 9,
+          "wr": 11.5,
+          "avgWin": 2315,
+          "avgLoss": 317,
+          "rr": 7.31,
+          "expectancy": 97,
+          "maxDd": 4439,
+          "rawPerWeek": 15,
+          "weeks": 151
+        },
+        "Thu": {
+          "n": 27,
+          "net": 3197,
+          "w": 3,
+          "l": 11,
+          "s": 13,
+          "wr": 11.1,
+          "avgWin": 2284,
+          "avgLoss": 304,
+          "rr": 7.5,
+          "expectancy": 130,
+          "maxDd": 2008,
+          "rawPerWeek": 22,
+          "weeks": 148
+        },
+        "Tue": {
+          "n": 37,
+          "net": 10483,
+          "w": 7,
+          "l": 15,
+          "s": 15,
+          "wr": 18.9,
+          "avgWin": 2318,
+          "avgLoss": 357,
+          "rr": 6.49,
+          "expectancy": 294,
+          "maxDd": 2190,
+          "rawPerWeek": 71,
+          "weeks": 148
+        },
+        "Wed": {
+          "n": 30,
+          "net": -5931,
+          "w": 1,
+          "l": 22,
+          "s": 7,
+          "wr": 3.3,
+          "avgWin": 2217,
+          "avgLoss": 363,
+          "rr": 6.11,
+          "expectancy": -192,
+          "maxDd": 5931,
+          "rawPerWeek": -38,
+          "weeks": 155
+        }
+      },
+      "monthRank": [
+        {
+          "m": "07",
+          "n": 11,
+          "net": -2944,
+          "w": 0,
+          "l": 9,
+          "s": 2,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 321,
+          "rr": 0,
+          "expectancy": -263,
+          "maxDd": 2944,
+          "rawPerWeek": -19,
+          "weeks": 155.7
+        },
+        {
+          "m": "10",
+          "n": 9,
+          "net": -1959,
+          "w": 0,
+          "l": 6,
+          "s": 3,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 312,
+          "rr": 0,
+          "expectancy": -208,
+          "maxDd": 1959,
+          "rawPerWeek": -35,
+          "weeks": 55.6
+        },
+        {
+          "m": "03",
+          "n": 11,
+          "net": -1465,
+          "w": 0,
+          "l": 4,
+          "s": 7,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 330,
+          "rr": 0,
+          "expectancy": -120,
+          "maxDd": 1466,
+          "rawPerWeek": -14,
+          "weeks": 106.9
+        },
+        {
+          "m": "12",
+          "n": 10,
+          "net": 10,
+          "w": 1,
+          "l": 6,
+          "s": 3,
+          "wr": 10,
+          "avgWin": 2325,
+          "avgLoss": 373,
+          "rr": 6.23,
+          "expectancy": 8,
+          "maxDd": 2315,
+          "rawPerWeek": 0,
+          "weeks": 105.9
+        },
+        {
+          "m": "08",
+          "n": 12,
+          "net": 447,
+          "w": 1,
+          "l": 4,
+          "s": 7,
+          "wr": 8.3,
+          "avgWin": 2268,
+          "avgLoss": 415,
+          "rr": 5.47,
+          "expectancy": 51,
+          "maxDd": 1773,
+          "rawPerWeek": 4,
+          "weeks": 105.1
+        },
+        {
+          "m": "02",
+          "n": 8,
+          "net": 899,
+          "w": 1,
+          "l": 4,
+          "s": 3,
+          "wr": 12.5,
+          "avgWin": 2335,
+          "avgLoss": 343,
+          "rr": 6.81,
+          "expectancy": 120,
+          "maxDd": 1033,
+          "rawPerWeek": 8,
+          "weeks": 106.7
+        },
+        {
+          "m": "09",
+          "n": 10,
+          "net": 1181,
+          "w": 1,
+          "l": 4,
+          "s": 5,
+          "wr": 10,
+          "avgWin": 2375,
+          "avgLoss": 269,
+          "rr": 8.83,
+          "expectancy": 130,
+          "maxDd": 1194,
+          "rawPerWeek": 11,
+          "weeks": 108
+        },
+        {
+          "m": "01",
+          "n": 12,
+          "net": 1614,
+          "w": 2,
+          "l": 8,
+          "s": 2,
+          "wr": 16.7,
+          "avgWin": 2253,
+          "avgLoss": 356,
+          "rr": 6.33,
+          "expectancy": 138,
+          "maxDd": 1622,
+          "rawPerWeek": 29,
+          "weeks": 55
+        },
+        {
+          "m": "06",
+          "n": 8,
+          "net": 998,
+          "w": 1,
+          "l": 3,
+          "s": 4,
+          "wr": 12.5,
+          "avgWin": 2329,
+          "avgLoss": 407,
+          "rr": 5.73,
+          "expectancy": 139,
+          "maxDd": 1220,
+          "rawPerWeek": 18,
+          "weeks": 54.1
+        },
+        {
+          "m": "04",
+          "n": 10,
+          "net": 2747,
+          "w": 2,
+          "l": 5,
+          "s": 3,
+          "wr": 20,
+          "avgWin": 2283,
+          "avgLoss": 348,
+          "rr": 6.56,
+          "expectancy": 283,
+          "maxDd": 1408,
+          "rawPerWeek": 25,
+          "weeks": 108.1
+        },
+        {
+          "m": "05",
+          "n": 8,
+          "net": 3565,
+          "w": 2,
+          "l": 4,
+          "s": 2,
+          "wr": 25,
+          "avgWin": 2318,
+          "avgLoss": 257,
+          "rr": 9.01,
+          "expectancy": 451,
+          "maxDd": 1050,
+          "rawPerWeek": 33,
+          "weeks": 107.4
+        },
+        {
+          "m": "11",
+          "n": 11,
+          "net": 4962,
+          "w": 3,
+          "l": 5,
+          "s": 3,
+          "wr": 27.3,
+          "avgWin": 2300,
+          "avgLoss": 371,
+          "rr": 6.19,
+          "expectancy": 459,
+          "maxDd": 1027,
+          "rawPerWeek": 46,
+          "weeks": 107
+        }
+      ],
+      "oos": {
+        "start": "2025-07-14",
+        "inSample": {
+          "n": 80,
+          "net": -6581,
+          "w": 4,
+          "l": 44,
+          "s": 32,
+          "wr": 5,
+          "avgWin": 2265,
+          "avgLoss": 337,
+          "rr": 6.71,
+          "expectancy": -72,
+          "maxDd": 6581,
+          "rawPerWeek": -64,
+          "weeks": 103.6
+        },
+        "oos": {
+          "n": 40,
+          "net": 16637,
+          "w": 10,
+          "l": 18,
+          "s": 12,
+          "wr": 25,
+          "avgWin": 2318,
+          "avgLoss": 349,
+          "rr": 6.65,
+          "expectancy": 423,
+          "maxDd": 1636,
+          "rawPerWeek": 326,
+          "weeks": 51
+        },
+        "mcInSample": {
+          "passPct": 26,
+          "bustPct": 79.7,
+          "expectPerWeek": -5,
+          "weeksToPayout": 9.1,
+          "expectNet": -43
+        },
+        "mcOos": {
+          "passPct": 190.4,
+          "bustPct": 10.3,
+          "expectPerWeek": 117,
+          "weeksToPayout": 8.9,
+          "expectNet": 1038
+        }
+      },
+      "winners": {
+        "n": 14,
+        "bigN": 14,
+        "list": [
+          {
+            "date": "2025-09-30",
+            "pnl": 2375,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2026-02-10",
+            "pnl": 2335,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": true,
+            "headlines": [
+              "Advance Monthly Sales for Retail and Food Services"
+            ]
+          },
+          {
+            "date": "2026-06-05",
+            "pnl": 2329,
+            "dir": "long",
+            "weekday": "Fri",
+            "red": true,
+            "headlines": [
+              "Employment Situation"
+            ]
+          },
+          {
+            "date": "2026-05-29",
+            "pnl": 2328,
+            "dir": "short",
+            "weekday": "Fri",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2025-11-18",
+            "pnl": 2325,
+            "dir": "long",
+            "weekday": "Tue",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2025-12-16",
+            "pnl": 2325,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": true,
+            "headlines": [
+              "Employment Situation",
+              "Advance Monthly Sales for Retail and Food Services"
+            ]
+          },
+          {
+            "date": "2026-05-21",
+            "pnl": 2308,
+            "dir": "short",
+            "weekday": "Thu",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2025-11-04",
+            "pnl": 2299,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2024-04-30",
+            "pnl": 2293,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": true,
+            "headlines": [
+              "CB Consumer Confidence",
+              "JOLTS Job Openings"
+            ]
+          },
+          {
+            "date": "2026-01-02",
+            "pnl": 2289,
+            "dir": "long",
+            "weekday": "Fri",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2023-11-16",
+            "pnl": 2276,
+            "dir": "short",
+            "weekday": "Thu",
+            "red": true,
+            "headlines": [
+              "Unemployment Claims"
+            ]
+          },
+          {
+            "date": "2024-04-16",
+            "pnl": 2274,
+            "dir": "short",
+            "weekday": "Tue",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2025-08-07",
+            "pnl": 2268,
+            "dir": "short",
+            "weekday": "Thu",
+            "red": false,
+            "headlines": []
+          },
+          {
+            "date": "2025-01-08",
+            "pnl": 2217,
+            "dir": "long",
+            "weekday": "Wed",
+            "red": true,
+            "headlines": [
+              "ADP Non-Farm Employment Change",
+              "Unemployment Claims"
+            ]
+          }
+        ],
+        "byMonth": {
+          "2025-09": 1,
+          "2026-02": 1,
+          "2026-06": 1,
+          "2026-05": 2,
+          "2025-11": 2,
+          "2025-12": 1,
+          "2024-04": 2,
+          "2026-01": 1,
+          "2023-11": 1,
+          "2025-08": 1,
+          "2025-01": 1
+        },
+        "byNews": {
+          "unknown": 7,
+          "red": 6,
+          "quiet": 1
+        }
+      },
+      "lossStreaks": [
+        {
+          "start": "2025-07-02",
+          "end": "2025-07-25",
+          "len": 5,
+          "sum": -1703,
+          "trades": [
+            {
+              "date": "2025-07-02",
+              "pnl": -382
+            },
+            {
+              "date": "2025-07-08",
+              "pnl": -412
+            },
+            {
+              "date": "2025-07-16",
+              "pnl": -395
+            },
+            {
+              "date": "2025-07-23",
+              "pnl": -429
+            },
+            {
+              "date": "2025-07-25",
+              "pnl": -84
+            }
+          ]
+        },
+        {
+          "start": "2025-01-14",
+          "end": "2025-02-28",
+          "len": 4,
+          "sum": -1702,
+          "trades": [
+            {
+              "date": "2025-01-14",
+              "pnl": -434
+            },
+            {
+              "date": "2025-01-28",
+              "pnl": -424
+            },
+            {
+              "date": "2025-01-30",
+              "pnl": -413
+            },
+            {
+              "date": "2025-02-28",
+              "pnl": -431
+            }
+          ]
+        },
+        {
+          "start": "2026-06-10",
+          "end": "2026-07-08",
+          "len": 4,
+          "sum": -1636,
+          "trades": [
+            {
+              "date": "2026-06-10",
+              "pnl": -404
+            },
+            {
+              "date": "2026-06-17",
+              "pnl": -405
+            },
+            {
+              "date": "2026-06-24",
+              "pnl": -411
+            },
+            {
+              "date": "2026-07-08",
+              "pnl": -416
+            }
+          ]
+        },
+        {
+          "start": "2023-08-31",
+          "end": "2023-10-12",
+          "len": 4,
+          "sum": -1317,
+          "trades": [
+            {
+              "date": "2023-08-31",
+              "pnl": -412
+            },
+            {
+              "date": "2023-09-05",
+              "pnl": -406
+            },
+            {
+              "date": "2023-10-06",
+              "pnl": -419
+            },
+            {
+              "date": "2023-10-12",
+              "pnl": -80
+            }
+          ]
+        },
+        {
+          "start": "2026-01-16",
+          "end": "2026-01-28",
+          "len": 4,
+          "sum": -1173,
+          "trades": [
+            {
+              "date": "2026-01-16",
+              "pnl": -177
+            },
+            {
+              "date": "2026-01-21",
+              "pnl": -337
+            },
+            {
+              "date": "2026-01-22",
+              "pnl": -231
+            },
+            {
+              "date": "2026-01-28",
+              "pnl": -427
+            }
+          ]
+        },
+        {
+          "start": "2024-09-20",
+          "end": "2024-10-04",
+          "len": 3,
+          "sum": -968,
+          "trades": [
+            {
+              "date": "2024-09-20",
+              "pnl": -402
+            },
+            {
+              "date": "2024-10-02",
+              "pnl": -162
+            },
+            {
+              "date": "2024-10-04",
+              "pnl": -404
+            }
+          ]
+        },
+        {
+          "start": "2026-04-02",
+          "end": "2026-04-28",
+          "len": 3,
+          "sum": -925,
+          "trades": [
+            {
+              "date": "2026-04-02",
+              "pnl": -409
+            },
+            {
+              "date": "2026-04-21",
+              "pnl": -399
+            },
+            {
+              "date": "2026-04-28",
+              "pnl": -117
+            }
+          ]
+        },
+        {
+          "start": "2023-07-14",
+          "end": "2023-07-20",
+          "len": 3,
+          "sum": -775,
+          "trades": [
+            {
+              "date": "2023-07-14",
+              "pnl": -94
+            },
+            {
+              "date": "2023-07-19",
+              "pnl": -276
+            },
+            {
+              "date": "2023-07-20",
+              "pnl": -404
+            }
+          ]
+        },
+        {
+          "start": "2024-05-07",
+          "end": "2024-05-22",
+          "len": 3,
+          "sum": -636,
+          "trades": [
+            {
+              "date": "2024-05-07",
+              "pnl": -153
+            },
+            {
+              "date": "2024-05-10",
+              "pnl": -424
+            },
+            {
+              "date": "2024-05-22",
+              "pnl": -60
+            }
+          ]
+        },
+        {
+          "start": "2023-12-14",
+          "end": "2023-12-19",
+          "len": 2,
+          "sum": -848,
+          "trades": [
+            {
+              "date": "2023-12-14",
+              "pnl": -416
+            },
+            {
+              "date": "2023-12-19",
+              "pnl": -432
+            }
+          ]
+        },
+        {
+          "start": "2023-11-21",
+          "end": "2023-12-06",
+          "len": 2,
+          "sum": -843,
+          "trades": [
+            {
+              "date": "2023-11-21",
+              "pnl": -412
+            },
+            {
+              "date": "2023-12-06",
+              "pnl": -431
+            }
+          ]
+        },
+        {
+          "start": "2023-08-08",
+          "end": "2023-08-09",
+          "len": 2,
+          "sum": -842,
+          "trades": [
+            {
+              "date": "2023-08-08",
+              "pnl": -417
+            },
+            {
+              "date": "2023-08-09",
+              "pnl": -425
+            }
+          ]
+        }
+      ],
+      "trailDeaths": [
+        {
+          "from": "2023-07-14",
+          "to": "2023-08-31",
+          "drop": 2077,
+          "n": 8,
+          "pathPreview": [
+            {
+              "date": "2023-07-14",
+              "pnl": -94,
+              "eq": -94
+            },
+            {
+              "date": "2023-07-19",
+              "pnl": -276,
+              "eq": -370
+            },
+            {
+              "date": "2023-07-20",
+              "pnl": -404,
+              "eq": -775
+            },
+            {
+              "date": "2023-07-25",
+              "pnl": -26,
+              "eq": -801
+            },
+            {
+              "date": "2023-08-08",
+              "pnl": -417,
+              "eq": -1218
+            },
+            {
+              "date": "2023-08-09",
+              "pnl": -425,
+              "eq": -1642
+            },
+            {
+              "date": "2023-08-18",
+              "pnl": -23,
+              "eq": -1665
+            },
+            {
+              "date": "2023-08-31",
+              "pnl": -412,
+              "eq": -2077
+            }
+          ]
+        },
+        {
+          "from": "2023-11-21",
+          "to": "2024-02-09",
+          "drop": 2304,
+          "n": 10,
+          "pathPreview": [
+            {
+              "date": "2023-11-16",
+              "pnl": 2276,
+              "eq": -1616
+            },
+            {
+              "date": "2023-11-21",
+              "pnl": -412,
+              "eq": -2028
+            },
+            {
+              "date": "2023-12-06",
+              "pnl": -431,
+              "eq": -2459
+            },
+            {
+              "date": "2023-12-12",
+              "pnl": -33,
+              "eq": -2492
+            },
+            {
+              "date": "2023-12-14",
+              "pnl": -416,
+              "eq": -2908
+            },
+            {
+              "date": "2023-12-19",
+              "pnl": -432,
+              "eq": -3340
+            },
+            {
+              "date": "2024-02-01",
+              "pnl": -19,
+              "eq": -3359
+            },
+            {
+              "date": "2024-02-02",
+              "pnl": -23,
+              "eq": -3382
+            }
+          ]
+        },
+        {
+          "from": "2024-05-07",
+          "to": "2024-10-02",
+          "drop": 2059,
+          "n": 17,
+          "pathPreview": [
+            {
+              "date": "2024-04-30",
+              "pnl": 2293,
+              "eq": -714
+            },
+            {
+              "date": "2024-05-07",
+              "pnl": -153,
+              "eq": -866
+            },
+            {
+              "date": "2024-05-10",
+              "pnl": -424,
+              "eq": -1290
+            },
+            {
+              "date": "2024-05-22",
+              "pnl": -60,
+              "eq": -1350
+            },
+            {
+              "date": "2024-07-09",
+              "pnl": -24,
+              "eq": -1374
+            },
+            {
+              "date": "2024-08-13",
+              "pnl": -19,
+              "eq": -1393
+            },
+            {
+              "date": "2024-08-15",
+              "pnl": -26,
+              "eq": -1419
+            },
+            {
+              "date": "2024-08-21",
+              "pnl": -24,
+              "eq": -1444
+            }
+          ]
+        },
+        {
+          "from": "2024-10-04",
+          "to": "2024-12-31",
+          "drop": 2070,
+          "n": 10,
+          "pathPreview": [
+            {
+              "date": "2024-10-04",
+              "pnl": -404,
+              "eq": -3176
+            },
+            {
+              "date": "2024-10-18",
+              "pnl": -30,
+              "eq": -3206
+            },
+            {
+              "date": "2024-10-29",
+              "pnl": -19,
+              "eq": -3225
+            },
+            {
+              "date": "2024-11-01",
+              "pnl": -402,
+              "eq": -3628
+            },
+            {
+              "date": "2024-11-21",
+              "pnl": -213,
+              "eq": -3840
+            },
+            {
+              "date": "2024-12-03",
+              "pnl": -24,
+              "eq": -3865
+            },
+            {
+              "date": "2024-12-10",
+              "pnl": -144,
+              "eq": -4008
+            },
+            {
+              "date": "2024-12-18",
+              "pnl": -435,
+              "eq": -4443
+            }
+          ]
+        },
+        {
+          "from": "2025-01-14",
+          "to": "2025-03-26",
+          "drop": 2180,
+          "n": 9,
+          "pathPreview": [
+            {
+              "date": "2025-01-08",
+              "pnl": 2217,
+              "eq": -2626
+            },
+            {
+              "date": "2025-01-14",
+              "pnl": -434,
+              "eq": -3060
+            },
+            {
+              "date": "2025-01-28",
+              "pnl": -424,
+              "eq": -3484
+            },
+            {
+              "date": "2025-01-30",
+              "pnl": -413,
+              "eq": -3896
+            },
+            {
+              "date": "2025-02-28",
+              "pnl": -431,
+              "eq": -4327
+            },
+            {
+              "date": "2025-03-13",
+              "pnl": -30,
+              "eq": -4357
+            },
+            {
+              "date": "2025-03-18",
+              "pnl": -17,
+              "eq": -4374
+            },
+            {
+              "date": "2025-03-25",
+              "pnl": -19,
+              "eq": -4393
+            }
+          ]
+        },
+        {
+          "from": "2025-04-02",
+          "to": "2025-07-16",
+          "drop": 2171,
+          "n": 11,
+          "pathPreview": [
+            {
+              "date": "2025-04-02",
+              "pnl": -423,
+              "eq": -5229
+            },
+            {
+              "date": "2025-04-24",
+              "pnl": -33,
+              "eq": -5262
+            },
+            {
+              "date": "2025-05-07",
+              "pnl": -393,
+              "eq": -5655
+            },
+            {
+              "date": "2025-05-28",
+              "pnl": -21,
+              "eq": -5675
+            },
+            {
+              "date": "2025-06-10",
+              "pnl": -30,
+              "eq": -5705
+            },
+            {
+              "date": "2025-06-17",
+              "pnl": -38,
+              "eq": -5743
+            },
+            {
+              "date": "2025-06-26",
+              "pnl": -23,
+              "eq": -5766
+            },
+            {
+              "date": "2025-06-27",
+              "pnl": -21,
+              "eq": -5787
+            }
+          ]
+        }
+      ],
+      "news": {
+        "quiet": {
+          "label": "quiet",
+          "trades": 13,
+          "wins": 1,
+          "losses": 7,
+          "netPnl": -174.3999999999998,
+          "avgPnl": -13.4153846153846
+        },
+        "red": {
+          "label": "red-folder",
+          "trades": 67,
+          "wins": 6,
+          "losses": 39,
+          "netPnl": 17.540000000001328,
+          "avgPnl": 0.26179104477613924
+        },
+        "cpi": {
+          "label": "cpi-nfp-ppi",
+          "trades": 20,
+          "wins": 3,
+          "losses": 13,
+          "netPnl": 2515.2400000000002,
+          "avgPnl": 125.76200000000001
+        },
+        "headline": "Red-folder: 67 trades · +$18 net · Quiet: 13 trades · $174 net",
+        "verdict": "Red-folder P&L is roughly flat (+$18 on 67 trades). D1 may be skipping or scratching news sessions — manual Data H/L replay on CPI/NFP days is the only honest way to test if 8:30 adds edge."
+      },
+      "gates": [
+        {
+          "name": "STAND_DOWN red-folder days",
+          "kept": 53,
+          "dropped": 67,
+          "droppedNet": 18,
+          "full": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 53,
+            "net": 10038,
+            "w": 8,
+            "l": 23,
+            "s": 22,
+            "wr": 15.1,
+            "avgWin": 2308,
+            "avgLoss": 344,
+            "rr": 6.71,
+            "expectancy": 199,
+            "maxDd": 2988,
+            "rawPerWeek": 66,
+            "weeks": 152.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 30,
+              "net": 11918,
+              "w": 7,
+              "l": 12,
+              "s": 11,
+              "wr": 23.3,
+              "avgWin": 2313,
+              "avgLoss": 336,
+              "rr": 6.88,
+              "expectancy": 405,
+              "maxDd": 2381,
+              "rawPerWeek": 238,
+              "weeks": 50
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 89.2,
+              "bustPct": 45,
+              "expectPerWeek": 26,
+              "weeksToPayout": 11.7,
+              "expectNet": 300
+            },
+            "gated": {
+              "passPct": 140.8,
+              "bustPct": 25.2,
+              "expectPerWeek": 23,
+              "weeksToPayout": 28.7,
+              "expectNet": 657
+            },
+            "oosAll": {
+              "passPct": 189.2,
+              "bustPct": 10.2,
+              "expectPerWeek": 113,
+              "weeksToPayout": 8.9,
+              "expectNet": 1002
+            },
+            "oosGated": {
+              "passPct": 201.9,
+              "bustPct": 7.2,
+              "expectPerWeek": 81,
+              "weeksToPayout": 13.3,
+              "expectNet": 1083
+            }
+          },
+          "liftEvWeek": -3,
+          "liftOosEvWeek": -32
+        },
+        {
+          "name": "STAND_DOWN calendar months 08+09 (Aug–Sep)",
+          "kept": 98,
+          "dropped": 22,
+          "droppedNet": 1628,
+          "full": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 98,
+            "net": 8428,
+            "w": 12,
+            "l": 54,
+            "s": 32,
+            "wr": 12.2,
+            "avgWin": 2300,
+            "avgLoss": 341,
+            "rr": 6.75,
+            "expectancy": 94,
+            "maxDd": 5539,
+            "rawPerWeek": 54,
+            "weeks": 155.7
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 34,
+              "net": 12090,
+              "w": 8,
+              "l": 18,
+              "s": 8,
+              "wr": 23.5,
+              "avgWin": 2317,
+              "avgLoss": 349,
+              "rr": 6.64,
+              "expectancy": 361,
+              "maxDd": 1636,
+              "rawPerWeek": 237,
+              "weeks": 51
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 94.9,
+              "bustPct": 43.2,
+              "expectPerWeek": 30,
+              "weeksToPayout": 11.7,
+              "expectNet": 348
+            },
+            "gated": {
+              "passPct": 95.3,
+              "bustPct": 43.3,
+              "expectPerWeek": 25,
+              "weeksToPayout": 14.3,
+              "expectNet": 361
+            },
+            "oosAll": {
+              "passPct": 191.1,
+              "bustPct": 10.9,
+              "expectPerWeek": 109,
+              "weeksToPayout": 8.9,
+              "expectNet": 969
+            },
+            "oosGated": {
+              "passPct": 170.5,
+              "bustPct": 15.9,
+              "expectPerWeek": 87,
+              "weeksToPayout": 10.5,
+              "expectNet": 914
+            }
+          },
+          "liftEvWeek": -5,
+          "liftOosEvWeek": -22
+        },
+        {
+          "name": "STAND_DOWN calendar months 02+03 (Feb–Mar)",
+          "kept": 101,
+          "dropped": 19,
+          "droppedNet": -566,
+          "full": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 101,
+            "net": 10622,
+            "w": 13,
+            "l": 54,
+            "s": 34,
+            "wr": 12.9,
+            "avgWin": 2300,
+            "avgLoss": 341,
+            "rr": 6.74,
+            "expectancy": 114,
+            "maxDd": 5867,
+            "rawPerWeek": 68,
+            "weeks": 155.7
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 35,
+              "net": 14765,
+              "w": 9,
+              "l": 17,
+              "s": 9,
+              "wr": 25.7,
+              "avgWin": 2316,
+              "avgLoss": 346,
+              "rr": 6.7,
+              "expectancy": 428,
+              "maxDd": 2573,
+              "rawPerWeek": 290,
+              "weeks": 51
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 91.7,
+              "bustPct": 44.6,
+              "expectPerWeek": 27,
+              "weeksToPayout": 11.7,
+              "expectNet": 320
+            },
+            "gated": {
+              "passPct": 98.7,
+              "bustPct": 41.3,
+              "expectPerWeek": 27,
+              "weeksToPayout": 13.9,
+              "expectNet": 369
+            },
+            "oosAll": {
+              "passPct": 191.9,
+              "bustPct": 10.2,
+              "expectPerWeek": 114,
+              "weeksToPayout": 8.9,
+              "expectNet": 1013
+            },
+            "oosGated": {
+              "passPct": 187.7,
+              "bustPct": 11.4,
+              "expectPerWeek": 97,
+              "weeksToPayout": 10.2,
+              "expectNet": 987
+            }
+          },
+          "liftEvWeek": 0,
+          "liftOosEvWeek": -17
+        },
+        {
+          "name": "STAND_DOWN months 07+10 (Jul+Oct) — primary candidate",
+          "kept": 100,
+          "dropped": 20,
+          "droppedNet": -4903,
+          "full": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 100,
+            "net": 14959,
+            "w": 14,
+            "l": 47,
+            "s": 39,
+            "wr": 14,
+            "avgWin": 2303,
+            "avgLoss": 348,
+            "rr": 6.62,
+            "expectancy": 159,
+            "maxDd": 4434,
+            "rawPerWeek": 100,
+            "weeks": 150.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 36,
+              "net": 17961,
+              "w": 10,
+              "l": 14,
+              "s": 12,
+              "wr": 27.8,
+              "avgWin": 2318,
+              "avgLoss": 354,
+              "rr": 6.55,
+              "expectancy": 506,
+              "maxDd": 1622,
+              "rawPerWeek": 392,
+              "weeks": 45.9
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 90.3,
+              "bustPct": 45.4,
+              "expectPerWeek": 28,
+              "weeksToPayout": 11.7,
+              "expectNet": 329
+            },
+            "gated": {
+              "passPct": 123.3,
+              "bustPct": 32.3,
+              "expectPerWeek": 36,
+              "weeksToPayout": 13.5,
+              "expectNet": 482
+            },
+            "oosAll": {
+              "passPct": 192.1,
+              "bustPct": 10,
+              "expectPerWeek": 120,
+              "weeksToPayout": 8.9,
+              "expectNet": 1067
+            },
+            "oosGated": {
+              "passPct": 208.9,
+              "bustPct": 5.5,
+              "expectPerWeek": 149,
+              "weeksToPayout": 7.6,
+              "expectNet": 1136
+            }
+          },
+          "liftEvWeek": 8,
+          "liftOosEvWeek": 29
+        },
+        {
+          "name": "STAND_DOWN month 07 only (Jul)",
+          "kept": 109,
+          "dropped": 11,
+          "droppedNet": -2944,
+          "full": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 109,
+            "net": 13000,
+            "w": 14,
+            "l": 53,
+            "s": 42,
+            "wr": 12.8,
+            "avgWin": 2303,
+            "avgLoss": 344,
+            "rr": 6.69,
+            "expectancy": 129,
+            "maxDd": 5049,
+            "rawPerWeek": 87,
+            "weeks": 150.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 36,
+              "net": 17961,
+              "w": 10,
+              "l": 14,
+              "s": 12,
+              "wr": 27.8,
+              "avgWin": 2318,
+              "avgLoss": 354,
+              "rr": 6.55,
+              "expectancy": 506,
+              "maxDd": 1622,
+              "rawPerWeek": 392,
+              "weeks": 45.9
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 92.2,
+              "bustPct": 44.5,
+              "expectPerWeek": 28,
+              "weeksToPayout": 11.7,
+              "expectNet": 333
+            },
+            "gated": {
+              "passPct": 114.7,
+              "bustPct": 35.7,
+              "expectPerWeek": 38,
+              "weeksToPayout": 12.4,
+              "expectNet": 466
+            },
+            "oosAll": {
+              "passPct": 192.2,
+              "bustPct": 10.2,
+              "expectPerWeek": 119,
+              "weeksToPayout": 8.9,
+              "expectNet": 1061
+            },
+            "oosGated": {
+              "passPct": 213.4,
+              "bustPct": 4.7,
+              "expectPerWeek": 151,
+              "weeksToPayout": 7.6,
+              "expectNet": 1144
+            }
+          },
+          "liftEvWeek": 10,
+          "liftOosEvWeek": 32
+        },
+        {
+          "name": "STAND_DOWN months 07+10+03 (Jul+Oct+Mar)",
+          "kept": 89,
+          "dropped": 31,
+          "droppedNet": -6369,
+          "full": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 89,
+            "net": 16424,
+            "w": 14,
+            "l": 43,
+            "s": 32,
+            "wr": 15.7,
+            "avgWin": 2303,
+            "avgLoss": 350,
+            "rr": 6.58,
+            "expectancy": 193,
+            "maxDd": 3956,
+            "rawPerWeek": 109,
+            "weeks": 150.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 33,
+              "net": 18022,
+              "w": 10,
+              "l": 14,
+              "s": 9,
+              "wr": 30.3,
+              "avgWin": 2318,
+              "avgLoss": 354,
+              "rr": 6.55,
+              "expectancy": 552,
+              "maxDd": 1622,
+              "rawPerWeek": 393,
+              "weeks": 45.9
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 93.3,
+              "bustPct": 43.2,
+              "expectPerWeek": 32,
+              "weeksToPayout": 10.4,
+              "expectNet": 331
+            },
+            "gated": {
+              "passPct": 133.3,
+              "bustPct": 28.7,
+              "expectPerWeek": 39,
+              "weeksToPayout": 15.2,
+              "expectNet": 590
+            },
+            "oosAll": {
+              "passPct": 192,
+              "bustPct": 10.2,
+              "expectPerWeek": 121,
+              "weeksToPayout": 8.9,
+              "expectNet": 1074
+            },
+            "oosGated": {
+              "passPct": 209.8,
+              "bustPct": 5.5,
+              "expectPerWeek": 138,
+              "weeksToPayout": 8.3,
+              "expectNet": 1149
+            }
+          },
+          "liftEvWeek": 7,
+          "liftOosEvWeek": 17
+        },
+        {
+          "name": "STAND_DOWN Mondays",
+          "kept": 120,
+          "dropped": 0,
+          "droppedNet": 0,
+          "full": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 93.5,
+              "bustPct": 43.2,
+              "expectPerWeek": 28,
+              "weeksToPayout": 11.7,
+              "expectNet": 325
+            },
+            "gated": {
+              "passPct": 93,
+              "bustPct": 43,
+              "expectPerWeek": 28,
+              "weeksToPayout": 11.7,
+              "expectNet": 331
+            },
+            "oosAll": {
+              "passPct": 191.2,
+              "bustPct": 10.1,
+              "expectPerWeek": 120,
+              "weeksToPayout": 8.9,
+              "expectNet": 1067
+            },
+            "oosGated": {
+              "passPct": 193.5,
+              "bustPct": 9.6,
+              "expectPerWeek": 117,
+              "weeksToPayout": 8.9,
+              "expectNet": 1037
+            }
+          },
+          "liftEvWeek": 0,
+          "liftOosEvWeek": -3
+        },
+        {
+          "name": "STAND_DOWN IS-worst months 12+07 (exploratory)",
+          "kept": 99,
+          "dropped": 21,
+          "droppedNet": -2934,
+          "full": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 99,
+            "net": 12989,
+            "w": 13,
+            "l": 47,
+            "s": 39,
+            "wr": 13.1,
+            "avgWin": 2301,
+            "avgLoss": 340,
+            "rr": 6.76,
+            "expectancy": 141,
+            "maxDd": 4046,
+            "rawPerWeek": 87,
+            "weeks": 150.1
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 35,
+              "net": 15636,
+              "w": 9,
+              "l": 14,
+              "s": 12,
+              "wr": 25.7,
+              "avgWin": 2317,
+              "avgLoss": 354,
+              "rr": 6.55,
+              "expectancy": 454,
+              "maxDd": 1622,
+              "rawPerWeek": 341,
+              "weeks": 45.9
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 93.3,
+              "bustPct": 42.9,
+              "expectPerWeek": 31,
+              "weeksToPayout": 10.4,
+              "expectNet": 323
+            },
+            "gated": {
+              "passPct": 120.9,
+              "bustPct": 32.9,
+              "expectPerWeek": 36,
+              "weeksToPayout": 13.6,
+              "expectNet": 495
+            },
+            "oosAll": {
+              "passPct": 191.5,
+              "bustPct": 10.3,
+              "expectPerWeek": 112,
+              "weeksToPayout": 8.9,
+              "expectNet": 996
+            },
+            "oosGated": {
+              "passPct": 200.9,
+              "bustPct": 7.8,
+              "expectPerWeek": 114,
+              "weeksToPayout": 9.2,
+              "expectNet": 1046
+            }
+          },
+          "liftEvWeek": 5,
+          "liftOosEvWeek": 2
+        },
+        {
+          "name": "STAND_DOWN IS-worst half 2023-H2 (historical one-shot)",
+          "kept": 98,
+          "dropped": 22,
+          "droppedNet": -3340,
+          "full": {
+            "n": 120,
+            "net": 10056,
+            "w": 14,
+            "l": 62,
+            "s": 44,
+            "wr": 11.7,
+            "avgWin": 2303,
+            "avgLoss": 341,
+            "rr": 6.76,
+            "expectancy": 93,
+            "maxDd": 7489,
+            "rawPerWeek": 65,
+            "weeks": 155.7
+          },
+          "gated": {
+            "n": 98,
+            "net": 13396,
+            "w": 13,
+            "l": 47,
+            "s": 38,
+            "wr": 13.3,
+            "avgWin": 2305,
+            "avgLoss": 334,
+            "rr": 6.9,
+            "expectancy": 146,
+            "maxDd": 6776,
+            "rawPerWeek": 106,
+            "weeks": 126.9
+          },
+          "oos": {
+            "all": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            },
+            "gated": {
+              "n": 40,
+              "net": 16637,
+              "w": 10,
+              "l": 18,
+              "s": 12,
+              "wr": 25,
+              "avgWin": 2318,
+              "avgLoss": 349,
+              "rr": 6.65,
+              "expectancy": 423,
+              "maxDd": 1636,
+              "rawPerWeek": 326,
+              "weeks": 51
+            }
+          },
+          "mc": {
+            "full": {
+              "passPct": 91.2,
+              "bustPct": 45.5,
+              "expectPerWeek": 30,
+              "weeksToPayout": 11.7,
+              "expectNet": 349
+            },
+            "gated": {
+              "passPct": 117.2,
+              "bustPct": 34.5,
+              "expectPerWeek": 39,
+              "weeksToPayout": 11.7,
+              "expectNet": 461
+            },
+            "oosAll": {
+              "passPct": 187.1,
+              "bustPct": 11.3,
+              "expectPerWeek": 113,
+              "weeksToPayout": 8.9,
+              "expectNet": 1006
+            },
+            "oosGated": {
+              "passPct": 187.6,
+              "bustPct": 10.9,
+              "expectPerWeek": 117,
+              "weeksToPayout": 8.9,
+              "expectNet": 1042
+            }
+          },
+          "liftEvWeek": 9,
+          "liftOosEvWeek": 4
+        }
+      ]
+    }
+  ]
+}

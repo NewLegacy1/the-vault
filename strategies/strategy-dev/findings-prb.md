@@ -32,11 +32,25 @@ Full YAML records: `strategies/cohorts/`.
 4. **1 trade/day** holds — slot discipline beats volume.
 5. Win profile is low win-rate / high payoff (13W/44L/12scr still nets $12k+) — the formula depends on **losses staying small** (BE mechanism), not on win rate.
 
+## Phase 1 regime autopsy (3y · 2026-07-14) — pending Lab settle
+
+Full write-up: [[phase1-autopsy-a0a-d1]] · script `vault-app/scripts/analyze-prb-3y-autopsy.ts`.
+
+| Claim | Status |
+|---|---|
+| PRB 3y edge is **non-stationary** (IS weak / OOS strong) | **settled** on ledger splits |
+| Red-folder stand-down helps PRB | **fails** (A0a red days profitable) |
+| **`regime-gate-v0`:** STAND_DOWN Jul+Oct | **script proxy pass** · Lab MC confirm = Phase 2 |
+| Jul+Oct+Mar as v0 | **hold** — optional aggressive only |
+
+Gated CSVs ready for Lab: `matrix/prb-a0a-3y-gate-jul-oct.csv`, `prb-d1-3y-gate-jul-oct.csv` · hypothesis `regime-gate-v0`.
+
 ## Open questions
 
+- Lab: does `regime-gate-v0` hold on A0a/D1 after official MC (full + OOS)?
 - Does trail 2.0/1.5 beat BE-only specifically in give-back months (Feb–Mar type)?
 - Long-only vs short-only bias splits by regime?
-- Does the PRB entry (rejection block + limit retest) work inside the 9:50–10:10 macro window? → feeds [[roadmap]] hybrid.
+- Does the PRB entry (rejection block + limit retest) work inside the 9:50–10:10 macro window? → feeds [[roadmap]] hybrid (deferred per [[execution-plan-post-3y]]).
 
 ## What failed (graveyard — don't resurrect)
 

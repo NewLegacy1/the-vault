@@ -86,27 +86,21 @@ Cohorts live under `strategies/cohorts/{eval,funded}/` (1y baselines in `_archiv
 
 **Exit:** Any agent reading this file understands Hybrid/Macro are not the durable income path, will not queue cosmetic toggles, and will not re-run Macro A as a second Pine export.
 
-### Phase 1 — Autopsy before invention (NEXT · gate for everything else)
+### Phase 1 — Autopsy before invention (DONE 2026-07-14 · see [[phase1-autopsy-a0a-d1]])
 
-**Owner job for next coding/analysis chat:** run quantitative autopsy on existing 3y CSVs.
-
-| # | Task | Input | Output artifact |
+| # | Task | Status | Result |
 |---|---|---|---|
-| 1.1 | Year / half-year expectancy split | `prb-a0a-3y.csv`, `prb-d1-3y.csv` | note: does edge exist only in a sub-window? |
-| 1.2 | Winner cluster analysis | same | when do the ~14–16 winners occur? (month, news, trend proxy) |
-| 1.3 | Loss-streak / bust path analysis | same + MC paths if needed | which regimes produce trail-death sequences |
-| 1.4 | News / red-folder overlay | [[calendar-3y]] + hybrid filter scripts | trade vs stand-down candidate rule |
-| 1.5 | Regime gate draft | 1.1–1.4 | falsifiable rule: `TRADE` / `STAND_DOWN` + predicted E[$/wk] lift |
+| 1.1 | Year / half-year expectancy split | [x] | Edge **non-stationary** — IS pre-2025-07 negative; OOS last 12m carries almost all EV |
+| 1.2 | Winner cluster analysis | [x] | 14–16 ~$1.9–2.3k winners; clustered mid-2025→2026; Jul/Oct WR **0%** |
+| 1.3 | Loss-streak / bust path analysis | [x] | 4–5L ~$400 streaks; several ≥$2k trail-death paths 2023–early 2025 |
+| 1.4 | News / red-folder overlay | [x] | Red stand-down **kills** A0a EV — not a PRB gate |
+| 1.5 | Regime gate draft | [x] | **`regime-gate-v0`:** STAND_DOWN Jul+Oct · predicted lift held on full + OOS proxy MC |
 
-**Success gates (promote a gate, not a new model):**
+**Primary gate:** `TRADE` iff calendar month ∉ {7,10}. Ledgers: `matrix/prb-*-3y-gate-jul-oct.csv` (n=100). Script: `vault-app/scripts/analyze-prb-3y-autopsy.ts`.
 
-- Gate is **one boolean rule** (or small AND of observables already in vault).
-- On gated ledger: **OOS last 12m** `E[$/wk]` ≥ ungated · bust ↓ or pass ↑ without wiping cadence entirely.
-- Sample after gate still large enough to trust (document if thinned below ~40 trades — treat as research, not promo).
+**Success gates:** cleared on script proxy (OOS E[$/wk] ↑, bust ↓, n=100). **Phase 2** = Lab confirm + [[findings-prb]] settle. Track B deferred while Track A gate is live.
 
-**If autopsy finds no regime structure (edge is just noise over 3y):** skip to Phase 3 Track B. Freeze Track A PRB/Macro experimental polish.
-
-**Scripts to prefer:** `scripts/analyze-payout-cycle.ts`, `filter-hybrid-news.ts`, existing matrix CSV analyzers — extend rather than rebuild Lab.
+**If Lab Phase 2 falsifies the gate:** reopen Track B (one non-ICT candidate).
 
 ### Phase 2 — Conditional Track A (only if Phase 1 finds a gate)
 
@@ -191,16 +185,15 @@ Until then: **no** multi-account as a substitute for edge.
 
 ## 5. Immediate sprint board (next agent session)
 
-Copy this checklist into the next session’s todos:
+Phase 1 autopsy **done** — [[phase1-autopsy-a0a-d1]]. Next is **Phase 2 Lab confirm**:
 
-1. [ ] Locate matrix CSVs: `vault-app/data/tv-exports/matrix/prb-a0a-3y.csv`, `prb-d1-3y.csv` (hybrid 3y / `macro` B0 only for contrast — Macro path is settled).
-2. [ ] Implement/report **year + OOS splits** for expectancy, WR, avg win/loss, max equity DD paths (A0a + D1 primary; H0b contrast optional).
-3. [ ] Cluster the **winners** (calendar month, optional news from [[calendar-3y]]).
-4. [ ] Draft **one** `TRADE/STAND_DOWN` gate with falsifiable prediction.
-5. [ ] Run gated CSV through Lab (or script proxy) → save cohort under `cohorts/research/` or `eval/` with hypothesis `regime-gate-v0`.
-6. [ ] Write settle note into [[findings-prb]] (gate works / fails / insufficient n).
-7. [ ] If gate fails: open Track B ticket — propose **one** B0/B1 candidate meeting §3 Phase 3 constraints; do not start coding five ideas.
-   - **Naming collision note:** Track B candidate IDs **B0/B1** in §3 Phase 3 are *idea-class labels*, not Lab presets `matrix-b0` / `matrix-b1a` (Macro). Don’t confuse them.
+1. [x] Locate matrix CSVs: `prb-a0a-3y.csv`, `prb-d1-3y.csv`.
+2. [x] Year + OOS splits (script + MD).
+3. [x] Winner / loss-streak / news clusters.
+4. [x] Draft gate: **Jul+Oct STAND_DOWN** (`regime-gate-v0`).
+5. [ ] Lab MC: upload `prb-a0a-3y-gate-jul-oct.csv` + `prb-d1-3y-gate-jul-oct.csv` (presets A0a / D1) · hypothesis `regime-gate-v0` · buffer 2000 · max 220 · full + OOS 12m · auto-save cohorts.
+6. [ ] Settle [[findings-prb]] from Lab numbers (script proxy already says works — Lab is source of truth for promotion).
+7. [ ] Only if Lab falsifies gate: Track B ticket — **one** candidate; don’t confuse Track B idea IDs B0/B1 with Lab Macro `matrix-b0` / `matrix-b1a`.
 
 ## 6. How this overrides / relates to other docs
 
@@ -228,3 +221,4 @@ Copy this checklist into the next session’s todos:
 |---|---|
 | 2026-07-14 | Created after 3y Tier 0 MC + senior review. Active brief for all strategy-dev chats. |
 | 2026-07-14 | Added final B0/B1a + H2a/M0/M1 numbers; Lab B1a-from-B0 SOP; sleeve-only B1a; agent hygiene (don’t overbuild TV filters); Track B ID collision note. |
+| 2026-07-14 | Phase 1 autopsy complete — `regime-gate-v0` Jul+Oct STAND_DOWN; next = Phase 2 Lab confirm. |

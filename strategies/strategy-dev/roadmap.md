@@ -9,8 +9,8 @@ tags: [roadmap, hypotheses, strategy-dev]
 ## ACTIVE OVERRIDE (2026-07-14)
 
 **[[execution-plan-post-3y]] is the current mission.** 3y Tier 0 MC falsified “cohesive forever ICT/Pine income.”  
-**Next:** Phase 1 ledger autopsy (A0a/D1) → regime gate **or** Track B new coded edge.  
-Defer Track 1.3 Macro A-only polish, Track 4 Macro/Hybrid frequency work, and cosmetic Hybrid toggles until that plan says otherwise. Historical tracks below remain the backlog archive.
+**Phase 1 done** ([[phase1-autopsy-a0a-d1]]): `regime-gate-v0` = STAND_DOWN Jul+Oct.  
+**Next:** Phase 2 Lab MC on gated CSVs. Track B deferred. Historical tracks below remain the backlog archive.
 
 ## Track 1 — Eval-phase strategy (optimize pass rate)
 
