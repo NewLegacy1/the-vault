@@ -18,6 +18,7 @@ strategy(
      process_orders_on_close = true,
      calc_on_every_tick      = false,
      max_bars_back           = 5000,
+     max_labels_count        = 500,
      initial_capital         = 50000,
      default_qty_type        = strategy.fixed,
      default_qty_value       = 10,
@@ -29,23 +30,26 @@ strategy(
 
 // ─── Macro session ───────────────────────────────────────────────────────────
 grpMacro = "ICT macro windows (NY ET)"
-i_useMacro1 = input.bool(true, "9:50–10:10 macro", group = grpMacro)
-i_useMacro2 = input.bool(true, "10:50–11:10 macro", group = grpMacro)
+i_useMacro1 = input.bool(true, "9:50-10:10 macro", group = grpMacro)
+i_useMacro2 = input.bool(true, "10:50-11:10 macro", group = grpMacro)
 i_stagingEnd = input.int(945, "DOL staging ends (HHMM)", minval = 930, maxval = 959, group = grpMacro)
 i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpMacro)
 i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpMacro)
 
 grpTier = "Quality sizing (v1.4)"
-i_wickFull = input.float(55.0, "Full-risk max signal wick (pts)", minval = 20.0, maxval = 100.0, step = 5.0, group = grpTier, tooltip = "Signal bar wick at or below this → full $ risk. Above → half risk (still take the trade).")
+i_wickFull = input.float(55.0, "Full-risk max signal wick (pts)", minval = 20.0, maxval = 100.0, step = 5.0, group = grpTier, tooltip = "Signal bar wick at or below this = full $ risk. Above = half risk (still take the trade).")
 i_wickSkip = input.float(80.0, "Skip wick above (pts) unless SMT", minval = 40.0, maxval = 120.0, step = 5.0, group = grpTier, tooltip = "Giant manipulation wicks only allowed when SMT confirms at sweep.")
 i_riskHalfPct = input.float(50.0, "Wide-wick risk (% of full)", minval = 25.0, maxval = 75.0, step = 5.0, group = grpTier)
 
+grpAllow = "Tier filter (Lab B1a)"
+i_tierFilter = input.string("All tiers", "Allowed tiers", options = ["All tiers", "A only", "A+ only", "A+ and A"], group = grpAllow, tooltip = "A only = Lab B1a (TS full, no SMT). A+ only = SMT boost. Half-risk blocked unless All. Set before Deep Backtest.")
+
 grpLive = "Live entry (optional extra filters)"
-i_requireStaging = input.bool(false, "Require 9:30–9:45 DOL sweep", group = grpLive)
+i_requireStaging = input.bool(false, "Require 9:30-9:45 DOL sweep", group = grpLive)
 i_requirePremDisc = input.bool(true, "Require premium/discount alignment", group = grpLive)
 i_requireFvg = input.bool(false, "Require FVG disrespect (blocks A+/A)", group = grpLive, tooltip = "When ON, only B-tier FVG path can fire without disrespect on A+/A.")
 
-grpTs = "Turtle soup (Vault engine — consumed levels)"
+grpTs = "Turtle soup (Vault engine - consumed levels)"
 i_tsStart = input.int(900, "TS detect from (HHMM)", group = grpTs)
 i_tsEnd = input.int(1100, "TS detect until (HHMM)", group = grpTs)
 i_tsPivot = input.int(5, "Pivot lookback (strength)", minval = 3, maxval = 50, group = grpTs)
@@ -54,19 +58,19 @@ i_tsDisp = input.float(10.0, "Min displacement (pts)", group = grpTs)
 i_usePdhPdl = input.bool(true, "Seed PDH/PDL at 9:30", group = grpTs)
 i_usePremkt = input.bool(true, "Seed premarket H/L at 9:30", group = grpTs)
 
-grpSmt = "SMT at sweep (Master ICT — 5m ES swing)"
+grpSmt = "SMT at sweep (Master ICT - 5m ES swing)"
 i_esSymbol = input.symbol("CME_MINI:MES1!", "ES/MES symbol (pair with MNQ)", group = grpSmt)
 i_smtPivot = input.int(3, "ES swing pivot (5m)", minval = 2, maxval = 10, group = grpSmt)
 
 grpPd = "Premium / discount"
-i_pdAnchor = input.string("PDL ↔ session high", "Dealing range anchor", options = ["PDH ↔ session low", "PDL ↔ session high"], group = grpPd)
+i_pdAnchor = input.string("PDL <-> session high", "Dealing range anchor", options = ["PDH <-> session low", "PDL <-> session high"], group = grpPd)
 
 grpFvg = "FVG triggers"
 i_minFvgPts = input.float(3.0, "Min FVG (pts)", group = grpFvg)
 
 grpEntry = "Entry (SOP: rebalance to FVG / level)"
 i_entryMode = input.string("Market on CE confirm (tap + lift)", "Entry mode", options = ["Market on signal", "Limit retest (CE)", "Market on CE confirm (tap + lift)"], group = grpEntry)
-i_leaveR = input.float(1.0, "Leave N×risk before limit arms (0 = instant)", minval = 0.0, step = 0.25, group = grpEntry)
+i_leaveR = input.float(1.0, "Leave N*risk before limit arms (0 = instant)", minval = 0.0, step = 0.25, group = grpEntry)
 i_retestTimeout = input.int(24, "Setup expires after N bars", minval = 4, maxval = 80, group = grpEntry)
 i_ceTolPts = input.float(2.0, "CE tap tolerance (pts)", minval = 0.0, step = 0.5, group = grpEntry)
 i_ceLiftPts = input.float(2.0, "Min lift off CE for market (pts)", minval = 0.0, step = 0.5, group = grpEntry)
@@ -76,7 +80,7 @@ i_targetAPlus = input.float(50.0, "TP with SMT at sweep (pts)", minval = 30.0, m
 i_targetA = input.float(40.0, "TP without SMT (pts)", minval = 25.0, maxval = 60.0, group = grpRisk)
 i_targetHalf = input.float(30.0, "TP on wide-wick half risk (pts)", minval = 20.0, maxval = 50.0, group = grpRisk)
 i_stopBuf = input.float(1.0, "Stop buffer beyond manip wick (pts)", group = grpRisk)
-i_maxStop = input.float(80.0, "Max entry→stop (pts)", minval = 5.0, maxval = 120.0, step = 5.0, group = grpRisk)
+i_maxStop = input.float(80.0, "Max entry-stop (pts)", minval = 5.0, maxval = 120.0, step = 5.0, group = grpRisk)
 i_riskUsd = input.float(800.0, "Full risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk)
 i_maxContracts = input.int(60, "Max contracts (60 MNQ / 6 NQ)", minval = 1, maxval = 60, group = grpRisk)
 i_halfSize = input.bool(false, "Global HALF risk override (50%)", group = grpRisk)
@@ -87,8 +91,8 @@ i_showGhost = input.bool(false, "Mark ghosts on chart", group = grpGhost)
 i_showTable = input.bool(true, "Show autopsy tables", group = grpGhost)
 
 grpVis = "Visuals"
-i_showBands = input.bool(true, "Shade macro + 9:35–10:15 band", group = grpVis)
-i_showTierLbl = input.bool(true, "Show A+/A/B tier labels", group = grpVis)
+i_showBands = input.bool(true, "Shade macro + 9:35-10:15 band", group = grpVis)
+i_showTierLbl = input.bool(false, "Show A+/A/H tier labels", group = grpVis)
 
 // ─── Time ────────────────────────────────────────────────────────────────────
 int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
@@ -127,8 +131,8 @@ else
         pmHigh := math.max(pmHigh, high)
         pmLow := math.min(pmLow, low)
 
-float rangeHi = i_pdAnchor == "PDH ↔ session low" ? pdh : sessHigh
-float rangeLo = i_pdAnchor == "PDH ↔ session low" ? sessLow : pdl
+float rangeHi = i_pdAnchor == "PDH <-> session low" ? pdh : sessHigh
+float rangeLo = i_pdAnchor == "PDH <-> session low" ? sessLow : pdl
 float eq = (rangeHi + rangeLo) / 2.0
 bool inPremium = close > eq
 bool inDiscount = close < eq
@@ -270,12 +274,20 @@ bool wideShort = sigWick > i_wickFull
 bool coreLong = tsCoreLong and not skipLong
 bool coreShort = tsCoreShort and not skipShort
 
-bool liveLong = allow and coreLong and stagingOk and fvgOkLong
-bool liveShort = allow and coreShort and stagingOk and fvgOkShort
-
-// Tier: 3 = TS+SMT full · 2 = TS only full · 1 = wide wick half (no SMT)
+// Tier: 3 = A+ (TS+SMT) · 2 = A (TS only) · 1 = H (wide wick half, no SMT)
 int sigTierLong = coreLong ? (wideLong and not smtAtSweepBull ? 1 : smtAtSweepBull ? 3 : 2) : 0
 int sigTierShort = coreShort ? (wideShort and not smtAtSweepBear ? 1 : smtAtSweepBear ? 3 : 2) : 0
+
+f_tierAllowed(int tier) =>
+    switch i_tierFilter
+        "A only" => tier == 2
+        "A+ only" => tier == 3
+        "A+ and A" => tier == 2 or tier == 3
+        "All tiers" => tier > 0
+        => tier > 0
+
+bool liveLong = allow and coreLong and stagingOk and fvgOkLong and f_tierAllowed(sigTierLong)
+bool liveShort = allow and coreShort and stagingOk and fvgOkShort and f_tierAllowed(sigTierShort)
 
 f_tierRisk(int tier) =>
     float base = i_halfSize ? i_riskUsd * 0.5 : i_riskUsd
@@ -489,10 +501,10 @@ if strategy.position_size != 0 and suOrd
 // ─── Tier labels ───────────────────────────────────────────────────────────────
 if i_showTierLbl and barstate.isconfirmed
     if coreLong
-        string lbl = sigTierLong == 3 ? "A+" : sigTierLong == 2 ? "A" : "½"
+        string lbl = sigTierLong == 3 ? "A+" : sigTierLong == 2 ? "A" : "H"
         label.new(bar_index, low, lbl, style = label.style_label_up, color = color.new(sigTierLong == 1 ? color.orange : color.teal, 25), textcolor = color.white, size = size.tiny)
     if coreShort
-        string lblS = sigTierShort == 3 ? "A+" : sigTierShort == 2 ? "A" : "½"
+        string lblS = sigTierShort == 3 ? "A+" : sigTierShort == 2 ? "A" : "H"
         label.new(bar_index, high, lblS, style = label.style_label_down, color = color.new(sigTierShort == 1 ? color.orange : color.teal, 25), textcolor = color.white, size = size.tiny)
 
 // ─── Ghost autopsy ───────────────────────────────────────────────────────────
