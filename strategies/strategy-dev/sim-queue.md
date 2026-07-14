@@ -74,7 +74,8 @@ Kill switch:   any book with E[$/wk] ≤ 0 after fees
 2. F3 recipe → TV Deep Backtest → CSV.  
 3. F4 upload matching preset → RUN.  
 4. Compare **E[$/wk]**, P(payout|pass), median withdraw, weeks→payout — not pass% alone.  
-5. Cohort auto-save now includes cycle YAML fields.
+5. Cohort auto-save now includes cycle YAML fields.  
+6. For eval presets with a funded pair (A0a→D1), check **Chain EV panel** after RUN — see [[chain-ev-spec]].
 
 ## Scripts
 

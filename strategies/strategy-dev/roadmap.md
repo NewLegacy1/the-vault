@@ -34,6 +34,17 @@ tags: [roadmap, hypotheses, strategy-dev]
 
 **Correlation check first (3.1):** count days both strategies traded in the shared year; if same-day losses cluster, blending doesn't diversify.
 
+## Track 5 — Chain EV tooling (eval → funded business loop)
+
+> **Spec:** [[chain-ev-spec]] — chained E[$/calendar week], sprint eval vs sustain funded, discretionary bands.
+
+| # | Item | Phase | Status |
+|---|------|-------|--------|
+| 5.1 | Chain panel MVP in F4 Lab (A0a/D1, H0a/H0b pairs) | Phase 1 | **next** |
+| 5.2 | Cohort YAML `chain_*` fields + F8 Results chip | Phase 2 | not started |
+| 5.3 | Execution haircut bands + min-day pad (S4) | Phase 3 | not started |
+| 5.4 | Portfolio parallel (A0a+B1a) + MC `phase_split` v3 | Phase 4 | not started |
+
 ## Simulation queue (post business-loop Lab)
 
 **Source of truth for next TV/Lab runs:** [[sim-queue]] — ranked S1–S12 by E[$/calendar week] leverage.  

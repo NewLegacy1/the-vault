@@ -26,7 +26,8 @@ buy account → pass eval → fund → withdraw (×N) → recycle → buy next
 
 **Account churn is fine** if `E[$/calendar week] > 0` after eval/activation/recycle fees. A slower 80% passer can beat a fast 50% passer; a fast passer with tiny extracts can lose to a medium passer with larger withdrawals.
 
-Script: `npx tsx scripts/analyze-payout-cycle.ts` (TPT $50K matrix books).
+Script: `npx tsx scripts/analyze-payout-cycle.ts` (TPT $50K matrix books).  
+Chained eval→funded pairs: `npx tsx scripts/analyze-chain-ev.ts` (see [[chain-ev-spec]]).
 
 ### Illative snapshot (TPT $50K, 2000 sims, Jul 2026)
 
