@@ -47,7 +47,9 @@ export function MatrixReplayPanel({ activePresetId, onSelectPreset }: MatrixRepl
         const subgroups = matrixPresetsBySubgroup(g.seriesId, g.presets);
         const desc = seriesDescription(g.seriesId);
         const open =
-          g.presets.some((p) => p.id === activePresetId) || g.seriesId === "premium365";
+          g.presets.some((p) => p.id === activePresetId) ||
+          g.seriesId === "premium365" ||
+          g.seriesId === "macro-income";
 
         return (
           <details key={g.seriesId} className="panel matrix-series" open={open || undefined}>

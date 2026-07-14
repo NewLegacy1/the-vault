@@ -62,8 +62,11 @@ export interface MatrixReplayRecipe {
   labUrl: string;
 }
 
-function pineFileForFamily(family: StrategyPreset["family"]): { file: string; label: string } {
-  switch (family) {
+function pineFileForPreset(preset: StrategyPreset): { file: string; label: string } {
+  if (preset.seriesId === "macro-income" || preset.id.startsWith("matrix-m")) {
+    return { file: "pine/Macro_Model_v2.pine", label: "Macro Model v2" };
+  }
+  switch (preset.family) {
     case "prb":
       return { file: "pine/Powell_Rejection_Block_v1.pine", label: "PRB v1.5" };
     case "macro":
@@ -75,7 +78,7 @@ function pineFileForFamily(family: StrategyPreset["family"]): { file: string; la
     case "custom":
       return { file: "—", label: "Custom" };
     default: {
-      const _exhaustive: never = family;
+      const _exhaustive: never = preset.family;
       return _exhaustive;
     }
   }
@@ -89,10 +92,11 @@ export function replayRecipeForPreset(presetId: string): MatrixReplayRecipe | nu
   const preset = presetById(presetId);
   if (!preset?.matrixBranch) return null;
 
-  const pine = pineFileForFamily(preset.family);
+  const pine = pineFileForPreset(preset);
   const derived = preset.dataSource === "derived-b0";
   const prebuilt = preset.dataSource === "prebuilt-ledger";
   const needsTv = !derived && !prebuilt;
+  const isMacroIncome = preset.seriesId === "macro-income";
 
   const baseSteps = [
     `Open ${REPLAY_365D.chart} · ${REPLAY_365D.timeframe} · bar replay or Deep Backtest`,
@@ -101,7 +105,16 @@ export function replayRecipeForPreset(presetId: string): MatrixReplayRecipe | nu
   ];
 
   let steps: string[];
-  if (preset.family === "hybrid") {
+  if (isMacroIncome) {
+    const profile = preset.matrixBranch ?? "M1";
+    steps = [
+      `Paste Macro Model v2 from pine/Macro_Model_v2.pine into a blank strategy`,
+      `Inputs → Profile = ${profile === "M0" ? "M0 · $400 · BE OFF" : profile === "M2" ? "M2 · Volume · $400 · BE@2R" : "M1 · $400 · BE@2R"}`,
+      `Confirm top-left chip: Risk $400 · BE ${profile === "M0" ? "OFF" : "@2R"} · TS ${profile === "M2" ? "NO" : "YES"}`,
+      `MNQ 5m · Deep Backtest ${REPLAY_365D.start} → ${REPLAY_365D.end} · List of Trades → Export CSV`,
+      `F4 Lab → Macro income · ${profile} → upload → RUN (funded MC)`,
+    ];
+  } else if (preset.family === "hybrid") {
     const profile = preset.matrixBranch ?? "H0a";
     const ledger =
       preset.matrixBranch?.toLowerCase().replace(/^h/, "hybrid-h") ?? "hybrid-h0a";
@@ -135,7 +148,7 @@ export function replayRecipeForPreset(presetId: string): MatrixReplayRecipe | nu
   } else if (preset.family === "macro") {
     steps = [
       ...baseSteps,
-      "Macro locked defaults — CE confirm, tiered entries",
+      "Macro v1.4 locked defaults — CE confirm, tiered entries ($800 book)",
       "Export Strategy Tester CSV → F4 Lab → select B0 → RUN",
     ];
   } else {

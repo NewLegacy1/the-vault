@@ -7,6 +7,7 @@ import Link from "next/link";
 
 const PRB_PINE_REV = "v1.10 (Jul 14 2026)";
 const MACRO_PINE_REV = "v1.4 (Jul 14 2026)";
+const MACRO_V2_PINE_REV = "v2.0 (Jul 14 2026)";
 
 export default function StrategiesPage() {
   const [study, setStudy] = useLocal("vault.f3.matrixPreset", DEFAULT_STUDY.presetId);
@@ -63,7 +64,21 @@ export default function StrategiesPage() {
                 B0 full book only in TV. Tier tags (A+/A/H) export in Signal column — Lab derives B1/B3 filters.
               </p>
             </div>
+            <div className="flow-diagram" style={{ flex: 1 }}>
+              <b>Macro income {MACRO_V2_PINE_REV}</b>
+              <div className="small dim" style={{ marginTop: 6 }}>
+                <code className="inline">pine/Macro_Model_v2.pine</code>
+              </div>
+              <p className="small" style={{ lineHeight: 1.6 }}>
+                Matrix M0 / M1 / M2 — $400 risk · Profile picker for BE OFF / BE@2R / volume unlock.
+              </p>
+            </div>
           </div>
+          {activePreset?.seriesId === "macro-income" && (
+            <p className="small warn mt">
+              Income track: run profiles M0 → M1 first (same entries, BE is the A/B). M2 only after M1 settles.
+            </p>
+          )}
           {activePreset?.family === "datahl" && (
             <p className="small warn mt">
               Data H/L: manual bar replay on F7-tagged news days — see recipe above. Not a deep-backtest strategy.
