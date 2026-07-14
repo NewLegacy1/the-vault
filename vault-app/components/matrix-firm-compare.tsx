@@ -9,7 +9,7 @@ import {
   compareFirmsForTrades,
   firmMcForTab,
   MATRIX_COMPARE_FIRM_IDS,
-  normalizeStoredMcPct,
+  mcCompareModeForPhase,
   type FirmMcSnapshot,
   type MatrixCompareFirmId,
 } from "@/lib/firm-matrix-compare";
@@ -31,11 +31,18 @@ function passClass(pct: number): string {
   return "neg";
 }
 
-function FirmPassChart({ rows }: { rows: FirmMcSnapshot[] }) {
+function snapshotPrimaryPct(r: FirmMcSnapshot): number {
+  return r.mcMode === "funded" ? r.payoutPct : r.passPct;
+}
+
+function FirmPassChart({ rows, fundedMode }: { rows: FirmMcSnapshot[]; fundedMode: boolean }) {
   if (rows.length === 0) return null;
   const W = 520;
   const H = 28 + rows.length * 48;
-  const max = Math.max(...rows.map((r) => r.passPct), 1);
+  const max = Math.max(...rows.map((r) => snapshotPrimaryPct(r)), 1);
+  const chartTitle = fundedMode
+    ? "PAYOUT RATE BY FIRM — FUNDED / PRO RULES"
+    : "PASS RATE BY FIRM — EVAL RULES";
 
   return (
     <svg
@@ -44,11 +51,12 @@ function FirmPassChart({ rows }: { rows: FirmMcSnapshot[] }) {
       style={{ background: "#000", border: "1px solid var(--border)", maxWidth: 560 }}
     >
       <text x={W / 2} y={16} fill="#9a9a9a" fontSize={10} textAnchor="middle" fontFamily="monospace" letterSpacing={1}>
-        PASS RATE BY FIRM — SAME TRADE DATA
+        {chartTitle}
       </text>
       {rows.map((r, i) => {
         const y = 28 + i * 48;
-        const bw = (r.passPct / max) * (W - 200);
+        const primary = snapshotPrimaryPct(r);
+        const bw = (primary / max) * (W - 200);
         return (
           <g key={r.ruleId}>
             <text x={8} y={y + 22} fill="#7ec8e3" fontSize={11} fontFamily="monospace">
@@ -56,7 +64,10 @@ function FirmPassChart({ rows }: { rows: FirmMcSnapshot[] }) {
             </text>
             <rect x={130} y={y + 8} width={Math.max(bw, 2)} height={22} fill="#3ecf8e" opacity={0.72} />
             <text x={W - 8} y={y + 22} fill="#e8e8e8" fontSize={11} textAnchor="end" fontFamily="monospace">
-              {r.passPct}% · bust {r.bustPct}%
+              {primary}%
+              {fundedMode && r.recyclePct != null ? ` · recycle ${r.recyclePct}%` : ""}
+              {" · bust "}
+              {r.bustPct}%
             </text>
           </g>
         );
@@ -93,6 +104,8 @@ export function MatrixFirmCompare({
   const [computing, setComputing] = useState(false);
 
   const preset = presetById(presetId);
+  const compareMode = mcCompareModeForPhase(preset?.phase ?? cohort?.phase);
+  const fundedMode = compareMode === "funded";
   const resolved = useMemo(
     () => resolveMatrixTrades(presetId, ledgers, cohort),
     [presetId, ledgers, cohort]
@@ -118,6 +131,8 @@ export function MatrixFirmCompare({
         sims,
         maxTrades,
         payoutBuffer,
+        strategyPhase: preset?.phase,
+        compareMode,
       });
       setComputed(snaps);
       setComputeSource(resolved.source);
@@ -141,11 +156,11 @@ export function MatrixFirmCompare({
 
     setComputed(null);
     setComputeSource("none");
-  }, [presetId, resolved, cohort, sims, maxTrades, payoutBuffer, initialSnapshots]);
+  }, [presetId, resolved, cohort, sims, maxTrades, payoutBuffer, initialSnapshots, preset?.phase, compareMode]);
 
   const rows = computed ?? [];
   const best = rows.length
-    ? rows.reduce((a, b) => (b.passPct > a.passPct ? b : a))
+    ? rows.reduce((a, b) => (snapshotPrimaryPct(b) > snapshotPrimaryPct(a) ? b : a))
     : null;
   const activeRule = ruleById(selectedFirm);
   const activeSnap = rows.find((r) => r.ruleId === selectedFirm);

@@ -8,12 +8,9 @@ import {
   type MatrixCompareFirmId,
 } from "@/lib/firm-matrix-compare";
 import { cohortForPreset } from "@/lib/matrix-cohort";
-import { matrixPresets, type StrategyPreset } from "@/lib/lab-profile";
+import { matrixPresetsBySeries, type StrategyPreset } from "@/lib/lab-profile";
+import { seriesLabel } from "@/lib/experiment-series";
 import { ruleById } from "@/lib/prop-firms";
-
-function premiumMatrixPresets(): StrategyPreset[] {
-  return matrixPresets().filter((p) => p.matrixTrack !== "experimental");
-}
 
 const FIRM_TABS: { id: MatrixCompareFirmId; label: string }[] = [
   { id: "tpt50", label: "TPT $50K" },
@@ -40,6 +37,7 @@ function passClass(pct: number): string {
 
 function sourceLabel(p: StrategyPreset): string {
   if (p.dataSource === "derived-b0") return "derived";
+  if (p.dataSource === "prebuilt-ledger") return "ledger";
   if (p.matrixTrack === "experimental") return "new";
   return "TV";
 }
@@ -101,15 +99,16 @@ export function MatrixResults({
   const loading = loadingProp ?? loadingLocal;
   const loadErr = loadErrProp ?? loadErrLocal;
 
-  const rows = useMemo(() => matrixPresets(), []);
-  const premiumRows = useMemo(() => premiumMatrixPresets(), []);
+  const seriesGroups = useMemo(() => matrixPresetsBySeries(), []);
+  const premiumRows = useMemo(
+    () => seriesGroups.find((g) => g.seriesId === "premium365")?.presets ?? [],
+    [seriesGroups]
+  );
   const filled = useMemo(
     () => premiumRows.filter((p) => cohortForPreset(cohorts, p)).length,
     [premiumRows, cohorts]
   );
 
-  const premium = premiumRows;
-  const experimental = rows.filter((p) => p.matrixTrack === "experimental");
   const activeRule = ruleById(firmTab);
 
   const bestForFirm = useMemo(() => {
@@ -118,15 +117,28 @@ export function MatrixResults({
       const saved = cohortForPreset(cohorts, preset);
       if (!saved) continue;
       const mc = firmMcForTab(saved, firmTab);
-      if (!mc) continue;
-      if (!best || mc.passPct > best.passPct) {
-        best = { presetId: preset.id, passPct: mc.passPct };
+      const pct = matrixPrimaryMcPct(preset.phase, mc);
+      if (pct == null) continue;
+      if (!best || pct > best.passPct) {
+        best = { presetId: preset.id, passPct: pct };
       }
     }
     return best;
   }, [premiumRows, cohorts, firmTab]);
 
-  const renderTable = (section: StrategyPreset[], title: string) => (
+  const renderTable = (section: StrategyPreset[], title: string) => {
+    const sectionFunded = section.some((p) => p.phase === "funded");
+    const sectionEval = section.some((p) => p.phase !== "funded");
+    const primaryHeader =
+      sectionFunded && sectionEval
+        ? "Pass/Payout %"
+        : sectionFunded
+          ? "Payout %"
+          : "Pass %";
+    const weeksHeader =
+      sectionFunded && !sectionEval ? "Wk→payout" : sectionFunded && sectionEval ? "Wk" : "Wk→pass";
+
+    return (
     <>
       <div className="small dim" style={{ margin: "12px 0 6px", letterSpacing: 0.5 }}>
         {title}
@@ -139,9 +151,10 @@ export function MatrixResults({
             <th>Strategy</th>
             <th className="num">Trades</th>
             <th className="num">Net</th>
-            <th className="num">Pass %</th>
+            <th className="num">{primaryHeader}</th>
             <th className="num">Bust %</th>
-            <th className="num">Wk→pass</th>
+            {sectionFunded && <th className="num">Recycle %</th>}
+            <th className="num">{weeksHeader}</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -149,8 +162,11 @@ export function MatrixResults({
           {section.map((preset) => {
             const saved = cohortForPreset(cohorts, preset);
             const mc = saved ? firmMcForTab(saved, firmTab) : null;
+            const primaryPct = matrixPrimaryMcPct(preset.phase, mc);
+            const weeks = matrixWeeksMc(preset.phase, mc);
+            const isFundedRow = mcCompareModeForPhase(preset.phase) === "funded";
             const active = preset.id === activePresetId;
-            const isBest = bestForFirm?.presetId === preset.id && mc != null;
+            const isBest = bestForFirm?.presetId === preset.id && primaryPct != null;
             return (
               <tr
                 key={preset.id}
@@ -177,11 +193,16 @@ export function MatrixResults({
                 <td className={"num " + (saved && saved.netPnl >= 0 ? "pos" : saved ? "neg" : "")}>
                   {saved ? fmtUsd(saved.netPnl, true) : "—"}
                 </td>
-                <td className={"num " + (mc ? passClass(mc.passPct) : "")}>
-                  {mc ? `${mc.passPct}%` : "—"}
+                <td className={"num " + (primaryPct != null ? passClass(primaryPct) : "")}>
+                  {primaryPct != null ? `${primaryPct}%` : "—"}
                 </td>
                 <td className="num neg">{mc ? `${mc.bustPct}%` : "—"}</td>
-                <td className="num">{mc ? fmtWeeks(mc.weeksToPassP50) : "—"}</td>
+                {sectionFunded && (
+                  <td className="num">
+                    {isFundedRow && mc?.recyclePct != null ? `${mc.recyclePct}%` : isFundedRow ? "—" : ""}
+                  </td>
+                )}
+                <td className="num">{weeks != null ? fmtWeeks(weeks) : "—"}</td>
                 <td className={"small " + (saved ? "pos" : "warn")}>{saved ? "saved" : "not run"}</td>
               </tr>
             );
@@ -190,6 +211,7 @@ export function MatrixResults({
       </table>
     </>
   );
+  };
 
   return (
     <div className="matrix-results">
@@ -219,8 +241,8 @@ export function MatrixResults({
 
       {activeRule && (
         <p className="small dim" style={{ marginTop: 0, marginBottom: 10, lineHeight: 1.55 }}>
-          Table sorted by <span className="accent">{activeRule.name}</span> — full multi-firm chart loads in the panel below
-          the selected row.
+          Table uses <span className="accent">{activeRule.name}</span> — eval rows show pass %, funded rows show payout %
+          (PRO survival + recycle). Full multi-firm chart loads below the selected row.
         </p>
       )}
 
@@ -229,8 +251,9 @@ export function MatrixResults({
         <p className="small warn">No cohorts yet — run MC in Lab with auto-save.</p>
       )}
 
-      {renderTable(premium, "Premium 365d")}
-      {experimental.length > 0 && renderTable(experimental, "Experimental / future strategies")}
+      {seriesGroups.map((g) =>
+        renderTable(g.presets, seriesLabel(g.seriesId))
+      )}
     </div>
   );
 }

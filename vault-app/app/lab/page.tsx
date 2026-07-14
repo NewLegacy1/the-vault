@@ -1302,6 +1302,7 @@ export default function LabPage() {
       strategyConfig: preset?.config ?? "",
       strategyFamily: preset?.family ?? "custom",
       phase: preset?.phase ?? "research",
+      experimentSeries: preset?.seriesId,
       hypothesis: study.hypothesis,
       regimes: study.regimes,
       notes: study.hypothesis,
@@ -1447,8 +1448,19 @@ export default function LabPage() {
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
+                    <optgroup label="Hybrid sleeve (H)">
+                      {labDropdownPresets().filter((p) => p.seriesId === "hybrid-sleeve").map((p) => (
+                        <option key={p.id} value={p.id}>{p.label}</option>
+                      ))}
+                    </optgroup>
                     <optgroup label="Experimental">
-                      {labDropdownPresets().filter((p) => p.phase === "research" || p.phase === "combined").map((p) => (
+                      {labDropdownPresets()
+                        .filter(
+                          (p) =>
+                            (p.phase === "research" || p.phase === "combined") &&
+                            p.seriesId !== "hybrid-sleeve"
+                        )
+                        .map((p) => (
                         <option key={p.id} value={p.id}>{p.label}</option>
                       ))}
                     </optgroup>
@@ -1470,7 +1482,9 @@ export default function LabPage() {
                     <div className="accent" style={{ marginTop: 4 }}>
                       {activePreset.dataSource === "derived-b0"
                         ? "Derived from B0 Macro export — not a separate TV run. "
-                        : ""}
+                        : activePreset.dataSource === "prebuilt-ledger"
+                          ? "Prebuilt ledger — no new TV run. "
+                          : ""}
                       {activePreset.uploadHint}
                     </div>
                   )}

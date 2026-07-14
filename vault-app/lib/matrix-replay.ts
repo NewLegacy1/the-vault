@@ -90,7 +90,8 @@ export function replayRecipeForPreset(presetId: string): MatrixReplayRecipe | nu
 
   const pine = pineFileForFamily(preset.family);
   const derived = preset.dataSource === "derived-b0";
-  const needsTv = !derived;
+  const prebuilt = preset.dataSource === "prebuilt-ledger";
+  const needsTv = !derived && !prebuilt;
 
   const baseSteps = [
     `Open ${REPLAY_365D.chart} · ${REPLAY_365D.timeframe} · bar replay or Deep Backtest`,
@@ -99,7 +100,15 @@ export function replayRecipeForPreset(presetId: string): MatrixReplayRecipe | nu
   ];
 
   let steps: string[];
-  if (derived) {
+  if (prebuilt) {
+    const ledger =
+      preset.matrixBranch?.toLowerCase().replace(/^h/, "hybrid-h") ?? "hybrid-*.csv";
+    steps = [
+      "No new TradingView export — ledger is built from A0a/D1 + B1a matrix CSVs",
+      `File: vault-app/data/tv-exports/matrix/${ledger}.csv (rebuild: npx tsx scripts/build-hybrid-matrix.ts)`,
+      `F4 Lab → select ${preset.matrixBranch} → upload that CSV → RUN (cohort saves to combined/)`,
+    ];
+  } else if (derived) {
     steps = [
       "Run B0 once in TradingView — upload full Macro CSV to F4 Lab on B0 row",
       `Select ${preset.matrixBranch} in Lab — dataset auto-filters from B0 (no re-export)`,

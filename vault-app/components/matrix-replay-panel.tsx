@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { matrixPresets, type StrategyPreset } from "@/lib/lab-profile";
+import { matrixPresetsBySeries, type StrategyPreset } from "@/lib/lab-profile";
+import { seriesLabel } from "@/lib/experiment-series";
 import { replayRecipeForPreset } from "@/lib/matrix-replay";
 
 export interface MatrixReplayPanelProps {
@@ -15,11 +16,8 @@ function presetChipLabel(p: StrategyPreset): string {
 }
 
 export function MatrixReplayPanel({ activePresetId, onSelectPreset }: MatrixReplayPanelProps) {
-  const rows = useMemo(() => matrixPresets(), []);
+  const seriesGroups = useMemo(() => matrixPresetsBySeries(), []);
   const recipe = useMemo(() => replayRecipeForPreset(activePresetId), [activePresetId]);
-
-  const premium = rows.filter((p) => p.matrixTrack !== "experimental");
-  const experimental = rows.filter((p) => p.matrixTrack === "experimental");
 
   const renderChips = (section: StrategyPreset[], title: string) => (
     <div style={{ marginBottom: 12 }}>
@@ -36,7 +34,11 @@ export function MatrixReplayPanel({ activePresetId, onSelectPreset }: MatrixRepl
             title={p.label}
           >
             {presetChipLabel(p)}
-            {p.dataSource === "derived-b0" ? " · derived" : ""}
+            {p.dataSource === "derived-b0"
+              ? " · derived"
+              : p.dataSource === "prebuilt-ledger"
+                ? " · ledger"
+                : ""}
           </button>
         ))}
       </div>
@@ -45,8 +47,7 @@ export function MatrixReplayPanel({ activePresetId, onSelectPreset }: MatrixRepl
 
   return (
     <>
-      {renderChips(premium, "Premium 365d")}
-      {experimental.length > 0 && renderChips(experimental, "Experimental")}
+      {seriesGroups.map((g) => renderChips(g.presets, seriesLabel(g.seriesId)))}
 
       {recipe && (
         <div className="panel" style={{ borderColor: "var(--accent)", marginTop: 8 }}>

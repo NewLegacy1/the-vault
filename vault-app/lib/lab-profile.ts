@@ -1,8 +1,10 @@
 /** Strategy family and prop-firm phase for Obsidian cohort organization. */
 export type StrategyFamily = "prb" | "macro" | "datahl" | "hybrid" | "custom";
 export type StrategyPhase = "eval" | "funded" | "combined" | "research";
-/** premium365 = current matrix; experimental = new strategies under test */
+/** premium365 = control matrix; experimental = new series under test */
 export type MatrixTrack = "premium365" | "experimental";
+/** Ledger provenance for Lab upload / filter UX */
+export type PresetDataSource = "tv-export" | "derived-b0" | "prebuilt-ledger";
 
 export interface StrategyPreset {
   id: string;
@@ -16,15 +18,33 @@ export interface StrategyPreset {
   /** Show in Lab matrix grid */
   inMatrix?: boolean;
   matrixTrack?: MatrixTrack;
-  /** tv-export = separate TradingView run; derived-b0 = filter from Macro B0 */
-  dataSource?: "tv-export" | "derived-b0";
+  /**
+   * Experiment series for matrix grouping (see experiment-series.ts).
+   * Premium control study = "premium365"; hybrid sleeve = "hybrid-sleeve"; etc.
+   */
+  seriesId?: string;
+  /** tv-export = TV run; derived-b0 = filter from Macro B0; prebuilt-ledger = vault-built CSV */
+  dataSource?: PresetDataSource;
   uploadHint?: string;
   defaultHypothesis?: string;
 }
 
-/** Premium 365d matrix — the only presets shown in F4 LAB dropdown. */
+function premiumRow(
+  partial: Omit<StrategyPreset, "matrixTrack" | "seriesId" | "inMatrix"> &
+    Partial<Pick<StrategyPreset, "matrixTrack" | "seriesId" | "inMatrix" | "dataSource">>
+): StrategyPreset {
+  return {
+    inMatrix: true,
+    matrixTrack: "premium365",
+    seriesId: "premium365",
+    dataSource: "tv-export",
+    ...partial,
+  };
+}
+
+/** Premium 365d matrix — control study shown in F4 LAB dropdown. */
 export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
-  {
+  premiumRow({
     id: "matrix-a0a",
     label: "A0a · PRB control",
     version: "v1.5",
@@ -33,13 +53,10 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     defaultRegimes: ["baseline", "be-only"],
     family: "prb",
     phase: "eval",
-    uploadHint: "Your A0a TV CSV (one file).",
+    uploadHint: "Your A0a TV CSV (one file) — or prb-matrix-a0a.csv from vault matrix folder.",
     defaultHypothesis: "Premium 365d eval baseline",
-    inMatrix: true,
-    matrixTrack: "premium365",
-    dataSource: "tv-export",
-  },
-  {
+  }),
+  premiumRow({
     id: "matrix-a0b",
     label: "A0b · PRB BE@2R + PDH/PDL",
     version: "v1.5",
@@ -50,8 +67,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "eval",
     uploadHint: "Your A0b TV CSV (one file).",
     defaultHypothesis: "Premium 365d BE@2R+PDH",
-  },
-  {
+  }),
+  premiumRow({
     id: "matrix-a1c",
     label: "A1c · PRB BE@2R + PDH + cap $1,490",
     version: "v1.5",
@@ -62,8 +79,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "eval",
     uploadHint: "Your A1c TV CSV (one file).",
     defaultHypothesis: "TPT consistency-safe eval",
-  },
-  {
+  }),
+  premiumRow({
     id: "matrix-d1",
     label: "D1 · PRB RR6 funded raw",
     version: "v1.5",
@@ -74,8 +91,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "funded",
     uploadHint: "Your D1 TV CSV (one file).",
     defaultHypothesis: "PRO economics — no consistency",
-  },
-  {
+  }),
+  premiumRow({
     id: "matrix-b0",
     label: "B0 · Macro v1.4 full book",
     version: "v1.4",
@@ -86,9 +103,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "funded",
     uploadHint: "Your B0 Macro TV CSV (one file).",
     defaultHypothesis: "Macro v1.4 premium 365d full",
-    dataSource: "tv-export",
-  },
-  {
+  }),
+  premiumRow({
     id: "matrix-b1a",
     label: "B1a · Macro A-tier only",
     version: "v1.4",
@@ -100,8 +116,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     uploadHint: "macro-matrix-b1a.csv or filter from B0.",
     defaultHypothesis: "Funded primary — A-tier only",
     dataSource: "derived-b0",
-  },
-  {
+  }),
+  premiumRow({
     id: "matrix-b1b",
     label: "B1b · Macro A + H (no A+)",
     version: "v1.4",
@@ -113,8 +129,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     uploadHint: "macro-matrix-b1b.csv or filter from B0.",
     defaultHypothesis: "Drop A+ — keep A and H",
     dataSource: "derived-b0",
-  },
-  {
+  }),
+  premiumRow({
     id: "matrix-b1c",
     label: "B1c · Macro A+ only",
     version: "v1.4",
@@ -126,8 +142,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     uploadHint: "macro-matrix-b1c.csv or filter from B0.",
     defaultHypothesis: "Isolate A+ tier",
     dataSource: "derived-b0",
-  },
-  {
+  }),
+  premiumRow({
     id: "matrix-b3a",
     label: "B3a · Macro A-tier @ 0.5× risk",
     version: "v1.4",
@@ -139,8 +155,8 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     uploadHint: "macro-matrix-b3a.csv or filter from B0.",
     defaultHypothesis: "Halved risk on A-tier",
     dataSource: "derived-b0",
-  },
-  {
+  }),
+  premiumRow({
     id: "matrix-b3b",
     label: "B3b · Macro full book @ 0.5× risk",
     version: "v1.4",
@@ -152,11 +168,70 @@ export const LAB_STRATEGY_PRESETS: StrategyPreset[] = [
     uploadHint: "macro-matrix-b3b.csv or filter from B0.",
     defaultHypothesis: "Halved risk full book",
     dataSource: "derived-b0",
-  },
+  }),
 ];
+
+function hybridRow(
+  partial: Omit<StrategyPreset, "matrixTrack" | "seriesId" | "inMatrix" | "family" | "phase" | "dataSource"> &
+    Partial<Pick<StrategyPreset, "phase" | "defaultRegimes">>
+): StrategyPreset {
+  return {
+    family: "hybrid",
+    phase: "combined",
+    inMatrix: true,
+    matrixTrack: "experimental",
+    seriesId: "hybrid-sleeve",
+    dataSource: "prebuilt-ledger",
+    defaultRegimes: ["baseline"],
+    ...partial,
+  };
+}
 
 /** New strategies under development — add rows here; they appear in matrix + dropdown. */
 export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
+  hybridRow({
+    id: "matrix-h0a",
+    label: "H0a · A0a + B1a union",
+    version: "h0",
+    matrixBranch: "H0a",
+    config: "PRB control ∪ Macro A-tier · chronological merge",
+    uploadHint:
+      "Upload vault-app/data/tv-exports/matrix/hybrid-h0a.csv (built — no new TV run).",
+    defaultHypothesis: "Portfolio sleeve: more wins, RR diluted — pass ≈ A0a",
+  }),
+  hybridRow({
+    id: "matrix-h0b",
+    label: "H0b · D1 + B1a union",
+    version: "h0",
+    matrixBranch: "H0b",
+    config: "PRB RR6 ∪ Macro A-tier · funded sleeve",
+    defaultRegimes: ["runner", "baseline"],
+    uploadHint:
+      "Upload vault-app/data/tv-exports/matrix/hybrid-h0b.csv (built — no new TV run).",
+    defaultHypothesis: "Funded money-max sleeve — D1 RR + Macro A fillers",
+  }),
+  hybridRow({
+    id: "matrix-h1a",
+    label: "H1a · A0a + B1a quiet-only",
+    version: "h1",
+    matrixBranch: "H1a",
+    config: "PRB full ∪ Macro A on quiet days only",
+    defaultRegimes: ["baseline", "news"],
+    uploadHint:
+      "Upload vault-app/data/tv-exports/matrix/hybrid-h1a.csv (Macro red-folder rows dropped).",
+    defaultHypothesis: "Drop Macro red-folder bleed; keep PRB on news",
+  }),
+  hybridRow({
+    id: "matrix-h1b",
+    label: "H1b · D1 + B1a quiet-only",
+    version: "h1",
+    matrixBranch: "H1b",
+    config: "PRB RR6 ∪ Macro A quiet-only · funded",
+    defaultRegimes: ["runner", "baseline", "news"],
+    uploadHint:
+      "Upload vault-app/data/tv-exports/matrix/hybrid-h1b.csv (Macro red-folder rows dropped).",
+    defaultHypothesis: "Funded sleeve with Macro news filter",
+  }),
   {
     id: "datahl-v0-cisd",
     label: "X0a · Data H/L v0",
@@ -168,6 +243,7 @@ export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "research",
     inMatrix: true,
     matrixTrack: "experimental",
+    seriesId: "datahl",
     dataSource: "tv-export",
     uploadHint: "Data H/L replay CSV (F7 tags CPI/NFP days first).",
     defaultHypothesis: "News-window edge vs PRB 10am",
@@ -183,6 +259,7 @@ export const EXPERIMENTAL_STRATEGY_PRESETS: StrategyPreset[] = [
     phase: "research",
     inMatrix: true,
     matrixTrack: "experimental",
+    seriesId: "custom",
     dataSource: "tv-export",
     uploadHint: "Any TV export — name in hypothesis.",
     defaultHypothesis: "",
@@ -327,6 +404,33 @@ export function matrixPresets(): StrategyPreset[] {
   return [...LAB_STRATEGY_PRESETS, ...EXPERIMENTAL_STRATEGY_PRESETS].filter(
     (p) => p.inMatrix !== false && Boolean(p.matrixBranch)
   );
+}
+
+/** Group matrix rows by experiment series (order from experiment-series.ts). */
+export function matrixPresetsBySeries(): { seriesId: string; presets: StrategyPreset[] }[] {
+  const rows = matrixPresets();
+  const by = new Map<string, StrategyPreset[]>();
+  for (const p of rows) {
+    const sid = p.seriesId ?? (p.matrixTrack === "experimental" ? "custom" : "premium365");
+    const list = by.get(sid) ?? [];
+    list.push(p);
+    by.set(sid, list);
+  }
+  // Lazy import avoided — keep order via known ids + leftovers
+  const ORDER = ["premium365", "hybrid-sleeve", "datahl", "custom"];
+  const seen = new Set<string>();
+  const out: { seriesId: string; presets: StrategyPreset[] }[] = [];
+  for (const id of ORDER) {
+    const presets = by.get(id);
+    if (presets?.length) {
+      out.push({ seriesId: id, presets });
+      seen.add(id);
+    }
+  }
+  for (const [id, presets] of by) {
+    if (!seen.has(id) && presets.length) out.push({ seriesId: id, presets });
+  }
+  return out;
 }
 
 export function isLabPresetId(id: string): boolean {

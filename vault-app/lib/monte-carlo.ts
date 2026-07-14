@@ -14,6 +14,20 @@ export interface McConsistencyRule {
   minDays: number;
 }
 
+/** Funded-phase sim — survival, payout buffer, optional account recycling before PRO+. */
+export interface McFundedRules {
+  /** Profit above $0 required to clear buffer (TPT: $2,000 → $52k balance). */
+  payoutProfitTarget: number;
+  /** Cumulative PRO profit cap before recycle complete (TPT PRO+ trigger: $5,000). */
+  recycleProfitCap?: number;
+  /** Reset account after each payout to model withdraw + fresh PRO. */
+  accountRecycling?: boolean;
+  /** Funded payout-request consistency (e.g. Alpha Zero ~40%). 0 = none. */
+  payoutConsistencyPct?: number;
+}
+
+export type McSimMode = "eval_path" | "funded_only";
+
 export interface McParams {
   trades: number[];
   dates?: string[];
@@ -27,6 +41,9 @@ export interface McParams {
   consistency?: McConsistencyRule;
   /** Resample mode; defaults from dates + consistency when omitted. */
   bootstrap?: McBootstrap;
+  /** eval_path = eval → funded → payout (default). funded_only = PRO survival + recycle. */
+  simMode?: McSimMode;
+  funded?: McFundedRules;
 }
 
 export interface McEconomics {
@@ -70,6 +87,8 @@ export interface McResult {
   grossPassRate?: number;
   /** Crossed pass line but never cleared consistency before bust/timeout. */
   consistencyBlockedRate?: number;
+  /** Funded-only: % of sims that completed ≥1 withdraw + account recycle before cap. */
+  recycleRate?: number;
 }
 
 export interface McSamplePath {
@@ -215,10 +234,23 @@ function evalPassReady(
   return bestPct < consistency.consistencyPct && tradingDays >= consistency.minDays;
 }
 
+function payoutConsistencyReady(
+  cumulative: number,
+  bestDayPnl: number,
+  payoutConsistencyPct: number
+): boolean {
+  if (payoutConsistencyPct <= 0) return true;
+  if (cumulative < 0) return false;
+  const bestPct = cumulative > 0 ? (bestDayPnl / cumulative) * 100 : 100;
+  return bestPct < payoutConsistencyPct;
+}
+
 type SimPhase = "eval" | "funded" | "bust" | "done";
 
 export function runMonteCarlo(params: McParams): McResult {
   const { trades, dates, sims, maxTrades, trailingDD, passAt } = params;
+  const fundedOnly = params.simMode === "funded_only";
+  const fundedRules = params.funded;
   const fees: McFees = params.fees ?? {
     evalFee: 0,
     activationFee: 0,
@@ -226,13 +258,17 @@ export function runMonteCarlo(params: McParams): McResult {
     payoutBuffer: 1000,
   };
   const consistency =
-    params.consistency && params.consistency.consistencyPct > 0 ? params.consistency : undefined;
+    !fundedOnly && params.consistency && params.consistency.consistencyPct > 0
+      ? params.consistency
+      : undefined;
   const daily = dates ? buildDailyPnls(trades, dates) : [];
   const dailyPnls = daily.map((d) => d.pnl);
   const weekBlocks = buildWeekBlocks(daily);
   const bootstrap = resolveMcBootstrap(trades, dates, params.bootstrap, consistency);
   const consistencyAware = Boolean(consistency);
-  const payoutAt = passAt + fees.payoutBuffer;
+  const payoutAt = fundedOnly
+    ? (fundedRules?.payoutProfitTarget ?? fees.payoutBuffer)
+    : passAt + fees.payoutBuffer;
   const tpw = tradesPerWeekFromDates(dates);
   const evalCost = fees.evalFee || fees.monthlyFee || 0;
 
@@ -285,6 +321,7 @@ export function runMonteCarlo(params: McParams): McResult {
   let payouts = 0;
   let grossPasses = 0;
   let consistencyBlocked = 0;
+  let recycleCompletes = 0;
   let outcomeCounts = { payout: 0, pass: 0, consBlock: 0, bust: 0, open: 0 };
 
   for (let s = 0; s < sims; s++) {
@@ -292,7 +329,7 @@ export function runMonteCarlo(params: McParams): McResult {
     let eq = 0;
     let peak = 0;
     let maxDD = 0;
-    let phase: SimPhase = "eval";
+    let phase: SimPhase = fundedOnly ? "funded" : "eval";
     let passed = false;
     let gotPayout = false;
     let hitGrossPass = false;
@@ -300,6 +337,9 @@ export function runMonteCarlo(params: McParams): McResult {
     let cumulative = 0;
     let bestDayPnl = 0;
     let tradingDays = 0;
+    let cumulativeFundedProfit = 0;
+    let recycleCycles = 0;
+    let hadAnyPayout = false;
     const pathTrace: number[] = [0];
     paths[0][s] = 0;
 
@@ -314,23 +354,50 @@ export function runMonteCarlo(params: McParams): McResult {
         peak = Math.max(peak, eq);
         maxDD = Math.max(maxDD, peak - eq);
 
-        if (cumulative >= passAt) hitGrossPass = true;
+        if (!fundedOnly && cumulative >= passAt) hitGrossPass = true;
 
         if (peak - eq >= trailingDD) {
           phase = "bust";
-        } else if (phase === "eval" && evalPassReady(cumulative, bestDayPnl, tradingDays, passAt, consistency)) {
+        } else if (!fundedOnly && phase === "eval" && evalPassReady(cumulative, bestDayPnl, tradingDays, passAt, consistency)) {
           phase = "funded";
           passed = true;
           tradesToPass.push(t);
         } else if (phase === "funded" && eq >= payoutAt) {
-          tradesToPayout.push(t);
-          const wks = weeksFromTrades(t, tpw) ?? 0;
-          const evalMonths = evalMonthsForWeeks(wks, fees.monthlyFee);
-          const totalFees = fees.evalFee + fees.activationFee + evalMonths * fees.monthlyFee;
-          netOnPass.push(payoutAt - totalFees);
-          payouts++;
-          gotPayout = true;
-          phase = "done";
+          const payoutConsPct = fundedOnly ? (fundedRules?.payoutConsistencyPct ?? 0) : 0;
+          const payoutReady =
+            !fundedOnly || payoutConsistencyReady(cumulative, bestDayPnl, payoutConsPct);
+
+          if (payoutReady) {
+            tradesToPayout.push(t);
+            const wks = weeksFromTrades(t, tpw) ?? 0;
+            const evalMonths = evalMonthsForWeeks(wks, fees.monthlyFee);
+            const totalFees = fundedOnly
+              ? fees.activationFee
+              : fees.evalFee + fees.activationFee + evalMonths * fees.monthlyFee;
+            netOnPass.push(eq - totalFees);
+            payouts++;
+            hadAnyPayout = true;
+            gotPayout = true;
+            cumulativeFundedProfit += eq;
+
+            const recycleCap = fundedRules?.recycleProfitCap ?? Infinity;
+            const canRecycle =
+              fundedOnly &&
+              fundedRules?.accountRecycling &&
+              cumulativeFundedProfit < recycleCap;
+
+            if (canRecycle) {
+              recycleCycles++;
+              eq = 0;
+              peak = 0;
+              cumulative = 0;
+              bestDayPnl = 0;
+              tradingDays = 0;
+              gotPayout = false;
+            } else {
+              phase = "done";
+            }
+          }
         }
       }
 
@@ -346,8 +413,9 @@ export function runMonteCarlo(params: McParams): McResult {
 
     if (passed) passes++;
     if (phase === "bust") busts++;
+    if (fundedOnly && recycleCycles >= 1 && phase !== "bust") recycleCompletes++;
 
-    if (gotPayout) outcomeCounts.payout++;
+    if (hadAnyPayout) outcomeCounts.payout++;
     else if (passed) outcomeCounts.pass++;
     else if (hitGrossPass) outcomeCounts.consBlock++;
     else if (phase === "bust") outcomeCounts.bust++;
@@ -357,7 +425,7 @@ export function runMonteCarlo(params: McParams): McResult {
     maxDDs.push(maxDD);
 
     if (s % Math.max(1, Math.floor(sims / MAX_SAMPLES)) === 0 && samplePaths.length < MAX_SAMPLES) {
-      const outcome: McSamplePath["outcome"] = gotPayout
+      const outcome: McSamplePath["outcome"] = hadAnyPayout
         ? "payout"
         : passed
           ? "pass"
@@ -385,16 +453,21 @@ export function runMonteCarlo(params: McParams): McResult {
   const ddSorted = [...maxDDs].sort((a, b) => a - b);
   const netSorted = [...netOnPass].sort((a, b) => a - b);
 
-  const passRate = passes / sims;
+  const payoutRate = payouts / sims;
+  const passRate = fundedOnly ? payoutRate : passes / sims;
   const bustRate = outcomeCounts.bust / sims;
   const timeoutRate = outcomeCounts.open / sims;
-  const payoutRate = payouts / sims;
+  const recycleRate = fundedOnly ? recycleCompletes / sims : undefined;
 
-  const expectedAccounts = passRate > 0 ? Math.round((1 / passRate) * 10) / 10 : Infinity;
+  const rateForAccounts = fundedOnly ? payoutRate : passRate;
+  const expectedAccounts =
+    rateForAccounts > 0 ? Math.round((1 / rateForAccounts) * 10) / 10 : Infinity;
   const accountsFor90Pct =
-    passRate > 0 ? Math.ceil(Math.log(0.1) / Math.log(1 - passRate)) : Infinity;
+    rateForAccounts > 0 ? Math.ceil(Math.log(0.1) / Math.log(1 - rateForAccounts)) : Infinity;
 
-  const weeksPassP50 = weeksFromTrades(ttpSorted.length ? percentile(ttpSorted, 0.5) : null, tpw);
+  const weeksPassP50 = fundedOnly
+    ? weeksFromTrades(ttpaySorted.length ? percentile(ttpaySorted, 0.5) : null, tpw)
+    : weeksFromTrades(ttpSorted.length ? percentile(ttpSorted, 0.5) : null, tpw);
   const medianNet = netSorted.length ? percentile(netSorted, 0.5) : 0;
   const costOnFail = evalCost;
 
@@ -451,5 +524,6 @@ export function runMonteCarlo(params: McParams): McResult {
     consistencyAware,
     grossPassRate: consistencyAware ? grossPasses / sims : undefined,
     consistencyBlockedRate: consistencyAware ? consistencyBlocked / sims : undefined,
+    recycleRate,
   };
 }

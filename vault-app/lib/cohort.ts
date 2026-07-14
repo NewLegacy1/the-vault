@@ -1,5 +1,6 @@
 import { McEconomics, McResult } from "./monte-carlo";
 import type { StrategyFamily, StrategyPhase } from "./lab-profile";
+import { normalizeMcPct } from "./firm-matrix-compare";
 
 export type { StrategyFamily, StrategyPhase };
 
@@ -83,6 +84,8 @@ export interface CohortFirmMcEntry {
   passPct: number;
   bustPct: number;
   payoutPct: number;
+  recyclePct?: number;
+  mcMode?: "eval" | "funded";
   weeksToPassP50: number | null;
   weeksToPayoutP50: number | null;
   passAt?: number;
@@ -140,6 +143,8 @@ export interface CohortSaveInput {
   strategyConfig: string;
   strategyFamily: StrategyFamily;
   phase: StrategyPhase;
+  /** Experiment series id — e.g. premium365, hybrid-sleeve (matrix grouping). */
+  experimentSeries?: string;
   hypothesis: string;
   regimes: string[];
   notes: string;
@@ -210,6 +215,7 @@ variant: "${input.variant.replace(/"/g, '\\"')}"
 strategy_preset: "${input.strategyPreset.replace(/"/g, '\\"')}"
 strategy_family: "${input.strategyFamily}"
 phase: "${input.phase}"
+experiment_series: "${(input.experimentSeries ?? "").replace(/"/g, '\\"')}"
 strategy_version: "${input.strategyVersion.replace(/"/g, '\\"')}"
 strategy_config: "${input.strategyConfig.replace(/"/g, '\\"')}"
 hypothesis: "${input.hypothesis.replace(/"/g, '\\"')}"
@@ -324,7 +330,20 @@ export function parseCohortMeta(content: string, filename: string, relativePath?
   const firmMcRaw = get("firm_mc");
   if (firmMcRaw) {
     try {
-      firmMc = JSON.parse(firmMcRaw) as Record<string, CohortFirmMcEntry>;
+      const parsed = JSON.parse(firmMcRaw) as Record<string, CohortFirmMcEntry>;
+      const refPass = normalizeMcPct(parseFloat(get("mc_pass_pct")) || 0);
+      const refPayout = normalizeMcPct(parseFloat(get("mc_payout_pct")) || 0, refPass);
+      firmMc = {};
+      for (const [k, v] of Object.entries(parsed)) {
+        firmMc[k] = {
+          ...v,
+          passPct: normalizeMcPct(v.passPct, refPass),
+          bustPct: normalizeMcPct(v.bustPct, normalizeMcPct(parseFloat(get("mc_bust_pct")) || 0, refPass)),
+          payoutPct: normalizeMcPct(v.payoutPct, refPayout),
+          recyclePct:
+            v.recyclePct != null ? normalizeMcPct(v.recyclePct, refPayout) : undefined,
+        };
+      }
     } catch {
       firmMc = undefined;
     }
@@ -378,9 +397,9 @@ export function parseCohortMeta(content: string, filename: string, relativePath?
     weeklyEdgeUsd: parseFloat(get("weekly_edge_usd")) || 0,
     scorecardVerdict: get("scorecard_verdict") || "",
     compositeScore: parseFloat(get("composite_score")) || 0,
-    mcPassPct: parseFloat(get("mc_pass_pct")) || 0,
-    mcBustPct: parseFloat(get("mc_bust_pct")) || 0,
-    mcPayoutPct: parseFloat(get("mc_payout_pct")) || 0,
+    mcPassPct: normalizeMcPct(parseFloat(get("mc_pass_pct")) || 0),
+    mcBustPct: normalizeMcPct(parseFloat(get("mc_bust_pct")) || 0),
+    mcPayoutPct: normalizeMcPct(parseFloat(get("mc_payout_pct")) || 0),
     weeksToPassP50: parseFloat(get("weeks_to_pass_p50")) || null,
     weeksToPayoutP50: parseFloat(get("weeks_to_payout_p50")) || null,
     expectedAccounts: parseFloat(get("expected_accounts")) || 0,
