@@ -36,4 +36,6 @@ Lab: select **H2a · Eval · 9:50 Macro only (10:50 OFF)** → upload `395f4` �
 | H2a 9:50-only | **−$12** (engine) |
 | M0/M1 | **−$4** |
 
+**Next (not more Hybrid polish):** [[execution-plan-post-3y]] — autopsy A0a/D1 → regime gate or Track B.
+
 [[sim-queue]]

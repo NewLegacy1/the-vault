@@ -18,12 +18,13 @@ Each file is created when you **RUN** in F4 LAB (auto-save on). YAML includes `p
 
 Dedicated R&D agent — start here:
 
+- **[[strategy-dev/execution-plan-post-3y]]** — **ACTIVE BRIEF** (post-3y reset · autopsy → gate or Track B)
 - [[strategy-dev/STRATEGY_DEV_AGENT]] — charter, workflow loop, promotion rule
 - [[strategy-dev/eval-playbook]] — eval-phase (TPT pass optimization)
 - [[strategy-dev/funded-playbook]] — funded-phase (weekly edge)
 - [[strategy-dev/hybrid-playbook]] — PRB×Macro combination
 - [[strategy-dev/findings-prb]] · [[strategy-dev/findings-macro]] — settled formulas
-- [[strategy-dev/prop-firm-math]] · [[strategy-dev/roadmap]]
+- [[strategy-dev/prop-firm-math]] · [[strategy-dev/roadmap]] · [[strategy-dev/sim-queue]] · [[strategy-dev/tier0-3y-checklist]]
 
 ## Key strategy docs
 

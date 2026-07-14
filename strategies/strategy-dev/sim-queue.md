@@ -4,6 +4,7 @@ tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
 
+> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — after Tier 0, prioritize **autopsy / regime-gate Lab runs**, not new Hybrid/Macro variants.  
 > **Scoreboard:** [[prop-firm-math]] — `E[$/calendar week]` after fees (pass → payout → recycle).  
 > **Window:** Deep Backtest **~2023-07-01 → today** · Lab payout buffer **2000**.  
 > **OOS:** After each full RUN, Advanced dates → last **12 months** only · compare E[$/wk].  

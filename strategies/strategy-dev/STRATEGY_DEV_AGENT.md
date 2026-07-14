@@ -2,6 +2,11 @@
 
 > **Mission:** Continuously improve expectancy strategies for prop-firm evaluation and funded phases, using every finding in this vault. Optimize for **prop firm math**, not raw backtest P&L.
 
+## ACTIVE BRIEF (read first)
+
+**[[execution-plan-post-3y]]** — post–3y matrix execution plan (2026-07-14).  
+3y deep BT showed current mechanized PRB/Macro/Hybrid are not a durable income product. **Next work = ledger autopsy → regime gate (Track A) or one new non-ICT coded edge (Track B).** Do not polish Macro/Hybrid toggles or invent ICT clones until that plan’s Phase 1 clears.
+
 ## Prime directives
 
 1. **Prop math first — the business loop.** Optimize **expected $ after fees per calendar week** from `pass → payout(s) → recycle`, not raw backtest P&L and not pass% alone. Core fields: `expectedNetPerAccountUsd`, `payoutRate` / `passRate` (= P(payout\|pass)), `medianWithdrawnUsd`, `weeksToPayoutP50`, `recycleRate`. Account churn is OK if EV/week stays positive after fees. See [[prop-firm-math]].
@@ -9,6 +14,7 @@
 3. **Every claim needs a cohort.** No promotion without a saved cohort note in `strategies/cohorts/` and MC run in F4 LAB.
 4. **One variable per experiment.** Mixed-input exports (e.g. pivot 5 on one chunk, pivot 10 on others) are not clean A/Bs.
 5. **Promotion rule:** MC pass ≥ baseline AND net P&L competitive AND forward test holds 20+ trades AND regime fit for upcoming month.
+6. **Loss shape before cadence.** Any new or gated book must document trail-compatible loss math ($2k DD) before treating frequency / hybrid sleeves as income levers.
 
 ## The two-phase objective (eval vs funded)
 
@@ -26,12 +32,14 @@ See [[prop-firm-math]] for full rules and current MC standings.
 
 ## Core knowledge files (read these first)
 
+- **[[execution-plan-post-3y]]** — **ACTIVE BRIEF** (post-3y · autopsy → gate or Track B)
 - [[findings-prb]] — PRB winning trade formula + settled A/B results
 - [[findings-macro]] — Macro Model winning trade formula + tier data
 - [[prop-firm-math]] — TPT rules summary, MC methodology, leaderboard
 - [[tpt-rules]] — full TPT Zendesk rules (test, PRO, withdrawals, PRO+ recycle)
 - [[cohort-hygiene]] — which cohorts to trust (agent only — not in UI)
-- [[roadmap]] — eval/funded split plan + PRB×Macro hybrid backlog
+- [[roadmap]] — backlog archive · defer per execution plan
+- [[sim-queue]] · [[tier0-3y-checklist]] — 3y matrix queue + evidence snapshot
 - [[eval-playbook]] — eval-phase development (pass rate, consistency)
 - [[funded-playbook]] — funded-phase development (weekly edge)
 - [[hybrid-playbook]] — PRB×Macro combination tracks
@@ -39,10 +47,10 @@ See [[prop-firm-math]] for full rules and current MC standings.
   - `cohorts/eval/` — pass-rate experiments (PRB primary)
   - `cohorts/funded/` — expectancy experiments (Macro primary)
   - `cohorts/combined/` — portfolio / hybrid MC
-  - `cohorts/research/` — exploratory
+  - `cohorts/research/` — exploratory / Track B / gates
   - `cohorts/_archive_pre_premium/` — contaminated pre-premium runs (**do not compare**)
-- [[cohort-hygiene]] — duplicate detection, date mismatches, canonical Macro anchor
-- `strategies/Powell_Rejection_Block_SOP.md`, `strategies/Macro_Model_SOP.md` — live playbooks
+  - `cohorts/_archive_365d_jul2026/` — 1y premium (**do not MC-compare to 3y**)
+- `strategies/Powell_Rejection_Block_SOP.md`, `strategies/Macro_Model_SOP.md` — live playbooks (not Lab promotion authority)
 
 ## Data inventory (raw evidence)
 
@@ -67,7 +75,12 @@ See [[prop-firm-math]] for full rules and current MC standings.
 
 ## Standing questions for the agent
 
+**Primary (execution-plan Phase 1):** Do A0a/D1 winners and bust streaks cluster by regime — and is a TRADE/STAND_DOWN gate falsifiable on 3y + OOS?
+
+**Deferred until Phase 1 settles:**
 - Can Macro A-tier alone (drop A+ and H) beat 40% pass with fewer than 20 trades/year?
 - Does the PRB BE@2R + PDH/PDL formula transfer to the macro window?
 - Is a hybrid (PRB structure trigger + Macro tier sizing) higher-expectancy than either parent?
 - What win-cap and stop-day rules maximize consistency-rule pass probability?
+
+**Track B (if autopsy is empty):** What single non-ICT rule has trail-compatible losses and E[$/wk] > 0 on 3y + last-12m OOS?
