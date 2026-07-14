@@ -19,7 +19,7 @@ import {
 } from "@/lib/prop-pass-experiments";
 
 /** Bump when pine/Powell_Rejection_Block_v1.pine changes — reminds you to re-paste in TV. */
-const PRB_PINE_REV = "v1.9 (Jul 13 2026)";
+const PRB_PINE_REV = "v1.10 (Jul 14 2026)";
 const PRB_PINE_FILE = "pine/Powell_Rejection_Block_v1.pine";
 const PRB_PINE_FEATURES = [
   "Instrument sizing: Auto / MNQ / NQ (6 mini cap)",

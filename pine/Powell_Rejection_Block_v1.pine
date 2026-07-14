@@ -16,8 +16,8 @@
 //   · v1.3: Auto PDH/PDL draw bias (SOP §3 mechanical rule)
 //   · v1.4: Give-back regime note — one-click trail toggle (2.0/1.5) + rolling
 //     give-back counter in funnel table (real fills + ghost scratches)
-//   · TPT $50K engine: $400 auto-size, 60-micro cap, daily loss stop / profit
-//     lock, flat 15:55, max 1 trade/day
+//   · v1.9: Auto MNQ/NQ ticker anchor for bar-replay pointvalue misreads
+//   · v1.10: BE +1R retest audit — missed 5R if orig stop held after BE scratch
 //
 // NOT CODEABLE (trade these manually — see PINE_GUIDE):
 //   4H/1H narrative · open-proximity discretion · Forex Factory read ·
@@ -44,77 +44,66 @@ strategy(
      max_labels_count        = 300)
 
 // ─── Inputs ──────────────────────────────────────────────────────────────────
-grpWin = "Session (NY time)"
-i_winStart  = input.int(1000, "Entries from (HHMM) — SOP: wait for 10:00", minval = 0, maxval = 2359, group = grpWin)
-i_winEnd    = input.int(1130, "Last order (HHMM)", minval = 0, maxval = 2359, group = grpWin)
-i_flatTime  = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpWin)
-i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = grpWin)
-i_skipMonday  = input.bool(true, "Skip Mondays (SOP: lower expectancy)", group = grpWin)
-i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Long only", "Short only", "Auto PDH/PDL draw"], group = grpWin, tooltip = "Both = no gate. Long/Short only = your manual morning read. Auto PDH/PDL draw = SOP §3: PDH souped + close back below → shorts only (draw to lows); PDL souped + close back above → longs only. Neutral until a PD side soups. Latest soup wins if both fire same day.")
+i_winStart  = input.int(1000, "Entries from (HHMM) — SOP: wait for 10:00", minval = 0, maxval = 2359, group = "Session (NY time)")
+i_winEnd    = input.int(1130, "Last order (HHMM)", minval = 0, maxval = 2359, group = "Session (NY time)")
+i_flatTime  = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = "Session (NY time)")
+i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = "Session (NY time)")
+i_skipMonday  = input.bool(true, "Skip Mondays (SOP: lower expectancy)", group = "Session (NY time)")
+i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Long only", "Short only", "Auto PDH/PDL draw"], group = "Session (NY time)", tooltip = "Both = no gate. Long/Short only = your manual morning read. Auto PDH/PDL draw = SOP §3: PDH souped + close back below → shorts only (draw to lows); PDL souped + close back above → longs only. Neutral until a PD side soups. Latest soup wins if both fire same day.")
 
-grpRb = "Rejection block (formal, T03)"
-i_minWickPts = input.float(5.0, "Min rejection wick (pts)", minval = 0.0, step = 0.5, group = grpRb)
-i_localLen   = input.int(12, "RB must be extreme of last N bars", minval = 4, maxval = 50, group = grpRb)
-i_reqSweep   = input.bool(true, "Require liquidity sweep on RB candle", group = grpRb)
-i_confClose  = input.bool(true, "Require confirming close (bear RB closes down)", group = grpRb)
-i_leaveR     = input.float(1.0, "Price must leave by N×risk before limit arms (0 = arm at once)", minval = 0.0, step = 0.25, group = grpRb, tooltip = "SOP: 'wait for price to leave, then retest the RB'. Kills same-bar blow-through fills.")
-i_strictLeave = input.bool(false, "Strict retest: leave must happen AFTER the RB candle", group = grpRb, tooltip = "Big-bodied RB candles satisfy the leave distance by themselves, arming the limit instantly. Strict mode requires the departure on a later bar. A/B this: it targets the remaining duration-0 losses but may delay some winners.")
-i_maxApproachR = input.float(0.0, "Approach guard: pause limit unless close is within N×risk (0 = off)", minval = 0.0, step = 0.5, group = grpRb, tooltip = "FAILED A/B (Run B, Feb–Mar): default 2.0 killed the Feb 10 +$1,943 winner and left mostly soft losses/scratches (−$803). Leave at 0. Softened a couple blows but the winners need the aggressive fills the guard blocks.")
-i_tapTimeout = input.int(24, "Setup expires after N bars", minval = 4, maxval = 120, group = grpRb)
+i_minWickPts = input.float(5.0, "Min rejection wick (pts)", minval = 0.0, step = 0.5, group = "Rejection block (formal, T03)")
+i_localLen   = input.int(12, "RB must be extreme of last N bars", minval = 4, maxval = 50, group = "Rejection block (formal, T03)")
+i_reqSweep   = input.bool(true, "Require liquidity sweep on RB candle", group = "Rejection block (formal, T03)")
+i_confClose  = input.bool(true, "Require confirming close (bear RB closes down)", group = "Rejection block (formal, T03)")
+i_leaveR     = input.float(1.0, "Price must leave by N×risk before limit arms (0 = arm at once)", minval = 0.0, step = 0.25, group = "Rejection block (formal, T03)", tooltip = "SOP: 'wait for price to leave, then retest the RB'. Kills same-bar blow-through fills.")
+i_strictLeave = input.bool(false, "Strict retest: leave must happen AFTER the RB candle", group = "Rejection block (formal, T03)", tooltip = "Big-bodied RB candles satisfy the leave distance by themselves, arming the limit instantly. Strict mode requires the departure on a later bar. A/B this: it targets the remaining duration-0 losses but may delay some winners.")
+i_maxApproachR = input.float(0.0, "Approach guard: pause limit unless close is within N×risk (0 = off)", minval = 0.0, step = 0.5, group = "Rejection block (formal, T03)", tooltip = "FAILED A/B (Run B, Feb–Mar): default 2.0 killed the Feb 10 +$1,943 winner and left mostly soft losses/scratches (−$803). Leave at 0. Softened a couple blows but the winners need the aggressive fills the guard blocks.")
+i_tapTimeout = input.int(24, "Setup expires after N bars", minval = 4, maxval = 120, group = "Rejection block (formal, T03)")
 
-grpKo = "Key opens (T02)"
-i_useRollSweep = input.bool(false, "Rolling 20-bar swing counts as sweep liquidity (noisy)", group = grpKo)
-i_useKoSweep = input.bool(true, "Key opens count as sweep liquidity", group = grpKo)
-i_useAmOpens = input.bool(false, "8:30 / 9:00 / 9:30 opens count as sweep liquidity", group = grpKo, tooltip = "SOP T13/T14: morning opens matter mainly on news days (CPI/PPI/NFP at 8:30) — the script can't read the calendar, so these add noise on quiet days. A/B before locking on.")
-i_koConfl    = input.bool(false, "Require RB within N pts of a key open", group = grpKo)
-i_koConflPts = input.float(15.0, "Key-open proximity (pts)", minval = 1.0, step = 1.0, group = grpKo)
+i_useRollSweep = input.bool(false, "Rolling 20-bar swing counts as sweep liquidity (noisy)", group = "Key opens (T02)")
+i_useKoSweep = input.bool(true, "Key opens count as sweep liquidity", group = "Key opens (T02)")
+i_useAmOpens = input.bool(false, "8:30 / 9:00 / 9:30 opens count as sweep liquidity", group = "Key opens (T02)", tooltip = "SOP T13/T14: morning opens matter mainly on news days (CPI/PPI/NFP at 8:30) — the script can't read the calendar, so these add noise on quiet days. A/B before locking on.")
+i_koConfl    = input.bool(false, "Require RB within N pts of a key open", group = "Key opens (T02)")
+i_koConflPts = input.float(15.0, "Key-open proximity (pts)", minval = 1.0, step = 1.0, group = "Key opens (T02)")
 
-grpCtx = "Context (T01)"
-i_useH4Wick    = input.bool(true, "Require developing 4H manipulation wick", group = grpCtx)
-i_minH4WickPts = input.float(8.0, "Min 4H wick (pts) — 15 good / 8 grey / 2 bad", minval = 0.0, step = 0.5, group = grpCtx)
+i_useH4Wick    = input.bool(true, "Require developing 4H manipulation wick", group = "Context (T01)")
+i_minH4WickPts = input.float(8.0, "Min 4H wick (pts) — 15 good / 8 grey / 2 bad", minval = 0.0, step = 0.5, group = "Context (T01)")
 
-grpEntry = "Entry (T05)"
-i_entryMode = input.string("Auto (CE if stop too big)", "Entry mode", options = ["Limit at wick start", "Limit at wick CE", "Auto (CE if stop too big)", "CISD trigger (for 1m)"], group = grpEntry)
+i_entryMode = input.string("Auto (CE if stop too big)", "Entry mode", options = ["Limit at wick start", "Limit at wick CE", "Auto (CE if stop too big)", "CISD trigger (for 1m)"], group = "Entry (T05)")
 
-grpInstrument = "Instrument / contract size"
-i_instrMode = input.string("Auto (chart symbol)", "Sizing mode", options = ["Auto (chart symbol)", "MNQ micro ($2/pt)", "NQ mini ($20/pt)"], group = grpInstrument, tooltip = "Best practice: load MNQ1! or NQ1! on the chart and leave Auto. MNQ ≈ $2/point (micro), NQ ≈ $20/point (mini, 10×). NQ auto-caps at 6 contracts (TPT = 60 micros). Override only for what-if sizing on the same chart.")
+i_instrMode = input.string("Auto (chart symbol)", "Sizing mode", options = ["Auto (chart symbol)", "MNQ micro ($2/pt)", "NQ mini ($20/pt)"], group = "Instrument / contract size", tooltip = "Best practice: load MNQ1! or NQ1! on the chart and leave Auto. MNQ ≈ $2/point (micro), NQ ≈ $20/point (mini, 10×). NQ auto-caps at 6 contracts (TPT = 60 micros). Override only for what-if sizing on the same chart.")
 
-grpRisk = "Risk (TPT $50K engine)"
-i_maxStopPts = input.float(20.0, "Max stop (pts) — SOP: 25+ = skip/refine", minval = 2.0, step = 1.0, group = grpRisk)
-i_minStopPts = input.float(5.0, "Min stop (pts) — commission floor for 1m", minval = 0.0, step = 0.5, group = grpRisk)
-i_stopBufPts = input.float(2.0, "Stop buffer beyond wick (pts)", minval = 0.0, step = 0.25, group = grpRisk)
-i_rr         = input.float(5.0, "Target (R multiple) — SOP 1:5–1:7, floor 1:3", minval = 1.0, step = 0.25, group = grpRisk)
-i_evalMaxWinUsd = input.float(0.0, "Eval max win cap (USD, 0 = off)", minval = 0.0, step = 50.0, group = grpRisk, tooltip = "Hard-caps TP so a full winner ≤ this USD. TPT eval: 1490 keeps best day under 50% while building toward $4k pass. Does not replace daily profit lock (that only blocks re-entry). After PRO pass, set 0 and use full Target R (e.g. 6R).")
-i_beAtR      = input.float(1.0, "Breakeven at +N R (0 = off)", minval = 0.0, step = 0.25, group = grpRisk)
-i_trailStartR = input.float(0.0, "Trail: activate at +N R (0 = off, BE only)", minval = 0.0, step = 0.25, group = grpRisk, tooltip = "FAILED A/B across 8 months (Dec–Jul): demoted winners (Jan 2/8, Feb 10, May 22, Jun 5 all reached full 5R after the trail would have cut them) cost ~$3,860 vs ~$2,820 recovered from scratches — net ≈ −$1,040. Leave at 0 (BE-only). May 22 hit the 5R target 10 min after the 2.0/1.5 trail exit.")
-i_trailGapR   = input.float(1.5, "Trail: distance behind peak (R)", minval = 0.25, step = 0.25, group = grpRisk, tooltip = "Smaller gap = locks more profit but cuts winners on normal pullbacks. 1.5R gap means a trade peaking at +3R exits no worse than +1.5R.")
-i_riskUsd    = input.float(400.0, "Risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk)
+i_maxStopPts = input.float(20.0, "Max stop (pts) — SOP: 25+ = skip/refine", minval = 2.0, step = 1.0, group = "Risk (TPT $50K engine)")
+i_minStopPts = input.float(5.0, "Min stop (pts) — commission floor for 1m", minval = 0.0, step = 0.5, group = "Risk (TPT $50K engine)")
+i_stopBufPts = input.float(2.0, "Stop buffer beyond wick (pts)", minval = 0.0, step = 0.25, group = "Risk (TPT $50K engine)")
+i_rr         = input.float(5.0, "Target (R multiple) — SOP 1:5–1:7, floor 1:3", minval = 1.0, step = 0.25, group = "Risk (TPT $50K engine)")
+i_evalMaxWinUsd = input.float(0.0, "Eval max win cap (USD, 0 = off)", minval = 0.0, step = 50.0, group = "Risk (TPT $50K engine)", tooltip = "Hard-caps TP so a full winner ≤ this USD. TPT eval: 1490 keeps best day under 50% while building toward $4k pass. Does not replace daily profit lock (that only blocks re-entry). After PRO pass, set 0 and use full Target R (e.g. 6R).")
+i_beAtR      = input.float(1.0, "Breakeven at +N R (0 = off)", minval = 0.0, step = 0.25, group = "Risk (TPT $50K engine)")
+i_trailStartR = input.float(0.0, "Trail: activate at +N R (0 = off, BE only)", minval = 0.0, step = 0.25, group = "Risk (TPT $50K engine)", tooltip = "FAILED A/B across 8 months (Dec–Jul): demoted winners (Jan 2/8, Feb 10, May 22, Jun 5 all reached full 5R after the trail would have cut them) cost ~$3,860 vs ~$2,820 recovered from scratches — net ≈ −$1,040. Leave at 0 (BE-only). May 22 hit the 5R target 10 min after the 2.0/1.5 trail exit.")
+i_trailGapR   = input.float(1.5, "Trail: distance behind peak (R)", minval = 0.25, step = 0.25, group = "Risk (TPT $50K engine)", tooltip = "Smaller gap = locks more profit but cuts winners on normal pullbacks. 1.5R gap means a trade peaking at +3R exits no worse than +1.5R.")
+i_riskUsd    = input.float(400.0, "Risk per trade (USD)", minval = 50.0, step = 50.0, group = "Risk (TPT $50K engine)")
 
-grpRegime = "Give-back regime (manual toggle)"
-i_trailRegime = input.bool(false, "Give-back regime: trail ON (2.0 / 1.5)", group = grpRegime, tooltip = "One-click toggle for pop-and-fade months (e.g. Mar 2026). When ON, overrides trail to activate at +2R with 1.5R gap regardless of the Risk inputs above. Default OFF — 8-month A/B favours BE-only. Turn ON when the give-back counter below hits the threshold.")
-i_regimeGiveBackR = input.float(2.0, "Give-back: min peak (R) to count", minval = 1.0, step = 0.25, group = grpRegime, tooltip = "Trade peaked at least this many R but gave back almost all of it (scratch / sub-1R exit).")
-i_regimeLookback = input.int(10, "Give-back lookback (sessions)", minval = 3, maxval = 30, group = grpRegime)
-i_regimeThreshold = input.int(2, "Suggest trail when give-backs ≥", minval = 1, maxval = 8, group = grpRegime, tooltip = "Funnel table turns orange when rolling give-backs reach this count while trail is OFF.")
-i_maxContracts = input.int(60, "Max contracts (60 micros / 6 minis)", minval = 1, maxval = 60, group = grpRisk, tooltip = "TPT $50K cap = 60 MNQ or 6 NQ. On NQ chart or NQ sizing mode, effective max is min(this, 6).")
-i_dailyLossStop   = input.float(800.0, "Daily loss stop (USD)", minval = 0.0, step = 50.0, group = grpRisk)
-i_dailyProfitLock = input.float(1400.0, "Daily profit lock (USD)", minval = 0.0, step = 50.0, group = grpRisk)
+i_trailRegime = input.bool(false, "Give-back regime: trail ON (2.0 / 1.5)", group = "Give-back regime (manual toggle)", tooltip = "One-click toggle for pop-and-fade months (e.g. Mar 2026). When ON, overrides trail to activate at +2R with 1.5R gap regardless of the Risk inputs above. Default OFF — 8-month A/B favours BE-only. Turn ON when the give-back counter below hits the threshold.")
+i_regimeGiveBackR = input.float(2.0, "Give-back: min peak (R) to count", minval = 1.0, step = 0.25, group = "Give-back regime (manual toggle)", tooltip = "Trade peaked at least this many R but gave back almost all of it (scratch / sub-1R exit).")
+i_regimeLookback = input.int(10, "Give-back lookback (sessions)", minval = 3, maxval = 30, group = "Give-back regime (manual toggle)")
+i_regimeThreshold = input.int(2, "Suggest trail when give-backs ≥", minval = 1, maxval = 8, group = "Give-back regime (manual toggle)", tooltip = "Funnel table turns orange when rolling give-backs reach this count while trail is OFF.")
+i_maxContracts = input.int(60, "Max contracts (60 micros / 6 minis)", minval = 1, maxval = 60, group = "Risk (TPT $50K engine)", tooltip = "TPT $50K cap = 60 MNQ or 6 NQ. On NQ chart or NQ sizing mode, effective max is min(this, 6).")
+i_dailyLossStop   = input.float(800.0, "Daily loss stop (USD)", minval = 0.0, step = 50.0, group = "Risk (TPT $50K engine)")
+i_dailyProfitLock = input.float(1400.0, "Daily profit lock (USD)", minval = 0.0, step = 50.0, group = "Risk (TPT $50K engine)")
 
-grpGhost = "Missed-trade autopsy"
-i_ghost     = input.bool(true, "Track near-miss setups (ghost trades)", group = grpGhost, tooltip = "Every RB candle that failed EXACTLY ONE filter is simulated as a ghost trade (same leave-retest, BE and 5R rules). The bottom-right table tallies wins/losses per rejection reason — it shows which filter is blocking profitable trades and which are earning their keep. Ghost fills are slightly conservative: same-bar stop+target resolves as a loss.")
-i_showGhost = input.bool(false, "Mark ghosts on chart (G + reason #)", group = grpGhost, tooltip = "Off by default to keep the live chart clean — the bottom-right autopsy table still tallies every ghost.")
+i_ghost     = input.bool(true, "Track near-miss setups (ghost trades)", group = "Missed-trade autopsy", tooltip = "Every RB candle that failed EXACTLY ONE filter is simulated as a ghost trade (same leave-retest, BE and 5R rules). The bottom-right table tallies wins/losses per rejection reason — it shows which filter is blocking profitable trades and which are earning their keep. Ghost fills are slightly conservative: same-bar stop+target resolves as a loss.")
+i_showGhost = input.bool(false, "Mark ghosts on chart (G + reason #)", group = "Missed-trade autopsy", tooltip = "Off by default to keep the live chart clean — the bottom-right autopsy table still tallies every ghost.")
 
-grpVis = "Visuals"
-i_showSig   = input.bool(true, "Show RB labels", group = grpVis)
-i_showSoup  = input.bool(false, "Show sweep triangles (soup markers)", group = grpVis, tooltip = "Off by default — sweeps fire often and clutter the chart. The RB label already implies a valid sweep when the sweep filter is on.")
-i_showLvls  = input.bool(true, "Show liquidity + key opens", group = grpVis)
-i_showPos   = input.bool(true, "Show position boxes (entry / SL / TP)", group = grpVis)
-i_showPend  = input.bool(true, "Show pending limit + stop lines", group = grpVis)
-i_showTable = input.bool(true, "Show diagnostic funnel table", group = grpVis)
+i_showSig   = input.bool(true, "Show RB labels", group = "Visuals")
+i_showSoup  = input.bool(false, "Show sweep triangles (soup markers)", group = "Visuals", tooltip = "Off by default — sweeps fire often and clutter the chart. The RB label already implies a valid sweep when the sweep filter is on.")
+i_showLvls  = input.bool(true, "Show liquidity + key opens", group = "Visuals")
+i_showPos   = input.bool(true, "Show position boxes (entry / SL / TP)", group = "Visuals")
+i_showPend  = input.bool(true, "Show pending limit + stop lines", group = "Visuals")
+i_showTable = input.bool(true, "Show diagnostic funnel table", group = "Visuals")
 
-grpManual = "Manual / discretionary replay"
-i_manualOnly = input.bool(false, "Manual levels only — NO orders (you click)", group = grpManual, tooltip = "Draws LIMIT / STOP / TP boxes when a setup arms. No strategy orders — you decide after morning bias. Log take/skip in Vault F2 Journal. Use for 12mo discretionary replay; keep OFF for automated Strategy Tester exports.")
-i_showBlockedBias = input.bool(true, "Mark RB blocked by your bias filter", group = grpManual, tooltip = "Shows when a raw RB failed only the Direction filter — your discretion dataset.")
-i_manualAlerts = input.bool(false, "Alert when limit level arms", group = grpManual)
+i_manualOnly = input.bool(false, "Manual levels only — NO orders (you click)", group = "Manual / discretionary replay", tooltip = "Draws LIMIT / STOP / TP boxes when a setup arms. No strategy orders — you decide after morning bias. Log take/skip in Vault F2 Journal. Use for 12mo discretionary replay; keep OFF for automated Strategy Tester exports.")
+i_showBlockedBias = input.bool(true, "Mark RB blocked by your bias filter", group = "Manual / discretionary replay", tooltip = "Shows when a raw RB failed only the Direction filter — your discretion dataset.")
+i_manualAlerts = input.bool(false, "Alert when limit level arms", group = "Manual / discretionary replay")
 
 float effTrailStartR = i_trailRegime ? 2.0 : i_trailStartR
 float effTrailGapR = i_trailRegime ? 1.5 : i_trailGapR
@@ -316,6 +305,12 @@ var bool  suTapped = false
 var float openRiskPts = na
 var float peakR = na
 var float lockR = na
+var float rtEntry = na
+var float rtOrigStop = na
+var float rtTp = na
+var int rtDir = 0
+var bool rtBeArmed = false
+var bool rtBeRetest = false
 var float pendStop = na
 var float pendTp = na
 var bool  manualReady = false
@@ -382,12 +377,39 @@ var array<int>   ghState  = array.new<int>()   // 0 wait-leave · 1 wait-fill ·
 var array<int>   ghBarIx  = array.new<int>()
 var array<int>   ghReason = array.new<int>()
 var array<bool>  ghBe     = array.new<bool>()
+var array<float> ghOrigStop = array.new<float>()
+var array<bool>  ghBeRetest = array.new<bool>()
 var array<float> ghPeakR  = array.new<float>()
 var array<int>   ghCount  = array.new<int>(12, 0)
 var array<int>   ghWins   = array.new<int>(12, 0)
 var array<int>   ghLoss   = array.new<int>(12, 0)
 var array<int>   ghScr    = array.new<int>(12, 0)
 var array<float> ghNetR   = array.new<float>(12, 0.0)
+
+// BE +1R retest audit: scratch at entry vs counterfactual 5R with original stop
+var array<int>   beaCfDir    = array.new<int>()
+var array<float> beaCfEntry  = array.new<float>()
+var array<float> beaCfStop   = array.new<float>()
+var array<float> beaCfTarget = array.new<float>()
+var array<float> beaCfRisk   = array.new<float>()
+var array<bool>  beaCfGhost  = array.new<bool>()
+var int beScratchGh = 0
+var int beMissedGh  = 0
+var int beRetestWinGh = 0
+var int beScratchRt = 0
+var int beMissedRt  = 0
+var int beRetestWinRt = 0
+
+f_cfSpawn(int d, float e, float s, float t, float r, bool fromGhost) =>
+    array.push(beaCfDir, d)
+    array.push(beaCfEntry, e)
+    array.push(beaCfStop, s)
+    array.push(beaCfTarget, t)
+    array.push(beaCfRisk, r)
+    array.push(beaCfGhost, fromGhost)
+
+f_isBeScratchExit(float pk, float exitR) =>
+    i_beAtR > 0 and pk >= i_beAtR and exitR > -0.35 and exitR < 0.35
 
 f_ghSpawn(int dir, float wickStart, float ce, float extreme, int reason) =>
     [entryPx, stopPx] = f_plan(wickStart, ce, extreme, dir == -1)
@@ -404,6 +426,8 @@ f_ghSpawn(int dir, float wickStart, float ce, float extreme, int reason) =>
         array.push(ghBarIx, bar_index)
         array.push(ghReason, reason)
         array.push(ghBe, false)
+        array.push(ghOrigStop, s)
+        array.push(ghBeRetest, false)
         array.push(ghPeakR, 0.0)
         array.set(ghCount, reason, array.get(ghCount, reason) + 1)
         if i_showGhost
@@ -530,20 +554,26 @@ if i_ghost and array.size(ghDir) > 0
             if i_beAtR > 0 and not array.get(ghBe, gi) and (d == -1 ? low <= e - i_beAtR * r : high >= e + i_beAtR * r)
                 array.set(ghBe, gi, true)
                 array.set(ghStop, gi, e)
+            if array.get(ghBe, gi) and not array.get(ghBeRetest, gi) and (d == -1 ? high >= e : low <= e)
+                array.set(ghBeRetest, gi, true)
             float curStop = array.get(ghStop, gi)
-            bool stopHit = d == -1 ? high >= curStop : low <= curStop
             bool tpHit = d == -1 ? low <= t : high >= t
-            if stopHit
+            bool stopHit = d == -1 ? high >= curStop : low <= curStop
+            if tpHit
+                if array.get(ghBeRetest, gi)
+                    beRetestWinGh += 1
+                array.set(ghWins, rs, array.get(ghWins, rs) + 1)
+                array.set(ghNetR, rs, array.get(ghNetR, rs) + f_effRr())
+                done := true
+            else if stopHit
                 if array.get(ghBe, gi)
                     array.set(ghScr, rs, array.get(ghScr, rs) + 1)
                     ghGiveBack := array.get(ghPeakR, gi) >= i_regimeGiveBackR
+                    beScratchGh += 1
+                    f_cfSpawn(d, e, array.get(ghOrigStop, gi), t, r, true)
                 else
                     array.set(ghLoss, rs, array.get(ghLoss, rs) + 1)
                     array.set(ghNetR, rs, array.get(ghNetR, rs) - 1.0)
-                done := true
-            else if tpHit
-                array.set(ghWins, rs, array.get(ghWins, rs) + 1)
-                array.set(ghNetR, rs, array.get(ghNetR, rs) + f_effRr())
                 done := true
             else if sessionEnd
                 float mkR = d == -1 ? (e - close) / r : (close - e) / r
@@ -563,7 +593,36 @@ if i_ghost and array.size(ghDir) > 0
             array.remove(ghBarIx, gi)
             array.remove(ghReason, gi)
             array.remove(ghBe, gi)
+            array.remove(ghOrigStop, gi)
+            array.remove(ghBeRetest, gi)
             array.remove(ghPeakR, gi)
+
+// Counterfactual holds: after BE scratch, would orig stop have reached 5R?
+if array.size(beaCfDir) > 0
+    for ci = array.size(beaCfDir) - 1 to 0
+        int cfDirVal = array.get(beaCfDir, ci)
+        float cfEntryPx = array.get(beaCfEntry, ci)
+        float cfStopPx = array.get(beaCfStop, ci)
+        float cfTargetPx = array.get(beaCfTarget, ci)
+        bool cfFromGhost = array.get(beaCfGhost, ci)
+        bool cfDone = false
+        bool cfOrigStopHit = cfDirVal == -1 ? high >= cfStopPx : low <= cfStopPx
+        bool cfTargetHit = cfDirVal == -1 ? low <= cfTargetPx : high >= cfTargetPx
+        if cfTargetHit
+            if cfFromGhost
+                beMissedGh += 1
+            else
+                beMissedRt += 1
+            cfDone := true
+        else if cfOrigStopHit or nyHhmm >= i_flatTime
+            cfDone := true
+        if cfDone
+            array.remove(beaCfDir, ci)
+            array.remove(beaCfEntry, ci)
+            array.remove(beaCfStop, ci)
+            array.remove(beaCfTarget, ci)
+            array.remove(beaCfRisk, ci)
+            array.remove(beaCfGhost, ci)
 
 // ── Arm on RB (limit modes place the order immediately; trigger mode waits) ──
 if rbBear and canArm
@@ -739,11 +798,24 @@ if not flat
     if strategy.position_size[1] == 0
         peakR := 0.0
         lockR := na
+        rtEntry := strategy.position_avg_price
+        rtOrigStop := pendStop
+        rtTp := pendTp
+        rtDir := strategy.position_size > 0 ? 1 : -1
+        rtBeArmed := false
+        rtBeRetest := false
     if not na(openRiskPts)
         float avg = strategy.position_avg_price
         bool isLongPos = strategy.position_size > 0
         float favR = isLongPos ? (high - avg) / openRiskPts : (avg - low) / openRiskPts
         peakR := math.max(nz(peakR, 0.0), favR)
+        if i_beAtR > 0 and peakR >= i_beAtR
+            rtBeArmed := true
+            if not rtBeRetest
+                if isLongPos and low <= avg
+                    rtBeRetest := true
+                if not isLongPos and high >= avg
+                    rtBeRetest := true
         float newLock = na
         if i_beAtR > 0 and peakR >= i_beAtR
             newLock := 0.0
@@ -757,7 +829,7 @@ if not flat
             else
                 strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = avg - f_effRr() * openRiskPts)
 
-// Closed-trade give-back tally (real fills)
+// Closed-trade give-back + BE retest audit (real fills)
 var int closedSeen = 0
 var float lastOpenRisk = na
 var float lastPeakR = na
@@ -775,6 +847,11 @@ if strategy.closedtrades > closedSeen
     float exitR = riskUsd > 0 ? profit / riskUsd : 0.0
     if f_isGiveBack(nz(lastPeakR, 0.0), exitR)
         sessionGiveBacks += 1
+    if f_isBeScratchExit(nz(lastPeakR, 0.0), exitR) and not na(rtEntry) and not na(rtOrigStop) and not na(rtTp) and rtDir != 0
+        beScratchRt += 1
+        f_cfSpawn(rtDir, rtEntry, rtOrigStop, rtTp, nz(lastOpenRisk, openRiskPts), false)
+    else if exitR >= f_effRr() * 0.85 and rtBeRetest
+        beRetestWinRt += 1
 
 // Session flat
 if nyHhmm >= i_flatTime and not i_manualOnly
@@ -982,3 +1059,15 @@ if i_ghost and i_showTable and barstate.islast
         color rowCol = n == 0 ? color.new(color.gray, 55) : nr > 0 ? color.new(color.lime, 15) : color.white
         f_ghRow(ghT, rs, array.get(ghNames, rs), str.tostring(n), str.tostring(w) + "/" + str.tostring(l) + "/" + str.tostring(sc), str.tostring(nr, "#.#"), rowCol)
     f_ghRow(ghT, 12, "TOTAL", str.tostring(totN), str.tostring(totW) + "/" + str.tostring(totL) + "/" + str.tostring(totS), str.tostring(totR, "#.#"), color.new(color.orange, 10))
+
+// BE +1R retest audit (paste into Vault F4 LAB ghost panel)
+var table beT = table.new(position.bottom_center, 4, 4, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
+if i_ghost and i_showTable and barstate.islast
+    int beScrTot = beScratchGh + beScratchRt
+    int beMissTot = beMissedGh + beMissedRt
+    int beRtWinTot = beRetestWinGh + beRetestWinRt
+    color missCol = beMissTot > 0 ? color.new(color.orange, 0) : color.new(color.gray, 55)
+    f_ghRow(beT, 0, "BE +1R retest", "scratch", "missed 5R", "retest→win", color.new(color.yellow, 10))
+    f_ghRow(beT, 1, "Ghosts", str.tostring(beScratchGh), str.tostring(beMissedGh), str.tostring(beRetestWinGh), color.white)
+    f_ghRow(beT, 2, "Real fills", str.tostring(beScratchRt), str.tostring(beMissedRt), str.tostring(beRetestWinRt), color.white)
+    f_ghRow(beT, 3, "TOTAL", str.tostring(beScrTot), str.tostring(beMissTot), str.tostring(beRtWinTot), missCol)

@@ -16,6 +16,14 @@ import {
   GHOST_PASTE_TEMPLATE,
   GhostAutopsyReport,
 } from "@/lib/ghost-autopsy";
+import {
+  CHART_FINDINGS,
+  EVAL_VS_FUNDED,
+  VERIFIED_BASELINE,
+  analyzeBeRetest,
+  abGraveyardRows,
+  nextExperimentsToTry,
+} from "@/lib/lab-findings";
 
 interface Dataset {
   id: string;
@@ -535,6 +543,133 @@ function EvalConsistencyCard({
   );
 }
 
+function ChartFindingsCard() {
+  const verdictClass = (v: string) =>
+    v === "keep" ? "pos" : v === "reject" ? "neg" : v === "try" ? "cyan" : "warn";
+
+  return (
+    <>
+      <div className="stat-strip" style={{ marginBottom: 12 }}>
+        <div className="stat">
+          <div className="k">Verified baseline</div>
+          <div className="v pos">{fmtUsd(VERIFIED_BASELINE.netUsd, true)}</div>
+          <div className="d">
+            {VERIFIED_BASELINE.trades} tr · {VERIFIED_BASELINE.wins}W · ~{VERIFIED_BASELINE.winRatePct}% WR · {VERIFIED_BASELINE.span}
+          </div>
+        </div>
+        <div className="stat">
+          <div className="k">Avg full winner</div>
+          <div className="v cyan">~{fmtUsd(VERIFIED_BASELINE.avgWinUsd)}</div>
+          <div className="d">5R at $400 risk — breaks eval consistency raw</div>
+        </div>
+        <div className="stat">
+          <div className="k">Settled rejects</div>
+          <div className="v neg">{CHART_FINDINGS.filter((f) => f.verdict === "reject").length}</div>
+          <div className="d">trail · approach guard · auto draw · widen window</div>
+        </div>
+        <div className="stat">
+          <div className="k">Try next on eval</div>
+          <div className="v">{CHART_FINDINGS.filter((f) => f.verdict === "try").length}</div>
+          <div className="d">eval cap $1490 · RR 3.75</div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Verdict</th>
+            <th>Finding</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {CHART_FINDINGS.map((f) => (
+            <tr key={f.id}>
+              <td className="small">{f.area}</td>
+              <td className={"small " + verdictClass(f.verdict)}>{f.verdict.toUpperCase()}</td>
+              <td className="small">{f.summary}</td>
+              <td className="small dim">{f.action}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="mt">
+        <div className="small accent" style={{ marginBottom: 6 }}>A/B graveyard (settled)</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Test</th>
+              <th>Window</th>
+              <th>Result</th>
+              <th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody>
+            {abGraveyardRows().map((r) => (
+              <tr key={r.test}>
+                <td className="small">{r.test}</td>
+                <td className="small dim">{r.window}</td>
+                <td className="small">{r.result}</td>
+                <td className={"small " + (r.verdict === "REJECT" ? "neg" : "pos")}>{r.verdict}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="mt">
+        <div className="small accent" style={{ marginBottom: 6 }}>Suggested experiment queue (F3 → F4)</div>
+        <ul className="small dim" style={{ lineHeight: 1.65, paddingLeft: 18, margin: 0 }}>
+          {nextExperimentsToTry().map((x) => (
+            <li key={x}>{x}</li>
+          ))}
+        </ul>
+      </div>
+    </>
+  );
+}
+
+function EvalVsFundedCard() {
+  const g = EVAL_VS_FUNDED;
+  return (
+    <>
+      <p className="small" style={{ lineHeight: 1.65, marginTop: 0 }}>
+        <span className="accent">{g.headline}</span> — {g.notWrong}
+      </p>
+      <div className="grid grid-2 mt">
+        <div className="firm-card">
+          <div className="firm-card-head">
+            <span className="cyan">Eval phase</span>
+            <span className="chip warn-chip">consistency rule</span>
+          </div>
+          <p className="small dim" style={{ margin: "8px 0" }}>{g.evalGoal}</p>
+          <ul className="small" style={{ lineHeight: 1.6, paddingLeft: 18, margin: 0 }}>
+            {g.evalProfile.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="firm-card">
+          <div className="firm-card-head">
+            <span className="pos">Funded / PRO</span>
+            <span className="chip active-acct">no consistency</span>
+          </div>
+          <p className="small dim" style={{ margin: "8px 0" }}>{g.fundedGoal}</p>
+          <ul className="small" style={{ lineHeight: 1.6, paddingLeft: 18, margin: 0 }}>
+            {g.fundedProfile.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <p className="small warn mt">{g.fastestPass}</p>
+      <p className="small dim mt">
+        PRB is not eval-only or live-only — it is one entry system with two exit/risk profiles. Pass eval with capped/smaller wins;
+        run full RR on accounts with no consistency rule (TPT PRO, or firms with 0% eval cap).
+      </p>
+    </>
+  );
+}
+
 function GhostAutopsyCard({
   report,
   paste,
@@ -550,10 +685,12 @@ function GhostAutopsyCard({
   screenshotName: string | null;
   onScreenshot: (file: File | null) => void;
 }) {
+  const beVerdict = report.beAudit ? analyzeBeRetest(report.beAudit) : null;
+
   return (
     <>
       <p className="small dim" style={{ marginTop: 0, lineHeight: 1.6 }}>
-        Copy the <b>MISSED (failed 1 filter)</b> table from Pine (bottom-right on chart). Paste rows below —
+        Copy the <b>MISSED (failed 1 filter)</b> table (bottom-right) and <b>BE +1R retest</b> table (bottom-center) from Pine. Paste both below —
         screenshot upload is for your reference only (no OCR yet). Green ghost rows in TV = filters blocking net-positive
         trades; this panel maps them to Pine inputs to A/B.
       </p>
@@ -576,8 +713,71 @@ function GhostAutopsyCard({
         onChange={(e) => onPasteChange(e.target.value)}
         rows={8}
         style={{ width: "100%", fontFamily: "monospace", fontSize: 12, marginTop: 8 }}
-        placeholder="Paste: reason [tab] n [tab] W/L/scr [tab] net R — one row per filter"
+        placeholder="Paste MISSED filter rows + BE +1R retest block (Ghosts / Real fills / TOTAL)"
       />
+      {report.beAudit && (
+        <>
+          <div className="small accent mt" style={{ marginBottom: 6 }}>BE +1R retest audit (paste bottom-center table)</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Source</th>
+                <th className="num">Scratch</th>
+                <th className="num">Missed 5R</th>
+                <th className="num">Retest→win</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ghosts</td>
+                <td className="num">{report.beAudit.ghostScratch}</td>
+                <td className={"num " + (report.beAudit.ghostMissed5R > 0 ? "warn" : "")}>{report.beAudit.ghostMissed5R}</td>
+                <td className="num pos">{report.beAudit.ghostRetestWin}</td>
+              </tr>
+              <tr>
+                <td>Real fills</td>
+                <td className="num">{report.beAudit.realScratch}</td>
+                <td className={"num " + (report.beAudit.realMissed5R > 0 ? "warn" : "")}>{report.beAudit.realMissed5R}</td>
+                <td className="num pos">{report.beAudit.realRetestWin}</td>
+              </tr>
+              <tr>
+                <td><b>TOTAL</b></td>
+                <td className="num">{report.beAudit.ghostScratch + report.beAudit.realScratch}</td>
+                <td className="num warn">{report.beAudit.ghostMissed5R + report.beAudit.realMissed5R}</td>
+                <td className="num pos">{report.beAudit.ghostRetestWin + report.beAudit.realRetestWin}</td>
+              </tr>
+            </tbody>
+          </table>
+          {beVerdict && (
+            <p className={"small mt " + beVerdict.tone} style={{ lineHeight: 1.65 }}>
+              <b>{beVerdict.headline}</b> — {beVerdict.detail}
+            </p>
+          )}
+        </>
+      )}
+      {report.beAudit && (
+        <div className="stat-strip mt">
+          <div className="stat">
+            <div className="k">BE scratches</div>
+            <div className="v">{report.beAudit.ghostScratch + report.beAudit.realScratch}</div>
+            <div className="d">
+              ghost {report.beAudit.ghostScratch} · real {report.beAudit.realScratch}
+            </div>
+          </div>
+          <div className="stat">
+            <div className="k">Missed 5R (CF)</div>
+            <div className={"v " + (report.beAudit.ghostMissed5R + report.beAudit.realMissed5R > 0 ? "warn" : "")}>
+              {report.beAudit.ghostMissed5R + report.beAudit.realMissed5R}
+            </div>
+            <div className="d">would have won with orig stop</div>
+          </div>
+          <div className="stat">
+            <div className="k">Retest → win</div>
+            <div className="v pos">{report.beAudit.ghostRetestWin + report.beAudit.realRetestWin}</div>
+            <div className="d">+1R then entry touch → 5R</div>
+          </div>
+        </div>
+      )}
       {report.rows.length > 0 && (
         <>
           <div className="stat-strip mt">
@@ -641,6 +841,29 @@ function GhostAutopsyCard({
               <li key={rec}>{rec}</li>
             ))}
           </ul>
+          {report.pineHints.length > 0 && (
+            <div className="mt">
+              <div className="small accent" style={{ marginBottom: 6 }}>Pine inputs to A/B (relax candidates only)</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Filter</th>
+                    <th>Pine input</th>
+                    <th>Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.pineHints.map((h) => (
+                    <tr key={h.reason}>
+                      <td className="small">{h.reason}</td>
+                      <td className="small cyan">{h.input}</td>
+                      <td className="small dim">{h.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </>
       )}
     </>
@@ -699,7 +922,7 @@ export default function LabPage() {
   );
 
   const ghostReport = useMemo(
-    () => analyzeGhostAutopsy(parseGhostAutopsyPaste(ghostPaste)),
+    () => analyzeGhostAutopsy(parseGhostAutopsyPaste(ghostPaste), ghostPaste),
     [ghostPaste]
   );
 
@@ -1138,8 +1361,28 @@ export default function LabPage() {
 
       <div className="panel">
         <div className="panel-title">
-          Missed-trade autopsy (ghosts)
-          <span className="sub">paste from Pine bottom-right table · after each replay</span>
+          Eval vs funded — RR &amp; consistency
+          <span className="sub">same entries · two exit profiles</span>
+        </div>
+        <div className="panel-body">
+          <EvalVsFundedCard />
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-title">
+          Chart findings &amp; what to try
+          <span className="sub">settled A/B from replays · Dec 25–Jul 26 verified</span>
+        </div>
+        <div className="panel-body">
+          <ChartFindingsCard />
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-title">
+          Missed-trade autopsy + BE +1R retest
+          <span className="sub">paste Pine bottom-right + bottom-center tables after each replay</span>
         </div>
         <div className="panel-body">
           <GhostAutopsyCard

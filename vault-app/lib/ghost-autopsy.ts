@@ -1,4 +1,6 @@
-/** Missed-trade autopsy (ghost trades) — mirrors PRB Pine bottom-right table. */
+/** Missed-trade autopsy (ghost trades) — mirrors PRB Pine bottom-right + BE tables. */
+
+import { analyzeBeRetest } from "./lab-findings";
 
 export interface GhostReasonRow {
   id: number;
@@ -10,8 +12,18 @@ export interface GhostReasonRow {
   netR: number;
 }
 
+export interface BeRetestAudit {
+  ghostScratch: number;
+  ghostMissed5R: number;
+  ghostRetestWin: number;
+  realScratch: number;
+  realMissed5R: number;
+  realRetestWin: number;
+}
+
 export interface GhostAutopsyReport {
   rows: GhostReasonRow[];
+  beAudit: BeRetestAudit | null;
   totalN: number;
   totalWins: number;
   totalLosses: number;
@@ -63,9 +75,15 @@ export function parseGhostAutopsyPaste(text: string): GhostReasonRow[] {
 
   for (const line of lines) {
     if (/^total/i.test(line) || /^missed/i.test(line)) continue;
+    if (/^be \+1r/i.test(line)) continue;
 
     const parts = line.split(/[\t|,]+/).map((p) => p.trim());
     if (parts.length < 2) continue;
+
+    const head = parts[0].toLowerCase();
+    if ((head === "ghosts" || head === "real fills" || head === "total") && parts.length >= 4 && !parts[1].includes("/")) {
+      continue;
+    }
 
     let reason = parts[0];
     let nIdx = 1;
@@ -107,7 +125,53 @@ export function parseGhostAutopsyPaste(text: string): GhostReasonRow[] {
   return rows;
 }
 
-export function analyzeGhostAutopsy(rows: GhostReasonRow[]): GhostAutopsyReport {
+/** Parse BE +1R retest table (bottom-center in Pine v1.10+). */
+export function parseBeRetestAudit(text: string): BeRetestAudit | null {
+  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const out: Partial<BeRetestAudit> = {};
+
+  for (const line of lines) {
+    const parts = line.split(/[\t|,]+/).map((p) => p.trim());
+    if (parts.length < 4) continue;
+    const head = parts[0].toLowerCase();
+    const a = parseInt(parts[1], 10);
+    const b = parseInt(parts[2], 10);
+    const c = parseInt(parts[3], 10);
+    if (!Number.isFinite(a) || !Number.isFinite(b) || !Number.isFinite(c)) continue;
+
+    if (head === "ghosts") {
+      out.ghostScratch = a;
+      out.ghostMissed5R = b;
+      out.ghostRetestWin = c;
+    } else if (head === "real fills") {
+      out.realScratch = a;
+      out.realMissed5R = b;
+      out.realRetestWin = c;
+    } else if (head === "total") {
+      // Prefer explicit Ghosts/Real rows; TOTAL is fallback only
+      if (out.ghostScratch === undefined) {
+        out.ghostScratch = 0;
+        out.ghostMissed5R = 0;
+        out.ghostRetestWin = 0;
+        out.realScratch = 0;
+        out.realMissed5R = 0;
+        out.realRetestWin = 0;
+      }
+    }
+  }
+
+  if (out.ghostScratch === undefined && out.realScratch === undefined) return null;
+  return {
+    ghostScratch: out.ghostScratch ?? 0,
+    ghostMissed5R: out.ghostMissed5R ?? 0,
+    ghostRetestWin: out.ghostRetestWin ?? 0,
+    realScratch: out.realScratch ?? 0,
+    realMissed5R: out.realMissed5R ?? 0,
+    realRetestWin: out.realRetestWin ?? 0,
+  };
+}
+
+export function analyzeGhostAutopsy(rows: GhostReasonRow[], fullPaste = ""): GhostAutopsyReport {
   const relaxCandidates: GhostReasonRow[] = [];
   const keepStrict: GhostReasonRow[] = [];
   const watchList: GhostReasonRow[] = [];
@@ -162,8 +226,20 @@ export function analyzeGhostAutopsy(rows: GhostReasonRow[]): GhostAutopsyReport 
     "Graveyard rules still apply: confirming close OFF, approach guard ON, trail ON — settled failures, do not relax from ghosts alone."
   );
 
+  const beAudit = fullPaste ? parseBeRetestAudit(fullPaste) : null;
+  const beVerdict = analyzeBeRetest(beAudit);
+  if (beVerdict) {
+    recommendations.push(`BE +1R: ${beVerdict.headline} — ${beVerdict.detail}`);
+    recommendations.push(...beVerdict.recommendations);
+  } else if (fullPaste.trim()) {
+    recommendations.push(
+      "BE +1R table not detected — include Ghosts / Real fills rows from Pine bottom-center (v1.10+)."
+    );
+  }
+
   return {
     rows,
+    beAudit,
     totalN,
     totalWins,
     totalLosses,
@@ -187,4 +263,9 @@ Stop out of bounds	0	0/0/0	0
 Daily P&L lock	0	0/0/0	0
 Not near key open	0	0/0/0	0
 Bias filter	0	0/0/0	0
-After window (end→15:00)	0	0/0/0	0`;
+After window (end→15:00)	0	0/0/0	0
+---
+BE +1R retest	scratch	missed 5R	retest→win
+Ghosts	0	0	0
+Real fills	0	0	0
+TOTAL	0	0	0`;

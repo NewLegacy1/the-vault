@@ -9,6 +9,13 @@ export interface StrategyPreset {
 
 export const STRATEGY_PRESETS: StrategyPreset[] = [
   {
+    id: "prb-v110-12mo-control",
+    label: "PRB v1.10 — 12mo control (Aug 25–Jul 26)",
+    version: "v1.10",
+    config: "BE +1R retest audit · MNQ sizing · Both bias · $400 risk · BE-only · ghost autopsy",
+    defaultRegimes: ["baseline", "be-only"],
+  },
+  {
     id: "prb-v15-12mo-control",
     label: "PRB v1.5 — 12mo control (Jul 25–Jul 26)",
     version: "v1.5",
