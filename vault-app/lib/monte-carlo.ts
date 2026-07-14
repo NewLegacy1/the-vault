@@ -2,8 +2,16 @@ export interface McFees {
   evalFee: number;
   activationFee: number;
   monthlyFee: number;
-  /** Extra profit on funded account before first payout request (withdrawable buffer). */
+  /** Extra funded profit on funded account before first payout request (withdrawable buffer). */
   payoutBuffer: number;
+}
+
+/** How historical outcomes are resampled into each simulated path. */
+export type McBootstrap = "trade" | "day" | "week";
+
+export interface McConsistencyRule {
+  consistencyPct: number;
+  minDays: number;
 }
 
 export interface McParams {
@@ -15,6 +23,10 @@ export interface McParams {
   passAt: number;
   trailingDD: number;
   fees?: McFees;
+  /** Eval consistency gate — pass only when best-day % and min days satisfied. */
+  consistency?: McConsistencyRule;
+  /** Resample mode; defaults from dates + consistency when omitted. */
+  bootstrap?: McBootstrap;
 }
 
 export interface McEconomics {
@@ -36,6 +48,7 @@ export interface McEconomics {
 
 export interface McResult {
   sims: number;
+  /** Consistency-aware pass rate when consistency rule is active; else gross pass. */
   passRate: number;
   bustRate: number;
   timeoutRate: number;
@@ -49,11 +62,24 @@ export interface McResult {
   /** Final equity values per sim — for terminal histogram. */
   finalEquities: number[];
   outcomeHist: { label: string; count: number; color: string }[];
+  /** Resampling mode used for this run. */
+  bootstrap: McBootstrap;
+  /** Whether eval consistency was enforced on pass. */
+  consistencyAware: boolean;
+  /** Hit pass line before DD without meeting consistency (only when consistencyAware). */
+  grossPassRate?: number;
+  /** Crossed pass line but never cleared consistency before bust/timeout. */
+  consistencyBlockedRate?: number;
 }
 
 export interface McSamplePath {
   equity: number[];
-  outcome: "payout" | "pass" | "bust" | "open";
+  outcome: "payout" | "pass" | "bust" | "open" | "cons-block";
+}
+
+interface DailyPnl {
+  date: string;
+  pnl: number;
 }
 
 function percentile(sorted: number[], p: number): number {
@@ -83,6 +109,112 @@ function evalMonthsForWeeks(weeks: number | null, monthlyFee: number): number {
   return Math.max(1, Math.ceil(weeks / 4));
 }
 
+function weekKey(dateStr: string): string {
+  const t = Date.parse(dateStr);
+  if (!Number.isFinite(t)) return dateStr;
+  const d = new Date(t);
+  const day = d.getUTCDay();
+  const monday = new Date(d);
+  monday.setUTCDate(d.getUTCDate() - ((day + 6) % 7));
+  const y = monday.getUTCFullYear();
+  const m = String(monday.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(monday.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${dd}`;
+}
+
+export function buildDailyPnls(trades: number[], dates: string[]): DailyPnl[] {
+  const byDay = new Map<string, number>();
+  for (let i = 0; i < trades.length; i++) {
+    const d = dates[i] ?? "";
+    if (!d) continue;
+    byDay.set(d, (byDay.get(d) ?? 0) + trades[i]);
+  }
+  return [...byDay.entries()]
+    .map(([date, pnl]) => ({ date, pnl }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export function buildWeekBlocks(daily: DailyPnl[]): number[][] {
+  if (daily.length === 0) return [];
+  const blocks: number[][] = [];
+  let currentKey = weekKey(daily[0].date);
+  let current: number[] = [];
+  for (const row of daily) {
+    const k = weekKey(row.date);
+    if (k !== currentKey && current.length > 0) {
+      blocks.push(current);
+      current = [];
+      currentKey = k;
+    }
+    current.push(row.pnl);
+  }
+  if (current.length > 0) blocks.push(current);
+  return blocks;
+}
+
+function hasUsableDates(trades: number[], dates?: string[]): boolean {
+  if (!dates || dates.length < 6) return false;
+  const valid = dates.filter(Boolean).length;
+  return valid >= Math.min(6, Math.floor(trades.length * 0.5));
+}
+
+export function resolveMcBootstrap(
+  trades: number[],
+  dates: string[] | undefined,
+  requested?: McBootstrap,
+  consistency?: McConsistencyRule
+): McBootstrap {
+  if (requested) return requested;
+  if (!hasUsableDates(trades, dates)) return "trade";
+  if (consistency && consistency.consistencyPct > 0) return "week";
+  return "week";
+}
+
+function pickRandom<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function generateBootstrapSequence(
+  trades: number[],
+  dailyPnls: number[],
+  weekBlocks: number[][],
+  maxSteps: number,
+  mode: McBootstrap
+): number[] {
+  const out: number[] = [];
+  while (out.length < maxSteps) {
+    if (mode === "week" && weekBlocks.length >= 2) {
+      const block = pickRandom(weekBlocks);
+      for (const pnl of block) {
+        out.push(pnl);
+        if (out.length >= maxSteps) break;
+      }
+    } else if (mode === "day" && dailyPnls.length > 0) {
+      out.push(pickRandom(dailyPnls));
+    } else if (mode === "week" && weekBlocks.length === 1) {
+      out.push(pickRandom(weekBlocks[0]));
+    } else if (dailyPnls.length > 0 && mode !== "trade") {
+      out.push(pickRandom(dailyPnls));
+    } else {
+      out.push(pickRandom(trades));
+    }
+  }
+  return out;
+}
+
+function evalPassReady(
+  cumulative: number,
+  bestDayPnl: number,
+  tradingDays: number,
+  passAt: number,
+  consistency?: McConsistencyRule
+): boolean {
+  if (cumulative < passAt) return false;
+  if (!consistency || consistency.consistencyPct <= 0) return true;
+  const bestPct = cumulative > 0 ? (bestDayPnl / cumulative) * 100 : 0;
+  return bestPct < consistency.consistencyPct && tradingDays >= consistency.minDays;
+}
+
 type SimPhase = "eval" | "funded" | "bust" | "done";
 
 export function runMonteCarlo(params: McParams): McResult {
@@ -93,6 +225,13 @@ export function runMonteCarlo(params: McParams): McResult {
     monthlyFee: 0,
     payoutBuffer: 1000,
   };
+  const consistency =
+    params.consistency && params.consistency.consistencyPct > 0 ? params.consistency : undefined;
+  const daily = dates ? buildDailyPnls(trades, dates) : [];
+  const dailyPnls = daily.map((d) => d.pnl);
+  const weekBlocks = buildWeekBlocks(daily);
+  const bootstrap = resolveMcBootstrap(trades, dates, params.bootstrap, consistency);
+  const consistencyAware = Boolean(consistency);
   const payoutAt = passAt + fees.payoutBuffer;
   const tpw = tradesPerWeekFromDates(dates);
   const evalCost = fees.evalFee || fees.monthlyFee || 0;
@@ -128,6 +267,8 @@ export function runMonteCarlo(params: McParams): McResult {
       samplePaths: [],
       finalEquities: [],
       outcomeHist: [],
+      bootstrap,
+      consistencyAware,
     };
   }
 
@@ -142,26 +283,42 @@ export function runMonteCarlo(params: McParams): McResult {
   let passes = 0;
   let busts = 0;
   let payouts = 0;
+  let grossPasses = 0;
+  let consistencyBlocked = 0;
+  let outcomeCounts = { payout: 0, pass: 0, consBlock: 0, bust: 0, open: 0 };
 
   for (let s = 0; s < sims; s++) {
+    const sequence = generateBootstrapSequence(trades, dailyPnls, weekBlocks, maxTrades, bootstrap);
     let eq = 0;
     let peak = 0;
     let maxDD = 0;
     let phase: SimPhase = "eval";
     let passed = false;
     let gotPayout = false;
+    let hitGrossPass = false;
+    let blockedByConsistency = false;
+    let cumulative = 0;
+    let bestDayPnl = 0;
+    let tradingDays = 0;
     const pathTrace: number[] = [0];
     paths[0][s] = 0;
 
     for (let t = 1; t <= maxTrades; t++) {
       if (phase === "eval" || phase === "funded") {
-        eq += trades[Math.floor(Math.random() * trades.length)];
+        const dayPnl = sequence[t - 1];
+        eq += dayPnl;
+        cumulative += dayPnl;
+        tradingDays++;
+        if (dayPnl > bestDayPnl) bestDayPnl = dayPnl;
+
         peak = Math.max(peak, eq);
         maxDD = Math.max(maxDD, peak - eq);
 
+        if (cumulative >= passAt) hitGrossPass = true;
+
         if (peak - eq >= trailingDD) {
           phase = "bust";
-        } else if (phase === "eval" && eq >= passAt) {
+        } else if (phase === "eval" && evalPassReady(cumulative, bestDayPnl, tradingDays, passAt, consistency)) {
           phase = "funded";
           passed = true;
           tradesToPass.push(t);
@@ -181,8 +338,20 @@ export function runMonteCarlo(params: McParams): McResult {
       pathTrace.push(eq);
     }
 
+    if (hitGrossPass && !passed) {
+      blockedByConsistency = true;
+      consistencyBlocked++;
+    }
+    if (hitGrossPass) grossPasses++;
+
     if (passed) passes++;
-    else if (phase === "bust") busts++;
+    if (phase === "bust") busts++;
+
+    if (gotPayout) outcomeCounts.payout++;
+    else if (passed) outcomeCounts.pass++;
+    else if (hitGrossPass) outcomeCounts.consBlock++;
+    else if (phase === "bust") outcomeCounts.bust++;
+    else outcomeCounts.open++;
 
     finalEquities.push(eq);
     maxDDs.push(maxDD);
@@ -192,9 +361,11 @@ export function runMonteCarlo(params: McParams): McResult {
         ? "payout"
         : passed
           ? "pass"
-          : phase === "bust"
-            ? "bust"
-            : "open";
+          : blockedByConsistency
+            ? "cons-block"
+            : phase === "bust"
+              ? "bust"
+              : "open";
       samplePaths.push({ equity: pathTrace, outcome });
     }
   }
@@ -215,8 +386,8 @@ export function runMonteCarlo(params: McParams): McResult {
   const netSorted = [...netOnPass].sort((a, b) => a - b);
 
   const passRate = passes / sims;
-  const bustRate = busts / sims;
-  const timeoutRate = (sims - passes - busts) / sims;
+  const bustRate = outcomeCounts.bust / sims;
+  const timeoutRate = outcomeCounts.open / sims;
   const payoutRate = payouts / sims;
 
   const expectedAccounts = passRate > 0 ? Math.round((1 / passRate) * 10) / 10 : Infinity;
@@ -233,12 +404,20 @@ export function runMonteCarlo(params: McParams): McResult {
       ? Math.round(medianNet - (expectedAccounts - 1) * costOnFail)
       : -costOnFail * accountsFor90Pct;
 
-  const outcomeHist = [
-    { label: "PAYOUT", count: payouts, color: "#39ffba" },
-    { label: "PASS", count: passes - payouts, color: "#00ff41" },
-    { label: "BUST", count: busts, color: "#ff3355" },
-    { label: "OPEN", count: sims - passes - busts, color: "#6a6a6a" },
-  ];
+  const outcomeHist = consistencyAware
+    ? [
+        { label: "PAYOUT", count: outcomeCounts.payout, color: "#39ffba" },
+        { label: "PASS", count: outcomeCounts.pass, color: "#00ff41" },
+        { label: "CONS-BLOCK", count: outcomeCounts.consBlock, color: "#ffb347" },
+        { label: "BUST", count: outcomeCounts.bust, color: "#ff3355" },
+        { label: "OPEN", count: outcomeCounts.open, color: "#6a6a6a" },
+      ]
+    : [
+        { label: "PAYOUT", count: outcomeCounts.payout, color: "#39ffba" },
+        { label: "PASS", count: outcomeCounts.pass, color: "#00ff41" },
+        { label: "BUST", count: outcomeCounts.bust, color: "#ff3355" },
+        { label: "OPEN", count: outcomeCounts.open, color: "#6a6a6a" },
+      ];
 
   return {
     sims,
@@ -268,5 +447,9 @@ export function runMonteCarlo(params: McParams): McResult {
     samplePaths,
     finalEquities,
     outcomeHist,
+    bootstrap,
+    consistencyAware,
+    grossPassRate: consistencyAware ? grossPasses / sims : undefined,
+    consistencyBlockedRate: consistencyAware ? consistencyBlocked / sims : undefined,
   };
 }

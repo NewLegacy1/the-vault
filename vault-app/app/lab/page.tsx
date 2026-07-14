@@ -297,6 +297,7 @@ function EquityCurveChart({
 const PATH_STYLE: Record<string, { stroke: string; opacity: number }> = {
   payout: { stroke: "#39ffba", opacity: 0.35 },
   pass: { stroke: "#00ff41", opacity: 0.22 },
+  "cons-block": { stroke: "#ffb347", opacity: 0.25 },
   bust: { stroke: "#ff3355", opacity: 0.28 },
   open: { stroke: "#7a8a7a", opacity: 0.14 },
 };
@@ -1033,6 +1034,11 @@ export default function LabPage() {
           monthlyFee: rule.monthlyFee ?? 0,
           payoutBuffer: Number(payoutBuffer) || 1000,
         },
+        consistency:
+          rule.consistencyPct > 0
+            ? { consistencyPct: rule.consistencyPct, minDays: rule.minDays }
+            : undefined,
+        bootstrap: "week",
       });
       const secondHalfPass = mcPassRateSecondHalf(
         activeDs.trades,
@@ -1558,7 +1564,19 @@ export default function LabPage() {
               <div className={"v " + (res.passRate >= 0.7 ? "pos" : res.passRate >= 0.4 ? "warn" : "neg")}>
                 {(res.passRate * 100).toFixed(1)}%
               </div>
-              <div className="d">reach {fmtUsd(rule.passAt)} before DD</div>
+              <div className="d">
+                {res.consistencyAware
+                  ? `consistency pass · ${rule.consistencyPct}% rule · ${rule.minDays}+ days`
+                  : `reach ${fmtUsd(rule.passAt)} before DD`}
+              </div>
+              {res.consistencyAware && res.grossPassRate != null && (
+                <div className="d dim" style={{ marginTop: 2 }}>
+                  gross {fmtUsd(rule.passAt)} hit {(res.grossPassRate * 100).toFixed(1)}%
+                  {res.consistencyBlockedRate != null && res.consistencyBlockedRate > 0 && (
+                    <span className="warn"> · {(res.consistencyBlockedRate * 100).toFixed(1)}% blocked</span>
+                  )}
+                </div>
+              )}
             </div>
             <div className="stat">
               <div className="k">Time to pass</div>
@@ -1598,7 +1616,7 @@ export default function LabPage() {
             <div className="panel" style={{ marginBottom: 14 }}>
               <div className="panel-title">
                 Experiment scorecard
-                <span className="sub">vs PRB v1.5 12mo control · ADVANCE / HOLD / REGRESS</span>
+                <span className="sub">vs PRB v1.5 12mo control (legacy gross pass benchmark) · ADVANCE / HOLD / REGRESS</span>
               </div>
               <div className="panel-body">
                 <LabScorecardPanel
@@ -1613,7 +1631,10 @@ export default function LabPage() {
           <div className="panel">
             <div className="panel-title">
               Monte Carlo simulation
-              <span className="sub">{res.sims.toLocaleString()} random futures · not your actual trades</span>
+              <span className="sub">
+                {res.sims.toLocaleString()} paths · {res.bootstrap}-block bootstrap
+                {res.consistencyAware ? " · consistency-aware" : ""}
+              </span>
             </div>
             <div className="panel-body chart-row">
               <FanChart

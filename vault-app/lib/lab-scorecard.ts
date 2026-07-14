@@ -161,6 +161,11 @@ export function mcPassRateSecondHalf(
       monthlyFee: rule.monthlyFee ?? 0,
       payoutBuffer,
     },
+    consistency:
+      rule.consistencyPct > 0
+        ? { consistencyPct: rule.consistencyPct, minDays: rule.minDays }
+        : undefined,
+    bootstrap: "week",
   });
   return Math.round(mc.passRate * 1000) / 10;
 }
