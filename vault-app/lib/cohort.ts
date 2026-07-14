@@ -79,6 +79,18 @@ export function mcToSummary(mc: McResult): McSummary {
   };
 }
 
+export interface CohortFirmMcEntry {
+  passPct: number;
+  bustPct: number;
+  payoutPct: number;
+  weeksToPassP50: number | null;
+  weeksToPayoutP50: number | null;
+  passAt?: number;
+  trailingDD?: number;
+  consistencyPct?: number;
+  firmName?: string;
+}
+
 export interface CohortRecord {
   id: string;
   filename: string;
@@ -111,6 +123,8 @@ export interface CohortRecord {
   weeksToPassP50: number | null;
   weeksToPayoutP50: number | null;
   expectedAccounts: number;
+  /** Multi-firm MC snapshots — populated on new Lab saves. */
+  firmMc?: Record<string, CohortFirmMcEntry>;
 }
 
 export interface CohortSaveInput {
@@ -141,6 +155,7 @@ export interface CohortSaveInput {
   maxTrades: number;
   payoutBuffer: number;
   mc: McSummary;
+  firmMc?: Record<string, CohortFirmMcEntry>;
 }
 
 function slug(s: string): string {
@@ -170,6 +185,9 @@ export function buildCohortMarkdown(input: CohortSaveInput): string {
   const passPct = (input.mc.passRate * 100).toFixed(1);
   const bustPct = (input.mc.bustRate * 100).toFixed(1);
   const payoutPct = (eco.payoutRate * 100).toFixed(1);
+  const firmMcLine = input.firmMc
+    ? `firm_mc: ${JSON.stringify(input.firmMc)}\n`
+    : "";
 
   const frontmatter = `---
 variant: "${input.variant.replace(/"/g, '\\"')}"
@@ -203,7 +221,7 @@ expected_accounts: ${Number.isFinite(eco.expectedAccounts) ? eco.expectedAccount
 tags: [cohort, ${input.strategyFamily}, ${input.phase}, monte-carlo, lab]
 created: "${new Date().toISOString()}"
 dataset: "${input.datasetName.replace(/"/g, '\\"')}"
----`;
+${firmMcLine}---`;
 
   const body = `
 # ${input.variant}
@@ -284,6 +302,16 @@ export function parseCohortMeta(content: string, filename: string, relativePath?
   const preset = get("strategy_preset");
   const family = get("strategy_family") || inferFamilyFromPreset(preset);
 
+  let firmMc: Record<string, CohortFirmMcEntry> | undefined;
+  const firmMcRaw = get("firm_mc");
+  if (firmMcRaw) {
+    try {
+      firmMc = JSON.parse(firmMcRaw) as Record<string, CohortFirmMcEntry>;
+    } catch {
+      firmMc = undefined;
+    }
+  }
+
   return {
     id: filename.replace(/\.md$/, ""),
     filename,
@@ -315,5 +343,6 @@ export function parseCohortMeta(content: string, filename: string, relativePath?
     weeksToPassP50: parseFloat(get("weeks_to_pass_p50")) || null,
     weeksToPayoutP50: parseFloat(get("weeks_to_payout_p50")) || null,
     expectedAccounts: parseFloat(get("expected_accounts")) || 0,
+    firmMc,
   };
 }

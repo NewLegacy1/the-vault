@@ -6,7 +6,7 @@ export interface GitHubCohortCommit {
   branch: string;
 }
 
-function githubConfig() {
+export function githubConfig() {
   return {
     token: process.env.GITHUB_TOKEN?.trim() ?? "",
     owner: process.env.GITHUB_REPO_OWNER?.trim() || "NewLegacy1",

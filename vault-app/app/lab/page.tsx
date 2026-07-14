@@ -34,6 +34,7 @@ import {
   type PresetLedgerStore,
 } from "@/lib/lab-ledger";
 import { isDerivedMacroPreset } from "@/lib/macro-matrix";
+import { compareFirmsForTrades, firmSnapshotsToCohortMc } from "@/lib/firm-matrix-compare";
 
 interface Dataset {
   id: string;
@@ -1312,6 +1313,14 @@ export default function LabPage() {
     }
     setSaveStatus("saving");
     const preset = presetById(study.presetId);
+    const firmSnapshots = compareFirmsForTrades({
+      trades: activeDs.trades,
+      dates: activeDs.dates,
+      sims: Number(sims) || 2000,
+      maxTrades: Number(maxTrades) || 80,
+      payoutBuffer: Number(payoutBuffer) || 1000,
+      winCapUsd,
+    });
     const payload: CohortSaveInput = {
       variant: variantName,
       strategyPreset: study.presetId,
@@ -1344,6 +1353,7 @@ export default function LabPage() {
       maxTrades,
       payoutBuffer,
       mc: mcToSummary(mcResult),
+      firmMc: firmSnapshotsToCohortMc(firmSnapshots),
     };
     try {
       const r = await fetch("/api/cohorts", {

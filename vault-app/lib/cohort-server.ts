@@ -9,6 +9,7 @@ import {
   CohortRecord,
 } from "@/lib/cohort";
 import { commitCohortToGitHub, githubCohortConfigured } from "@/lib/github-cohort";
+import { listCohortsFromGitHub } from "@/lib/github-cohort-list";
 
 function isVercelRuntime(): boolean {
   return process.env.VERCEL === "1";
@@ -104,6 +105,16 @@ async function listCohortsFromDisk(): Promise<CohortRecord[]> {
 
 export async function listCohorts(): Promise<CohortRecord[]> {
   if (isVercelRuntime()) {
+    if (githubCohortConfigured()) {
+      try {
+        const fromGitHub = await listCohortsFromGitHub();
+        if (fromGitHub.length > 0) {
+          return fromGitHub;
+        }
+      } catch (e) {
+        console.error("GitHub cohort list failed:", e instanceof Error ? e.message : e);
+      }
+    }
     return loadBundledCohorts().sort((a, b) => b.created.localeCompare(a.created));
   }
   try {
