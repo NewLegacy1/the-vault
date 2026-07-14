@@ -13,6 +13,8 @@ export interface LabRunKeyInput {
   maxTrades: number;
   payoutBuffer: number;
   winCapUsd: number;
+  dateFrom: string;
+  dateTo: string;
 }
 
 /** Slim cache — flags only; MC is re-run on restore (avoids huge/corrupt JSON). */
@@ -42,6 +44,8 @@ export function buildLabRunKey(input: LabRunKeyInput): string {
     input.maxTrades,
     input.payoutBuffer,
     input.winCapUsd,
+    input.dateFrom,
+    input.dateTo,
   ].join("|");
 }
 

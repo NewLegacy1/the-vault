@@ -36,6 +36,11 @@ interface Dataset {
   deduped?: number;
 }
 
+interface DateFilter {
+  from: string;
+  to: string;
+}
+
 function suggestDatasetLabel(dates: string[]): string {
   if (dates.length < 2) return "";
   const a = dates[0].slice(0, 7);
@@ -46,9 +51,54 @@ function suggestDatasetLabel(dates: string[]): string {
   return a === b ? a : `${a}–${b}`;
 }
 
-function datasetDisplayName(d: Dataset): string {
+function shortVariantName(variant: string): string {
+  return variant.replace(/^PRB v[\d.]+ — /, "").replace(/ \(live locked\)/, "");
+}
+
+function suggestDatasetName(dates: string[], variant: string): string {
+  const span = suggestDatasetLabel(dates);
+  const short = shortVariantName(variant);
+  return span ? `${span} · ${short}` : short;
+}
+
+function datasetDisplayName(d: Dataset, aliases?: Record<string, string>): string {
+  const alias = aliases?.[d.id]?.trim();
+  if (alias) return alias;
   if (d.label?.trim()) return d.label.trim();
   return d.name;
+}
+
+function datasetBounds(dates: string[]): { min: string; max: string } {
+  const sorted = dates.filter(Boolean).sort();
+  return { min: sorted[0] ?? "", max: sorted[sorted.length - 1] ?? "" };
+}
+
+function filterTradesByDate(
+  trades: number[],
+  dates: string[],
+  from: string,
+  to: string
+): { trades: number[]; dates: string[] } {
+  if (!from && !to) return { trades, dates };
+  const outT: number[] = [];
+  const outD: string[] = [];
+  for (let i = 0; i < trades.length; i++) {
+    const d = dates[i] ?? "";
+    if (!d) continue;
+    if (from && d < from) continue;
+    if (to && d > to) continue;
+    outT.push(trades[i]);
+    outD.push(d);
+  }
+  return { trades: outT, dates: outD };
+}
+
+function applyDateFilter(ds: Dataset, filter?: DateFilter): Dataset {
+  const from = filter?.from ?? "";
+  const to = filter?.to ?? "";
+  if (!from && !to) return ds;
+  const { trades, dates } = filterTradesByDate(ds.trades, ds.dates, from, to);
+  return { ...ds, trades, dates };
 }
 
 function datasetOptionSub(d: Dataset): string {
@@ -884,6 +934,8 @@ function buildDatasetFromParsed(
 export default function LabPage() {
   const [uploads, setUploads] = useLocal<Dataset[]>("vault.lab.datasets", []);
   const [dsId, setDsId, dsReady] = useLocal<string>("vault.lab.dsId", "be2r-pdh-12mo");
+  const [datasetAliases, setDatasetAliases] = useLocal<Record<string, string>>("vault.lab.datasetAliases", {});
+  const [dateFilters, setDateFilters] = useLocal<Record<string, DateFilter>>("vault.lab.dateFilters", {});
   const [ruleId, setRuleId, ruleReady] = useLocal<string>("vault.lab.ruleId", PROP_RULES[0].id);
   const [sims, setSims, simsReady] = useLocal<number>("vault.lab.sims", 2000);
   const [maxTrades, setMaxTrades, maxTradesReady] = useLocal<number>("vault.lab.maxTrades", 80);
@@ -907,8 +959,13 @@ export default function LabPage() {
   const datasets = [...SEED_SETS, ...uploads];
   const safeDsId = typeof dsId === "string" ? dsId : SEED_SETS[0].id;
   const ds = datasets.find((d) => d.id === safeDsId) ?? SEED_SETS[0];
+  const dateFilter = dateFilters[safeDsId] ?? { from: "", to: "" };
+  const dsBounds = useMemo(() => datasetBounds(ds.dates), [ds.dates]);
+  const activeDs = useMemo(() => applyDateFilter(ds, dateFilter), [ds, dateFilter]);
+  const dateFilterActive = Boolean(dateFilter.from || dateFilter.to);
+  const displayName = datasetDisplayName(ds, datasetAliases);
   const rule = ruleById(typeof ruleId === "string" ? ruleId : PROP_RULES[0].id) ?? PROP_RULES[0];
-  const canRun = studyReady(study) && ds.trades.length > 0;
+  const canRun = studyReady(study) && activeDs.trades.length > 0;
   const storageReady = dsReady && ruleReady && simsReady && maxTradesReady && payoutReady && studyHydrated;
 
   const runKey = useMemo(
@@ -923,29 +980,32 @@ export default function LabPage() {
         maxTrades: Number(maxTrades) || 80,
         payoutBuffer: Number(payoutBuffer) || 1000,
         winCapUsd,
+        dateFrom: dateFilter.from,
+        dateTo: dateFilter.to,
       }),
-    [safeDsId, study, ruleId, sims, maxTrades, payoutBuffer, winCapUsd]
+    [safeDsId, study, ruleId, sims, maxTrades, payoutBuffer, winCapUsd, dateFilter]
   );
 
-  const equity = useMemo(() => buildEquityCurve(ds.trades, ds.dates), [ds]);
+  const equity = useMemo(() => buildEquityCurve(activeDs.trades, activeDs.dates), [activeDs]);
 
   const consistency = useMemo(
-    () => analyzeEvalConsistency(ds.trades, ds.dates, rule, { winCapUsd }),
-    [ds, rule, winCapUsd]
+    () => analyzeEvalConsistency(activeDs.trades, activeDs.dates, rule, { winCapUsd }),
+    [activeDs, rule, winCapUsd]
   );
 
   const stats = useMemo(() => {
-    const t = ds.trades;
+    const t = activeDs.trades;
     const wins = t.filter((x) => x > 50).length;
     const losses = t.filter((x) => x < -50).length;
     const net = t.reduce((s, x) => s + x, 0);
-    const tpw = tradesPerWeek(ds.dates);
+    const tpw = tradesPerWeek(activeDs.dates);
     const span =
-      ds.dates.length >= 2
-        ? `${ds.dates[0]} → ${ds.dates[ds.dates.length - 1]}`
+      activeDs.dates.length >= 2
+        ? `${activeDs.dates[0]} → ${activeDs.dates[activeDs.dates.length - 1]}`
         : "dates unknown";
     return {
       n: t.length,
+      fullN: ds.trades.length,
       wins,
       losses,
       scr: t.length - wins - losses,
@@ -953,14 +1013,16 @@ export default function LabPage() {
       avg: net / (t.length || 1),
       tpw: Math.round(tpw * 10) / 10,
       span,
+      fullSpan:
+        ds.dates.length >= 2 ? `${ds.dates[0]} → ${ds.dates[ds.dates.length - 1]}` : span,
     };
-  }, [ds]);
+  }, [activeDs, ds]);
 
   const computeMcRun = useMemo(() => {
     return () => {
       const mcResult = runMonteCarlo({
-        trades: ds.trades,
-        dates: ds.dates,
+        trades: activeDs.trades,
+        dates: activeDs.dates,
         sims: Number(sims) || 2000,
         maxTrades: Number(maxTrades) || 80,
         passAt: rule.passAt,
@@ -973,8 +1035,8 @@ export default function LabPage() {
         },
       });
       const secondHalfPass = mcPassRateSecondHalf(
-        ds.trades,
-        ds.dates,
+        activeDs.trades,
+        activeDs.dates,
         rule,
         Number(sims) || 2000,
         Number(maxTrades) || 80,
@@ -983,10 +1045,10 @@ export default function LabPage() {
       const metrics = buildScorecardMetrics({
         id: `${study.presetId}-${safeDsId}`,
         label: variantName,
-        dataset: datasetDisplayName(ds),
+        dataset: displayName,
         span: stats.span,
-        trades: ds.trades,
-        dates: ds.dates,
+        trades: activeDs.trades,
+        dates: activeDs.dates,
         stats,
         mc: mcResult,
         consistency,
@@ -995,7 +1057,7 @@ export default function LabPage() {
       const comparison = compareToBenchmark(metrics);
       return { mcResult, comparison };
     };
-  }, [ds, rule, sims, maxTrades, payoutBuffer, stats, consistency, study.presetId, safeDsId, variantName]);
+  }, [activeDs, rule, sims, maxTrades, payoutBuffer, stats, consistency, study.presetId, safeDsId, variantName, displayName]);
 
   useEffect(() => {
     if (!storageReady) return;
@@ -1118,7 +1180,12 @@ export default function LabPage() {
       return;
     }
     const mergedPick = newSets.find((d) => d.id.startsWith("m")) ?? newSets[newSets.length - 1];
-    setUploads([...uploads, ...newSets]);
+    const autoName = suggestDatasetName(mergedPick.dates, variantName);
+    const labeled = newSets.map((d) =>
+      d.id === mergedPick.id ? { ...d, label: autoName } : d
+    );
+    setUploads([...uploads, ...labeled]);
+    setDatasetAliases({ ...datasetAliases, [mergedPick.id]: autoName });
     setDsId(mergedPick.id);
   };
 
@@ -1146,28 +1213,45 @@ export default function LabPage() {
       leaves.flatMap((u) => u.sources),
       deduped
     );
-    setUploads([...uploads, merged]);
-    setDsId(merged.id);
+    const autoName = suggestDatasetName(merged.dates, variantName);
+    const labeled = { ...merged, label: autoName };
+    setUploads([...uploads, labeled]);
+    setDatasetAliases({ ...datasetAliases, [labeled.id]: autoName });
+    setDsId(labeled.id);
   };
 
   const removeUpload = (id: string) => {
     setUploads(uploads.filter((u) => u.id !== id));
-    if (dsId === id) setDsId("all");
+    const nextAliases = { ...datasetAliases };
+    delete nextAliases[id];
+    setDatasetAliases(nextAliases);
+    const nextFilters = { ...dateFilters };
+    delete nextFilters[id];
+    setDateFilters(nextFilters);
+    if (dsId === id) setDsId(SEED_SETS[0].id);
   };
 
-  const setDatasetLabel = (id: string, label: string) => {
-    setUploads(uploads.map((u) => (u.id === id ? { ...u, label: label || undefined } : u)));
+  const setDisplayName = (id: string, name: string) => {
+    const trimmed = name.trim();
+    setDatasetAliases({ ...datasetAliases, [id]: trimmed });
+    if (id.startsWith("u") || id.startsWith("m")) {
+      setUploads(uploads.map((u) => (u.id === id ? { ...u, label: trimmed || undefined } : u)));
+    }
   };
 
-  const labelFromStudy = () => {
-    const span = suggestDatasetLabel(ds.dates);
-    const short = variantName.replace(/^PRB v[\d.]+ — /, "").replace(/ \(live locked\)/, "");
-    return span ? `${span} ${short}` : short;
+  const setDateFilterFor = (id: string, patch: Partial<DateFilter>) => {
+    const prev = dateFilters[id] ?? { from: "", to: "" };
+    setDateFilters({ ...dateFilters, [id]: { ...prev, ...patch } });
+  };
+
+  const clearDateFilterFor = (id: string) => {
+    const next = { ...dateFilters };
+    delete next[id];
+    setDateFilters(next);
   };
 
   const applyStudyLabel = () => {
-    if (!ds.id.startsWith("u") && !ds.id.startsWith("m")) return;
-    setDatasetLabel(ds.id, labelFromStudy());
+    setDisplayName(ds.id, suggestDatasetName(ds.dates, variantName));
   };
 
   const applyPreset = (presetId: string) => {
@@ -1211,9 +1295,11 @@ export default function LabPage() {
       hypothesis: study.hypothesis,
       regimes: study.regimes,
       notes: study.hypothesis,
-      datasetName: datasetDisplayName(ds) + (ds.label ? ` · ${ds.name}` : ""),
+      datasetName: displayName + (dateFilterActive ? ` · ${stats.span}` : ""),
       span: stats.span,
-      sources: ds.sources,
+      sources: dateFilterActive
+        ? [...ds.sources, `Date filter: ${stats.n} of ${stats.fullN} trades`]
+        : ds.sources,
       firm: rule.name,
       trades: stats.n,
       netPnl: stats.net,
@@ -1278,7 +1364,7 @@ export default function LabPage() {
       id: `${Date.now()}-${study.presetId}`,
       at: new Date().toISOString(),
       variant: variantName,
-      dataset: datasetDisplayName(ds),
+      dataset: displayName,
       verdict: comparison.verdict,
       compositeScore: comparison.compositeScore,
       metrics: comparison.current,
@@ -1327,25 +1413,54 @@ export default function LabPage() {
               <select value={safeDsId} onChange={(e) => setDsId(e.target.value)}>
                 {datasets.map((d) => (
                   <option key={d.id} value={d.id}>
-                    {datasetDisplayName(d)} — {datasetOptionSub(d)}
+                    {datasetDisplayName(d, datasetAliases)} — {datasetOptionSub(d)}
                   </option>
                 ))}
               </select>
             </label>
-            {(ds.id.startsWith("u") || ds.id.startsWith("m")) && (
-              <label className="fld" style={{ minWidth: 200 }}>
-                Dataset label
-                <input
-                  value={ds.label ?? ""}
-                  onChange={(e) => setDatasetLabel(ds.id, e.target.value)}
-                  placeholder='e.g. 2025–26 BE-only'
-                />
-              </label>
-            )}
-            {(ds.id.startsWith("u") || ds.id.startsWith("m")) && (
-              <button type="button" className="btn ghost" onClick={applyStudyLabel} title="Set label from study + date span">
-                Label from study
-              </button>
+            <label className="fld" style={{ minWidth: 220 }}>
+              Display name
+              <input
+                value={datasetAliases[safeDsId] ?? ds.label ?? ""}
+                onChange={(e) => setDisplayName(safeDsId, e.target.value)}
+                placeholder={
+                  suggestDatasetLabel(ds.dates)
+                    ? `e.g. ${suggestDatasetLabel(ds.dates)} BE-only`
+                    : "e.g. 25–26 Trail experiment"
+                }
+              />
+            </label>
+            <button type="button" className="btn ghost" onClick={applyStudyLabel} title="Set name from date span + strategy version">
+              Name from study
+            </button>
+            {dsBounds.min && dsBounds.max && (
+              <>
+                <label className="fld">
+                  From
+                  <input
+                    type="date"
+                    min={dsBounds.min}
+                    max={dateFilter.to || dsBounds.max}
+                    value={dateFilter.from}
+                    onChange={(e) => setDateFilterFor(safeDsId, { from: e.target.value })}
+                  />
+                </label>
+                <label className="fld">
+                  To
+                  <input
+                    type="date"
+                    min={dateFilter.from || dsBounds.min}
+                    max={dsBounds.max}
+                    value={dateFilter.to}
+                    onChange={(e) => setDateFilterFor(safeDsId, { to: e.target.value })}
+                  />
+                </label>
+                {dateFilterActive && (
+                  <button type="button" className="btn ghost" onClick={() => clearDateFilterFor(safeDsId)}>
+                    All dates
+                  </button>
+                )}
+              </>
             )}
             <label className="fld">
               Upload TV CSVs
@@ -1378,14 +1493,26 @@ export default function LabPage() {
 
           <div className="small subtext">
             <span className="accent">{variantName}</span>
-            {ds.label && <span className="cyan"> · {ds.label}</span>}
+            {displayName && displayName !== ds.name && <span className="cyan"> · {displayName}</span>}
             {study.regimes.length > 0 && <span className="dim"> · {study.regimes.join(", ")}</span>}
           </div>
           <div className="small subtext" style={{ marginTop: 4 }}>
-            {stats.n} trades · {stats.wins}W / {stats.losses}L / {stats.scr}scr · net {fmtUsd(stats.net, true)} ·
+            {stats.n} trades
+            {dateFilterActive && stats.fullN !== stats.n && (
+              <span className="warn"> (filtered from {stats.fullN})</span>
+            )}
+            {" "}· {stats.wins}W / {stats.losses}L / {stats.scr}scr · net {fmtUsd(stats.net, true)} ·
             avg {fmtUsd(Math.round(stats.avg), true)}/trade · ~{stats.tpw} trades/wk
-            {ds.dates.length >= 2 && <span className="dim"> · {stats.span}</span>}
+            {activeDs.dates.length >= 2 && <span className="dim"> · {stats.span}</span>}
+            {dateFilterActive && stats.fullSpan !== stats.span && (
+              <span className="dim"> · full {stats.fullSpan}</span>
+            )}
           </div>
+          {ds.trades.length > 0 && activeDs.trades.length === 0 && (
+            <p className="small warn" style={{ marginTop: 6, marginBottom: 0 }}>
+              No trades in selected date range — widen From/To or click All dates.
+            </p>
+          )}
           <div className="small dim" style={{ marginTop: 6 }}>
             {rule.name}: pass {fmtUsd(rule.passAt)} · DD {fmtUsd(rule.trailingDD)}
             {rule.consistencyPct > 0 ? ` · ${rule.consistencyPct}% consistency` : ""}
@@ -1587,10 +1714,10 @@ export default function LabPage() {
               <li key={u.id} style={{ flexWrap: "wrap", gap: 6 }}>
                 <input
                   type="text"
-                  value={u.label ?? ""}
-                  onChange={(e) => setDatasetLabel(u.id, e.target.value)}
-                  placeholder={suggestDatasetLabel(u.dates) || "label e.g. 2025–26 BE"}
-                  style={{ width: 140, fontSize: 11 }}
+                  value={datasetAliases[u.id] ?? u.label ?? ""}
+                  onChange={(e) => setDisplayName(u.id, e.target.value)}
+                  placeholder={suggestDatasetLabel(u.dates) || "name e.g. 25–26 BE"}
+                  style={{ width: 180, fontSize: 11 }}
                   onClick={(e) => e.stopPropagation()}
                 />
                 <span className="dim" style={{ fontSize: 11 }}>{u.trades.length} tr · {u.name.slice(0, 48)}{u.name.length > 48 ? "…" : ""}</span>
@@ -1613,7 +1740,7 @@ export default function LabPage() {
         <FirmRulesCard rule={rule} />
       </CollapsiblePanel>
 
-      {ds.trades.length > 0 && (
+      {activeDs.trades.length > 0 && (
         <>
           <div className="stat-strip">
             <div className="stat">
