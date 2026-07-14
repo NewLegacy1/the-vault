@@ -150,6 +150,13 @@ const SEED_SETS: Dataset[] = [
 
 import { LabScorecardPanel } from "@/components/lab-scorecard-panel";
 import {
+  buildLabRunKey,
+  isLabRunCohortSaved,
+  loadLabRunCache,
+  markLabRunCohortSaved,
+  saveLabRunCache,
+} from "@/lib/lab-run-cache";
+import {
   buildScorecardMetrics,
   compareToBenchmark,
   mcPassRateSecondHalf,
@@ -874,11 +881,11 @@ function buildDatasetFromParsed(
 
 export default function LabPage() {
   const [uploads, setUploads] = useLocal<Dataset[]>("vault.lab.datasets", []);
-  const [dsId, setDsId] = useState("ytd-chunks-3039");
-  const [ruleId, setRuleId] = useState(PROP_RULES[0].id);
-  const [sims, setSims] = useState(2000);
-  const [maxTrades, setMaxTrades] = useState(80);
-  const [payoutBuffer, setPayoutBuffer] = useState(1000);
+  const [dsId, setDsId] = useLocal<string>("vault.lab.dsId", "be2r-pdh-12mo");
+  const [ruleId, setRuleId] = useLocal<string>("vault.lab.ruleId", PROP_RULES[0].id);
+  const [sims, setSims] = useLocal<number>("vault.lab.sims", 2000);
+  const [maxTrades, setMaxTrades] = useLocal<number>("vault.lab.maxTrades", 80);
+  const [payoutBuffer, setPayoutBuffer] = useLocal<number>("vault.lab.payoutBuffer", 1000);
   const [res, setRes] = useState<McResult | null>(null);
   const [study, setStudy] = useLocal<LabStudy>("vault.lab.study", DEFAULT_STUDY);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "ok" | "err">("idle");
@@ -899,6 +906,42 @@ export default function LabPage() {
   const ds = datasets.find((d) => d.id === dsId) ?? SEED_SETS[0];
   const rule = ruleById(ruleId) ?? PROP_RULES[0];
   const canRun = studyReady(study) && ds.trades.length > 0;
+
+  const runKey = useMemo(
+    () =>
+      buildLabRunKey({
+        dsId,
+        presetId: study.presetId,
+        customLabel: study.customLabel,
+        hypothesis: study.hypothesis,
+        ruleId,
+        sims,
+        maxTrades,
+        payoutBuffer,
+        winCapUsd,
+      }),
+    [dsId, study, ruleId, sims, maxTrades, payoutBuffer, winCapUsd]
+  );
+
+  useEffect(() => {
+    const cached = loadLabRunCache(runKey);
+    if (cached) {
+      setRes(cached.res);
+      setScorecardComparison(cached.comparison);
+      if (cached.cohortSaved) {
+        setSaveStatus("ok");
+        setSaveMsg(cached.saveMsg || "Cohort already saved for this dataset + variant");
+      } else {
+        setSaveStatus("idle");
+        setSaveMsg("");
+      }
+    } else {
+      setRes(null);
+      setScorecardComparison(null);
+      setSaveStatus("idle");
+      setSaveMsg("");
+    }
+  }, [runKey]);
 
   const equity = useMemo(() => buildEquityCurve(ds.trades, ds.dates), [ds]);
 
@@ -1023,7 +1066,6 @@ export default function LabPage() {
     const mergedPick = newSets.find((d) => d.id.startsWith("m")) ?? newSets[newSets.length - 1];
     setUploads([...uploads, ...newSets]);
     setDsId(mergedPick.id);
-    setRes(null);
   };
 
   const mergeAllUploads = () => {
@@ -1052,13 +1094,11 @@ export default function LabPage() {
     );
     setUploads([...uploads, merged]);
     setDsId(merged.id);
-    setRes(null);
   };
 
   const removeUpload = (id: string) => {
     setUploads(uploads.filter((u) => u.id !== id));
     if (dsId === id) setDsId("all");
-    setRes(null);
   };
 
   const setDatasetLabel = (id: string, label: string) => {
@@ -1083,7 +1123,6 @@ export default function LabPage() {
       presetId,
       regimes: preset?.defaultRegimes ?? study.regimes,
     });
-    setRes(null);
     setSaveStatus("idle");
   };
 
@@ -1099,9 +1138,15 @@ export default function LabPage() {
   const persistCohort = async (
     mcResult: McResult,
     comparison?: ScorecardComparison | null,
-    opts?: { allowDownload?: boolean }
+    opts?: { allowDownload?: boolean; force?: boolean }
   ) => {
     if (!studyReady(study)) return;
+    if (!opts?.force && isLabRunCohortSaved(runKey)) {
+      const cached = loadLabRunCache(runKey);
+      setSaveStatus("ok");
+      setSaveMsg(cached?.saveMsg || "Already saved for this dataset + variant — skipped");
+      return;
+    }
     setSaveStatus("saving");
     const preset = presetById(study.presetId);
     const payload: CohortSaveInput = {
@@ -1139,22 +1184,26 @@ export default function LabPage() {
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || "save failed");
+      const okMsg =
+        data.mode === "github"
+          ? `Committed ${data.filename} → ${data.repoPath ?? "strategies/cohorts/"} on GitHub`
+          : data.mode === "download" && data.markdown && opts?.allowDownload
+            ? `Downloaded ${data.filename} — drop into strategies/cohorts/`
+            : `Saved → strategies/cohorts/${data.filename}`;
       setSaveStatus("ok");
-      if (data.mode === "github") {
-        setSaveMsg(`Committed ${data.filename} → ${data.repoPath ?? "strategies/cohorts/"} on GitHub`);
-      } else if (data.mode === "download" && data.markdown) {
-        if (opts?.allowDownload) {
-          downloadCohortMarkdown(data.filename, data.markdown);
-          setSaveMsg(`Downloaded ${data.filename} — drop into strategies/cohorts/`);
-        } else {
-          setSaveMsg(
-            data.githubError
-              ? `GitHub save failed: ${data.githubError}`
-              : "GitHub save unavailable — MC results still shown above"
-          );
-        }
-      } else {
-        setSaveMsg(`Saved → strategies/cohorts/${data.filename}`);
+      setSaveMsg(okMsg);
+      markLabRunCohortSaved(runKey, okMsg);
+      if (comparison) {
+        saveLabRunCache(runKey, mcResult, comparison, { cohortSaved: true, saveMsg: okMsg });
+      }
+      if (data.mode === "download" && data.markdown && opts?.allowDownload) {
+        downloadCohortMarkdown(data.filename, data.markdown);
+      } else if (data.mode === "download" && data.markdown && !opts?.allowDownload) {
+        const failMsg =
+          data.githubError
+            ? `GitHub save failed: ${data.githubError}`
+            : "GitHub save unavailable — MC results still shown above";
+        setSaveMsg(failMsg);
       }
     } catch (e) {
       setSaveStatus("err");
@@ -1212,10 +1261,23 @@ export default function LabPage() {
       metrics: comparison.current,
     };
     setScorecardHistory([entry, ...scorecardHistory].slice(0, 24));
+    const alreadySaved = isLabRunCohortSaved(runKey);
+    const prevCache = loadLabRunCache(runKey);
+    saveLabRunCache(runKey, mcResult, comparison, {
+      cohortSaved: alreadySaved,
+      saveMsg: alreadySaved ? prevCache?.saveMsg ?? "" : "",
+    });
     requestAnimationFrame(() => {
       mcResultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
-    if (autoSave) void persistCohort(mcResult, comparison);
+    if (autoSave) {
+      if (alreadySaved) {
+        setSaveStatus("ok");
+        setSaveMsg(prevCache?.saveMsg || "Already saved for this dataset + variant — skipped re-commit");
+      } else {
+        void persistCohort(mcResult, comparison);
+      }
+    }
   };
 
   const eco = res?.economics;
@@ -1237,7 +1299,7 @@ export default function LabPage() {
           <div className="frm-row">
             <label className="fld">
               Dataset
-              <select value={dsId} onChange={(e) => { setDsId(e.target.value); setRes(null); }}>
+              <select value={dsId} onChange={(e) => setDsId(e.target.value)}>
                 {datasets.map((d) => (
                   <option key={d.id} value={d.id}>
                     {datasetDisplayName(d)} — {datasetOptionSub(d)}
@@ -1266,7 +1328,7 @@ export default function LabPage() {
             </label>
             <label className="fld">
               Firm preset
-              <select value={ruleId} onChange={(e) => { setRuleId(e.target.value); setRes(null); }}>
+              <select value={ruleId} onChange={(e) => setRuleId(e.target.value)}>
                 {PROP_RULES.map((r) => (
                   <option key={r.id} value={r.id}>{r.name}</option>
                 ))}
@@ -1329,7 +1391,10 @@ export default function LabPage() {
                   </>
                 )}
                 {!autoSave && res && (
-                  <button className="btn ghost" onClick={() => persistCohort(res, scorecardComparison, { allowDownload: true })}>Save cohort note</button>
+                  <button className="btn ghost" onClick={() => persistCohort(res, scorecardComparison, { allowDownload: true, force: true })}>Save cohort note</button>
+                )}
+                {res && isLabRunCohortSaved(runKey) && (
+                  <span className="small dim">Saved · re-RUN won&apos;t re-commit</span>
                 )}
               </div>
             </div>
@@ -1481,7 +1546,7 @@ export default function LabPage() {
         )}
         <label className="small" style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 10, cursor: "pointer" }}>
           <input type="checkbox" checked={autoSave} onChange={(e) => setAutoSave(e.target.checked)} />
-          Auto-save every RUN <span className="dim">(commits to GitHub → strategies/cohorts/ · no file download)</span>
+          Auto-save once per dataset + variant <span className="dim">(GitHub → strategies/cohorts/ · won&apos;t re-commit on re-RUN)</span>
         </label>
       </CollapsiblePanel>
 
@@ -1508,7 +1573,7 @@ export default function LabPage() {
                   type="button"
                   className="btn ghost"
                   style={{ padding: "2px 8px", fontSize: 10 }}
-                  onClick={() => { setDsId(u.id); setRes(null); }}
+                  onClick={() => setDsId(u.id)}
                 >
                   use
                 </button>
