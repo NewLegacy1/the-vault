@@ -8,7 +8,9 @@ import type { CohortRecord } from "@/lib/cohort";
 import {
   compareFirmsForTrades,
   firmMcForTab,
+  firmCompareLabel,
   MATRIX_COMPARE_FIRM_IDS,
+  MATRIX_FIRM_TABS,
   mcCompareModeForPhase,
   type FirmMcSnapshot,
   type MatrixCompareFirmId,
@@ -17,14 +19,6 @@ import { presetById } from "@/lib/lab-profile";
 import type { PresetLedgerStore } from "@/lib/lab-ledger";
 import { resolveMatrixTrades } from "@/lib/resolve-matrix-trades";
 import { ruleById } from "@/lib/prop-firms";
-
-const FIRM_LABELS: Record<MatrixCompareFirmId, string> = {
-  tpt50: "TPT $50K",
-  topstep50: "Topstep $50K",
-  "alpha-zero-50": "Alpha Zero",
-  "alpha-premium-50": "Alpha Premium",
-  "apex50-eod": "Apex EOD",
-};
 
 function passClass(pct: number): string {
   if (pct >= 50) return "pos";
@@ -61,7 +55,7 @@ function FirmPassChart({ rows, fundedMode }: { rows: FirmMcSnapshot[]; fundedMod
         return (
           <g key={r.ruleId}>
             <text x={8} y={y + 22} fill="#7ec8e3" fontSize={11} fontFamily="monospace">
-              {FIRM_LABELS[r.ruleId as MatrixCompareFirmId] ?? r.firmName}
+              {firmCompareLabel(r.ruleId)}
             </text>
             <rect x={130} y={y + 8} width={Math.max(bw, 2)} height={22} fill="#3ecf8e" opacity={0.72} />
             <text x={W - 8} y={y + 22} fill="#e8e8e8" fontSize={11} textAnchor="end" fontFamily="monospace">
@@ -80,6 +74,8 @@ function FirmPassChart({ rows, fundedMode }: { rows: FirmMcSnapshot[]; fundedMod
 export interface MatrixFirmCompareProps {
   presetId: string;
   cohort?: CohortRecord;
+  selectedFirmId?: MatrixCompareFirmId;
+  onSelectFirm?: (firmId: MatrixCompareFirmId) => void;
   /** Pre-computed from Lab RUN — avoids duplicate MC work. */
   initialSnapshots?: FirmMcSnapshot[];
   sims?: number;
@@ -92,6 +88,8 @@ export interface MatrixFirmCompareProps {
 export function MatrixFirmCompare({
   presetId,
   cohort,
+  selectedFirmId: selectedFirmProp,
+  onSelectFirm,
   initialSnapshots,
   sims: simsProp,
   maxTrades: maxTradesProp,
@@ -99,7 +97,12 @@ export function MatrixFirmCompare({
   embeddedInLab = false,
 }: MatrixFirmCompareProps) {
   const [ledgers] = useLocal<PresetLedgerStore>("vault.lab.ledgers", {});
-  const [selectedFirm, setSelectedFirm] = useState<MatrixCompareFirmId>("tpt50");
+  const [selectedFirmLocal, setSelectedFirmLocal] = useState<MatrixCompareFirmId>("tpt50");
+  const selectedFirm = selectedFirmProp ?? selectedFirmLocal;
+  const setSelectedFirm = (id: MatrixCompareFirmId) => {
+    onSelectFirm?.(id);
+    if (selectedFirmProp == null) setSelectedFirmLocal(id);
+  };
   const [computed, setComputed] = useState<FirmMcSnapshot[] | null>(null);
   const [computeSource, setComputeSource] = useState<"ledger" | "cohort" | "saved" | "none">("none");
   const [computing, setComputing] = useState(false);
@@ -241,7 +244,7 @@ export function MatrixFirmCompare({
                   {" "}
                   Best {fundedMode ? "payout" : "pass"}:{" "}
                   <span className="pos">{snapshotPrimaryPct(best)}%</span> on{" "}
-                  {FIRM_LABELS[best.ruleId as MatrixCompareFirmId] ?? best.firmName}.
+                  {firmCompareLabel(best.ruleId)}.
                 </>
               )}
             </p>
@@ -284,7 +287,7 @@ export function MatrixFirmCompare({
                         onClick={() => setSelectedFirm(r.ruleId as MatrixCompareFirmId)}
                       >
                         <td className="accent">
-                          {FIRM_LABELS[r.ruleId as MatrixCompareFirmId] ?? r.firmName}
+                          {firmCompareLabel(r.ruleId)}
                           {isBest && <span className="pos" style={{ fontSize: 9, marginLeft: 4 }}>★</span>}
                           {r.ddMode === "intraday" && (
                             <span className="warn" style={{ fontSize: 9, marginLeft: 4 }}>
@@ -383,9 +386,22 @@ export function MatrixFirmCompare({
         <div className="panel" style={{ marginTop: 14 }}>
           <div className="panel-title">
             Firm rules
-            <span className="sub">{activeRule.name}</span>
+            <span className="sub">{firmCompareLabel(selectedFirm)}</span>
           </div>
           <div className="panel-body">
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 12 }}>
+              {MATRIX_FIRM_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={"chip" + (selectedFirm === tab.id ? " active-acct" : "")}
+                  style={{ cursor: "pointer", fontSize: 11 }}
+                  onClick={() => setSelectedFirm(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
             <FirmRulesCard rule={activeRule} />
           </div>
         </div>

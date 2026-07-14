@@ -42,8 +42,8 @@ export default function ResultsPage() {
         <div className="panel-body">
           <p className="small dim" style={{ marginTop: 0, lineHeight: 1.65 }}>
             Click a matrix row to open the <span className="accent">firm comparison chart</span> (pass rate across TPT,
-            Alpha Zero, Alpha Premium, Apex on the <em>same trades</em>). If your Lab CSV is still in this browser, all
-            firms compute instantly — no re-run. One Lab RUN saves trades + all firms to Obsidian permanently.
+            Topstep, Alpha Zero $50K, and Apex on the <em>same trades</em>). Pick a firm in Matrix progress — the table,
+            stats, and <span className="accent">Firm rules</span> panel below all follow that selection.
           </p>
           <MatrixResultsHub
             cohorts={cohorts}

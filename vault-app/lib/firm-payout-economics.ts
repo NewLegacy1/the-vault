@@ -7,7 +7,6 @@ export type MatrixFirmId =
   | "tpt50"
   | "topstep50"
   | "alpha-zero-50"
-  | "alpha-premium-50"
   | "apex50-eod";
 
 /**
@@ -112,16 +111,6 @@ const ALPHA_ZERO_FUNDED: FirmPayoutConfig = {
   source: "help.alpha-futures.com — Zero qualified payout policy",
 };
 
-const ALPHA_PREMIUM_FUNDED: FirmPayoutConfig = {
-  traderKeepPct: 0.9,
-  profitBufferUsd: 0,
-  maxPayoutPerRequestUsd: 2000,
-  maxWithdrawFractionOfProfit: 0.5,
-  evalFeeUsd: 0,
-  activationFeeUsd: 149,
-  monthlyFeeUsd: 0,
-  source: "help.alpha-futures.com — Premium qualified payout policy",
-};
 
 const APEX_FUNDED: FirmPayoutConfig = {
   traderKeepPct: 1,
@@ -172,15 +161,6 @@ const MATRIX_PAYOUT_CONFIG: Record<
       maxPayoutPerRequestUsd: 1500,
     },
     funded: ALPHA_ZERO_FUNDED,
-  },
-  "alpha-premium-50": {
-    eval: {
-      ...ALPHA_PREMIUM_FUNDED,
-      evalFeeUsd: 0,
-      activationFeeUsd: 149,
-      monthlyFeeUsd: 79,
-    },
-    funded: ALPHA_PREMIUM_FUNDED,
   },
   "apex50-eod": {
     eval: {

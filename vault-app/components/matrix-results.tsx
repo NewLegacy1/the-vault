@@ -5,6 +5,8 @@ import { fmtUsd } from "@/lib/store";
 import type { CohortRecord } from "@/lib/cohort";
 import {
   firmMcForTab,
+  firmCompareLabel,
+  MATRIX_FIRM_TABS,
   matrixPrimaryMcPct,
   matrixWeeksMc,
   mcCompareModeForPhase,
@@ -20,20 +22,14 @@ import { matrixPresetsBySeries, type StrategyPhase, type StrategyPreset } from "
 import { seriesLabel } from "@/lib/experiment-series";
 import { ruleById } from "@/lib/prop-firms";
 
-const FIRM_TABS: { id: MatrixCompareFirmId; label: string }[] = [
-  { id: "tpt50", label: "TPT $50K" },
-  { id: "topstep50", label: "Topstep $50K" },
-  { id: "alpha-zero-50", label: "Alpha Zero" },
-  { id: "alpha-premium-50", label: "Alpha Premium" },
-  { id: "apex50-eod", label: "Apex EOD" },
-];
-
 type StatusFilter = "all" | "saved" | "pending";
 type PhaseFilter = "all" | StrategyPhase;
 
 export interface MatrixResultsProps {
   activePresetId?: string;
   onSelectPreset: (presetId: string) => void;
+  firmTab?: MatrixCompareFirmId;
+  onFirmTabChange?: (firmId: MatrixCompareFirmId) => void;
   refreshKey?: number;
   cohorts?: CohortRecord[];
   loading?: boolean;
@@ -68,6 +64,8 @@ function presetJumpLabel(p: StrategyPreset): string {
 export function MatrixResults({
   activePresetId,
   onSelectPreset,
+  firmTab: firmTabProp,
+  onFirmTabChange,
   refreshKey = 0,
   cohorts: cohortsProp,
   loading: loadingProp,
@@ -77,7 +75,12 @@ export function MatrixResults({
   const [cohortsLocal, setCohortsLocal] = useState<CohortRecord[]>([]);
   const [loadErrLocal, setLoadErrLocal] = useState("");
   const [loadingLocal, setLoadingLocal] = useState(!cohortsProp);
-  const [firmTab, setFirmTab] = useState<MatrixCompareFirmId>("tpt50");
+  const [firmTabLocal, setFirmTabLocal] = useState<MatrixCompareFirmId>("tpt50");
+  const firmTab = firmTabProp ?? firmTabLocal;
+  const setFirmTab = (id: MatrixCompareFirmId) => {
+    onFirmTabChange?.(id);
+    if (firmTabProp == null) setFirmTabLocal(id);
+  };
   const [pollKey, setPollKey] = useState(0);
   const [seriesFilter, setSeriesFilter] = useState<string>("all");
   const [phaseFilter, setPhaseFilter] = useState<PhaseFilter>("all");
@@ -280,7 +283,7 @@ export function MatrixResults({
           </span>
         </div>
         <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-          {FIRM_TABS.map((tab) => (
+          {MATRIX_FIRM_TABS.map((tab) => (
             <button
               key={tab.id}
               type="button"
@@ -366,7 +369,7 @@ export function MatrixResults({
 
       {activeRule && (
         <p className="small dim" style={{ marginTop: 0, marginBottom: 10, lineHeight: 1.55 }}>
-          Table uses <span className="accent">{activeRule.name}</span> — eval rows show pass %, funded rows show payout %
+          Table uses <span className="accent">{activeRule.name}</span> ({firmCompareLabel(firmTab)}) — eval rows show pass %, funded rows show payout %
           (PRO survival + recycle). Expand a test group, click a row for the firm chart below.
         </p>
       )}

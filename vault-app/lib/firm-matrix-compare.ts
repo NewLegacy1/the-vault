@@ -11,7 +11,6 @@ export const MATRIX_COMPARE_FIRM_IDS = [
   "tpt50",
   "topstep50",
   "alpha-zero-50",
-  "alpha-premium-50",
   "apex50-eod",
 ] as const;
 
@@ -19,6 +18,18 @@ export const MATRIX_COMPARE_FIRM_IDS = [
 export const MATRIX_REFERENCE_FIRM_ID = "tpt50" as const;
 
 export type MatrixCompareFirmId = (typeof MATRIX_COMPARE_FIRM_IDS)[number];
+
+/** Shared labels for matrix progress chips, firm compare table, and rules panel. */
+export const MATRIX_FIRM_TABS: { id: MatrixCompareFirmId; label: string }[] = [
+  { id: "tpt50", label: "TPT $50K" },
+  { id: "topstep50", label: "Topstep $50K" },
+  { id: "alpha-zero-50", label: "Alpha Zero $50K" },
+  { id: "apex50-eod", label: "Apex EOD $50K" },
+];
+
+export function firmCompareLabel(ruleId: string): string {
+  return MATRIX_FIRM_TABS.find((t) => t.id === ruleId)?.label ?? ruleId;
+}
 
 export type McCompareMode = "eval" | "funded";
 
