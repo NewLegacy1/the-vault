@@ -199,17 +199,24 @@ Until then: **no** multi-account as a substitute for edge.
 
 ## 5. Immediate sprint board (next agent session)
 
-Phase 1–2.1 **done** — `regime-gate-v0` **PASS**. Stopped per brief (no 2.2/2.3/Track B until asked).
+Phase 1–2.1 **done** — `regime-gate-v0` **PASS**.
+
+**Parallel next (both lanes at once):** [[parallel-impl-gated-prb]]
+
+| Lane | Work | Status |
+|---|---|---|
+| **A** | Ops encode Jul+Oct into new Pine variant + checklist/SOP | ready |
+| **B** | Chain EV ungated vs gated A0a→D1 | ready |
 
 1. [x] Locate matrix CSVs: `prb-a0a-3y.csv`, `prb-d1-3y.csv`.
 2. [x] Year + OOS splits (script + MD).
 3. [x] Winner / loss-streak / news clusters.
 4. [x] Draft gate: **Jul+Oct STAND_DOWN** (`regime-gate-v0`).
 5. [x] **2.0 hygiene** — year×month Jul/Oct all w=0; no March stack; calendar = provisional ops overlay.
-6. [x] **2.1 Lab-engine MC** — `lab-confirm-regime-gate-v0.ts` · A0a/D1 full + OOS · cohorts saved under `eval/` + `funded/`.
-7. [x] Settle [[findings-prb]] → **PASS** (both books).
-8. [ ] (Deferred) Only if user asks: 2.2 min-day pad / 2.3 chain EV / 2.4 market co-feature.
-9. [ ] Track B only if gate later falsified on live OOS — not open now.
+6. [x] **2.1 Lab-engine MC** — cohorts saved · [[findings-prb]] PASS.
+7. [ ] **Lane A** per [[parallel-impl-gated-prb]]
+8. [ ] **Lane B** per [[parallel-impl-gated-prb]]
+9. [ ] Merge → then user picks 2.4 / live forward / Track B. Still no March / multi-account until asked.
 
 ## 6. How this overrides / relates to other docs
 
@@ -239,3 +246,4 @@ Phase 1–2.1 **done** — `regime-gate-v0` **PASS**. Stopped per brief (no 2.2/
 | 2026-07-14 | Added final B0/B1a + H2a/M0/M1 numbers; Lab B1a-from-B0 SOP; sleeve-only B1a; agent hygiene (don’t overbuild TV filters); Track B ID collision note. |
 | 2026-07-14 | Phase 1 autopsy complete — `regime-gate-v0` Jul+Oct STAND_DOWN; next = Phase 2 Lab confirm. |
 | 2026-07-14 | Phase 2.0+2.1 Lab-engine confirm → **PASS**; findings-prb settled; stop before 2.2/2.3/Track B. |
+| 2026-07-14 | Parallel sprint brief [[parallel-impl-gated-prb]] — Lane A ops + Lane B chain EV. |
