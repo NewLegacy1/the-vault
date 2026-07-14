@@ -26,6 +26,7 @@ export async function POST(req: Request) {
       path: result.path,
       repoPath: result.repoPath,
       commitUrl: result.commitUrl,
+      githubError: result.githubError,
     });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });

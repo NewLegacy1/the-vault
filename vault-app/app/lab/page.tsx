@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLocal, fmtUsd } from "@/lib/store";
 import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
 import { mergeTvCsvs, parseTvCsv, tradesPerWeek } from "@/lib/csv";
@@ -868,6 +868,7 @@ export default function LabPage() {
   const [winCapUsd, setWinCapUsd] = useLocal<number>("vault.lab.winCapUsd", 1490);
   const [ghostPaste, setGhostPaste] = useLocal<string>("vault.lab.ghostPaste", "");
   const [ghostScreenshot, setGhostScreenshot] = useState<string | null>(null);
+  const mcResultsRef = useRef<HTMLDivElement>(null);
 
   const activePreset = presetById(study.presetId);
   const variantName = studyVariantName(study);
@@ -1061,7 +1062,7 @@ export default function LabPage() {
     });
   };
 
-  const persistCohort = async (mcResult: McResult) => {
+  const persistCohort = async (mcResult: McResult, opts?: { allowDownload?: boolean }) => {
     if (!studyReady(study)) return;
     setSaveStatus("saving");
     const preset = presetById(study.presetId);
@@ -1101,8 +1102,16 @@ export default function LabPage() {
       if (data.mode === "github") {
         setSaveMsg(`Committed ${data.filename} → ${data.repoPath ?? "strategies/cohorts/"} on GitHub`);
       } else if (data.mode === "download" && data.markdown) {
-        downloadCohortMarkdown(data.filename, data.markdown);
-        setSaveMsg(`Downloaded ${data.filename} — add GITHUB_TOKEN on Vercel or drop into strategies/cohorts/`);
+        if (opts?.allowDownload) {
+          downloadCohortMarkdown(data.filename, data.markdown);
+          setSaveMsg(`Downloaded ${data.filename} — drop into strategies/cohorts/`);
+        } else {
+          setSaveMsg(
+            data.githubError
+              ? `GitHub save failed: ${data.githubError}`
+              : "GitHub save unavailable — MC results still shown above"
+          );
+        }
       } else {
         setSaveMsg(`Saved → strategies/cohorts/${data.filename}`);
       }
@@ -1130,7 +1139,10 @@ export default function LabPage() {
       },
     });
     setRes(mcResult);
-    if (autoSave) await persistCohort(mcResult);
+    requestAnimationFrame(() => {
+      mcResultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    if (autoSave) void persistCohort(mcResult);
   };
 
   const eco = res?.economics;
@@ -1218,8 +1230,114 @@ export default function LabPage() {
             {rule.name}: pass {fmtUsd(rule.passAt)} · DD {fmtUsd(rule.trailingDD)}
             {rule.consistencyPct > 0 ? ` · ${rule.consistencyPct}% consistency` : ""}
           </div>
+          {!res && (
+            <p className="small dim" style={{ marginTop: 8, marginBottom: 0 }}>
+              Hit <span className="accent">RUN</span> — pass %, fan chart, and outcome distribution appear directly below.
+            </p>
+          )}
         </div>
       </div>
+
+      {res && eco && (
+        <div ref={mcResultsRef}>
+          <div className="panel" style={{ marginBottom: 14 }}>
+            <div className="panel-body" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between" }}>
+              <div className="small">
+                <span className="accent">Monte Carlo results:</span> {variantName}
+                {study.hypothesis && <span className="subtext"> — {study.hypothesis}</span>}
+              </div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                {saveStatus === "saving" && <span className="small cyan">Saving cohort note…</span>}
+                {saveStatus === "ok" && <span className="small pos">{saveMsg}</span>}
+                {saveStatus === "err" && (
+                  <>
+                    <span className="small neg">{saveMsg}</span>
+                    <button className="btn ghost" onClick={() => res && persistCohort(res)}>Retry save</button>
+                  </>
+                )}
+                {!autoSave && res && (
+                  <button className="btn ghost" onClick={() => persistCohort(res, { allowDownload: true })}>Save cohort note</button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="stat-strip">
+            <div className="stat">
+              <div className="k">Pass probability</div>
+              <div className={"v " + (res.passRate >= 0.7 ? "pos" : res.passRate >= 0.4 ? "warn" : "neg")}>
+                {(res.passRate * 100).toFixed(1)}%
+              </div>
+              <div className="d">reach {fmtUsd(rule.passAt)} before DD</div>
+            </div>
+            <div className="stat">
+              <div className="k">Time to pass</div>
+              <div className="v cyan">{eco.weeksToPassP50 ?? "—"} wks</div>
+              <div className="d">median · p90 {eco.weeksToPassP90 ?? "—"} wks · {res.tradesToPassP50 ?? "—"} trades</div>
+            </div>
+            <div className="stat">
+              <div className="k">Time to payout</div>
+              <div className="v magenta">{eco.weeksToPayoutP50 ?? "—"} wks</div>
+              <div className="d">at {fmtUsd(eco.payoutAt)} · p90 {eco.weeksToPayoutP90 ?? "—"} wks</div>
+            </div>
+            <div className="stat">
+              <div className="k">Accounts needed</div>
+              <div className="v orange">{Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "∞"}</div>
+              <div className="d">expected · 90% chance ≤ {eco.accountsFor90Pct} tries</div>
+            </div>
+            <div className="stat">
+              <div className="k">Net after fees</div>
+              <div className={"v " + (eco.expectedNetUntilPass >= 0 ? "pos" : "neg")}>
+                {fmtUsd(eco.expectedNetUntilPass, true)}
+              </div>
+              <div className="d">amortized until pass · per attempt {fmtUsd(eco.expectedNetPerAttempt, true)}</div>
+            </div>
+            <div className="stat">
+              <div className="k">Payout rate</div>
+              <div className="v magenta">{((eco.payoutRate ?? 0) * 100).toFixed(1)}%</div>
+              <div className="d">reach {fmtUsd(eco.payoutAt)} within {maxTrades} trades</div>
+            </div>
+            <div className="stat">
+              <div className="k">Bust rate</div>
+              <div className="v neg">{(res.bustRate * 100).toFixed(1)}%</div>
+              <div className="d">DD breach before pass · {(res.timeoutRate * 100).toFixed(1)}% unresolved</div>
+            </div>
+          </div>
+
+          <div className="panel">
+            <div className="panel-title">
+              Monte Carlo simulation
+              <span className="sub">{res.sims.toLocaleString()} random futures · not your actual trades</span>
+            </div>
+            <div className="panel-body chart-row">
+              <FanChart
+                res={res}
+                passAt={rule.passAt}
+                payoutAt={eco.payoutAt}
+                dd={rule.trailingDD}
+                tradesPerWeek={eco.tradesPerWeek}
+              />
+              <OutcomeChart hist={res.outcomeHist} sims={res.sims} />
+            </div>
+          </div>
+
+          <CollapsiblePanel title="Fee breakdown" sub="median pass path">
+            <div className="small subtext">
+              <div className="kv">
+                <span className="k">Gross at payout</span><span className="accent">{fmtUsd(eco.payoutAt)}</span>
+                <span className="k">Eval fee</span><span>−{fmtUsd(rule.evalFee ?? 0)}</span>
+                <span className="k">Activation</span><span>−{fmtUsd(rule.activationFee ?? 0)}</span>
+                <span className="k">Monthly (eval period)</span><span>−{fmtUsd((rule.monthlyFee ?? 0) * Math.max(1, Math.ceil((eco.weeksToPayoutP50 ?? 4) / 4)))}</span>
+                <span className="k">Median net on pass</span><span className="pos">{fmtUsd(eco.medianNetOnPass, true)}</span>
+              </div>
+              <p className="dim mt">
+                Failed attempts cost {fmtUsd(eco.evalCostPerAttempt)} each. At {(res.passRate * 100).toFixed(0)}% pass rate,
+                expect ~{Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "∞"} accounts before one clean pass.
+              </p>
+            </div>
+          </CollapsiblePanel>
+        </div>
+      )}
 
       <CollapsiblePanel title="Study setup" sub="strategy version · hypothesis · auto-save">
         <div className="frm-row">
@@ -1274,7 +1392,7 @@ export default function LabPage() {
         )}
         <label className="small" style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 10, cursor: "pointer" }}>
           <input type="checkbox" checked={autoSave} onChange={(e) => setAutoSave(e.target.checked)} />
-          Auto-save every RUN <span className="dim">(local disk · GitHub commit on Vercel → strategies/cohorts/)</span>
+          Auto-save every RUN <span className="dim">(commits to GitHub → strategies/cohorts/ · no file download)</span>
         </label>
       </CollapsiblePanel>
 
@@ -1369,107 +1487,6 @@ export default function LabPage() {
               />
             </CollapsiblePanel>
           )}
-        </>
-      )}
-
-      {res && eco && (
-        <>
-          <div className="panel" style={{ marginBottom: 14 }}>
-            <div className="panel-body" style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between" }}>
-              <div className="small">
-                <span className="accent">Results for:</span> {variantName}
-                {study.hypothesis && <span className="subtext"> — {study.hypothesis}</span>}
-              </div>
-              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                {saveStatus === "saving" && <span className="small cyan">Saving cohort note…</span>}
-                {saveStatus === "ok" && <span className="small pos">{saveMsg}</span>}
-                {saveStatus === "err" && (
-                  <>
-                    <span className="small neg">{saveMsg}</span>
-                    <button className="btn ghost" onClick={() => res && persistCohort(res)}>Retry save</button>
-                  </>
-                )}
-                {!autoSave && res && (
-                  <button className="btn ghost" onClick={() => persistCohort(res)}>Save cohort note</button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="stat-strip">
-            <div className="stat">
-              <div className="k">Pass probability</div>
-              <div className={"v " + (res.passRate >= 0.7 ? "pos" : res.passRate >= 0.4 ? "warn" : "neg")}>
-                {(res.passRate * 100).toFixed(1)}%
-              </div>
-              <div className="d">reach {fmtUsd(rule.passAt)} before DD</div>
-            </div>
-            <div className="stat">
-              <div className="k">Time to pass</div>
-              <div className="v cyan">{eco.weeksToPassP50 ?? "—"} wks</div>
-              <div className="d">median · p90 {eco.weeksToPassP90 ?? "—"} wks · {res.tradesToPassP50 ?? "—"} trades</div>
-            </div>
-            <div className="stat">
-              <div className="k">Time to payout</div>
-              <div className="v magenta">{eco.weeksToPayoutP50 ?? "—"} wks</div>
-              <div className="d">at {fmtUsd(eco.payoutAt)} · p90 {eco.weeksToPayoutP90 ?? "—"} wks</div>
-            </div>
-            <div className="stat">
-              <div className="k">Accounts needed</div>
-              <div className="v orange">{Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "∞"}</div>
-              <div className="d">expected · 90% chance ≤ {eco.accountsFor90Pct} tries</div>
-            </div>
-            <div className="stat">
-              <div className="k">Net after fees</div>
-              <div className={"v " + (eco.expectedNetUntilPass >= 0 ? "pos" : "neg")}>
-                {fmtUsd(eco.expectedNetUntilPass, true)}
-              </div>
-              <div className="d">amortized until pass · per attempt {fmtUsd(eco.expectedNetPerAttempt, true)}</div>
-            </div>
-            <div className="stat">
-              <div className="k">Payout rate</div>
-              <div className="v magenta">{((eco.payoutRate ?? 0) * 100).toFixed(1)}%</div>
-              <div className="d">reach {fmtUsd(eco.payoutAt)} within {maxTrades} trades</div>
-            </div>
-            <div className="stat">
-              <div className="k">Bust rate</div>
-              <div className="v neg">{(res.bustRate * 100).toFixed(1)}%</div>
-              <div className="d">DD breach before pass · {(res.timeoutRate * 100).toFixed(1)}% unresolved</div>
-            </div>
-          </div>
-
-          <div className="panel">
-            <div className="panel-title">
-              Monte Carlo simulation
-              <span className="sub">{res.sims.toLocaleString()} random futures · not your actual trades</span>
-            </div>
-            <div className="panel-body chart-row">
-              <FanChart
-                res={res}
-                passAt={rule.passAt}
-                payoutAt={eco.payoutAt}
-                dd={rule.trailingDD}
-                tradesPerWeek={eco.tradesPerWeek}
-              />
-              <OutcomeChart hist={res.outcomeHist} sims={res.sims} />
-            </div>
-          </div>
-
-          <CollapsiblePanel title="Fee breakdown" sub="median pass path">
-            <div className="small subtext">
-              <div className="kv">
-                <span className="k">Gross at payout</span><span className="accent">{fmtUsd(eco.payoutAt)}</span>
-                <span className="k">Eval fee</span><span>−{fmtUsd(rule.evalFee ?? 0)}</span>
-                <span className="k">Activation</span><span>−{fmtUsd(rule.activationFee ?? 0)}</span>
-                <span className="k">Monthly (eval period)</span><span>−{fmtUsd((rule.monthlyFee ?? 0) * Math.max(1, Math.ceil((eco.weeksToPayoutP50 ?? 4) / 4)))}</span>
-                <span className="k">Median net on pass</span><span className="pos">{fmtUsd(eco.medianNetOnPass, true)}</span>
-              </div>
-              <p className="dim mt">
-                Failed attempts cost {fmtUsd(eco.evalCostPerAttempt)} each. At {(res.passRate * 100).toFixed(0)}% pass rate,
-                expect ~{Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "∞"} accounts before one clean pass.
-              </p>
-            </div>
-          </CollapsiblePanel>
         </>
       )}
 

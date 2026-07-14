@@ -41,6 +41,7 @@ export type CohortSaveResult = {
   path?: string;
   repoPath?: string;
   commitUrl?: string;
+  githubError?: string;
 };
 
 function isReadOnlyFsError(e: unknown): boolean {
@@ -68,8 +69,9 @@ export async function saveCohort(input: CohortSaveInput): Promise<CohortSaveResu
       try {
         return await saveCohortToGitHub(filename, markdown);
       } catch (e) {
-        console.error("GitHub cohort commit failed:", e);
-        return { filename, markdown, mode: "download" };
+        const githubError = e instanceof Error ? e.message : String(e);
+        console.error("GitHub cohort commit failed:", githubError);
+        return { filename, markdown, mode: "download", githubError };
       }
     }
     return { filename, markdown, mode: "download" };
@@ -85,11 +87,13 @@ export async function saveCohort(input: CohortSaveInput): Promise<CohortSaveResu
       try {
         return await saveCohortToGitHub(filename, markdown);
       } catch (ghErr) {
-        console.error("GitHub cohort commit failed:", ghErr);
+        const githubError = ghErr instanceof Error ? ghErr.message : String(ghErr);
+        console.error("GitHub cohort commit failed:", githubError);
+        return { filename, markdown, mode: "download", githubError };
       }
     }
     if (isReadOnlyFsError(e)) {
-      return { filename, markdown, mode: "download" };
+      return { filename, markdown, mode: "download", githubError: "read-only filesystem" };
     }
     throw e;
   }

@@ -19,6 +19,25 @@ export function githubCohortConfigured(): boolean {
   return Boolean(githubConfig().token);
 }
 
+async function getFileSha(
+  owner: string,
+  repo: string,
+  repoPath: string,
+  token: string
+): Promise<string | undefined> {
+  const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${repoPath}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": "the-vault-lab",
+    },
+  });
+  if (!res.ok) return undefined;
+  const data = (await res.json()) as { sha?: string };
+  return data.sha;
+}
+
 export async function commitCohortToGitHub(
   filename: string,
   markdown: string
@@ -30,26 +49,40 @@ export async function commitCohortToGitHub(
 
   const repoPath = `strategies/cohorts/${filename}`;
   const label = filename.replace(/\.md$/, "");
-  const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${repoPath}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "Content-Type": "application/json",
-      "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "the-vault-lab",
-    },
-    body: JSON.stringify({
-      message: `F4 LAB cohort: ${label}`,
-      content: Buffer.from(markdown, "utf-8").toString("base64"),
-      branch,
-    }),
-  });
+  const message = `[vercel skip] F4 LAB cohort: ${label}`;
 
-  const data = (await res.json().catch(() => ({}))) as {
+  const put = async (sha?: string) =>
+    fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${repoPath}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "the-vault-lab",
+      },
+      body: JSON.stringify({
+        message,
+        content: Buffer.from(markdown, "utf-8").toString("base64"),
+        branch,
+        ...(sha ? { sha } : {}),
+      }),
+    });
+
+  let res = await put();
+  let data = (await res.json().catch(() => ({}))) as {
     message?: string;
     commit?: { html_url?: string };
   };
+
+  // Same-minute re-run: update existing file instead of failing.
+  if (!res.ok && res.status === 422) {
+    const sha = await getFileSha(owner, repo, repoPath, token);
+    if (sha) {
+      res = await put(sha);
+      data = (await res.json().catch(() => ({}))) as typeof data;
+    }
+  }
 
   if (!res.ok) {
     throw new Error(data.message || `GitHub API error (${res.status})`);

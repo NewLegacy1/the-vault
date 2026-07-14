@@ -87,8 +87,9 @@ function slug(s: string): string {
 export function cohortFilename(input: CohortSaveInput): string {
   const now = new Date();
   const date = now.toISOString().slice(0, 10);
-  const time = now.toISOString().slice(11, 16).replace(":", "");
-  return `${date}_${time}_${slug(input.variant)}.md`;
+  const hms = now.toISOString().slice(11, 19).replace(/:/g, "");
+  const ms = String(now.getUTCMilliseconds()).padStart(3, "0");
+  return `${date}_${hms}${ms}_${slug(input.variant)}.md`;
 }
 
 export function buildCohortMarkdown(input: CohortSaveInput): string {
