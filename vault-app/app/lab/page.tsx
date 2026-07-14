@@ -99,7 +99,7 @@ const SEED_SETS: Dataset[] = [
     label: "PRB BE@2R PDH Jul14 — 12mo",
     trades: TRADES_BE2R_PDH_12MO.map((t) => t.pnl),
     dates: TRADES_BE2R_PDH_12MO.map((t) => t.date),
-    sources: ["Jul 14 TV exports · BE +2R · Auto PDH/PDL draw"],
+    sources: ["Jul 14 TV exports · same 12mo windows · fewer fills (BE@2R + PDH/PDL filter)"],
   },
   {
     id: "ytd-chunks-3039",

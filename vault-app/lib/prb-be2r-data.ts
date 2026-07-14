@@ -1,5 +1,5 @@
 // Auto-imported from PRB BE@2R + Auto PDH/PDL draw exports Jul 14 2026.
-// 10 chunk CSVs merged with 1 trade/day dedupe. Re-gen: npx tsx scripts/merge-be2r-mc.ts
+// Same 12mo TV windows as control — 69 fills vs 108 (BE@2R + PDH/PDL filter skips more days).
 
 import type { SeedTrade } from "./prb-data";
 

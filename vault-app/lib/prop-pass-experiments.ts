@@ -60,7 +60,7 @@ export const PROP_PASS_EXPERIMENTS: PropPassPreset[] = [
     label: "BE@2R + Auto PDH/PDL draw",
     tier: "tier1",
     description:
-      "Wider BE retest (+2R before stop to BE) plus automatic PDH/PDL draw bias filter. Jul 14 export in F4 LAB — A/B vs 12mo control.",
+      "Wider BE retest (+2R before stop to BE) plus automatic PDH/PDL draw bias filter. Same 12mo replay windows as control — fewer executions by design, not missing data.",
     labLabel: "PRB BE@2R PDH Jul14 — 12mo",
     overrides: {
       beAtR: "2",
