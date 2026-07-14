@@ -80,9 +80,9 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
   },
   {
     id: "macro-v0-pine",
-    label: "Macro Model v1 — ghost autopsy (TS/SMT optional)",
-    version: "v1",
-    config: "MISSED + CONFLUENCE tables · TS/SMT optional live filters · paste into F4 LAB",
+    label: "Macro Model v1.3 — tiered TS/SMT",
+    version: "v1.3",
+    config: "A+/A/B tiers · Vault TS · SMT at sweep · CE confirm · ghost autopsy",
     defaultRegimes: ["baseline", "be-only"],
   },
   {
