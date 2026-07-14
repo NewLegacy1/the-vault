@@ -47,11 +47,15 @@ export function MatrixResults({ activePresetId, onSelectPreset, refreshKey = 0 }
     let cancelled = false;
     setLoading(true);
     fetch("/api/cohorts")
-      .then((r) => r.json())
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+        return data as { cohorts?: CohortRecord[] };
+      })
       .then((data) => {
         if (!cancelled) {
           setCohorts(data.cohorts ?? []);
-          setLoadErr(data.error ?? "");
+          setLoadErr("");
         }
       })
       .catch((e) => {

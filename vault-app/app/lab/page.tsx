@@ -69,7 +69,8 @@ function suggestDatasetName(dates: string[], matrixBranch: string): string {
 }
 
 function datasetDisplayName(d: Dataset, aliases?: Record<string, string>): string {
-  const alias = aliases?.[d.id]?.trim();
+  const key = d.presetId ?? d.id;
+  const alias = aliases?.[key]?.trim();
   if (alias) return alias;
   if (d.label?.trim()) return d.label.trim();
   return d.name;
@@ -976,27 +977,6 @@ function ledgerToDataset(active: NonNullable<ReturnType<typeof buildActiveDatase
   };
 }
 
-function buildDatasetFromParsed(
-  id: string,
-  fileName: string,
-  parsed: ReturnType<typeof parseLabLedger>,
-  presetId: string,
-  matrixBranch: string,
-  deduped = 0
-): Dataset {
-  const dates = parsed.map((t) => t.date);
-  const label = suggestDatasetName(dates, matrixBranch);
-  return {
-    id,
-    name: fileName,
-    presetId,
-    label,
-    trades: parsed.map((t) => t.pnl),
-    dates,
-    sources: [fileName],
-    deduped,
-  };
-}
 
 export default function LabPage() {
   const [ledgers, setLedgers, ledgersReady] = useLocal<PresetLedgerStore>("vault.lab.ledgers", {});
@@ -1381,7 +1361,6 @@ export default function LabPage() {
             : `Saved → strategies/cohorts/${data.filename}`;
       setSaveStatus("ok");
       setSaveMsg(okMsg);
-      setCohortRefreshKey((k) => k + 1);
       markLabRunCohortSaved(runKey, okMsg);
       saveLabRunCache(runKey, {
         cohortSaved: true,
@@ -1446,21 +1425,15 @@ export default function LabPage() {
   return (
     <>
       <div className="lab-intro">
-        Matrix at top shows saved runs. Pick a row, upload CSV, <span className="accent">RUN</span> — cohorts save to Obsidian via GitHub when configured.
-      </div>
-
-      <div className="panel" style={{ marginBottom: 14 }}>
-        <div className="panel-title">
-          Matrix results
-          <span className="sub">premium 365d + experimental · click to load study</span>
-        </div>
-        <div className="panel-body">
-          <MatrixResults
-            activePresetId={study.presetId}
-            onSelectPreset={applyPreset}
-            refreshKey={cohortRefreshKey}
-          />
-        </div>
+        Each strategy keeps its own CSV in this browser — switch presets without re-uploading. Saved MC cohorts live on{" "}
+        <Link href="/results" className="accent">
+          F8 Results
+        </Link>
+        . TV export steps are on{" "}
+        <Link href="/strategies" className="accent">
+          F3 Strategy
+        </Link>
+        .
       </div>
 
       <div className="panel" style={{ marginBottom: 14 }}>
@@ -1539,60 +1512,69 @@ export default function LabPage() {
           <div className="lab-step">
             <span className="lab-step-num">2</span>
             <div className="lab-step-body">
-              <div className="fld" style={{ maxWidth: 520 }}>
-                <span>
-                  TradingView CSV for{" "}
-                  <span className="accent cyan">{matrixBranch}</span>
-                  {activePreset && <span className="dim"> · {activePreset.label.split(" · ")[1] ?? activePreset.label}</span>}
-                </span>
-                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
-                  <button
-                    type="button"
-                    className="btn ghost"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Choose file
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".csv"
-                    hidden
-                    onChange={onFiles}
-                  />
-                  <span className={ds?.sources[0] ? "small accent" : "small dim"}>
-                    {ds?.sources[0] ?? "No file chosen"}
+              {isDerived ? (
+                <>
+                  <p className="small" style={{ marginTop: 0, marginBottom: 8 }}>
+                    <span className="accent cyan">{matrixBranch}</span> is built from your B0 Macro export — no second TV run.
+                  </p>
+                  {b0Ledger ? (
+                    <p className="small pos" style={{ marginTop: 0, marginBottom: 0 }}>
+                      B0 file: <span className="accent">{b0Ledger.fileName}</span>
+                      {ds ? (
+                        <>
+                          {" "}
+                          → {stats.n} trades after {matrixBranch} filter
+                        </>
+                      ) : (
+                        <span className="warn"> — filter produced no trades; check B0 Signal column tiers</span>
+                      )}
+                    </p>
+                  ) : (
+                    <p className="small warn" style={{ marginTop: 0, marginBottom: 0 }}>
+                      Upload B0 once: pick{" "}
+                      <button type="button" className="btn ghost" style={{ fontSize: 11, padding: "2px 8px" }} onClick={() => applyPreset("matrix-b0")}>
+                        B0 · Macro full book
+                      </button>{" "}
+                      in step 1, choose your Macro TV CSV, then return here and RUN.
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div className="fld" style={{ maxWidth: 520 }}>
+                  <span>
+                    TradingView CSV for{" "}
+                    <span className="accent cyan">{matrixBranch}</span>
+                    {activePreset && <span className="dim"> · {activePreset.label.split(" · ")[1] ?? activePreset.label}</span>}
                   </span>
-                  {ds && (
-                    <button type="button" className="btn ghost" onClick={clearDataset} style={{ fontSize: 11 }}>
-                      Clear
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
+                    <button type="button" className="btn ghost" onClick={() => fileInputRef.current?.click()}>
+                      {presetLedger ? "Replace file" : "Choose file"}
                     </button>
+                    <input ref={fileInputRef} type="file" accept=".csv" hidden onChange={onFiles} />
+                    <span className={presetLedger || ds ? "small accent" : "small dim"}>
+                      {presetLedger?.fileName ?? ds?.sources[0] ?? "No file for this preset yet"}
+                    </span>
+                    {(presetLedger || ds) && (
+                      <button type="button" className="btn ghost" onClick={clearLedgerForPreset} style={{ fontSize: 11 }}>
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  {activePreset?.uploadHint && (
+                    <p className="small dim" style={{ marginTop: 8, marginBottom: 0 }}>
+                      {activePreset.uploadHint}{" "}
+                      <Link href="/strategies" className="accent">
+                        TV steps →
+                      </Link>
+                    </p>
                   )}
                 </div>
-              </div>
-
-              {activePreset?.dataSource === "derived-b0" && (
-                <p className="small" style={{ marginTop: 8, marginBottom: 0 }}>
-                  {macroB0Name ? (
-                    <span className="pos">B0 loaded: {macroB0Name} — {matrixBranch} filters automatically.</span>
-                  ) : (
-                    <span className="warn">
-                      Upload B0 Macro CSV first (select B0 in matrix), then click {matrixBranch} again — or upload a pre-filtered CSV.
-                    </span>
-                  )}
-                </p>
-              )}
-
-              {datasetMismatch && (
-                <p className="small warn" style={{ marginTop: 8, marginBottom: 0 }}>
-                  This file was uploaded for a different strategy — pick {matrixBranch} in step 1, then upload again.
-                </p>
               )}
 
               {ds ? (
                 <div className="lab-dataset-summary" style={{ marginTop: 10 }}>
                   <div className="small dim" style={{ marginBottom: 4 }}>
-                    Dataset
+                    Active dataset
                   </div>
                   <span className="accent cyan">{displayName}</span>
                   <span className="dim"> — </span>
@@ -1604,7 +1586,9 @@ export default function LabPage() {
                 </div>
               ) : (
                 <p className="small warn" style={{ marginTop: 10, marginBottom: 0 }}>
-                  Select strategy in step 1, then upload one TradingView export — that file is your dataset.
+                  {isDerived
+                    ? "Load B0 CSV first (see above), then RUN."
+                    : "Upload one TV export for this preset — it stays saved when you switch to other matrix rows."}
                 </p>
               )}
 
@@ -1628,7 +1612,7 @@ export default function LabPage() {
                     ))}
                   </select>
                 </label>
-                <button className="btn" onClick={run} disabled={!canRun} title={!canRun ? (datasetMismatch ? "Re-upload CSV for this strategy" : "Set strategy version and load a dataset first") : ""}>
+                <button className="btn" onClick={run} disabled={!canRun} title={!canRun ? "Set strategy version and load data for this preset first" : ""}>
                   RUN Monte Carlo
                 </button>
               </div>
@@ -1655,8 +1639,8 @@ export default function LabPage() {
                 Display name
                 <input
                   disabled={!ds}
-                  value={ds ? datasetAliases[safeDsId] ?? ds.label ?? "" : ""}
-                  onChange={(e) => setDisplayName(safeDsId, e.target.value)}
+                  value={ds ? datasetAliases[dataKey] ?? ds.label ?? "" : ""}
+                  onChange={(e) => setDisplayName(dataKey, e.target.value)}
                   placeholder={
                     ds && suggestDatasetLabel(ds.dates)
                       ? `e.g. ${suggestDatasetLabel(ds.dates)} · ${activePreset?.matrixBranch ?? "A0a"}`
@@ -1682,7 +1666,7 @@ export default function LabPage() {
                       min={dsBounds.min}
                       max={dateFilter.to || dsBounds.max}
                       value={dateFilter.from}
-                      onChange={(e) => setDateFilterFor(safeDsId, { from: e.target.value })}
+                      onChange={(e) => setDateFilterFor(dataKey, { from: e.target.value })}
                     />
                   </label>
                   <label className="fld">
@@ -1692,11 +1676,11 @@ export default function LabPage() {
                       min={dateFilter.from || dsBounds.min}
                       max={dsBounds.max}
                       value={dateFilter.to}
-                      onChange={(e) => setDateFilterFor(safeDsId, { to: e.target.value })}
+                      onChange={(e) => setDateFilterFor(dataKey, { to: e.target.value })}
                     />
                   </label>
                   {dateFilterActive && (
-                    <button type="button" className="btn ghost" onClick={() => clearDateFilterFor(safeDsId)}>
+                    <button type="button" className="btn ghost" onClick={() => clearDateFilterFor(dataKey)}>
                       All dates
                     </button>
                   )}
@@ -1742,7 +1726,7 @@ export default function LabPage() {
               <label className="fld" style={{ marginTop: 8, maxWidth: 420 }}>
                 Load seed instead of upload
                 <select
-                  value={isSeedDataset(safeDsId) ? safeDsId : ""}
+                  value={isSeedDataset(dsId) ? dsId : ""}
                   onChange={(e) => setDsId(e.target.value)}
                 >
                   <option value="">— none —</option>

@@ -22,7 +22,7 @@ export default function ResultsPage() {
             <Link href="/lab" className="accent">
               F4 Lab
             </Link>
-            .
+            — your CSV for that preset loads automatically if you already uploaded it.
           </p>
           <MatrixResults
             onSelectPreset={(id) => router.push(`/lab?preset=${encodeURIComponent(id)}`)}
@@ -40,7 +40,7 @@ export default function ResultsPage() {
           <Link href="/strategies" className="accent">
             F3 Strategy
           </Link>
-          . Macro B1/B3 rows do not need a second export — upload B0 once in Lab, then select B1a/B3b and RUN.
+          . Upload each TV CSV once per preset in Lab (A0a, A0b, D1, B0, etc.). Macro B1/B3 need only B0 — select B1a/B3b in Lab and RUN with no second upload.
         </div>
       </div>
     </>

@@ -2,7 +2,6 @@
 
 import { useLocal } from "@/lib/store";
 import { MatrixReplayPanel } from "@/components/matrix-replay-panel";
-import { MatrixResults } from "@/components/matrix-results";
 import { DEFAULT_STUDY, presetById } from "@/lib/lab-profile";
 import Link from "next/link";
 
@@ -29,19 +28,13 @@ export default function StrategiesPage() {
             <Link href="/lab" className="accent">
               RUN in F4 Lab
             </Link>
-            . Macro B1/B3 rows filter from your B0 upload in Lab — no second TV export.
+            . Each preset keeps its own CSV in Lab — no re-upload when switching rows. Macro B1/B3 rows filter from B0 automatically. Saved MC results:{" "}
+            <Link href="/results" className="accent">
+              F8 Results
+            </Link>
+            .
           </p>
           <MatrixReplayPanel activePresetId={activePresetId} onSelectPreset={setPreset} />
-        </div>
-      </div>
-
-      <div className="panel" style={{ marginTop: 14 }}>
-        <div className="panel-title">
-          Matrix progress
-          <span className="sub">saved MC cohorts</span>
-        </div>
-        <div className="panel-body">
-          <MatrixResults activePresetId={activePresetId} onSelectPreset={setPreset} />
         </div>
       </div>
 
