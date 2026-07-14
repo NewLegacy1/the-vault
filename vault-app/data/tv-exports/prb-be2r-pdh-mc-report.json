@@ -1,0 +1,103 @@
+{
+  "experiment": "BE at +2R (was +1R) + Direction filter Auto PDH/PDL draw",
+  "generatedAt": "2026-07-14T05:27:12.638Z",
+  "sourceDir": "data/tv-exports/prb-be2r-pdh-2026-07-14",
+  "filesImported": 10,
+  "rawTradeRows": 69,
+  "mergedTrades": 69,
+  "span": "2024-12-31 → 2026-07-08",
+  "stats": {
+    "wins": 13,
+    "losses": 44,
+    "scratches": 12,
+    "winRatePct": 18.8,
+    "netPnlUsd": 12344.86,
+    "avgPerTrade": 178.91,
+    "tradesPerWeek": 0.9,
+    "maxDrawdownUsd": 4585,
+    "peakEquityUsd": 13598
+  },
+  "monteCarlo": {
+    "firm": "TPT $50K Test → PRO",
+    "sims": 2000,
+    "passRatePct": 41.9,
+    "bustRatePct": 58.1,
+    "timeoutRatePct": 0,
+    "tradesToPassP50": 8,
+    "tradesToPassP90": 14,
+    "weeksToPassP50": 9.2,
+    "weeksToPassP90": 16.1,
+    "expectedAccounts": 2.4,
+    "accountsFor90Pct": 5,
+    "payoutRatePct": 34.6,
+    "expectedNetUntilPass": 3922
+  },
+  "evalConsistency": {
+    "passRequestReady": true,
+    "totalPnl": 12345,
+    "bestDayPctOfTotal": 19.3,
+    "recommendation": "Ready to request pass: $12345 total, best day 19.3% (< 50%), 69 trading days."
+  },
+  "perFile": [
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14.csv",
+      "trades": 8,
+      "span": "2026-05-21 → 2026-07-08",
+      "net": 5307.28
+    },
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14 (1).csv",
+      "trades": 7,
+      "span": "2026-03-26 → 2026-04-30",
+      "net": -1681.66
+    },
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14 (2).csv",
+      "trades": 7,
+      "span": "2026-01-28 → 2026-03-20",
+      "net": 376.18
+    },
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14 (3).csv",
+      "trades": 12,
+      "span": "2025-12-02 → 2026-01-22",
+      "net": 9025.38
+    },
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14 (4).csv",
+      "trades": 4,
+      "span": "2025-10-31 → 2025-11-25",
+      "net": 1102.78
+    },
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14 (5).csv",
+      "trades": 4,
+      "span": "2025-08-21 → 2025-09-23",
+      "net": -902.84
+    },
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14 (6).csv",
+      "trades": 11,
+      "span": "2025-06-17 → 2025-08-08",
+      "net": -692.1
+    },
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14 (7).csv",
+      "trades": 2,
+      "span": "2025-04-22 → 2025-04-24",
+      "net": -836.64
+    },
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14 (8).csv",
+      "trades": 9,
+      "span": "2025-02-27 → 2025-04-17",
+      "net": 84.68
+    },
+    {
+      "file": "PRB_v1_CME_MINI_MNQ1!_2026-07-14 (9).csv",
+      "trades": 5,
+      "span": "2024-12-31 → 2025-02-19",
+      "net": 561.8
+    }
+  ]
+}

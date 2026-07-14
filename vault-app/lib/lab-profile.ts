@@ -19,7 +19,14 @@ export const STRATEGY_PRESETS: StrategyPreset[] = [
     id: "prb-v15-12mo-control",
     label: "PRB v1.5 — 12mo control (Jul 25–Jul 26)",
     version: "v1.5",
-    config: "Locked live profile · Both bias · $400 risk · BE-only · 5m MNQ full year replay",
+    config: "Locked live profile · Both bias · $400 risk · BE +1R · 5m MNQ full year replay",
+    defaultRegimes: ["baseline", "be-only"],
+  },
+  {
+    id: "prb-v15-be2r-pdh",
+    label: "PRB v1.5 — BE@2R + Auto PDH/PDL (Jul 14)",
+    version: "v1.5",
+    config: "BE at +2R (was +1R) · Direction filter Auto PDH/PDL draw · $400 risk · skip Mon",
     defaultRegimes: ["baseline", "be-only"],
   },
   {

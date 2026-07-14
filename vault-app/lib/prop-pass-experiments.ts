@@ -56,6 +56,25 @@ export const PROP_PASS_EXPERIMENTS: PropPassPreset[] = [
     },
   },
   {
+    id: "be2r-auto-pdh-pdl",
+    label: "BE@2R + Auto PDH/PDL draw",
+    tier: "tier1",
+    description:
+      "Wider BE retest (+2R before stop to BE) plus automatic PDH/PDL draw bias filter. Jul 14 export in F4 LAB — A/B vs 12mo control.",
+    labLabel: "PRB BE@2R PDH Jul14 — 12mo",
+    overrides: {
+      beAtR: "2",
+      biasMode: "Auto PDH/PDL draw",
+      riskUsd: "400",
+      trailRegime: "OFF",
+      winStart: "1000",
+      winEnd: "1300",
+      rr: "5",
+      dailyProfitLock: "1400",
+    },
+    status: "in-lab",
+  },
+  {
     id: "risk-300",
     label: "Risk $300 (fresh eval)",
     tier: "tier1",

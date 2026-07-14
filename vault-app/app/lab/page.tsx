@@ -6,6 +6,7 @@ import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
 import { mergeTvCsvs, parseTvCsv, tradesPerWeek } from "@/lib/csv";
 import { ALL_SEED_TRADES, TRADES_DEC_MAR, TRADES_APR_JUL } from "@/lib/prb-data";
 import { TRADES_YTD_FULL, TRADES_YTD_MAY17 } from "@/lib/prb-ytd-data";
+import { TRADES_BE2R_PDH_12MO } from "@/lib/prb-be2r-data";
 import { TRADES_YTD_CHUNKS_3039 } from "@/lib/prb-chunks-3039-data";
 import { PROP_RULES, ruleById } from "@/lib/prop-firms";
 import { PropRule } from "@/lib/types";
@@ -92,6 +93,14 @@ function CollapsiblePanel({
 }
 
 const SEED_SETS: Dataset[] = [
+  {
+    id: "be2r-pdh-12mo",
+    name: "PRB v1.5 — BE@2R + Auto PDH/PDL (69 trades) ★",
+    label: "PRB BE@2R PDH Jul14 — 12mo",
+    trades: TRADES_BE2R_PDH_12MO.map((t) => t.pnl),
+    dates: TRADES_BE2R_PDH_12MO.map((t) => t.date),
+    sources: ["Jul 14 TV exports · BE +2R · Auto PDH/PDL draw"],
+  },
   {
     id: "ytd-chunks-3039",
     name: "PRB v1 — YTD chunks 30–39 (96 trades) ★",
