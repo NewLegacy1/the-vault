@@ -47,7 +47,20 @@ tags: [findings, macro, strategy-dev]
 
 ## Day-0 sim (Track 4) — risk scale alone is not enough
 
-v1.2 ledger ×0.5 ($400 risk, **no BE** — PnL scale only): pass **30.5% → 35.2%**, bust still **~63%**. Halving risk does not break the trail-bust pattern of long loss streaks. **BE@2R must be tested in Pine** (`Macro_Model_v2` M0 vs M1).
+v1.2 ledger ×0.5 ($400 risk, **no BE** — PnL scale only): pass **30.5% → 35.2%**, bust still **~63%**. Halving risk does not break the trail-bust pattern of long loss streaks.
+
+## Settled — Macro_Model_v2 M-series (2026-07-14 Premium exports)
+
+| Book | n | Net | tr/wk | Funded pass | Bust | Note |
+|---|---|---|---|---|---|---|
+| M0/M1 $400 | 26 | +$1,130 | 0.5 | ~40% | ~57% | **Identical CSVs** — BE@2R never fired |
+| M2 Volume+BE | 241 | +$1,912 | 4.6 | **~21%** | **~77%** | Cadence yes; trail death |
+
+**Why BE failed:** avg MFE ~$309 << +2R (~$800). Point-target Macro never tags PRB-style BE.
+
+**Time (M2):** 9:50–10:10 **+$7.6k** · 10:50–11:10 **−$3.1k** · 10:10–10:50 **−$2.9k**.
+
+**Verdict:** kill volume Macro as income engine. Keep 9:50 A-tier only as hybrid diversifier. Rebuild only against explicit gates (≥55% pass, ≤40% bust, ≤8w payout, ≥2.5 tr/wk for income path). See canvas `macro-v2-keep-kill`.
 
 ## Open questions
 

@@ -1,0 +1,360 @@
+{
+  "inferred": [
+    {
+      "label": "M0 · $400 BE OFF",
+      "file": "macro-v2-20f59.csv",
+      "stats": {
+        "n": 26,
+        "days": 26,
+        "net": 1130,
+        "wr": 50,
+        "w": 13,
+        "l": 13,
+        "scr": 0,
+        "avgWin": 444,
+        "avgLoss": -357,
+        "tpw": 0.5,
+        "edge": 23
+      },
+      "lossStreak": 3,
+      "enrich": {
+        "n": 26,
+        "enrichedN": 26,
+        "coveragePct": 100,
+        "avgDurationBars": 3.2,
+        "medianDurationBars": 1.5,
+        "duration0Pct": 0,
+        "avgMfeUsd": 309,
+        "avgMaeUsd": 247,
+        "medianLoserMaeUsd": 393,
+        "winnerGivebackN": 0,
+        "beScratchCandidates": 0,
+        "avgQty": 6.5,
+        "avgReturnPct": 0,
+        "hasPremiumExcursion": true,
+        "hasDuration": true,
+        "hasEntryTime": true
+      },
+      "funded": {
+        "pass": 41.4,
+        "bust": 57.1,
+        "payout": 32.3,
+        "weeksPass": 64.8,
+        "weeksPay": 85.8
+      },
+      "eval": {
+        "pass": 40.2,
+        "bust": 57.3,
+        "payout": 30.7,
+        "weeksPass": 64.8,
+        "weeksPay": 82
+      },
+      "byHour": [
+        {
+          "bucket": "9:50–10:10",
+          "n": 15,
+          "net": 1842,
+          "wr": 60
+        },
+        {
+          "bucket": "10:50–11:10",
+          "n": 7,
+          "net": 296,
+          "wr": 42.9
+        },
+        {
+          "bucket": "10:10–10:50",
+          "n": 4,
+          "net": -1008,
+          "wr": 25
+        }
+      ],
+      "byTier": [
+        {
+          "tier": "A+",
+          "n": 8,
+          "net": -1149,
+          "wr": 25
+        },
+        {
+          "tier": "A",
+          "n": 14,
+          "net": 2327,
+          "wr": 64.3
+        },
+        {
+          "tier": "H",
+          "n": 4,
+          "net": -48,
+          "wr": 50
+        }
+      ]
+    },
+    {
+      "label": "M1 · $400 BE@2R",
+      "file": "macro-v2-91e69.csv",
+      "stats": {
+        "n": 26,
+        "days": 26,
+        "net": 1130,
+        "wr": 50,
+        "w": 13,
+        "l": 13,
+        "scr": 0,
+        "avgWin": 444,
+        "avgLoss": -357,
+        "tpw": 0.5,
+        "edge": 23
+      },
+      "lossStreak": 3,
+      "enrich": {
+        "n": 26,
+        "enrichedN": 26,
+        "coveragePct": 100,
+        "avgDurationBars": 3.2,
+        "medianDurationBars": 1.5,
+        "duration0Pct": 0,
+        "avgMfeUsd": 309,
+        "avgMaeUsd": 247,
+        "medianLoserMaeUsd": 393,
+        "winnerGivebackN": 0,
+        "beScratchCandidates": 0,
+        "avgQty": 6.5,
+        "avgReturnPct": 0,
+        "hasPremiumExcursion": true,
+        "hasDuration": true,
+        "hasEntryTime": true
+      },
+      "funded": {
+        "pass": 40.1,
+        "bust": 57.7,
+        "payout": 30.9,
+        "weeksPass": 68.6,
+        "weeksPay": 83.9
+      },
+      "eval": {
+        "pass": 39.6,
+        "bust": 58.4,
+        "payout": 31.5,
+        "weeksPass": 70.5,
+        "weeksPay": 85.8
+      },
+      "byHour": [
+        {
+          "bucket": "9:50–10:10",
+          "n": 15,
+          "net": 1842,
+          "wr": 60
+        },
+        {
+          "bucket": "10:50–11:10",
+          "n": 7,
+          "net": 296,
+          "wr": 42.9
+        },
+        {
+          "bucket": "10:10–10:50",
+          "n": 4,
+          "net": -1008,
+          "wr": 25
+        }
+      ],
+      "byTier": [
+        {
+          "tier": "A+",
+          "n": 8,
+          "net": -1149,
+          "wr": 25
+        },
+        {
+          "tier": "A",
+          "n": 14,
+          "net": 2327,
+          "wr": 64.3
+        },
+        {
+          "tier": "H",
+          "n": 4,
+          "net": -48,
+          "wr": 50
+        }
+      ]
+    },
+    {
+      "label": "M2 · Volume BE@2R",
+      "file": "macro-v2-9da9b.csv",
+      "stats": {
+        "n": 241,
+        "days": 240,
+        "net": 1912,
+        "wr": 49.4,
+        "w": 119,
+        "l": 119,
+        "scr": 3,
+        "avgWin": 351,
+        "avgLoss": -334,
+        "tpw": 4.6,
+        "edge": 37
+      },
+      "lossStreak": 7,
+      "enrich": {
+        "n": 241,
+        "enrichedN": 241,
+        "coveragePct": 100,
+        "avgDurationBars": 3.4,
+        "medianDurationBars": 1,
+        "duration0Pct": 0,
+        "avgMfeUsd": 253,
+        "avgMaeUsd": 220,
+        "medianLoserMaeUsd": 381,
+        "winnerGivebackN": 0,
+        "beScratchCandidates": 3,
+        "avgQty": 6.1,
+        "avgReturnPct": 0,
+        "hasPremiumExcursion": true,
+        "hasDuration": true,
+        "hasEntryTime": true
+      },
+      "funded": {
+        "pass": 20.1,
+        "bust": 77.7,
+        "payout": 13.9,
+        "weeksPass": 6.7,
+        "weeksPay": 8
+      },
+      "eval": {
+        "pass": 22,
+        "bust": 75.7,
+        "payout": 15.1,
+        "weeksPass": 6.7,
+        "weeksPay": 7.7
+      },
+      "byHour": [
+        {
+          "bucket": "9:50–10:10",
+          "n": 186,
+          "net": 7622,
+          "wr": 54.3
+        },
+        {
+          "bucket": "10:50–11:10",
+          "n": 37,
+          "net": -3096,
+          "wr": 35.1
+        },
+        {
+          "bucket": "10:10–10:50",
+          "n": 16,
+          "net": -2891,
+          "wr": 25
+        },
+        {
+          "bucket": "11:10–12:00",
+          "n": 2,
+          "net": 277,
+          "wr": 50
+        }
+      ],
+      "byTier": [
+        {
+          "tier": "A",
+          "n": 149,
+          "net": 2031,
+          "wr": 41.6
+        },
+        {
+          "tier": "A+",
+          "n": 5,
+          "net": -156,
+          "wr": 40
+        },
+        {
+          "tier": "H",
+          "n": 87,
+          "net": 37,
+          "wr": 63.2
+        }
+      ],
+      "byMonth": [
+        {
+          "month": "2025-07",
+          "n": 12,
+          "net": -1796,
+          "wr": 33.3
+        },
+        {
+          "month": "2025-08",
+          "n": 21,
+          "net": 779,
+          "wr": 47.6
+        },
+        {
+          "month": "2025-09",
+          "n": 21,
+          "net": -3459,
+          "wr": 28.6
+        },
+        {
+          "month": "2025-10",
+          "n": 23,
+          "net": -483,
+          "wr": 43.5
+        },
+        {
+          "month": "2025-11",
+          "n": 18,
+          "net": -299,
+          "wr": 55.6
+        },
+        {
+          "month": "2025-12",
+          "n": 21,
+          "net": 2668,
+          "wr": 57.1
+        },
+        {
+          "month": "2026-01",
+          "n": 20,
+          "net": -1557,
+          "wr": 45
+        },
+        {
+          "month": "2026-02",
+          "n": 19,
+          "net": 2749,
+          "wr": 68.4
+        },
+        {
+          "month": "2026-03",
+          "n": 21,
+          "net": -1013,
+          "wr": 47.6
+        },
+        {
+          "month": "2026-04",
+          "n": 20,
+          "net": 1572,
+          "wr": 45
+        },
+        {
+          "month": "2026-05",
+          "n": 20,
+          "net": 2513,
+          "wr": 60
+        },
+        {
+          "month": "2026-06",
+          "n": 17,
+          "net": -589,
+          "wr": 47.1
+        },
+        {
+          "month": "2026-07",
+          "n": 8,
+          "net": 827,
+          "wr": 75
+        }
+      ]
+    }
+  ]
+}
