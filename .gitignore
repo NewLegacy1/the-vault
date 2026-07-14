@@ -20,6 +20,7 @@ vault-app/tsconfig.tsbuildinfo
 .DS_Store
 Thumbs.db
 .obsidian/workspace.json
+.obsidian/graph.json
 
 # Logs
 *.log
