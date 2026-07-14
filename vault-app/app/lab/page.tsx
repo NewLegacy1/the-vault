@@ -1098,9 +1098,11 @@ export default function LabPage() {
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || "save failed");
       setSaveStatus("ok");
-      if (data.mode === "download" && data.markdown) {
+      if (data.mode === "github") {
+        setSaveMsg(`Committed ${data.filename} → ${data.repoPath ?? "strategies/cohorts/"} on GitHub`);
+      } else if (data.mode === "download" && data.markdown) {
         downloadCohortMarkdown(data.filename, data.markdown);
-        setSaveMsg(`Downloaded ${data.filename} — drop into strategies/cohorts/ in your vault`);
+        setSaveMsg(`Downloaded ${data.filename} — add GITHUB_TOKEN on Vercel or drop into strategies/cohorts/`);
       } else {
         setSaveMsg(`Saved → strategies/cohorts/${data.filename}`);
       }
@@ -1272,7 +1274,7 @@ export default function LabPage() {
         )}
         <label className="small" style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 10, cursor: "pointer" }}>
           <input type="checkbox" checked={autoSave} onChange={(e) => setAutoSave(e.target.checked)} />
-          Auto-save every RUN <span className="dim">(writes locally · downloads on Vercel → strategies/cohorts/)</span>
+          Auto-save every RUN <span className="dim">(local disk · GitHub commit on Vercel → strategies/cohorts/)</span>
         </label>
       </CollapsiblePanel>
 

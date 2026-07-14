@@ -2,6 +2,7 @@ import { mkdir, readdir, readFile, writeFile } from "fs/promises";
 import fs from "fs";
 import path from "path";
 import { buildCohortMarkdown, cohortFilename, CohortSaveInput, parseCohortMeta, CohortRecord } from "@/lib/cohort";
+import { commitCohortToGitHub, githubCohortConfigured } from "@/lib/github-cohort";
 
 function cohortsDir(): string {
   const inApp = path.join(process.cwd(), "data", "cohorts");
@@ -36,8 +37,10 @@ export async function listCohorts(): Promise<CohortRecord[]> {
 export type CohortSaveResult = {
   filename: string;
   markdown: string;
-  mode: "written" | "download";
+  mode: "written" | "github" | "download";
   path?: string;
+  repoPath?: string;
+  commitUrl?: string;
 };
 
 function isReadOnlyFsError(e: unknown): boolean {
@@ -45,12 +48,30 @@ function isReadOnlyFsError(e: unknown): boolean {
   return code === "EROFS" || code === "EACCES";
 }
 
+async function saveCohortToGitHub(filename: string, markdown: string): Promise<CohortSaveResult> {
+  const gh = await commitCohortToGitHub(filename, markdown);
+  return {
+    filename,
+    markdown,
+    mode: "github",
+    repoPath: gh.repoPath,
+    commitUrl: gh.commitUrl,
+  };
+}
+
 export async function saveCohort(input: CohortSaveInput): Promise<CohortSaveResult> {
   const filename = cohortFilename(input);
   const markdown = buildCohortMarkdown(input);
 
-  // Vercel/Lambda filesystem is read-only — return markdown for client download.
   if (process.env.VERCEL === "1") {
+    if (githubCohortConfigured()) {
+      try {
+        return await saveCohortToGitHub(filename, markdown);
+      } catch (e) {
+        console.error("GitHub cohort commit failed:", e);
+        return { filename, markdown, mode: "download" };
+      }
+    }
     return { filename, markdown, mode: "download" };
   }
 
@@ -60,6 +81,13 @@ export async function saveCohort(input: CohortSaveInput): Promise<CohortSaveResu
     await writeFile(filepath, markdown, "utf-8");
     return { filename, markdown, path: filepath, mode: "written" };
   } catch (e) {
+    if (isReadOnlyFsError(e) && githubCohortConfigured()) {
+      try {
+        return await saveCohortToGitHub(filename, markdown);
+      } catch (ghErr) {
+        console.error("GitHub cohort commit failed:", ghErr);
+      }
+    }
     if (isReadOnlyFsError(e)) {
       return { filename, markdown, mode: "download" };
     }

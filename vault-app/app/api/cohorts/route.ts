@@ -24,6 +24,8 @@ export async function POST(req: Request) {
       mode: result.mode,
       markdown: result.mode === "download" ? result.markdown : undefined,
       path: result.path,
+      repoPath: result.repoPath,
+      commitUrl: result.commitUrl,
     });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
