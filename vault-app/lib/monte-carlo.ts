@@ -1,5 +1,18 @@
 import type { FirmPayoutConfig } from "./firm-payout-economics";
 import { pathFeesUsd, withdrawableAtEquity } from "./firm-payout-economics";
+import {
+  applyDayPnl,
+  createRulePackState,
+  evalPassReadyWithPack,
+  isRulePackBust,
+  isWinningDay,
+  legacyRulePack,
+  payoutReadyWithPack,
+  updateRulePackState,
+  type McRulePack,
+} from "./mc-rule-pack";
+import { MC_ENGINE_VERSION } from "./mc-engine-version";
+import { rulePackFeatureIds } from "./mc-calibration";
 
 export interface McFees {
   evalFee: number;
@@ -49,6 +62,8 @@ export interface McParams {
   funded?: McFundedRules;
   /** Firm-specific payout split, buffer, caps — drives net $/account. */
   payoutEconomics?: FirmPayoutConfig;
+  /** Optional calibrated rule pack — defaults to legacy intraday trail. */
+  rulePack?: McRulePack;
 }
 
 export interface McEconomics {
@@ -100,6 +115,9 @@ export interface McResult {
   consistencyBlockedRate?: number;
   /** Funded-only: % of sims that completed ≥1 withdraw + account recycle before cap. */
   recycleRate?: number;
+  /** Engine + rule-pack metadata for UI / cohort versioning. */
+  engineVersion?: number;
+  rulePackFeatures?: string[];
 }
 
 export interface McSamplePath {
@@ -201,7 +219,18 @@ export function resolveMcBootstrap(
 }
 
 function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[Math.floor(mcRng() * arr.length)];
+}
+
+/** Test-only: inject deterministic RNG. */
+let mcRng: () => number = Math.random;
+
+export function setMcRng(fn: () => number): void {
+  mcRng = fn;
+}
+
+export function resetMcRng(): void {
+  mcRng = Math.random;
 }
 
 function generateBootstrapSequence(
@@ -236,9 +265,22 @@ function evalPassReady(
   cumulative: number,
   bestDayPnl: number,
   tradingDays: number,
+  winningDays: number,
   passAt: number,
-  consistency?: McConsistencyRule
+  consistency?: McConsistencyRule,
+  rulePack?: McRulePack
 ): boolean {
+  if (rulePack) {
+    return evalPassReadyWithPack({
+      cumulative,
+      bestDayPnl,
+      tradingDays,
+      winningDays,
+      passAt,
+      pack: rulePack,
+      legacyConsistency: consistency,
+    });
+  }
   if (cumulative < passAt) return false;
   if (!consistency || consistency.consistencyPct <= 0) return true;
   const bestPct = cumulative > 0 ? (bestDayPnl / cumulative) * 100 : 0;
@@ -248,8 +290,19 @@ function evalPassReady(
 function payoutConsistencyReady(
   cumulative: number,
   bestDayPnl: number,
-  payoutConsistencyPct: number
+  winningDays: number,
+  payoutConsistencyPct: number,
+  rulePack?: McRulePack
 ): boolean {
+  if (rulePack) {
+    return payoutReadyWithPack({
+      cumulative,
+      bestDayPnl,
+      winningDays,
+      payoutConsistencyPct,
+      pack: rulePack,
+    });
+  }
   if (payoutConsistencyPct <= 0) return true;
   if (cumulative < 0) return false;
   const bestPct = cumulative > 0 ? (bestDayPnl / cumulative) * 100 : 100;
@@ -277,12 +330,14 @@ export function runMonteCarlo(params: McParams): McResult {
   const dailyPnls = daily.map((d) => d.pnl);
   const weekBlocks = buildWeekBlocks(daily);
   const bootstrap = resolveMcBootstrap(trades, dates, params.bootstrap, consistency);
-  const consistencyAware = Boolean(consistency);
+  const consistencyAware = Boolean(consistency) || Boolean(params.rulePack?.consistency);
   const payoutAt = fundedOnly
     ? (fundedRules?.payoutProfitTarget ?? fees.payoutBuffer)
     : passAt + fees.payoutBuffer;
   const tpw = tradesPerWeekFromDates(dates);
   const evalCost = fees.evalFee || fees.monthlyFee || 0;
+  const rulePack = params.rulePack ?? legacyRulePack(trailingDD);
+  const usePack = params.rulePack != null;
 
   const emptyEconomics: McEconomics = {
     tradesPerWeek: tpw,
@@ -354,6 +409,7 @@ export function runMonteCarlo(params: McParams): McResult {
     let cumulative = 0;
     let bestDayPnl = 0;
     let tradingDays = 0;
+    let winningDays = 0;
     let cumulativeFundedProfit = 0;
     let recycleCycles = 0;
     let hadAnyPayout = false;
@@ -362,34 +418,64 @@ export function runMonteCarlo(params: McParams): McResult {
     let passAtTrade: number | null = null;
     const pathTrace: number[] = [0];
     paths[0][s] = 0;
+    const packState = createRulePackState(rulePack);
 
     for (let t = 1; t <= maxTrades; t++) {
       if (phase === "eval" || phase === "funded") {
-        const dayPnl = sequence[t - 1];
-        eq += dayPnl;
+        const rawDayPnl = sequence[t - 1];
+        const dayPnl = applyDayPnl(rawDayPnl, rulePack);
+
+        if (usePack) {
+          updateRulePackState(packState, dayPnl, rulePack);
+          eq = packState.eq;
+          peak = packState.peak;
+        } else {
+          eq += dayPnl;
+          peak = Math.max(peak, eq);
+        }
+
         cumulative += dayPnl;
         tradingDays++;
         if (dayPnl > bestDayPnl) bestDayPnl = dayPnl;
+        if (isWinningDay(dayPnl, rulePack)) winningDays++;
 
-        peak = Math.max(peak, eq);
         maxDD = Math.max(maxDD, peak - eq);
 
         if (!fundedOnly && cumulative >= passAt) hitGrossPass = true;
 
-        if (peak - eq >= trailingDD) {
+        const busted = usePack
+          ? isRulePackBust(packState, rulePack)
+          : peak - eq >= trailingDD;
+
+        if (busted) {
           phase = "bust";
           eventTrades = t;
-        } else if (!fundedOnly && phase === "eval" && evalPassReady(cumulative, bestDayPnl, tradingDays, passAt, consistency)) {
+        } else if (
+          !fundedOnly &&
+          phase === "eval" &&
+          evalPassReady(
+            cumulative,
+            bestDayPnl,
+            tradingDays,
+            winningDays,
+            passAt,
+            consistency,
+            rulePack
+          )
+        ) {
           phase = "funded";
           passed = true;
           passAtTrade = t;
           tradesToPass.push(t);
         } else if (phase === "funded" && eq >= payoutAt) {
           const payoutConsPct = fundedRules?.payoutConsistencyPct ?? 0;
-          const payoutReady =
-            payoutConsPct > 0
-              ? payoutConsistencyReady(cumulative, bestDayPnl, payoutConsPct)
-              : true;
+          const payoutReady = payoutConsistencyReady(
+            cumulative,
+            bestDayPnl,
+            winningDays,
+            payoutConsPct,
+            rulePack
+          );
 
           if (payoutReady) {
             tradesToPayout.push(t);
@@ -417,7 +503,15 @@ export function runMonteCarlo(params: McParams): McResult {
               cumulative = 0;
               bestDayPnl = 0;
               tradingDays = 0;
+              winningDays = 0;
               gotPayout = false;
+              if (usePack) {
+                const fresh = createRulePackState(rulePack);
+                packState.eq = fresh.eq;
+                packState.peak = fresh.peak;
+                packState.mllFloorEq = fresh.mllFloorEq;
+                packState.mllLocked = fresh.mllLocked;
+              }
             } else {
               phase = "done";
             }
@@ -587,5 +681,7 @@ export function runMonteCarlo(params: McParams): McResult {
     grossPassRate: consistencyAware ? grossPasses / sims : undefined,
     consistencyBlockedRate: consistencyAware ? consistencyBlocked / sims : undefined,
     recycleRate,
+    engineVersion: MC_ENGINE_VERSION,
+    rulePackFeatures: params.rulePack ? rulePackFeatureIds(params.rulePack) : [],
   };
 }

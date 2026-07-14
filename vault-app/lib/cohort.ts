@@ -3,7 +3,8 @@ import type { StrategyFamily, StrategyPhase } from "./lab-profile";
 import { normalizeMcPct } from "./mc-pct";
 import type { TradeEnrichmentSummary } from "./trade-enrichment";
 import { enrichmentToYamlFields } from "./trade-enrichment";
-import { derivePayoutCycle, payoutCycleYamlFields } from "./payout-cycle";
+import { payoutCycleYamlFields, type PayoutCycleMetrics } from "./payout-cycle";
+import { MC_ENGINE_VERSION } from "./mc-engine-version";
 
 export type { StrategyFamily, StrategyPhase };
 
@@ -140,6 +141,9 @@ export interface CohortRecord {
   mcSims?: number;
   mcMaxTrades?: number;
   payoutBuffer?: number;
+  /** MC engine version when cohort was saved. */
+  mcEngineVersion?: number;
+  mcRulePack?: string[];
 }
 
 export interface CohortSaveInput {
@@ -175,6 +179,8 @@ export interface CohortSaveInput {
   firmMc?: Record<string, CohortFirmMcEntry>;
   tradePnls?: number[];
   tradeDates?: string[];
+  mcEngineVersion?: number;
+  mcRulePack?: string[];
   /** Premium field summary from uploaded TV CSV (MFE/MAE/duration/…). */
   enrichment?: TradeEnrichmentSummary | null;
 }
@@ -223,6 +229,31 @@ export function buildCohortMarkdown(input: CohortSaveInput): string {
         .map(([k, v]) => `${k}: ${v === null ? "null" : v}`)
         .join("\n") + "\n"
     : "";
+  const weeksCycle = input.mc.economics.weeksToPayoutP50 ?? input.mc.economics.weeksToPassP50;
+  const cycleMetrics: PayoutCycleMetrics = {
+    passPct: Math.round(input.mc.passRate * 1000) / 10,
+    payoutPct: Math.round(input.mc.economics.payoutRate * 1000) / 10,
+    payoutGivenPassPct:
+      input.mc.passRate > 0.01
+        ? Math.round((input.mc.economics.payoutRate / input.mc.passRate) * 1000) / 10
+        : null,
+    bustPct: Math.round(input.mc.bustRate * 1000) / 10,
+    recyclePct: null,
+    medianWithdrawnUsd: Math.round(input.mc.economics.medianWithdrawnUsd),
+    medianNetPerAccountUsd: Math.round(input.mc.economics.medianNetPerAccountUsd),
+    expectedNetPerAccountUsd: Math.round(input.mc.economics.expectedNetPerAccountUsd),
+    weeksToPassP50: input.mc.economics.weeksToPassP50,
+    weeksToPayoutP50: input.mc.economics.weeksToPayoutP50,
+    expectedUsdPerCalendarWeek:
+      weeksCycle != null && weeksCycle > 0
+        ? Math.round(input.mc.economics.expectedNetPerAccountUsd / weeksCycle)
+        : null,
+    expectedAccounts: input.mc.economics.expectedAccounts,
+  };
+  const cycleYaml =
+    Object.entries(payoutCycleYamlFields(cycleMetrics))
+      .map(([k, v]) => `${k}: ${v === null ? "null" : v}`)
+      .join("\n") + "\n";
 
   const frontmatter = `---
 variant: "${input.variant.replace(/"/g, '\\"')}"
@@ -259,7 +290,9 @@ created: "${new Date().toISOString()}"
 dataset: "${input.datasetName.replace(/"/g, '\\"')}"
 mc_max_trades: ${input.maxTrades}
 payout_buffer: ${input.payoutBuffer}
-${firmMcLine}${tradePnlsLine}${tradeDatesLine}${enrichYaml}---`;
+mc_engine_version: ${input.mcEngineVersion ?? MC_ENGINE_VERSION}
+mc_rule_pack: ${JSON.stringify(input.mcRulePack ?? [])}
+${firmMcLine}${tradePnlsLine}${tradeDatesLine}${enrichYaml}${cycleYaml}---`;
 
   const enr = input.enrichment;
   const enrichSection = enr
@@ -310,6 +343,20 @@ _MC still uses shuffled PnL — these fields are for management / frequency diag
 | Trades/week | ${input.tradesPerWeek} |
 | Sources | ${input.sources.join(", ") || "seed"} |
 ${enrichSection}
+## Business loop (pass → payout → recycle)
+
+| Metric | Value |
+|--------|-------|
+| **E[$ / calendar week]** | **$${cycleMetrics.expectedUsdPerCalendarWeek ?? "—"}** |
+| E[$ / account] after fees | $${cycleMetrics.expectedNetPerAccountUsd} |
+| Pass → P(payout given pass) | ${passPct}% → ${cycleMetrics.payoutGivenPassPct ?? "—"}% |
+| Median trader withdraw | $${cycleMetrics.medianWithdrawnUsd} |
+| Median weeks to payout | ${eco.weeksToPayoutP50 ?? "—"} |
+| Bust rate | ${bustPct}% |
+| Expected accounts | ${Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "∞"} |
+
+_Raw ledger weekly edge (expectancy×tr/wk, not fee-aware): $${Math.round(input.tradesPerWeek * (input.trades ? input.netPnl / input.trades : 0)).toLocaleString()}/wk_
+
 ## Monte Carlo (${input.firm})
 
 | Metric | Value |
@@ -319,8 +366,6 @@ ${enrichSection}
 | Payout rate | ${payoutPct}% |
 | Median weeks to pass | ${eco.weeksToPassP50 ?? "—"} |
 | Median weeks to payout | ${eco.weeksToPayoutP50 ?? "—"} |
-| Expected accounts | ${Number.isFinite(eco.expectedAccounts) ? eco.expectedAccounts : "∞"} |
-| Weekly edge (E[$/wk]) | $${Math.round(input.tradesPerWeek * (input.trades ? input.netPnl / input.trades : 0)).toLocaleString()} |
 | Scorecard vs control | ${input.scorecardVerdict ?? "—"} (composite ${input.compositeScore ?? "—"}) |
 | Net after fees (median path) | $${eco.medianNetOnPass.toLocaleString()} |
 | Sims / max trades | ${input.sims} / ${input.maxTrades} |
@@ -405,6 +450,16 @@ export function parseCohortMeta(content: string, filename: string, relativePath?
   const mcSims = parseInt(get("mc_sims"), 10) || undefined;
   const mcMaxTrades = parseInt(get("mc_max_trades"), 10) || undefined;
   const payoutBuffer = parseInt(get("payout_buffer"), 10) || undefined;
+  let mcRulePack: string[] | undefined;
+  const rulePackRaw = get("mc_rule_pack");
+  if (rulePackRaw) {
+    try {
+      mcRulePack = JSON.parse(rulePackRaw) as string[];
+    } catch {
+      mcRulePack = undefined;
+    }
+  }
+  const mcEngineVersion = parseInt(get("mc_engine_version"), 10) || undefined;
 
   return {
     id: filename.replace(/\.md$/, ""),
@@ -443,5 +498,7 @@ export function parseCohortMeta(content: string, filename: string, relativePath?
     mcSims,
     mcMaxTrades,
     payoutBuffer,
+    mcEngineVersion,
+    mcRulePack,
   };
 }

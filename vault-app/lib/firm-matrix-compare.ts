@@ -1,7 +1,8 @@
 import type { CohortFirmMcEntry, CohortRecord } from "@/lib/cohort";
 import type { StrategyPhase } from "@/lib/lab-profile";
 import { mcRateToPct, normalizeMcPct } from "@/lib/mc-pct";
-import { payoutConfigForFirm, fundedPayoutConsistencyPct } from "@/lib/firm-payout-economics";
+import { fundedPayoutConsistencyPct } from "@/lib/firm-payout-economics";
+import { buildMcParamsForFirm } from "@/lib/mc-params-builder";
 import { runMonteCarlo } from "@/lib/monte-carlo";
 import type { PropPhaseRuleSet } from "@/lib/prop-phase-types";
 import { phaseById, ruleById } from "@/lib/prop-firms";
@@ -85,98 +86,6 @@ export function ruleIdFromFirmLabel(firm: string): string | null {
   return null;
 }
 
-function buildMcParamsForFirm(
-  ruleId: string,
-  opts: {
-    trades: number[];
-    dates: string[];
-    sims: number;
-    maxTrades: number;
-    payoutBuffer: number;
-    compareMode: McCompareMode;
-  }
-) {
-  const rule = ruleById(ruleId);
-  if (!rule) return null;
-
-  const evalPhase = phaseById(rule, "eval");
-  const fundedPhase = phaseById(rule, "funded");
-
-  if (opts.compareMode === "funded") {
-    const funded = fundedPhase ?? evalPhase;
-    if (!funded) return null;
-    const payoutEconomics = payoutConfigForFirm(ruleId, "funded");
-    const payoutProfitTarget =
-      ruleId === "topstep50"
-        ? 4000
-        : opts.payoutBuffer;
-    return {
-      rule,
-      evalPhase,
-      fundedPhase: funded,
-      params: {
-        trades: opts.trades,
-        dates: opts.dates,
-        sims: opts.sims,
-        maxTrades: opts.maxTrades,
-        passAt: 0,
-        trailingDD: funded.trailingDD,
-        fees: {
-          evalFee: 0,
-          activationFee: rule.activationFee ?? funded.activationFee ?? 0,
-          monthlyFee: 0,
-          payoutBuffer: opts.payoutBuffer,
-        },
-        simMode: "funded_only" as const,
-        payoutEconomics: payoutEconomics ?? undefined,
-        funded: {
-          payoutProfitTarget,
-          recycleProfitCap: rule.id === "tpt50" ? 5000 : undefined,
-          accountRecycling: rule.id === "tpt50",
-          payoutConsistencyPct: fundedPayoutConsistencyPct(ruleId),
-        },
-        bootstrap: "week" as const,
-      },
-    };
-  }
-
-  const evalRules = evalPhase;
-  const passAt = evalRules?.passAt ?? rule.passAt;
-  const trailingDD = evalRules?.trailingDD ?? rule.trailingDD;
-  const consistencyPct = evalRules?.evalConsistencyPct ?? rule.consistencyPct;
-  const minDays = evalRules?.minTradingDays ?? rule.minDays;
-  const payoutEconomics = payoutConfigForFirm(ruleId, "eval");
-
-  return {
-    rule,
-    evalPhase,
-    fundedPhase,
-    params: {
-      trades: opts.trades,
-      dates: opts.dates,
-      sims: opts.sims,
-      maxTrades: opts.maxTrades,
-      passAt,
-      trailingDD,
-      fees: {
-        evalFee: rule.evalFee ?? 0,
-        activationFee: rule.activationFee ?? evalRules?.activationFee ?? 0,
-        monthlyFee: rule.monthlyFee ?? evalRules?.monthlyFee ?? 0,
-        payoutBuffer: opts.payoutBuffer,
-      },
-      consistency:
-        consistencyPct > 0 ? { consistencyPct, minDays } : undefined,
-      simMode: "eval_path" as const,
-      payoutEconomics: payoutEconomics ?? undefined,
-      funded: {
-        payoutProfitTarget: opts.payoutBuffer,
-        payoutConsistencyPct: fundedPayoutConsistencyPct(ruleId),
-      },
-      bootstrap: "week" as const,
-    },
-  };
-}
-
 function snapshotFromMc(
   ruleId: string,
   ruleName: string,
@@ -236,7 +145,8 @@ export function compareFirmsForTrades(opts: {
   const out: FirmMcSnapshot[] = [];
 
   for (const id of ids) {
-    const built = buildMcParamsForFirm(id, {
+    const built = buildMcParamsForFirm({
+      ruleId: id,
       trades: opts.trades,
       dates: opts.dates,
       sims: opts.sims,

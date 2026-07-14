@@ -36,6 +36,8 @@ import {
 } from "@/lib/lab-ledger";
 import { isDerivedMacroPreset } from "@/lib/macro-matrix";
 import { compareFirmsForTrades, firmSnapshotsToCohortMc, MATRIX_REFERENCE_FIRM_ID, type FirmMcSnapshot } from "@/lib/firm-matrix-compare";
+import { buildMcParamsForLab } from "@/lib/mc-params-builder";
+import { McCalibrationBanner } from "@/components/mc-calibration-banner";
 import { MatrixFirmCompare } from "@/components/matrix-firm-compare";
 import { derivePayoutCycle } from "@/lib/payout-cycle";
 
@@ -1075,25 +1077,37 @@ export default function LabPage() {
 
   const computeMcRun = useMemo(() => {
     return () => {
-      const mcResult = runMonteCarlo({
+      const preset = presetById(study.presetId);
+      const built = buildMcParamsForLab({
+        ruleId: MATRIX_REFERENCE_FIRM_ID,
+        strategyPhase: preset?.phase,
         trades: activeDs.trades,
         dates: activeDs.dates,
         sims: Number(sims) || 2000,
         maxTrades: Number(maxTrades) || 80,
-        passAt: rule.passAt,
-        trailingDD: rule.trailingDD,
-        fees: {
-          evalFee: rule.evalFee ?? 0,
-          activationFee: rule.activationFee ?? 0,
-          monthlyFee: rule.monthlyFee ?? 0,
-          payoutBuffer: Number(payoutBuffer) || 1000,
-        },
-        consistency:
-          rule.consistencyPct > 0
-            ? { consistencyPct: rule.consistencyPct, minDays: rule.minDays }
-            : undefined,
-        bootstrap: "week",
+        payoutBuffer: Number(payoutBuffer) || 1000,
       });
+      const mcResult = runMonteCarlo(
+        built?.params ?? {
+          trades: activeDs.trades,
+          dates: activeDs.dates,
+          sims: Number(sims) || 2000,
+          maxTrades: Number(maxTrades) || 80,
+          passAt: rule.passAt,
+          trailingDD: rule.trailingDD,
+          fees: {
+            evalFee: rule.evalFee ?? 0,
+            activationFee: rule.activationFee ?? 0,
+            monthlyFee: rule.monthlyFee ?? 0,
+            payoutBuffer: Number(payoutBuffer) || 1000,
+          },
+          consistency:
+            rule.consistencyPct > 0
+              ? { consistencyPct: rule.consistencyPct, minDays: rule.minDays }
+              : undefined,
+          bootstrap: "week",
+        }
+      );
       const secondHalfPass = mcPassRateSecondHalf(
         activeDs.trades,
         activeDs.dates,

@@ -265,6 +265,7 @@ export function MatrixFirmCompare({
                     {!fundedMode && <th className="num">Payout %</th>}
                     {fundedMode && <th className="num">Recycle %</th>}
                     <th className="num">{fundedMode ? "Wk→payout" : "Wk→pass"}</th>
+                    <th className="num">E[$]/wk]</th>
                     <th className="num">Net $/acct</th>
                     <th className="num">E[$]/acct</th>
                     <th className="num">DD</th>
@@ -302,6 +303,26 @@ export function MatrixFirmCompare({
                           <td className="num">{r.recyclePct != null ? `${r.recyclePct}%` : "—"}</td>
                         )}
                         <td className="num">{r.weeksToPassP50 ?? "—"}</td>
+                        <td
+                          className={
+                            "num " +
+                            (() => {
+                              const w = r.weeksToPayoutP50 ?? r.weeksToPassP50;
+                              const e =
+                                w != null && w > 0 && r.expectedNetPerAccountUsd != null
+                                  ? r.expectedNetPerAccountUsd / w
+                                  : null;
+                              if (e == null) return "";
+                              return e > 50 ? "pos" : e > 0 ? "warn" : "neg";
+                            })()
+                          }
+                        >
+                          {(() => {
+                            const w = r.weeksToPayoutP50 ?? r.weeksToPassP50;
+                            if (w == null || w <= 0 || r.expectedNetPerAccountUsd == null) return "—";
+                            return fmtUsd(Math.round(r.expectedNetPerAccountUsd / w), true);
+                          })()}
+                        </td>
                         <td className={"num " + (r.medianNetPerAccountUsd != null && r.medianNetPerAccountUsd >= 0 ? "pos" : r.medianNetPerAccountUsd != null ? "neg" : "")}>
                           {r.medianNetPerAccountUsd != null ? fmtUsd(r.medianNetPerAccountUsd, true) : "—"}
                         </td>

@@ -34,6 +34,11 @@ tags: [roadmap, hypotheses, strategy-dev]
 
 **Correlation check first (3.1):** count days both strategies traded in the shared year; if same-day losses cluster, blending doesn't diversify.
 
+## Simulation queue (post business-loop Lab)
+
+**Source of truth for next TV/Lab runs:** [[sim-queue]] — ranked S1–S12 by E[$/calendar week] leverage.  
+Lab primary metric is now **E[$/wk after fees]** (pass → payout → recycle), not pass% alone.
+
 ## Track 4 — Income acceleration (not pass-rate A/Bs)
 
 > Current ceiling: ~1.2 trades/wk · recycle extract ~$1k take-home / 8w ≈ **$1k/mo**. Target path: **≥$1k/wk realized** before split → need ~3–5× frequency and/or size after cushion. Small PRB toggles will not get there.
