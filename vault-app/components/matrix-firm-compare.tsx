@@ -296,9 +296,9 @@ function compareFirmsFromCohortOnly(cohort: CohortRecord): FirmMcSnapshot[] {
     out.push({
       ruleId: id,
       firmName: rule.name,
-      passPct: entry.passPct,
-      bustPct: entry.bustPct,
-      payoutPct: entry.payoutPct,
+      passPct: normalizeStoredMcPct(entry.passPct, cohort.mcPassPct),
+      bustPct: normalizeStoredMcPct(entry.bustPct, cohort.mcBustPct),
+      payoutPct: normalizeStoredMcPct(entry.payoutPct, cohort.mcPayoutPct),
       weeksToPassP50: entry.weeksToPassP50,
       weeksToPayoutP50: entry.weeksToPayoutP50,
       passAt: entry.passAt ?? rule.passAt,

@@ -28,7 +28,7 @@ tags: [roadmap, hypotheses, strategy-dev]
 
 | # | Experiment | Prediction | Target | Status |
 |---|---|---|---|---|
-| 3.1 | Portfolio blend: PRB eval → both strategies funded | Uncorrelated windows (PRB varies, Macro fixed AM) smooth equity | combined weekly edge > either alone; DD < sum | analysis first — merge both year ledgers, joint MC |
+| 3.1 | Portfolio blend: PRB eval → both strategies funded | Uncorrelated windows (PRB varies, Macro fixed AM) smooth equity | combined weekly edge > either alone; DD < sum | **settled 2026-07-14** — A0a∩B1a = **0 days** (true diversifiers). Union +$/WR but RR dilutes 5.5→3.3, pass ≈ flat/slightly down, maxLStreak still 4. A0a∩B0 = 5 conflict days (see hybrid-playbook). Next: Macro quiet-only + PRB full portfolio rule |
 | 3.2 | Macro entries + PRB-style BE@2R management | BE mechanism fixes Macro's symmetric-loss problem | Macro pass > 45% | Pine variant `Macro_Model_v2` |
 | 3.3 | PRB entry inside macro window only | Time filter concentrates PRB edge | expectancy/trade ↑ vs all-day PRB | Pine variant |
 

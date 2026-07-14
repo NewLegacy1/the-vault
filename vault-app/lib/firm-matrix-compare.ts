@@ -12,6 +12,28 @@ export const MATRIX_COMPARE_FIRM_IDS = [
 
 export type MatrixCompareFirmId = (typeof MATRIX_COMPARE_FIRM_IDS)[number];
 
+/** MC passRate/bustRate are 0–1; UI and cohort notes use 0–100 percent. */
+export function mcRateToPct(rate: number): number {
+  return Math.round(rate * 1000) / 10;
+}
+
+/**
+ * Fix firm_mc rows saved before passRate was scaled ×100 (stored ~9.1 instead of 91).
+ */
+export function normalizeStoredMcPct(pct: number, cohortMcPassPct?: number): number {
+  if (!Number.isFinite(pct)) return 0;
+  if (pct > 0 && pct <= 1) return mcRateToPct(pct);
+  if (
+    cohortMcPassPct != null &&
+    cohortMcPassPct > 20 &&
+    pct > 0 &&
+    pct < cohortMcPassPct * 0.3
+  ) {
+    return Math.round(pct * 100) / 10;
+  }
+  return pct;
+}
+
 export interface FirmMcSnapshot {
   ruleId: string;
   firmName: string;
@@ -75,9 +97,9 @@ export function compareFirmsForTrades(opts: {
     out.push({
       ruleId: rule.id,
       firmName: rule.name,
-      passPct: Math.round(mc.passRate * 10) / 10,
-      bustPct: Math.round(mc.bustRate * 10) / 10,
-      payoutPct: Math.round(mc.economics.payoutRate * 10) / 10,
+      passPct: mcRateToPct(mc.passRate),
+      bustPct: mcRateToPct(mc.bustRate),
+      payoutPct: mcRateToPct(mc.economics.payoutRate),
       weeksToPassP50: mc.economics.weeksToPassP50,
       weeksToPayoutP50: mc.economics.weeksToPayoutP50,
       passAt: rule.passAt,
@@ -114,7 +136,14 @@ export function firmMcForTab(
   firmId: MatrixCompareFirmId
 ): CohortFirmMcEntry | null {
   const fromMulti = cohort.firmMc?.[firmId];
-  if (fromMulti) return fromMulti;
+  if (fromMulti) {
+    return {
+      ...fromMulti,
+      passPct: normalizeStoredMcPct(fromMulti.passPct, cohort.mcPassPct),
+      bustPct: normalizeStoredMcPct(fromMulti.bustPct, cohort.mcBustPct),
+      payoutPct: normalizeStoredMcPct(fromMulti.payoutPct, cohort.mcPayoutPct),
+    };
+  }
   const savedAs = ruleIdFromFirmLabel(cohort.firm);
   if (savedAs !== firmId) return null;
   const rule = ruleById(firmId);

@@ -1,0 +1,2272 @@
+{
+  "builtAt": "2026-07-14T20:11:40.160Z",
+  "spanNote": "Premium 365d matrix CSVs from Downloads (2026-07-14 afternoon)",
+  "individual": {
+    "A0a": {
+      "label": "A0a",
+      "n": 40,
+      "net": 12754,
+      "w": 10,
+      "l": 18,
+      "s": 12,
+      "wr": 25,
+      "avgWin": 1930,
+      "avgLoss": 349,
+      "rr": 5.53,
+      "expectancy": 325,
+      "maxDd": 1636,
+      "maxLossStreak": 4,
+      "lossStreakHist": {
+        "1": 4,
+        "3": 2,
+        "4": 2
+      },
+      "avgMfe": 871,
+      "mc": {
+        "pass": 78.6,
+        "bust": 21.4,
+        "payout": 74,
+        "weeksToPassP50": 12.8
+      }
+    },
+    "A0b": {
+      "label": "A0b",
+      "n": 29,
+      "net": 6804,
+      "w": 7,
+      "l": 16,
+      "s": 6,
+      "wr": 24.1,
+      "avgWin": 1929,
+      "avgLoss": 410,
+      "rr": 4.71,
+      "expectancy": 240,
+      "maxDd": 1689,
+      "maxLossStreak": 4,
+      "lossStreakHist": {
+        "1": 4,
+        "2": 1,
+        "3": 2,
+        "4": 1
+      },
+      "avgMfe": 881,
+      "mc": {
+        "pass": 57.1,
+        "bust": 43,
+        "payout": 49.3,
+        "weeksToPassP50": 15.8
+      }
+    },
+    "A1c": {
+      "label": "A1c",
+      "n": 29,
+      "net": 6256,
+      "w": 9,
+      "l": 16,
+      "s": 4,
+      "wr": 31,
+      "avgWin": 1435,
+      "avgLoss": 410,
+      "rr": 3.5,
+      "expectancy": 219,
+      "maxDd": 1689,
+      "maxLossStreak": 4,
+      "lossStreakHist": {
+        "1": 4,
+        "2": 1,
+        "3": 2,
+        "4": 1
+      },
+      "avgMfe": 750,
+      "mc": {
+        "pass": 61.4,
+        "bust": 38.4,
+        "payout": 54.3,
+        "weeksToPassP50": 19.3
+      }
+    },
+    "D1": {
+      "label": "D1",
+      "n": 40,
+      "net": 16637,
+      "w": 10,
+      "l": 18,
+      "s": 12,
+      "wr": 25,
+      "avgWin": 2318,
+      "avgLoss": 349,
+      "rr": 6.65,
+      "expectancy": 423,
+      "maxDd": 1636,
+      "maxLossStreak": 4,
+      "lossStreakHist": {
+        "1": 4,
+        "3": 2,
+        "4": 2
+      },
+      "avgMfe": 968,
+      "mc": {
+        "pass": 78.9,
+        "bust": 17.9,
+        "payout": 77.3,
+        "weeksToPassP50": 11.5
+      }
+    },
+    "B0": {
+      "label": "B0",
+      "n": 26,
+      "net": 3438,
+      "w": 14,
+      "l": 12,
+      "s": 0,
+      "wr": 53.8,
+      "avgWin": 880,
+      "avgLoss": 740,
+      "rr": 1.19,
+      "expectancy": 132,
+      "maxDd": 2520,
+      "maxLossStreak": 3,
+      "lossStreakHist": {
+        "1": 2,
+        "2": 2,
+        "3": 2
+      },
+      "avgMfe": 623,
+      "mc": {
+        "pass": 41.3,
+        "bust": 58.5,
+        "payout": 34.2,
+        "weeksToPassP50": 21
+      }
+    },
+    "B1a": {
+      "label": "B1a",
+      "n": 14,
+      "net": 4966,
+      "w": 9,
+      "l": 5,
+      "s": 0,
+      "wr": 64.3,
+      "avgWin": 1000,
+      "avgLoss": 807,
+      "rr": 1.24,
+      "expectancy": 355,
+      "maxDd": 2366,
+      "maxLossStreak": 3,
+      "lossStreakHist": {
+        "2": 1,
+        "3": 1
+      },
+      "avgMfe": null,
+      "mc": {
+        "pass": 73.6,
+        "bust": 26.1,
+        "payout": 68,
+        "weeksToPassP50": 28.2
+      }
+    },
+    "B1b": {
+      "label": "B1b",
+      "n": 18,
+      "net": 4757,
+      "w": 11,
+      "l": 7,
+      "s": 0,
+      "wr": 61.1,
+      "avgWin": 871,
+      "avgLoss": 689,
+      "rr": 1.26,
+      "expectancy": 264,
+      "maxDd": 2366,
+      "maxLossStreak": 3,
+      "lossStreakHist": {
+        "1": 2,
+        "2": 1,
+        "3": 1
+      },
+      "avgMfe": null,
+      "mc": {
+        "pass": 67.3,
+        "bust": 32.5,
+        "payout": 59.5,
+        "weeksToPassP50": 27.5
+      }
+    },
+    "B1c": {
+      "label": "B1c",
+      "n": 8,
+      "net": -2410,
+      "w": 2,
+      "l": 6,
+      "s": 0,
+      "wr": 25,
+      "avgWin": 1228,
+      "avgLoss": 811,
+      "rr": 1.51,
+      "expectancy": -301,
+      "maxDd": 3491,
+      "maxLossStreak": 4,
+      "lossStreakHist": {
+        "2": 1,
+        "4": 1
+      },
+      "avgMfe": null,
+      "mc": {
+        "pass": 3.3,
+        "bust": 96.6,
+        "payout": 1.3,
+        "weeksToPassP50": 38
+      }
+    }
+  },
+  "pairs": [
+    {
+      "pair": "A0a×B1a",
+      "overlap": {
+        "bothDays": 0,
+        "prbOnly": 40,
+        "macroOnly": 14,
+        "correlationOnOverlap": null,
+        "sameDayBothLoss": 0,
+        "sameDayBothWin": 0,
+        "macroLossPrbHelped": 0,
+        "prbLossMacroHelped": 0,
+        "bothLossDates": [],
+        "overlapOnRedFolder": 0,
+        "overlapRedNetSum": 0
+      },
+      "news": {
+        "A0a": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 10,
+            "net": 3546,
+            "wr": 30
+          },
+          "cpi": {
+            "n": 5,
+            "net": 2664,
+            "wr": 40
+          },
+          "headline": "Red-folder: 10 trades · +$3,546 net · Quiet: 0 trades · +$0 net",
+          "verdict": "A0a is profitable on red-folder days (+$3,546 on 10 trades). News days are not a drag in this window."
+        },
+        "B1a": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 2,
+            "net": -38,
+            "wr": 50
+          },
+          "cpi": {
+            "n": 2,
+            "net": -38,
+            "wr": 50
+          },
+          "headline": "Not enough calendar overlap to compare.",
+          "verdict": "Load or extend the economic calendar so trade dates join with red-folder tags. Until then you cannot tell if B1a is leaving money on news days."
+        },
+        "unionExclusive": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 12,
+            "net": 3508,
+            "wr": 33.3
+          },
+          "cpi": {
+            "n": 7,
+            "net": 2626,
+            "wr": 42.9
+          },
+          "headline": "Red-folder: 12 trades · +$3,508 net · Quiet: 0 trades · +$0 net",
+          "verdict": "exclusive-union is profitable on red-folder days (+$3,508 on 12 trades). News days are not a drag in this window."
+        },
+        "unionPickBetter": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 12,
+            "net": 3508,
+            "wr": 33.3
+          },
+          "cpi": {
+            "n": 7,
+            "net": 2626,
+            "wr": 42.9
+          },
+          "headline": "Red-folder: 12 trades · +$3,508 net · Quiet: 0 trades · +$0 net",
+          "verdict": "pick-better is profitable on red-folder days (+$3,508 on 12 trades). News days are not a drag in this window."
+        }
+      },
+      "modes": {
+        "union_both_days_sum": {
+          "label": "union_both_days_sum",
+          "n": 54,
+          "net": 17719,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1489,
+          "avgLoss": 448,
+          "rr": 3.32,
+          "expectancy": 333,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 76.9,
+            "bust": 22.8,
+            "payout": 71.7,
+            "weeksToPassP50": 8.5
+          }
+        },
+        "union_pick_better": {
+          "label": "union_pick_better",
+          "n": 54,
+          "net": 17719,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1489,
+          "avgLoss": 448,
+          "rr": 3.32,
+          "expectancy": 333,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 76.2,
+            "bust": 23.6,
+            "payout": 71.9,
+            "weeksToPassP50": 8.5
+          }
+        },
+        "union_pick_prb_first": {
+          "label": "union_pick_prb_first",
+          "n": 54,
+          "net": 17719,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1489,
+          "avgLoss": 448,
+          "rr": 3.32,
+          "expectancy": 333,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 76.4,
+            "bust": 23.6,
+            "payout": 71.2,
+            "weeksToPassP50": 8.5
+          }
+        },
+        "union_pick_macro_first": {
+          "label": "union_pick_macro_first",
+          "n": 54,
+          "net": 17719,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1489,
+          "avgLoss": 448,
+          "rr": 3.32,
+          "expectancy": 333,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 75.5,
+            "bust": 24.3,
+            "payout": 70.7,
+            "weeksToPassP50": 8.5
+          }
+        },
+        "prb_only_when_macro_absent": {
+          "label": "prb_only_when_macro_absent",
+          "n": 40,
+          "net": 12754,
+          "w": 10,
+          "l": 18,
+          "s": 12,
+          "wr": 25,
+          "avgWin": 1930,
+          "avgLoss": 349,
+          "rr": 5.53,
+          "expectancy": 325,
+          "maxDd": 1636,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 4,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 78.6,
+            "bust": 21.4,
+            "payout": 73.5,
+            "weeksToPassP50": 11.5
+          }
+        },
+        "macro_only_when_prb_absent": {
+          "label": "macro_only_when_prb_absent",
+          "n": 14,
+          "net": 4966,
+          "w": 9,
+          "l": 5,
+          "s": 0,
+          "wr": 64.3,
+          "avgWin": 1000,
+          "avgLoss": 807,
+          "rr": 1.24,
+          "expectancy": 355,
+          "maxDd": 2366,
+          "maxLossStreak": 3,
+          "lossStreakHist": {
+            "2": 1,
+            "3": 1
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 73.4,
+            "bust": 26.4,
+            "payout": 67.8,
+            "weeksToPassP50": 28.2
+          }
+        },
+        "and_gate_both_must_exist_take_avg": {
+          "label": "and_gate_both_must_exist_take_avg",
+          "n": 0,
+          "net": 0,
+          "w": 0,
+          "l": 0,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 0,
+          "maxDd": 0,
+          "maxLossStreak": 0,
+          "lossStreakHist": {},
+          "avgMfe": null,
+          "mc": {
+            "pass": 0,
+            "bust": 0,
+            "payout": 0,
+            "weeksToPassP50": null
+          }
+        },
+        "skip_shared_days_prb_plus_macro_exclusive": {
+          "label": "skip_shared_days_prb_plus_macro_exclusive",
+          "n": 54,
+          "net": 17719,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1489,
+          "avgLoss": 448,
+          "rr": 3.32,
+          "expectancy": 333,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 75.8,
+            "bust": 24,
+            "payout": 70.8,
+            "weeksToPassP50": 8.5
+          }
+        }
+      },
+      "sampleOverlapDays": []
+    },
+    {
+      "pair": "A0a×B0",
+      "overlap": {
+        "bothDays": 5,
+        "prbOnly": 35,
+        "macroOnly": 21,
+        "correlationOnOverlap": -0.101,
+        "sameDayBothLoss": 1,
+        "sameDayBothWin": 0,
+        "macroLossPrbHelped": 2,
+        "prbLossMacroHelped": 0,
+        "bothLossDates": [
+          {
+            "date": "2026-04-21",
+            "prb": -398.64,
+            "macro": -815.36,
+            "tag": "unknown"
+          }
+        ],
+        "overlapOnRedFolder": 0,
+        "overlapRedNetSum": 0
+      },
+      "news": {
+        "A0a": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 10,
+            "net": 3546,
+            "wr": 30
+          },
+          "cpi": {
+            "n": 5,
+            "net": 2664,
+            "wr": 40
+          },
+          "headline": "Red-folder: 10 trades · +$3,546 net · Quiet: 0 trades · +$0 net",
+          "verdict": "A0a is profitable on red-folder days (+$3,546 on 10 trades). News days are not a drag in this window."
+        },
+        "B0": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 6,
+            "net": -619,
+            "wr": 50
+          },
+          "cpi": {
+            "n": 3,
+            "net": -898,
+            "wr": 33.3
+          },
+          "headline": "Red-folder: 6 trades · $619 net · Quiet: 0 trades · +$0 net",
+          "verdict": "Red-folder days contribute ~-18% of total net P&L. Use the per-trade table below before spending replay time on Data H/L — F7 tags tell you which sessions were actually news days."
+        },
+        "unionExclusive": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 12,
+            "net": 3934,
+            "wr": 41.7
+          },
+          "cpi": {
+            "n": 8,
+            "net": 1766,
+            "wr": 37.5
+          },
+          "headline": "Red-folder: 12 trades · +$3,934 net · Quiet: 0 trades · +$0 net",
+          "verdict": "exclusive-union is profitable on red-folder days (+$3,934 on 12 trades). News days are not a drag in this window."
+        },
+        "unionPickBetter": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 14,
+            "net": 3768,
+            "wr": 42.9
+          },
+          "cpi": {
+            "n": 8,
+            "net": 1766,
+            "wr": 37.5
+          },
+          "headline": "Red-folder: 14 trades · +$3,768 net · Quiet: 0 trades · +$0 net",
+          "verdict": "pick-better is profitable on red-folder days (+$3,768 on 14 trades). News days are not a drag in this window."
+        }
+      },
+      "modes": {
+        "union_both_days_sum": {
+          "label": "union_both_days_sum",
+          "n": 61,
+          "net": 16192,
+          "w": 24,
+          "l": 28,
+          "s": 9,
+          "wr": 39.3,
+          "avgWin": 1298,
+          "avgLoss": 528,
+          "rr": 2.46,
+          "expectancy": 269,
+          "maxDd": 2617,
+          "maxLossStreak": 5,
+          "lossStreakHist": {
+            "1": 9,
+            "3": 3,
+            "5": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 61.9,
+            "bust": 37.5,
+            "payout": 55.1,
+            "weeksToPassP50": 7.6
+          }
+        },
+        "union_pick_better": {
+          "label": "union_pick_better",
+          "n": 61,
+          "net": 18182,
+          "w": 24,
+          "l": 27,
+          "s": 10,
+          "wr": 39.3,
+          "avgWin": 1317,
+          "avgLoss": 490,
+          "rr": 2.69,
+          "expectancy": 302,
+          "maxDd": 2617,
+          "maxLossStreak": 5,
+          "lossStreakHist": {
+            "1": 9,
+            "2": 1,
+            "3": 2,
+            "5": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 65.7,
+            "bust": 34,
+            "payout": 58.9,
+            "weeksToPassP50": 7.6
+          }
+        },
+        "union_pick_prb_first": {
+          "label": "union_pick_prb_first",
+          "n": 61,
+          "net": 16805,
+          "w": 22,
+          "l": 27,
+          "s": 12,
+          "wr": 36.1,
+          "avgWin": 1377,
+          "avgLoss": 490,
+          "rr": 2.81,
+          "expectancy": 280,
+          "maxDd": 2617,
+          "maxLossStreak": 5,
+          "lossStreakHist": {
+            "1": 9,
+            "2": 1,
+            "3": 2,
+            "5": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 63.6,
+            "bust": 36,
+            "payout": 57.9,
+            "weeksToPassP50": 7.6
+          }
+        },
+        "union_pick_macro_first": {
+          "label": "union_pick_macro_first",
+          "n": 61,
+          "net": 14732,
+          "w": 23,
+          "l": 29,
+          "s": 9,
+          "wr": 37.7,
+          "avgWin": 1291,
+          "avgLoss": 509,
+          "rr": 2.54,
+          "expectancy": 245,
+          "maxDd": 2617,
+          "maxLossStreak": 5,
+          "lossStreakHist": {
+            "1": 8,
+            "2": 1,
+            "3": 3,
+            "5": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 58.3,
+            "bust": 41.4,
+            "payout": 51.5,
+            "weeksToPassP50": 7.6
+          }
+        },
+        "prb_only_when_macro_absent": {
+          "label": "prb_only_when_macro_absent",
+          "n": 35,
+          "net": 11294,
+          "w": 9,
+          "l": 17,
+          "s": 9,
+          "wr": 25.7,
+          "avgWin": 1930,
+          "avgLoss": 346,
+          "rr": 5.58,
+          "expectancy": 328,
+          "maxDd": 1636,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 4,
+            "2": 1,
+            "3": 1,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 75.2,
+            "bust": 24.8,
+            "payout": 70.4,
+            "weeksToPassP50": 13.1
+          }
+        },
+        "macro_only_when_prb_absent": {
+          "label": "macro_only_when_prb_absent",
+          "n": 21,
+          "net": 4051,
+          "w": 12,
+          "l": 9,
+          "s": 0,
+          "wr": 57.1,
+          "avgWin": 916,
+          "avgLoss": 771,
+          "rr": 1.19,
+          "expectancy": 193,
+          "maxDd": 2520,
+          "maxLossStreak": 3,
+          "lossStreakHist": {
+            "1": 3,
+            "3": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 53,
+            "bust": 46.9,
+            "payout": 45.2,
+            "weeksToPassP50": 21.2
+          }
+        },
+        "and_gate_both_must_exist_take_avg": {
+          "label": "and_gate_both_must_exist_take_avg",
+          "n": 5,
+          "net": 423,
+          "w": 3,
+          "l": 2,
+          "s": 0,
+          "wr": 60,
+          "avgWin": 466,
+          "avgLoss": 488,
+          "rr": 0.96,
+          "expectancy": 85,
+          "maxDd": 975,
+          "maxLossStreak": 2,
+          "lossStreakHist": {
+            "2": 1
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 48.6,
+            "bust": 51.4,
+            "payout": 40.9,
+            "weeksToPassP50": 170.9
+          }
+        },
+        "skip_shared_days_prb_plus_macro_exclusive": {
+          "label": "skip_shared_days_prb_plus_macro_exclusive",
+          "n": 56,
+          "net": 15345,
+          "w": 21,
+          "l": 26,
+          "s": 9,
+          "wr": 37.5,
+          "avgWin": 1351,
+          "avgLoss": 493,
+          "rr": 2.74,
+          "expectancy": 278,
+          "maxDd": 2617,
+          "maxLossStreak": 5,
+          "lossStreakHist": {
+            "1": 10,
+            "3": 2,
+            "5": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 61.7,
+            "bust": 37.9,
+            "payout": 54.8,
+            "weeksToPassP50": 8.2
+          }
+        }
+      },
+      "sampleOverlapDays": [
+        {
+          "date": "2025-09-03",
+          "prb": -22.62,
+          "macro": 1095.64,
+          "tag": "unknown"
+        },
+        {
+          "date": "2026-03-26",
+          "prb": -17.4,
+          "macro": -718.7,
+          "tag": "unknown"
+        },
+        {
+          "date": "2026-04-21",
+          "prb": -398.64,
+          "macro": -815.36,
+          "tag": "unknown"
+        },
+        {
+          "date": "2026-04-30",
+          "prb": -26.1,
+          "macro": 233.04,
+          "tag": "unknown"
+        },
+        {
+          "date": "2026-05-21",
+          "prb": 1924.16,
+          "macro": -407.68,
+          "tag": "unknown"
+        }
+      ]
+    },
+    {
+      "pair": "A0b×B1a",
+      "overlap": {
+        "bothDays": 0,
+        "prbOnly": 29,
+        "macroOnly": 14,
+        "correlationOnOverlap": null,
+        "sameDayBothLoss": 0,
+        "sameDayBothWin": 0,
+        "macroLossPrbHelped": 0,
+        "prbLossMacroHelped": 0,
+        "bothLossDates": [],
+        "overlapOnRedFolder": 0,
+        "overlapRedNetSum": 0
+      },
+      "news": {
+        "A0b": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 10,
+            "net": 3364,
+            "wr": 30
+          },
+          "cpi": {
+            "n": 5,
+            "net": 2664,
+            "wr": 40
+          },
+          "headline": "Red-folder: 10 trades · +$3,364 net · Quiet: 0 trades · +$0 net",
+          "verdict": "A0b is profitable on red-folder days (+$3,364 on 10 trades). News days are not a drag in this window."
+        },
+        "B1a": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 2,
+            "net": -38,
+            "wr": 50
+          },
+          "cpi": {
+            "n": 2,
+            "net": -38,
+            "wr": 50
+          },
+          "headline": "Not enough calendar overlap to compare.",
+          "verdict": "Load or extend the economic calendar so trade dates join with red-folder tags. Until then you cannot tell if B1a is leaving money on news days."
+        },
+        "unionExclusive": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 12,
+            "net": 3326,
+            "wr": 33.3
+          },
+          "cpi": {
+            "n": 7,
+            "net": 2626,
+            "wr": 42.9
+          },
+          "headline": "Red-folder: 12 trades · +$3,326 net · Quiet: 0 trades · +$0 net",
+          "verdict": "exclusive-union is profitable on red-folder days (+$3,326 on 12 trades). News days are not a drag in this window."
+        },
+        "unionPickBetter": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 12,
+            "net": 3326,
+            "wr": 33.3
+          },
+          "cpi": {
+            "n": 7,
+            "net": 2626,
+            "wr": 42.9
+          },
+          "headline": "Red-folder: 12 trades · +$3,326 net · Quiet: 0 trades · +$0 net",
+          "verdict": "pick-better is profitable on red-folder days (+$3,326 on 12 trades). News days are not a drag in this window."
+        }
+      },
+      "modes": {
+        "union_both_days_sum": {
+          "label": "union_both_days_sum",
+          "n": 43,
+          "net": 11770,
+          "w": 16,
+          "l": 21,
+          "s": 6,
+          "wr": 37.2,
+          "avgWin": 1406,
+          "avgLoss": 504,
+          "rr": 2.79,
+          "expectancy": 277,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 5,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 63.1,
+            "bust": 36.7,
+            "payout": 55.6,
+            "weeksToPassP50": 10.7
+          }
+        },
+        "union_pick_better": {
+          "label": "union_pick_better",
+          "n": 43,
+          "net": 11770,
+          "w": 16,
+          "l": 21,
+          "s": 6,
+          "wr": 37.2,
+          "avgWin": 1406,
+          "avgLoss": 504,
+          "rr": 2.79,
+          "expectancy": 277,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 5,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 63.8,
+            "bust": 35.8,
+            "payout": 57.1,
+            "weeksToPassP50": 10.7
+          }
+        },
+        "union_pick_prb_first": {
+          "label": "union_pick_prb_first",
+          "n": 43,
+          "net": 11770,
+          "w": 16,
+          "l": 21,
+          "s": 6,
+          "wr": 37.2,
+          "avgWin": 1406,
+          "avgLoss": 504,
+          "rr": 2.79,
+          "expectancy": 277,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 5,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 63.3,
+            "bust": 36.4,
+            "payout": 57.5,
+            "weeksToPassP50": 10.7
+          }
+        },
+        "union_pick_macro_first": {
+          "label": "union_pick_macro_first",
+          "n": 43,
+          "net": 11770,
+          "w": 16,
+          "l": 21,
+          "s": 6,
+          "wr": 37.2,
+          "avgWin": 1406,
+          "avgLoss": 504,
+          "rr": 2.79,
+          "expectancy": 277,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 5,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 62.9,
+            "bust": 36.7,
+            "payout": 56.3,
+            "weeksToPassP50": 10.7
+          }
+        },
+        "prb_only_when_macro_absent": {
+          "label": "prb_only_when_macro_absent",
+          "n": 29,
+          "net": 6804,
+          "w": 7,
+          "l": 16,
+          "s": 6,
+          "wr": 24.1,
+          "avgWin": 1929,
+          "avgLoss": 410,
+          "rr": 4.71,
+          "expectancy": 240,
+          "maxDd": 1689,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 4,
+            "2": 1,
+            "3": 2,
+            "4": 1
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 54.9,
+            "bust": 45.2,
+            "payout": 47.1,
+            "weeksToPassP50": 15.8
+          }
+        },
+        "macro_only_when_prb_absent": {
+          "label": "macro_only_when_prb_absent",
+          "n": 14,
+          "net": 4966,
+          "w": 9,
+          "l": 5,
+          "s": 0,
+          "wr": 64.3,
+          "avgWin": 1000,
+          "avgLoss": 807,
+          "rr": 1.24,
+          "expectancy": 355,
+          "maxDd": 2366,
+          "maxLossStreak": 3,
+          "lossStreakHist": {
+            "2": 1,
+            "3": 1
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 74.6,
+            "bust": 24.9,
+            "payout": 69.2,
+            "weeksToPassP50": 31.8
+          }
+        },
+        "and_gate_both_must_exist_take_avg": {
+          "label": "and_gate_both_must_exist_take_avg",
+          "n": 0,
+          "net": 0,
+          "w": 0,
+          "l": 0,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 0,
+          "maxDd": 0,
+          "maxLossStreak": 0,
+          "lossStreakHist": {},
+          "avgMfe": null,
+          "mc": {
+            "pass": 0,
+            "bust": 0,
+            "payout": 0,
+            "weeksToPassP50": null
+          }
+        },
+        "skip_shared_days_prb_plus_macro_exclusive": {
+          "label": "skip_shared_days_prb_plus_macro_exclusive",
+          "n": 43,
+          "net": 11770,
+          "w": 16,
+          "l": 21,
+          "s": 6,
+          "wr": 37.2,
+          "avgWin": 1406,
+          "avgLoss": 504,
+          "rr": 2.79,
+          "expectancy": 277,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 5,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 63.2,
+            "bust": 36.5,
+            "payout": 56.5,
+            "weeksToPassP50": 10.7
+          }
+        }
+      },
+      "sampleOverlapDays": []
+    },
+    {
+      "pair": "D1×B1a",
+      "overlap": {
+        "bothDays": 0,
+        "prbOnly": 40,
+        "macroOnly": 14,
+        "correlationOnOverlap": null,
+        "sameDayBothLoss": 0,
+        "sameDayBothWin": 0,
+        "macroLossPrbHelped": 0,
+        "prbLossMacroHelped": 0,
+        "bothLossDates": [],
+        "overlapOnRedFolder": 0,
+        "overlapRedNetSum": 0
+      },
+      "news": {
+        "D1": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 10,
+            "net": 4719,
+            "wr": 30
+          },
+          "cpi": {
+            "n": 5,
+            "net": 3444,
+            "wr": 40
+          },
+          "headline": "Red-folder: 10 trades · +$4,719 net · Quiet: 0 trades · +$0 net",
+          "verdict": "D1 is profitable on red-folder days (+$4,719 on 10 trades). News days are not a drag in this window."
+        },
+        "B1a": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 2,
+            "net": -38,
+            "wr": 50
+          },
+          "cpi": {
+            "n": 2,
+            "net": -38,
+            "wr": 50
+          },
+          "headline": "Not enough calendar overlap to compare.",
+          "verdict": "Load or extend the economic calendar so trade dates join with red-folder tags. Until then you cannot tell if B1a is leaving money on news days."
+        },
+        "unionExclusive": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 12,
+            "net": 4681,
+            "wr": 33.3
+          },
+          "cpi": {
+            "n": 7,
+            "net": 3407,
+            "wr": 42.9
+          },
+          "headline": "Red-folder: 12 trades · +$4,681 net · Quiet: 0 trades · +$0 net",
+          "verdict": "exclusive-union is profitable on red-folder days (+$4,681 on 12 trades). News days are not a drag in this window."
+        },
+        "unionPickBetter": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 12,
+            "net": 4681,
+            "wr": 33.3
+          },
+          "cpi": {
+            "n": 7,
+            "net": 3407,
+            "wr": 42.9
+          },
+          "headline": "Red-folder: 12 trades · +$4,681 net · Quiet: 0 trades · +$0 net",
+          "verdict": "pick-better is profitable on red-folder days (+$4,681 on 12 trades). News days are not a drag in this window."
+        }
+      },
+      "modes": {
+        "union_both_days_sum": {
+          "label": "union_both_days_sum",
+          "n": 54,
+          "net": 21602,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1694,
+          "avgLoss": 448,
+          "rr": 3.78,
+          "expectancy": 405,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 77.5,
+            "bust": 20.4,
+            "payout": 75,
+            "weeksToPassP50": 8.5
+          }
+        },
+        "union_pick_better": {
+          "label": "union_pick_better",
+          "n": 54,
+          "net": 21602,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1694,
+          "avgLoss": 448,
+          "rr": 3.78,
+          "expectancy": 405,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 76.6,
+            "bust": 21,
+            "payout": 74.5,
+            "weeksToPassP50": 8.5
+          }
+        },
+        "union_pick_prb_first": {
+          "label": "union_pick_prb_first",
+          "n": 54,
+          "net": 21602,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1694,
+          "avgLoss": 448,
+          "rr": 3.78,
+          "expectancy": 405,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 74.9,
+            "bust": 22.5,
+            "payout": 72.5,
+            "weeksToPassP50": 8.5
+          }
+        },
+        "union_pick_macro_first": {
+          "label": "union_pick_macro_first",
+          "n": 54,
+          "net": 21602,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1694,
+          "avgLoss": 448,
+          "rr": 3.78,
+          "expectancy": 405,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 75.9,
+            "bust": 21.3,
+            "payout": 73.5,
+            "weeksToPassP50": 8.5
+          }
+        },
+        "prb_only_when_macro_absent": {
+          "label": "prb_only_when_macro_absent",
+          "n": 40,
+          "net": 16637,
+          "w": 10,
+          "l": 18,
+          "s": 12,
+          "wr": 25,
+          "avgWin": 2318,
+          "avgLoss": 349,
+          "rr": 6.65,
+          "expectancy": 423,
+          "maxDd": 1636,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 4,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 78.9,
+            "bust": 18,
+            "payout": 77.7,
+            "weeksToPassP50": 11.5
+          }
+        },
+        "macro_only_when_prb_absent": {
+          "label": "macro_only_when_prb_absent",
+          "n": 14,
+          "net": 4966,
+          "w": 9,
+          "l": 5,
+          "s": 0,
+          "wr": 64.3,
+          "avgWin": 1000,
+          "avgLoss": 807,
+          "rr": 1.24,
+          "expectancy": 355,
+          "maxDd": 2366,
+          "maxLossStreak": 3,
+          "lossStreakHist": {
+            "2": 1,
+            "3": 1
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 73.3,
+            "bust": 26.5,
+            "payout": 68.3,
+            "weeksToPassP50": 28.2
+          }
+        },
+        "and_gate_both_must_exist_take_avg": {
+          "label": "and_gate_both_must_exist_take_avg",
+          "n": 0,
+          "net": 0,
+          "w": 0,
+          "l": 0,
+          "s": 0,
+          "wr": 0,
+          "avgWin": 0,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 0,
+          "maxDd": 0,
+          "maxLossStreak": 0,
+          "lossStreakHist": {},
+          "avgMfe": null,
+          "mc": {
+            "pass": 0,
+            "bust": 0,
+            "payout": 0,
+            "weeksToPassP50": null
+          }
+        },
+        "skip_shared_days_prb_plus_macro_exclusive": {
+          "label": "skip_shared_days_prb_plus_macro_exclusive",
+          "n": 54,
+          "net": 21602,
+          "w": 19,
+          "l": 23,
+          "s": 12,
+          "wr": 35.2,
+          "avgWin": 1694,
+          "avgLoss": 448,
+          "rr": 3.78,
+          "expectancy": 405,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 6,
+            "2": 1,
+            "3": 1,
+            "4": 3
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 74.2,
+            "bust": 23.3,
+            "payout": 71.4,
+            "weeksToPassP50": 8.5
+          }
+        }
+      },
+      "sampleOverlapDays": []
+    },
+    {
+      "pair": "A0a×B1b",
+      "overlap": {
+        "bothDays": 2,
+        "prbOnly": 38,
+        "macroOnly": 16,
+        "correlationOnOverlap": null,
+        "sameDayBothLoss": 0,
+        "sameDayBothWin": 0,
+        "macroLossPrbHelped": 1,
+        "prbLossMacroHelped": 0,
+        "bothLossDates": [],
+        "overlapOnRedFolder": 0,
+        "overlapRedNetSum": 0
+      },
+      "news": {
+        "A0a": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 10,
+            "net": 3546,
+            "wr": 30
+          },
+          "cpi": {
+            "n": 5,
+            "net": 2664,
+            "wr": 40
+          },
+          "headline": "Red-folder: 10 trades · +$3,546 net · Quiet: 0 trades · +$0 net",
+          "verdict": "A0a is profitable on red-folder days (+$3,546 on 10 trades). News days are not a drag in this window."
+        },
+        "B1b": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 3,
+            "net": 195,
+            "wr": 66.7
+          },
+          "cpi": {
+            "n": 2,
+            "net": -38,
+            "wr": 50
+          },
+          "headline": "Not enough calendar overlap to compare.",
+          "verdict": "Load or extend the economic calendar so trade dates join with red-folder tags. Until then you cannot tell if B1b is leaving money on news days."
+        },
+        "unionExclusive": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 11,
+            "net": 3535,
+            "wr": 36.4
+          },
+          "cpi": {
+            "n": 7,
+            "net": 2626,
+            "wr": 42.9
+          },
+          "headline": "Red-folder: 11 trades · +$3,535 net · Quiet: 0 trades · +$0 net",
+          "verdict": "exclusive-union is profitable on red-folder days (+$3,535 on 11 trades). News days are not a drag in this window."
+        },
+        "unionPickBetter": {
+          "quiet": {
+            "n": 0,
+            "net": 0,
+            "wr": 0
+          },
+          "red": {
+            "n": 12,
+            "net": 3768,
+            "wr": 41.7
+          },
+          "cpi": {
+            "n": 7,
+            "net": 2626,
+            "wr": 42.9
+          },
+          "headline": "Red-folder: 12 trades · +$3,768 net · Quiet: 0 trades · +$0 net",
+          "verdict": "pick-better is profitable on red-folder days (+$3,768 on 12 trades). News days are not a drag in this window."
+        }
+      },
+      "modes": {
+        "union_both_days_sum": {
+          "label": "union_both_days_sum",
+          "n": 56,
+          "net": 17511,
+          "w": 21,
+          "l": 24,
+          "s": 11,
+          "wr": 37.5,
+          "avgWin": 1355,
+          "avgLoss": 446,
+          "rr": 3.04,
+          "expectancy": 317,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 8,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 76.4,
+            "bust": 23.3,
+            "payout": 71.9,
+            "weeksToPassP50": 9.2
+          }
+        },
+        "union_pick_better": {
+          "label": "union_pick_better",
+          "n": 56,
+          "net": 17945,
+          "w": 21,
+          "l": 24,
+          "s": 11,
+          "wr": 37.5,
+          "avgWin": 1375,
+          "avgLoss": 446,
+          "rr": 3.09,
+          "expectancy": 325,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 8,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 76.6,
+            "bust": 23.2,
+            "payout": 71.7,
+            "weeksToPassP50": 9.2
+          }
+        },
+        "union_pick_prb_first": {
+          "label": "union_pick_prb_first",
+          "n": 56,
+          "net": 17686,
+          "w": 20,
+          "l": 24,
+          "s": 12,
+          "wr": 35.7,
+          "avgWin": 1432,
+          "avgLoss": 446,
+          "rr": 3.21,
+          "expectancy": 321,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 8,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 77.5,
+            "bust": 22.3,
+            "payout": 72.4,
+            "weeksToPassP50": 9.2
+          }
+        },
+        "union_pick_macro_first": {
+          "label": "union_pick_macro_first",
+          "n": 56,
+          "net": 15613,
+          "w": 20,
+          "l": 25,
+          "s": 11,
+          "wr": 35.7,
+          "avgWin": 1348,
+          "avgLoss": 444,
+          "rr": 3.03,
+          "expectancy": 283,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 9,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 71.6,
+            "bust": 28.3,
+            "payout": 66.1,
+            "weeksToPassP50": 9.2
+          }
+        },
+        "prb_only_when_macro_absent": {
+          "label": "prb_only_when_macro_absent",
+          "n": 38,
+          "net": 10856,
+          "w": 9,
+          "l": 18,
+          "s": 11,
+          "wr": 23.7,
+          "avgWin": 1930,
+          "avgLoss": 349,
+          "rr": 5.53,
+          "expectancy": 292,
+          "maxDd": 1636,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 4,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 74.5,
+            "bust": 25.6,
+            "payout": 69.2,
+            "weeksToPassP50": 12.1
+          }
+        },
+        "macro_only_when_prb_absent": {
+          "label": "macro_only_when_prb_absent",
+          "n": 16,
+          "net": 4932,
+          "w": 10,
+          "l": 6,
+          "s": 0,
+          "wr": 62.5,
+          "avgWin": 935,
+          "avgLoss": 736,
+          "rr": 1.27,
+          "expectancy": 308,
+          "maxDd": 2366,
+          "maxLossStreak": 3,
+          "lossStreakHist": {
+            "1": 1,
+            "2": 1,
+            "3": 1
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 70.2,
+            "bust": 29.7,
+            "payout": 64.8,
+            "weeksToPassP50": 27.8
+          }
+        },
+        "and_gate_both_must_exist_take_avg": {
+          "label": "and_gate_both_must_exist_take_avg",
+          "n": 2,
+          "net": 862,
+          "w": 2,
+          "l": 0,
+          "s": 0,
+          "wr": 100,
+          "avgWin": 431,
+          "avgLoss": 0,
+          "rr": 0,
+          "expectancy": 431,
+          "maxDd": 0,
+          "maxLossStreak": 0,
+          "lossStreakHist": {},
+          "avgMfe": null,
+          "mc": {
+            "pass": 100,
+            "bust": 0,
+            "payout": 100,
+            "weeksToPassP50": 15
+          }
+        },
+        "skip_shared_days_prb_plus_macro_exclusive": {
+          "label": "skip_shared_days_prb_plus_macro_exclusive",
+          "n": 54,
+          "net": 15788,
+          "w": 19,
+          "l": 24,
+          "s": 11,
+          "wr": 35.2,
+          "avgWin": 1406,
+          "avgLoss": 446,
+          "rr": 3.16,
+          "expectancy": 297,
+          "maxDd": 2414,
+          "maxLossStreak": 4,
+          "lossStreakHist": {
+            "1": 8,
+            "2": 1,
+            "3": 2,
+            "4": 2
+          },
+          "avgMfe": null,
+          "mc": {
+            "pass": 69.9,
+            "bust": 30,
+            "payout": 65.2,
+            "weeksToPassP50": 9.5
+          }
+        }
+      },
+      "sampleOverlapDays": [
+        {
+          "date": "2026-04-30",
+          "prb": -26.1,
+          "macro": 233.04,
+          "tag": "unknown"
+        },
+        {
+          "date": "2026-05-21",
+          "prb": 1924.16,
+          "macro": -407.68,
+          "tag": "unknown"
+        }
+      ]
+    }
+  ],
+  "newsSplitDetail": {
+    "A0a": {
+      "headline": "Red-folder: 10 trades · +$3,546 net · Quiet: 0 trades · +$0 net",
+      "quiet": {
+        "label": "quiet",
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "netPnl": 0,
+        "avgPnl": 0
+      },
+      "red": {
+        "label": "red-folder",
+        "trades": 10,
+        "wins": 3,
+        "losses": 6,
+        "netPnl": 3546.0000000000005,
+        "avgPnl": 354.6
+      },
+      "cpi": {
+        "label": "cpi-nfp-ppi",
+        "trades": 5,
+        "wins": 2,
+        "losses": 3,
+        "netPnl": 2663.6,
+        "avgPnl": 532.72
+      },
+      "redTrades": [
+        {
+          "date": "2025-07-16",
+          "pnl": -395,
+          "headlines": [
+            "08:30 Producer Price Index"
+          ]
+        },
+        {
+          "date": "2025-11-25",
+          "pnl": -411,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services",
+            "08:30 Producer Price Index"
+          ]
+        },
+        {
+          "date": "2025-12-16",
+          "pnl": 1935,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services",
+            "08:30 Employment Situation"
+          ]
+        },
+        {
+          "date": "2026-01-22",
+          "pnl": -231,
+          "headlines": [
+            "08:30 Gross Domestic Product"
+          ]
+        },
+        {
+          "date": "2026-02-10",
+          "pnl": 1943,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        },
+        {
+          "date": "2026-04-21",
+          "pnl": -399,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        },
+        {
+          "date": "2026-04-30",
+          "pnl": -26,
+          "headlines": [
+            "08:30 Gross Domestic Product"
+          ]
+        },
+        {
+          "date": "2026-06-05",
+          "pnl": 1939,
+          "headlines": [
+            "08:30 Employment Situation"
+          ]
+        },
+        {
+          "date": "2026-06-10",
+          "pnl": -404,
+          "headlines": [
+            "08:30 Consumer Price Index"
+          ]
+        },
+        {
+          "date": "2026-06-17",
+          "pnl": -405,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        }
+      ]
+    },
+    "A0b": {
+      "headline": "Red-folder: 10 trades · +$3,364 net · Quiet: 0 trades · +$0 net",
+      "quiet": {
+        "label": "quiet",
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "netPnl": 0,
+        "avgPnl": 0
+      },
+      "red": {
+        "label": "red-folder",
+        "trades": 10,
+        "wins": 3,
+        "losses": 6,
+        "netPnl": 3364.0000000000005,
+        "avgPnl": 336.40000000000003
+      },
+      "cpi": {
+        "label": "cpi-nfp-ppi",
+        "trades": 5,
+        "wins": 2,
+        "losses": 3,
+        "netPnl": 2663.6,
+        "avgPnl": 532.72
+      },
+      "redTrades": [
+        {
+          "date": "2025-07-16",
+          "pnl": -395,
+          "headlines": [
+            "08:30 Producer Price Index"
+          ]
+        },
+        {
+          "date": "2025-11-25",
+          "pnl": -411,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services",
+            "08:30 Producer Price Index"
+          ]
+        },
+        {
+          "date": "2025-12-16",
+          "pnl": 1935,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services",
+            "08:30 Employment Situation"
+          ]
+        },
+        {
+          "date": "2026-01-22",
+          "pnl": -413,
+          "headlines": [
+            "08:30 Gross Domestic Product"
+          ]
+        },
+        {
+          "date": "2026-02-10",
+          "pnl": 1943,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        },
+        {
+          "date": "2026-04-21",
+          "pnl": -399,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        },
+        {
+          "date": "2026-04-30",
+          "pnl": -26,
+          "headlines": [
+            "08:30 Gross Domestic Product"
+          ]
+        },
+        {
+          "date": "2026-06-05",
+          "pnl": 1939,
+          "headlines": [
+            "08:30 Employment Situation"
+          ]
+        },
+        {
+          "date": "2026-06-10",
+          "pnl": -404,
+          "headlines": [
+            "08:30 Consumer Price Index"
+          ]
+        },
+        {
+          "date": "2026-06-17",
+          "pnl": -405,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        }
+      ]
+    },
+    "D1": {
+      "headline": "Red-folder: 10 trades · +$4,719 net · Quiet: 0 trades · +$0 net",
+      "quiet": {
+        "label": "quiet",
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "netPnl": 0,
+        "avgPnl": 0
+      },
+      "red": {
+        "label": "red-folder",
+        "trades": 10,
+        "wins": 3,
+        "losses": 6,
+        "netPnl": 4718.5,
+        "avgPnl": 471.85
+      },
+      "cpi": {
+        "label": "cpi-nfp-ppi",
+        "trades": 5,
+        "wins": 2,
+        "losses": 3,
+        "netPnl": 3444.1,
+        "avgPnl": 688.8199999999999
+      },
+      "redTrades": [
+        {
+          "date": "2025-07-16",
+          "pnl": -395,
+          "headlines": [
+            "08:30 Producer Price Index"
+          ]
+        },
+        {
+          "date": "2025-11-25",
+          "pnl": -411,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services",
+            "08:30 Producer Price Index"
+          ]
+        },
+        {
+          "date": "2025-12-16",
+          "pnl": 2325,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services",
+            "08:30 Employment Situation"
+          ]
+        },
+        {
+          "date": "2026-01-22",
+          "pnl": -231,
+          "headlines": [
+            "08:30 Gross Domestic Product"
+          ]
+        },
+        {
+          "date": "2026-02-10",
+          "pnl": 2335,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        },
+        {
+          "date": "2026-04-21",
+          "pnl": -399,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        },
+        {
+          "date": "2026-04-30",
+          "pnl": -26,
+          "headlines": [
+            "08:30 Gross Domestic Product"
+          ]
+        },
+        {
+          "date": "2026-06-05",
+          "pnl": 2329,
+          "headlines": [
+            "08:30 Employment Situation"
+          ]
+        },
+        {
+          "date": "2026-06-10",
+          "pnl": -404,
+          "headlines": [
+            "08:30 Consumer Price Index"
+          ]
+        },
+        {
+          "date": "2026-06-17",
+          "pnl": -405,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        }
+      ]
+    },
+    "B0": {
+      "headline": "Red-folder: 6 trades · $619 net · Quiet: 0 trades · +$0 net",
+      "quiet": {
+        "label": "quiet",
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "netPnl": 0,
+        "avgPnl": 0
+      },
+      "red": {
+        "label": "red-folder",
+        "trades": 6,
+        "wins": 3,
+        "losses": 3,
+        "netPnl": -618.9800000000001,
+        "avgPnl": -103.16333333333336
+      },
+      "cpi": {
+        "label": "cpi-nfp-ppi",
+        "trades": 3,
+        "wins": 1,
+        "losses": 2,
+        "netPnl": -897.52,
+        "avgPnl": -299.17333333333335
+      },
+      "redTrades": [
+        {
+          "date": "2025-08-12",
+          "pnl": 704,
+          "headlines": [
+            "08:30 Consumer Price Index"
+          ]
+        },
+        {
+          "date": "2025-09-11",
+          "pnl": -742,
+          "headlines": [
+            "08:30 Consumer Price Index"
+          ]
+        },
+        {
+          "date": "2026-04-21",
+          "pnl": -815,
+          "headlines": [
+            "08:30 Advance Monthly Sales for Retail and Food Services"
+          ]
+        },
+        {
+          "date": "2026-04-30",
+          "pnl": 233,
+          "headlines": [
+            "08:30 Gross Domestic Product"
+          ]
+        },
+        {
+          "date": "2026-05-08",
+          "pnl": -860,
+          "headlines": [
+            "08:30 Employment Situation"
+          ]
+        },
+        {
+          "date": "2026-05-28",
+          "pnl": 861,
+          "headlines": [
+            "08:30 Gross Domestic Product"
+          ]
+        }
+      ]
+    },
+    "B1a": {
+      "headline": "Not enough calendar overlap to compare.",
+      "quiet": {
+        "label": "quiet",
+        "trades": 0,
+        "wins": 0,
+        "losses": 0,
+        "netPnl": 0,
+        "avgPnl": 0
+      },
+      "red": {
+        "label": "red-folder",
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "netPnl": -37.57999999999993,
+        "avgPnl": -18.789999999999964
+      },
+      "cpi": {
+        "label": "cpi-nfp-ppi",
+        "trades": 2,
+        "wins": 1,
+        "losses": 1,
+        "netPnl": -37.57999999999993,
+        "avgPnl": -18.789999999999964
+      },
+      "redTrades": [
+        {
+          "date": "2025-08-12",
+          "pnl": 704,
+          "headlines": [
+            "08:30 Consumer Price Index"
+          ]
+        },
+        {
+          "date": "2025-09-11",
+          "pnl": -742,
+          "headlines": [
+            "08:30 Consumer Price Index"
+          ]
+        }
+      ]
+    }
+  },
+  "takeaways": [
+    "Overlap A0a×B1a: 0 shared days, corr=null",
+    "Same-day both-loss events: 0 (diversification excellent)",
+    "A0a alone: pass 78.6% · maxLossStreak 4 · RR 5.53 · n=40",
+    "B1a alone: pass 73.6% · maxLossStreak 3 · RR 1.24 · n=14",
+    "Exclusive union (skip shared): pass 75.8% · streak 4 · net $17719 · n=54",
+    "Pick-better on shared: pass 76.2% · streak 4 · RR 3.32 · n=54",
+    "PRB-first (fill gaps with Macro): pass 76.4% · streak 4 · n=54",
+    "Sum both on shared (portfolio risk): pass 76.9% · streak 4 · maxDd $2414"
+  ]
+}

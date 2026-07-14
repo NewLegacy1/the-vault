@@ -16,11 +16,21 @@ tags: [playbook, hybrid, strategy-dev]
 
 ## Three development paths (see [[roadmap]] Track 3)
 
-### 3.1 Portfolio blend (analysis first)
+### 3.1 Portfolio blend (settled 2026-07-14)
 
-- Merge PRB year ledger + Macro year ledger.
-- **Same-day correlation check:** if both lose on the same dates, blending doesn't diversify.
-- Joint MC in F4 LAB → save with preset `custom`, phase **combined**, hypothesis describes blend weights.
+Ledger join: `vault-app/data/tv-exports/matrix/*` + `scripts/analyze-hybrid-matrix.ts` / `analyze-hybrid-conflicts.ts`.
+
+| Pair | Shared days | Read |
+|---|---|---|
+| **A0a × B1a** | **0** | True diversifiers — never same-day. Best blend candidate. |
+| A0a × B0 | 5 | Conflicts toxic: 2026-04-21 both L (−$399/−$815 on red-folder); 2 of 5 conflicts are A+. |
+| A0b × B1a | 0 | Same as A0a×B1a structure; weaker PRB baseline (A0b regressed vs A0a). |
+
+**Union A0a+B1a (54 trades):** net +$17.7k · WR 25%→35% · RR 5.5→3.3 · maxLStreak still 4 · MC pass ~76% vs A0a alone ~78%. Macro wins interrupt PRB cold patches 4× chronologically but do **not** cut max streak. **AND-gate (both must fire) = 0 trades — dead.**
+
+**News split (missing FF day = quiet):** PRB makes money on red (+$3.5k / 10) *and* quiet. Macro B1a edge is quiet (+$5.0k / 12); red ≈ flat (−$38 / 2). Candidate rule: **PRB any day + Macro quiet-only**.
+
+- Joint MC in F4 LAB → save with preset `custom`, phase **combined**.
 - Cohort path: `strategies/cohorts/combined/`
 
 ### 3.2 Macro entries + PRB management
