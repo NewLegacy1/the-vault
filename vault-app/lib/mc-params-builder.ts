@@ -5,7 +5,8 @@ import {
   type McRulePackConsistency,
 } from "./mc-rule-pack";
 import type { PropPhaseRuleSet } from "./prop-phase-types";
-import { phaseById, ruleById, type PropRule } from "./prop-firms";
+import { phaseById, ruleById } from "./prop-firms";
+import type { PropRule } from "./types";
 
 export type McCompareMode = "eval" | "funded";
 

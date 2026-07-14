@@ -973,6 +973,19 @@ export default function LabPage() {
   const mcResultsRef = useRef<HTMLDivElement>(null);
 
   const activePreset = presetById(study.presetId);
+  const labMcCalibration = useMemo(
+    () =>
+      buildMcParamsForLab({
+        ruleId: MATRIX_REFERENCE_FIRM_ID,
+        strategyPhase: activePreset?.phase,
+        trades: [],
+        dates: [],
+        sims: 1,
+        maxTrades: 1,
+        payoutBuffer: Number(payoutBuffer) || 1000,
+      }),
+    [activePreset?.phase, payoutBuffer]
+  );
   const matrixBranch = activePreset?.matrixBranch ?? "—";
   const variantName = studyVariantName(study);
   const isDerived = isDerivedMacroPreset(study.presetId);
@@ -1353,6 +1366,8 @@ export default function LabPage() {
       maxTrades,
       payoutBuffer,
       mc: mcToSummary(mcResult),
+      mcEngineVersion: mcResult.engineVersion,
+      mcRulePack: mcResult.rulePackFeatures,
       firmMc: firmSnapshotsToCohortMc(snapshots),
       tradePnls: activeDs.trades,
       tradeDates: activeDs.dates,
@@ -1813,6 +1828,16 @@ export default function LabPage() {
               maxTrades={Number(maxTrades) || 80}
               payoutBuffer={Number(payoutBuffer) || 1000}
               embeddedInLab
+            />
+          )}
+
+          {res && labMcCalibration && (
+            <McCalibrationBanner
+              rulePack={labMcCalibration.rulePack}
+              simMode={activePreset?.phase === "funded" ? "funded_only" : "eval_path"}
+              hasPayoutEconomics
+              accountRecycling={activePreset?.phase === "funded"}
+              compact
             />
           )}
 

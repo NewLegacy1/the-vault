@@ -6,12 +6,14 @@ import type { CohortRecord } from "@/lib/cohort";
 import {
   firmMcForTab,
   firmCompareLabel,
+  mcCompareModeForPhase,
   MATRIX_FIRM_TABS,
   matrixPrimaryMcPct,
   matrixWeeksMc,
-  mcCompareModeForPhase,
   type MatrixCompareFirmId,
 } from "@/lib/firm-matrix-compare";
+import { buildMcParamsForFirm } from "@/lib/mc-params-builder";
+import { McCalibrationBanner } from "@/components/mc-calibration-banner";
 import { cohortForPreset } from "@/lib/matrix-cohort";
 import {
   matrixPresetsBySubgroup,
@@ -164,6 +166,26 @@ export function MatrixResults({
   );
 
   const activeRule = ruleById(firmTab);
+
+  const firmCalibration = useMemo(() => {
+    const preset = allMatrixPresets.find((p) => p.id === activePresetId);
+    const compareMode = mcCompareModeForPhase(preset?.phase);
+    return buildMcParamsForFirm({
+      ruleId: firmTab,
+      compareMode,
+      trades: [],
+      dates: [],
+      sims: 1,
+      maxTrades: 1,
+      payoutBuffer: 2000,
+    });
+  }, [firmTab, activePresetId, allMatrixPresets]);
+
+  const activeCohortEngineVersion = useMemo(() => {
+    const preset = allMatrixPresets.find((p) => p.id === activePresetId);
+    if (!preset) return undefined;
+    return cohortForPreset(cohorts, preset)?.mcEngineVersion;
+  }, [activePresetId, allMatrixPresets, cohorts]);
 
   const bestForFirm = useMemo(() => {
     let best: { presetId: string; passPct: number } | null = null;
@@ -368,10 +390,25 @@ export function MatrixResults({
       </div>
 
       {activeRule && (
-        <p className="small dim" style={{ marginTop: 0, marginBottom: 10, lineHeight: 1.55 }}>
+        <>
+          <McCalibrationBanner
+            rulePack={firmCalibration?.rulePack}
+            simMode={
+              mcCompareModeForPhase(
+                allMatrixPresets.find((p) => p.id === activePresetId)?.phase
+              ) === "funded"
+                ? "funded_only"
+                : "eval_path"
+            }
+            hasPayoutEconomics
+            cohortEngineVersion={activeCohortEngineVersion}
+            compact
+          />
+          <p className="small dim" style={{ marginTop: 0, marginBottom: 10, lineHeight: 1.55 }}>
           Table uses <span className="accent">{activeRule.name}</span> ({firmCompareLabel(firmTab)}) — eval rows show pass %, funded rows show payout %
           (PRO survival + recycle). Expand a test group, click a row for the firm chart below.
-        </p>
+          </p>
+        </>
       )}
 
       {loadErr && <p className="small neg">Could not load cohorts: {loadErr}</p>}

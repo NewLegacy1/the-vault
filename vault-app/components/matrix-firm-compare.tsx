@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { FirmRulesCard } from "@/components/firm-rules-card";
+import { McCalibrationBanner } from "@/components/mc-calibration-banner";
 import { fmtUsd, useLocal } from "@/lib/store";
 import type { CohortRecord } from "@/lib/cohort";
 import {
@@ -15,6 +16,7 @@ import {
   type FirmMcSnapshot,
   type MatrixCompareFirmId,
 } from "@/lib/firm-matrix-compare";
+import { buildMcParamsForFirm } from "@/lib/mc-params-builder";
 import { presetById } from "@/lib/lab-profile";
 import type { PresetLedgerStore } from "@/lib/lab-ledger";
 import { resolveMatrixTrades } from "@/lib/resolve-matrix-trades";
@@ -169,6 +171,20 @@ export function MatrixFirmCompare({
   const activeRule = ruleById(selectedFirm);
   const activeSnap = rows.find((r) => r.ruleId === selectedFirm);
 
+  const firmCalibration = useMemo(
+    () =>
+      buildMcParamsForFirm({
+        ruleId: selectedFirm,
+        compareMode,
+        trades: [],
+        dates: [],
+        sims: 1,
+        maxTrades: 1,
+        payoutBuffer,
+      }),
+    [selectedFirm, compareMode, payoutBuffer]
+  );
+
   if (!preset) return null;
 
   return (
@@ -204,7 +220,7 @@ export function MatrixFirmCompare({
             </p>
           )}
 
-              {computeSource !== "none" && (
+          {computeSource !== "none" && (
             <p className="small dim" style={{ marginTop: 0, lineHeight: 1.55 }}>
               Net $/acct uses each firm&apos;s official split, buffer, and payout caps. Fees: eval +
               activation + monthly <span className="accent">during eval only</span> (no monthly on funded PRO).
@@ -249,6 +265,15 @@ export function MatrixFirmCompare({
               )}
             </p>
           )}
+
+          <McCalibrationBanner
+            rulePack={firmCalibration?.rulePack}
+            simMode={fundedMode ? "funded_only" : "eval_path"}
+            hasPayoutEconomics
+            accountRecycling={fundedMode && selectedFirm === "tpt50"}
+            cohortEngineVersion={cohort?.mcEngineVersion}
+            compact
+          />
 
           {rows.length > 0 && (
             <>
