@@ -46,6 +46,41 @@ export function parseTierFromSignal(signal?: string): string | undefined {
   return undefined;
 }
 
+function parseEnrichedLedgerCsv(text: string): ParsedTrade[] {
+  const lines = stripBom(text).split(/\r?\n/).filter((l) => l.trim());
+  if (lines.length < 2 || !lines[0].startsWith("date,pnl_usd")) return [];
+  const out: ParsedTrade[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = splitCsvLine(lines[i]);
+    const pnl = parseFloat(cols[1]);
+    const num = parseInt(cols[2], 10);
+    if (!Number.isFinite(pnl) || !Number.isFinite(num)) continue;
+    const signal = cols[4] || undefined;
+    out.push({
+      num,
+      date: cols[0],
+      pnl,
+      tier: cols[3] || parseTierFromSignal(signal),
+      signal,
+      direction: cols[5] === "long" || cols[5] === "short" ? cols[5] : undefined,
+      qty: parseFloatCol(cols, 6),
+      mfeUsd: parseFloatCol(cols, 7),
+      maeUsd: parseFloatCol(cols, 8),
+      durationBars: parseFloatCol(cols, 9),
+      entryPrice: parseFloatCol(cols, 10),
+      exitPrice: parseFloatCol(cols, 11),
+    });
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date) || a.num - b.num);
+}
+
+/** TV list-of-trades export or vault enriched ledger CSV. */
+export function parseLabLedger(text: string): ParsedTrade[] {
+  const enriched = parseEnrichedLedgerCsv(text);
+  if (enriched.length > 0) return enriched;
+  return parseTvCsv(text);
+}
+
 export function parseTvCsv(text: string): ParsedTrade[] {
   const lines = stripBom(text).split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length < 2) return [];
@@ -198,7 +233,7 @@ export function mergeTvCsvs(
 ): ParsedTrade[] {
   const all: ParsedTrade[] = [];
   for (const text of texts) {
-    all.push(...parseTvCsv(text));
+    all.push(...parseLabLedger(text));
   }
   const seen = new Set<string>();
   const out: ParsedTrade[] = [];

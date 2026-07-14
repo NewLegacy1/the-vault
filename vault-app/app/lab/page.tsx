@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useEffect } from "react";
 import { useLocal, fmtUsd } from "@/lib/store";
 import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
-import { mergeTvCsvs, parseTvCsv, tradesPerWeek } from "@/lib/csv";
+import { mergeTvCsvs, parseLabLedger, tradesPerWeek } from "@/lib/csv";
 import { ALL_SEED_TRADES, TRADES_DEC_MAR, TRADES_APR_JUL } from "@/lib/prb-data";
 import { TRADES_YTD_FULL, TRADES_YTD_MAY17 } from "@/lib/prb-ytd-data";
 import { TRADES_BE2R_PDH_12MO } from "@/lib/prb-be2r-data";
@@ -55,13 +55,15 @@ function suggestDatasetLabel(dates: string[]): string {
 }
 
 function shortVariantName(variant: string): string {
+  const matrix = variant.match(/^([A-Z]\d+[a-z]?)\s·/);
+  if (matrix) return matrix[1];
   return variant.replace(/^PRB v[\d.]+ — /, "").replace(/ \(live locked\)/, "");
 }
 
-function suggestDatasetName(dates: string[], variant: string): string {
+function suggestDatasetName(dates: string[], variant: string, matrixBranch?: string): string {
   const span = suggestDatasetLabel(dates);
-  const short = shortVariantName(variant);
-  return span ? `${span} · ${short}` : short;
+  const tag = matrixBranch ?? shortVariantName(variant);
+  return span ? `${span} · ${tag}` : tag;
 }
 
 function datasetDisplayName(d: Dataset, aliases?: Record<string, string>): string {
@@ -147,8 +149,8 @@ function CollapsiblePanel({
   );
 }
 
-function isRecommendedSeed(d: Dataset): boolean {
-  return d.name.includes("★");
+function isSeedDataset(id: string): boolean {
+  return SEED_SETS.some((s) => s.id === id);
 }
 
 const SEED_SETS: Dataset[] = [
@@ -968,7 +970,7 @@ function GhostAutopsyCard({
 function buildDatasetFromParsed(
   id: string,
   name: string,
-  parsed: ReturnType<typeof parseTvCsv>,
+  parsed: ReturnType<typeof parseLabLedger>,
   sources: string[],
   deduped = 0,
   label?: string
@@ -987,8 +989,10 @@ function buildDatasetFromParsed(
 
 export default function LabPage() {
   const [uploads, setUploads] = useLocal<Dataset[]>("vault.lab.datasets", []);
-  const [dsId, setDsId, dsReady] = useLocal<string>("vault.lab.dsId", "be2r-pdh-12mo");
+  const [dsId, setDsId, dsReady] = useLocal<string>("vault.lab.dsId", "");
   const [datasetAliases, setDatasetAliases] = useLocal<Record<string, string>>("vault.lab.datasetAliases", {});
+  const [lastUploadFiles, setLastUploadFiles] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [dateFilters, setDateFilters] = useLocal<Record<string, DateFilter>>("vault.lab.dateFilters", {});
   const [ruleId, setRuleId, ruleReady] = useLocal<string>("vault.lab.ruleId", PROP_RULES[0].id);
   const [sims, setSims, simsReady] = useLocal<number>("vault.lab.sims", 2000);
@@ -1016,14 +1020,29 @@ export default function LabPage() {
   const activePreset = presetById(study.presetId);
   const variantName = studyVariantName(study);
 
-  const datasets = [...SEED_SETS, ...uploads];
-  const safeDsId = typeof dsId === "string" ? dsId : SEED_SETS[0].id;
-  const ds = datasets.find((d) => d.id === safeDsId) ?? SEED_SETS[0];
+  const uploadsById = useMemo(() => new Map(uploads.map((u) => [u.id, u])), [uploads]);
+
+  const ds = useMemo(() => {
+    if (uploads.length > 0) {
+      const hit = uploadsById.get(typeof dsId === "string" ? dsId : "");
+      if (hit) return hit;
+      return uploads[uploads.length - 1];
+    }
+    if (typeof dsId === "string" && dsId && isSeedDataset(dsId)) {
+      return SEED_SETS.find((s) => s.id === dsId) ?? SEED_SETS[0];
+    }
+    return null;
+  }, [uploads, uploadsById, dsId]);
+
+  const safeDsId = ds?.id ?? "";
   const dateFilter = dateFilters[safeDsId] ?? { from: "", to: "" };
-  const dsBounds = useMemo(() => datasetBounds(ds.dates), [ds.dates]);
-  const activeDs = useMemo(() => applyDateFilter(ds, dateFilter), [ds, dateFilter]);
+  const dsBounds = useMemo(() => datasetBounds(ds?.dates ?? []), [ds?.dates]);
+  const activeDs = useMemo(
+    () => (ds ? applyDateFilter(ds, dateFilter) : { id: "", name: "", trades: [], dates: [], sources: [] }),
+    [ds, dateFilter]
+  );
   const dateFilterActive = Boolean(dateFilter.from || dateFilter.to);
-  const displayName = datasetDisplayName(ds, datasetAliases);
+  const displayName = ds ? datasetDisplayName(ds, datasetAliases) : "";
   const rule = ruleById(typeof ruleId === "string" ? ruleId : PROP_RULES[0].id) ?? PROP_RULES[0];
   const canRun = studyReady(study) && activeDs.trades.length > 0;
   const storageReady = dsReady && ruleReady && simsReady && maxTradesReady && payoutReady && studyHydrated;
@@ -1065,7 +1084,7 @@ export default function LabPage() {
         : "dates unknown";
     return {
       n: t.length,
-      fullN: ds.trades.length,
+      fullN: ds?.trades.length ?? 0,
       wins,
       losses,
       scr: t.length - wins - losses,
@@ -1074,7 +1093,7 @@ export default function LabPage() {
       tpw: Math.round(tpw * 10) / 10,
       span,
       fullSpan:
-        ds.dates.length >= 2 ? `${ds.dates[0]} → ${ds.dates[ds.dates.length - 1]}` : span,
+        ds && ds.dates.length >= 2 ? `${ds.dates[0]} → ${ds.dates[ds.dates.length - 1]}` : span,
     };
   }, [activeDs, ds]);
 
@@ -1182,6 +1201,26 @@ export default function LabPage() {
       .catch(() => {});
   }, [saveStatus]);
 
+  useEffect(() => {
+    if (!dsReady || uploads.length === 0) return;
+    const current = typeof dsId === "string" ? dsId : "";
+    if (!uploadsById.has(current) || isSeedDataset(current)) {
+      setDsId(uploads[uploads.length - 1].id);
+    }
+  }, [dsReady, uploads, uploadsById, dsId, setDsId]);
+
+  useEffect(() => {
+    if (!studyHydrated || !ds || isSeedDataset(ds.id)) return;
+    const autoName = suggestDatasetName(ds.dates, variantName, activePreset?.matrixBranch);
+    setDatasetAliases((prev) => ({ ...prev, [ds.id]: autoName }));
+    setUploads((prev) => prev.map((u) => (u.id === ds.id ? { ...u, label: autoName } : u)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rename only when strategy preset changes
+  }, [study.presetId, studyHydrated]);
+
+  useEffect(() => {
+    if (ds?.sources[0]) setLastUploadFiles(ds.sources[0]);
+  }, [ds?.id, ds?.sources]);
+
   const onFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -1205,21 +1244,33 @@ export default function LabPage() {
   };
 
   const finishUpload = (texts: string[], names: string[]) => {
-    const newSets: Dataset[] = [];
+    const preset = presetById(study.presetId);
 
     if (texts.length === 1) {
-      const parsed = parseTvCsv(texts[0]);
+      const parsed = parseLabLedger(texts[0]);
       if (parsed.length === 0) {
-        alert("No trades parsed — make sure this is a TradingView 'List of trades' CSV export.");
+        alert("No trades parsed — use a TradingView 'List of trades' CSV or vault enriched ledger.");
         return;
       }
-      newSets.push(
-        buildDatasetFromParsed("u" + Date.now(), `${names[0]} (${parsed.length} trades)`, parsed, [names[0]])
+      const id = "u" + Date.now();
+      const autoName = suggestDatasetName(
+        parsed.map((t) => t.date),
+        variantName,
+        preset?.matrixBranch
       );
-    } else {
-      // Individual files
+      const dataset = buildDatasetFromParsed(id, names[0], parsed, [names[0]], 0, autoName);
+      setUploads((prev) => [...prev, dataset]);
+      setDatasetAliases((prev) => ({ ...prev, [id]: autoName }));
+      setDsId(id);
+      setLastUploadFiles(names[0]);
+      return;
+    }
+
+    const newSets: Dataset[] = [];
+    // Multiple files — legacy chunk merge
+    {
       texts.forEach((text, i) => {
-        const parsed = parseTvCsv(text);
+        const parsed = parseLabLedger(text);
         if (parsed.length > 0) {
           newSets.push(
             buildDatasetFromParsed(
@@ -1232,7 +1283,7 @@ export default function LabPage() {
         }
       });
       // Merged year dataset (dedupes overlapping bar-replay windows)
-      const rawCount = texts.reduce((n, tx) => n + parseTvCsv(tx).length, 0);
+      const rawCount = texts.reduce((n, tx) => n + parseLabLedger(tx).length, 0);
       const merged = mergeTvCsvs(texts, { onePerDay: true, seed: ALL_SEED_TRADES });
       if (merged.length > 0) {
         const span =
@@ -1257,13 +1308,14 @@ export default function LabPage() {
       return;
     }
     const mergedPick = newSets.find((d) => d.id.startsWith("m")) ?? newSets[newSets.length - 1];
-    const autoName = suggestDatasetName(mergedPick.dates, variantName);
+    const autoName = suggestDatasetName(mergedPick.dates, variantName, preset?.matrixBranch);
     const labeled = newSets.map((d) =>
       d.id === mergedPick.id ? { ...d, label: autoName } : d
     );
-    setUploads([...uploads, ...labeled]);
-    setDatasetAliases({ ...datasetAliases, [mergedPick.id]: autoName });
+    setUploads((prev) => [...prev, ...labeled]);
+    setDatasetAliases((prev) => ({ ...prev, [mergedPick.id]: autoName }));
     setDsId(mergedPick.id);
+    setLastUploadFiles(names.join(", "));
   };
 
   const mergeAllUploads = () => {
@@ -1290,7 +1342,7 @@ export default function LabPage() {
       leaves.flatMap((u) => u.sources),
       deduped
     );
-    const autoName = suggestDatasetName(merged.dates, variantName);
+    const autoName = suggestDatasetName(merged.dates, variantName, activePreset?.matrixBranch);
     const labeled = { ...merged, label: autoName };
     setUploads([...uploads, labeled]);
     setDatasetAliases({ ...datasetAliases, [labeled.id]: autoName });
@@ -1305,7 +1357,10 @@ export default function LabPage() {
     const nextFilters = { ...dateFilters };
     delete nextFilters[id];
     setDateFilters(nextFilters);
-    if (dsId === id) setDsId(SEED_SETS[0].id);
+    if (dsId === id) {
+      const rest = uploads.filter((u) => u.id !== id);
+      setDsId(rest.length > 0 ? rest[rest.length - 1].id : "");
+    }
   };
 
   const setDisplayName = (id: string, name: string) => {
@@ -1328,7 +1383,11 @@ export default function LabPage() {
   };
 
   const applyStudyLabel = () => {
-    setDisplayName(ds.id, suggestDatasetName(ds.dates, variantName));
+    if (!ds) return;
+    setDisplayName(
+      ds.id,
+      suggestDatasetName(ds.dates, variantName, activePreset?.matrixBranch)
+    );
   };
 
   const applyPreset = (presetId: string) => {
@@ -1377,9 +1436,11 @@ export default function LabPage() {
       notes: study.hypothesis,
       datasetName: displayName + (dateFilterActive ? ` · ${stats.span}` : ""),
       span: stats.span,
-      sources: dateFilterActive
-        ? [...ds.sources, `Date filter: ${stats.n} of ${stats.fullN} trades`]
-        : ds.sources,
+      sources: ds
+        ? dateFilterActive
+          ? [...ds.sources, `Date filter: ${stats.n} of ${stats.fullN} trades`]
+          : ds.sources
+        : [],
       firm: rule.name,
       trades: stats.n,
       netPnl: stats.net,
@@ -1535,51 +1596,63 @@ export default function LabPage() {
           <div className="lab-step">
             <span className="lab-step-num">2</span>
             <div className="lab-step-body">
-              <div className="frm-row">
-                <label className="fld" style={{ minWidth: 280, flex: 1 }}>
-                  Dataset
-                  <select value={safeDsId} onChange={(e) => setDsId(e.target.value)}>
-                    <optgroup label="Recommended seeds">
-                      {SEED_SETS.filter(isRecommendedSeed).map((d) => (
+              <div className="frm-row" style={{ alignItems: "flex-end" }}>
+                <div className="fld" style={{ flex: 1, minWidth: 280 }}>
+                  <span>Upload CSV for <span className="accent">{variantName}</span></span>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 6 }}>
+                    <button
+                      type="button"
+                      className="btn ghost"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Choose file
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".csv"
+                      hidden
+                      onChange={onFiles}
+                    />
+                    <span className="small accent">
+                      {lastUploadFiles || (ds?.sources[0] ?? "No file chosen")}
+                    </span>
+                  </div>
+                </div>
+                {uploads.length > 1 && (
+                  <label className="fld" style={{ minWidth: 220 }}>
+                    Switch upload
+                    <select value={safeDsId} onChange={(e) => setDsId(e.target.value)}>
+                      {uploads.map((d) => (
                         <option key={d.id} value={d.id}>
                           {datasetDisplayName(d, datasetAliases)} — {datasetOptionSub(d)}
                         </option>
                       ))}
-                    </optgroup>
-                    <optgroup label="Archive seeds">
-                      {SEED_SETS.filter((d) => !isRecommendedSeed(d)).map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {datasetDisplayName(d, datasetAliases)} — {datasetOptionSub(d)}
-                        </option>
-                      ))}
-                    </optgroup>
-                    {uploads.length > 0 && (
-                      <optgroup label="Your uploads">
-                        {uploads.map((d) => (
-                          <option key={d.id} value={d.id}>
-                            {datasetDisplayName(d, datasetAliases)} — {datasetOptionSub(d)}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                  </select>
-                </label>
-                <label className="fld">
-                  Upload TV CSVs
-                  <input type="file" accept=".csv" multiple onChange={onFiles} />
-                </label>
-              </div>
-              <div className="lab-dataset-summary">
-                <span className="accent">{variantName}</span>
-                {displayName && displayName !== ds.name && <span className="cyan"> · {displayName}</span>}
-                <span className="dim"> — </span>
-                {stats.n} trades · {stats.wins}W/{stats.losses}L · net {fmtUsd(stats.net, true)}
-                {activeDs.dates.length >= 2 && <span className="dim"> · {stats.span}</span>}
-                {dateFilterActive && stats.fullN !== stats.n && (
-                  <span className="warn"> (filtered from {stats.fullN})</span>
+                    </select>
+                  </label>
                 )}
               </div>
-              {ds.trades.length > 0 && activeDs.trades.length === 0 && (
+
+              {ds ? (
+                <div className="lab-dataset-summary" style={{ marginTop: 10 }}>
+                  <div className="small dim" style={{ marginBottom: 4 }}>
+                    Dataset — auto-named from strategy + date span
+                  </div>
+                  <span className="accent cyan">{displayName}</span>
+                  <span className="dim"> — </span>
+                  {stats.n} trades · {stats.wins}W/{stats.losses}L · net {fmtUsd(stats.net, true)}
+                  {activeDs.dates.length >= 2 && <span className="dim"> · {stats.span}</span>}
+                  {dateFilterActive && stats.fullN !== stats.n && (
+                    <span className="warn"> (filtered from {stats.fullN})</span>
+                  )}
+                </div>
+              ) : (
+                <p className="small warn" style={{ marginTop: 10, marginBottom: 0 }}>
+                  Choose one TradingView export — it becomes the dataset for this RUN (no seed picker needed).
+                </p>
+              )}
+
+              {ds && ds.trades.length > 0 && activeDs.trades.length === 0 && (
                 <p className="small warn" style={{ marginTop: 6, marginBottom: 0 }}>
                   No trades in selected date range — widen dates in Advanced options.
                 </p>
@@ -1625,16 +1698,23 @@ export default function LabPage() {
               <label className="fld" style={{ minWidth: 220 }}>
                 Display name
                 <input
-                  value={datasetAliases[safeDsId] ?? ds.label ?? ""}
+                  disabled={!ds}
+                  value={ds ? datasetAliases[safeDsId] ?? ds.label ?? "" : ""}
                   onChange={(e) => setDisplayName(safeDsId, e.target.value)}
                   placeholder={
-                    suggestDatasetLabel(ds.dates)
-                      ? `e.g. ${suggestDatasetLabel(ds.dates)} BE-only`
-                      : "e.g. 25–26 Trail experiment"
+                    ds && suggestDatasetLabel(ds.dates)
+                      ? `e.g. ${suggestDatasetLabel(ds.dates)} · ${activePreset?.matrixBranch ?? "A0a"}`
+                      : "Upload a CSV first"
                   }
                 />
               </label>
-              <button type="button" className="btn ghost" onClick={applyStudyLabel} title="Set name from date span + strategy version">
+              <button
+                type="button"
+                className="btn ghost"
+                onClick={applyStudyLabel}
+                disabled={!ds}
+                title="Set name from date span + strategy version"
+              >
                 Name from study
               </button>
               {dsBounds.min && dsBounds.max && (
@@ -1699,6 +1779,25 @@ export default function LabPage() {
               <input type="checkbox" checked={autoSave} onChange={(e) => setAutoSave(e.target.checked)} />
               Auto-save once per dataset + variant <span className="dim">(GitHub → strategies/cohorts/)</span>
             </label>
+            <details style={{ marginTop: 12, marginBottom: 8 }}>
+              <summary className="small dim" style={{ cursor: "pointer" }}>
+                Legacy seed datasets (old bar-replay — ignore for premium matrix)
+              </summary>
+              <label className="fld" style={{ marginTop: 8, maxWidth: 420 }}>
+                Load seed instead of upload
+                <select
+                  value={isSeedDataset(safeDsId) ? safeDsId : ""}
+                  onChange={(e) => setDsId(e.target.value)}
+                >
+                  <option value="">— none —</option>
+                  {SEED_SETS.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </details>
             {uploads.length > 0 && (
               <>
                 <hr className="hr" />
