@@ -16,13 +16,9 @@ export default function ResultsPage() {
         </div>
         <div className="panel-body">
           <p className="small dim" style={{ marginTop: 0, lineHeight: 1.65 }}>
-            Each row is a strategy branch from the premium 365d matrix.{" "}
-            <span className="accent">Saved</span> means a cohort note exists in{" "}
-            <code className="inline">strategies/cohorts/</code>. Click a row to open that study in{" "}
-            <Link href="/lab" className="accent">
-              F4 Lab
-            </Link>
-            — your CSV for that preset loads automatically if you already uploaded it.
+            Each row is a strategy branch from the premium 365d matrix. Use the <span className="accent">firm tabs</span>{" "}
+            (TPT, Alpha Zero, Apex, etc.) to compare pass rates — new Lab runs save all firms at once.{" "}
+            <span className="accent">★</span> marks the best pass % for the selected firm. Click a row for replay steps and speed-to-pass.
           </p>
           <MatrixResults
             onSelectPreset={(id) => router.push(`/lab?preset=${encodeURIComponent(id)}`)}

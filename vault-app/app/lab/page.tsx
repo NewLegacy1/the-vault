@@ -1319,7 +1319,6 @@ export default function LabPage() {
       sims: Number(sims) || 2000,
       maxTrades: Number(maxTrades) || 80,
       payoutBuffer: Number(payoutBuffer) || 1000,
-      winCapUsd,
     });
     const payload: CohortSaveInput = {
       variant: variantName,
