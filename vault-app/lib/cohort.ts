@@ -125,6 +125,12 @@ export interface CohortRecord {
   expectedAccounts: number;
   /** Multi-firm MC snapshots — populated on new Lab saves. */
   firmMc?: Record<string, CohortFirmMcEntry>;
+  /** Trade series for cross-firm MC without re-upload. */
+  tradePnls?: number[];
+  tradeDates?: string[];
+  mcSims?: number;
+  mcMaxTrades?: number;
+  payoutBuffer?: number;
 }
 
 export interface CohortSaveInput {
@@ -156,6 +162,8 @@ export interface CohortSaveInput {
   payoutBuffer: number;
   mc: McSummary;
   firmMc?: Record<string, CohortFirmMcEntry>;
+  tradePnls?: number[];
+  tradeDates?: string[];
 }
 
 function slug(s: string): string {
@@ -188,6 +196,14 @@ export function buildCohortMarkdown(input: CohortSaveInput): string {
   const firmMcLine = input.firmMc
     ? `firm_mc: ${JSON.stringify(input.firmMc)}\n`
     : "";
+  const tradePnlsLine =
+    input.tradePnls?.length && input.tradePnls.length <= 500
+      ? `trade_pnls: ${JSON.stringify(input.tradePnls)}\n`
+      : "";
+  const tradeDatesLine =
+    input.tradeDates?.length && input.tradeDates.length <= 500
+      ? `trade_dates: ${JSON.stringify(input.tradeDates)}\n`
+      : "";
 
   const frontmatter = `---
 variant: "${input.variant.replace(/"/g, '\\"')}"
@@ -221,7 +237,9 @@ expected_accounts: ${Number.isFinite(eco.expectedAccounts) ? eco.expectedAccount
 tags: [cohort, ${input.strategyFamily}, ${input.phase}, monte-carlo, lab]
 created: "${new Date().toISOString()}"
 dataset: "${input.datasetName.replace(/"/g, '\\"')}"
-${firmMcLine}---`;
+mc_max_trades: ${input.maxTrades}
+payout_buffer: ${input.payoutBuffer}
+${firmMcLine}${tradePnlsLine}${tradeDatesLine}---`;
 
   const body = `
 # ${input.variant}
@@ -312,6 +330,29 @@ export function parseCohortMeta(content: string, filename: string, relativePath?
     }
   }
 
+  let tradePnls: number[] | undefined;
+  let tradeDates: string[] | undefined;
+  const pnlsRaw = get("trade_pnls");
+  const datesRaw = get("trade_dates");
+  if (pnlsRaw) {
+    try {
+      tradePnls = JSON.parse(pnlsRaw) as number[];
+    } catch {
+      tradePnls = undefined;
+    }
+  }
+  if (datesRaw) {
+    try {
+      tradeDates = JSON.parse(datesRaw) as string[];
+    } catch {
+      tradeDates = undefined;
+    }
+  }
+
+  const mcSims = parseInt(get("mc_sims"), 10) || undefined;
+  const mcMaxTrades = parseInt(get("mc_max_trades"), 10) || undefined;
+  const payoutBuffer = parseInt(get("payout_buffer"), 10) || undefined;
+
   return {
     id: filename.replace(/\.md$/, ""),
     filename,
@@ -344,5 +385,10 @@ export function parseCohortMeta(content: string, filename: string, relativePath?
     weeksToPayoutP50: parseFloat(get("weeks_to_payout_p50")) || null,
     expectedAccounts: parseFloat(get("expected_accounts")) || 0,
     firmMc,
+    tradePnls,
+    tradeDates,
+    mcSims,
+    mcMaxTrades,
+    payoutBuffer,
   };
 }
