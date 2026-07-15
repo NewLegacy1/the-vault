@@ -1,0 +1,277 @@
+//@version=6
+// Lane S · S2 Reaper IFVG MEASURE — Deep BT only (selective sleeve research).
+// Spec: strategies/strategy-dev/60-track-b/lane-s-s2-reaper-ifvg-v0.md
+// Chart TF: MNQ 1H · Save CSV: vault-app/data/tv-exports/matrix/lane-s-reaper-mnq-1h.csv
+// NOT Track B new-alpha · NOT locked PRB edit · Stage-0 falsify only.
+
+strategy(
+     title                   = "LaneS ReaperIFVG measure v0",
+     shorttitle              = "ReaperIFVG measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 50)
+
+grpEvt = "Event (locked — do not sweep)"
+i_pivL     = input.int(2, "Pivot left", minval = 1, group = grpEvt)
+i_pivR     = input.int(2, "Pivot right", minval = 1, group = grpEvt)
+i_lookFvg  = input.int(80, "FVG scan bars", minval = 20, maxval = 200, group = grpEvt)
+i_flatTime = input.int(1555, "Flat by (HHMM NY)", group = grpEvt)
+i_maxDay   = input.int(1, "Max trades / day", minval = 1, maxval = 3, group = grpEvt)
+
+grpRisk = "Risk (selective — 2.0R)"
+i_maxStop = input.float(80.0, "Max stop (pts)", group = grpRisk)
+i_minStop = input.float(4.0, "Min stop (pts)", group = grpRisk)
+i_rr      = input.float(2.0, "Target R", group = grpRisk)
+i_riskUsd = input.float(150.0, "Risk USD", group = grpRisk)
+i_maxCtr  = input.int(40, "Max contracts", group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showMark  = input.bool(true, "Markers", group = grpVis)
+i_showZones = input.bool(true, "FVG CE", group = grpVis)
+i_showDebug = input.bool(true, "Funnel table", group = grpVis)
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts < i_minStop or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+// Returns [bot, top, ce] — na ce if none
+f_findBullFvg(float L0, float H0, int iL0, int iH0, int look) =>
+    float mid = (L0 + H0) * 0.5
+    float bestH = 0.0
+    float bBot = float(na)
+    float bTop = float(na)
+    float bCE = float(na)
+    for i = 2 to look
+        int tip = bar_index - i
+        if tip > iL0 and tip < iH0 and low[i] > high[i + 2]
+            float bot = high[i + 2]
+            float top = low[i]
+            float ce = (bot + top) * 0.5
+            float gh = top - bot
+            if ce < mid and gh > bestH
+                bestH := gh
+                bBot := bot
+                bTop := top
+                bCE := ce
+    [bBot, bTop, bCE]
+
+f_findBearFvg(float L0, float H0, int iL0, int iH0, int look) =>
+    float mid = (L0 + H0) * 0.5
+    float bestH = 0.0
+    float bBot = float(na)
+    float bTop = float(na)
+    float bCE = float(na)
+    for i = 2 to look
+        int tip = bar_index - i
+        if tip > iH0 and tip < iL0 and high[i] < low[i + 2]
+            float top = low[i + 2]
+            float bot = high[i]
+            float ce = (bot + top) * 0.5
+            float gh = top - bot
+            if ce > mid and gh > bestH
+                bestH := gh
+                bBot := bot
+                bTop := top
+                bCE := ce
+    [bBot, bTop, bCE]
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool flatNow = nyHhmm >= i_flatTime
+
+float ph = ta.pivothigh(high, i_pivL, i_pivR)
+float pl = ta.pivotlow(low, i_pivL, i_pivR)
+int pivBar = bar_index - i_pivR
+
+// phase: 0 idle
+// bull 1 L0 · 2 H0 · 3 wait through · 4 wait take H0 · 5 wait CE
+// bear 11 H0 · 12 L0 · 13 wait through · 14 wait take L0 · 15 wait CE
+var int phase = 0
+var float L0 = na
+var float H0 = na
+var int iL0 = na
+var int iH0 = na
+var float fvgBot = na
+var float fvgTop = na
+var float fvgCE = na
+
+var int dayTrades = 0
+var int cntDays = 0
+var int cntBreaker = 0
+var int cntArmed = 0
+var int cntOrders = 0
+bool enteredThisBar = false
+
+if newDay
+    dayTrades := 0
+    cntDays += 1
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+// Start / extend bullish L0
+if not na(pl)
+    if phase == 0
+        L0 := pl
+        iL0 := pivBar
+        H0 := na
+        iH0 := na
+        fvgBot := na
+        fvgTop := na
+        fvgCE := na
+        phase := 1
+    else if phase == 2 and pl < L0
+        cntBreaker += 1
+        [bBot, bTop, bCE] = f_findBullFvg(L0, H0, iL0, iH0, i_lookFvg)
+        if not na(bCE)
+            fvgBot := bBot
+            fvgTop := bTop
+            fvgCE := bCE
+            phase := 3
+            cntArmed += 1
+        else
+            L0 := pl
+            iL0 := pivBar
+            H0 := na
+            iH0 := na
+            fvgBot := na
+            fvgTop := na
+            fvgCE := na
+            phase := 1
+    else if phase == 11 and pivBar > iH0 and pl < H0
+        L0 := pl
+        iL0 := pivBar
+        phase := 12
+
+// Bullish H0
+if not na(ph) and phase == 1 and pivBar > iL0 and ph > L0
+    H0 := ph
+    iH0 := pivBar
+    phase := 2
+
+// Start bearish from idle only
+if not na(ph) and phase == 0
+    H0 := ph
+    iH0 := pivBar
+    L0 := na
+    iL0 := na
+    fvgBot := na
+    fvgTop := na
+    fvgCE := na
+    phase := 11
+
+// Bearish HH after L0
+if not na(ph) and phase == 12 and ph > H0
+    cntBreaker += 1
+    [bBot2, bTop2, bCE2] = f_findBearFvg(L0, H0, iL0, iH0, i_lookFvg)
+    if not na(bCE2)
+        fvgBot := bBot2
+        fvgTop := bTop2
+        fvgCE := bCE2
+        phase := 13
+        cntArmed += 1
+    else
+        H0 := ph
+        iH0 := pivBar
+        L0 := na
+        iL0 := na
+        fvgBot := na
+        fvgTop := na
+        fvgCE := na
+        phase := 11
+
+if phase == 3 and not na(fvgBot) and low < fvgBot
+    phase := 4
+if phase == 4 and not na(H0) and high > H0
+    phase := 5
+
+if phase == 13 and not na(fvgTop) and high > fvgTop
+    phase := 14
+if phase == 14 and not na(L0) and low < L0
+    phase := 15
+
+bool canTrade = dayTrades < i_maxDay and strategy.position_size == 0 and not flatNow
+
+if phase == 5 and canTrade and not na(fvgCE) and low <= fvgCE and close >= fvgBot
+    float stopPts = close - fvgBot
+    int q = f_qty(stopPts)
+    if q > 0
+        strategy.entry("RPR_L", strategy.long, qty = q)
+        strategy.exit("RPR_LX", from_entry = "RPR_L", stop = fvgBot, limit = close + i_rr * stopPts)
+        dayTrades += 1
+        cntOrders += 1
+        enteredThisBar := true
+        if i_showMark
+            label.new(bar_index, low, "RPR L", style = label.style_label_up, color = color.new(color.green, 0), textcolor = color.black, size = size.small)
+        phase := 0
+        L0 := na
+        H0 := na
+        iL0 := na
+        iH0 := na
+        fvgBot := na
+        fvgTop := na
+        fvgCE := na
+
+if phase == 15 and canTrade and not enteredThisBar and not na(fvgCE) and high >= fvgCE and close <= fvgTop
+    float stopPtsS = fvgTop - close
+    int qS = f_qty(stopPtsS)
+    if qS > 0
+        strategy.entry("RPR_S", strategy.short, qty = qS)
+        strategy.exit("RPR_SX", from_entry = "RPR_S", stop = fvgTop, limit = close - i_rr * stopPtsS)
+        dayTrades += 1
+        cntOrders += 1
+        enteredThisBar := true
+        if i_showMark
+            label.new(bar_index, high, "RPR S", style = label.style_label_down, color = color.new(color.red, 0), textcolor = color.black, size = size.small)
+        phase := 0
+        L0 := na
+        H0 := na
+        iL0 := na
+        iH0 := na
+        fvgBot := na
+        fvgTop := na
+        fvgCE := na
+
+plot(i_showZones and not na(fvgCE) and phase >= 3 and phase <= 5 ? fvgCE : na, "Bull CE", color = color.new(color.aqua, 0), style = plot.style_linebr)
+plot(i_showZones and not na(fvgCE) and phase >= 13 and phase <= 15 ? fvgCE : na, "Bear CE", color = color.new(color.orange, 0), style = plot.style_linebr)
+
+var table t = table.new(position.top_right, 2, 5, bgcolor = color.new(color.black, 20))
+if i_showDebug and barstate.islast
+    table.cell(t, 0, 0, "ReaperIFVG", text_color = color.white, text_size = size.small)
+    table.cell(t, 1, 0, "Lane S 2.0R 1H", text_color = color.gray, text_size = size.small)
+    table.cell(t, 0, 1, "Days", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 1, str.tostring(cntDays), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 2, "Breakers", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 2, str.tostring(cntBreaker), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 3, "Armed FVG", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 3, str.tostring(cntArmed), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 4, "Orders", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 4, str.tostring(cntOrders), text_color = color.lime, text_size = size.tiny)
+
+alertcondition(enteredThisBar, title = "ReaperIFVG measure entry", message = "ReaperIFVG MEASURE — Lane S Stage-0 only · not promote.")

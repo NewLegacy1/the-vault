@@ -3,27 +3,27 @@ updated: 2026-07-15
 status: active
 tags: [track-b, ideas]
 ---
-# Track B idea roster
+# Track B / Lane S idea roster
 
-> Meta: [[track-b-meta-progress]]. Graveyard B0–B12 + B8. **Lane F paused.**
+> Meta: [[track-b-meta-progress]] · [[lane-s-sleeve-stack-brief]]. Graveyard B0–B12. Lane F paused.
 
 ## Active
 
 | ID | Name | Status |
 |---|---|---|
-| — | — | **None** — after B12 kill · no open Stage-0 |
+| — | — | **None** — S2 Reaper v0 away/desert (n=7 · no OOS) |
 
-## Deferred / research lanes
+## Deferred
 
 | ID | Notes |
 |---|---|
-| Lane F HF TA | **Paused** — B11–B12 no edge |
-| Lane R rare private non-ICT | Allowed later if needed |
-| **Lane S — selective sleeve stack** | Track A portfolio research: gated PRB + Macro A sleeve rules + optional Reaper IFVG **measure** (1H) — see [[lane-s-sleeve-stack-brief]] · **not** a Track B ICT clone Stage-0 |
+| **S2b Reaper** | Optional new Stage-0: looser 1H arm or 1H structure → LTF CE — only with fresh note |
+| Lane F HF TA | **Paused** |
+| S1 Macro A sleeve rules | Conflict rules after a powered selective Stage-0 |
 
-## Killed
+## Killed / closed
 
-B0–B7 · B9 · B10 · B8 · B11 · **B12 EMA Pull** (n=293 · EV −$8 · [[event-study-trackb-emapull-mnq-5m]])
+B0–B12 · S2 Reaper v0 **away-desert** ([[event-study-lane-s-reaper-mnq-1h]]) — not a soft-drain costume kill
 
 ## Ops (primary)
 

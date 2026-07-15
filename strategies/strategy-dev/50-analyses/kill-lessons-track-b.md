@@ -178,7 +178,7 @@ tags: [kill-lessons, track-b, strategy-dev]
 |---|---|
 | **Track A** | **Primary** — gated PRB / D1; loss-gap mitigation via gates + BE, not HF |
 | **Lane F** | Paused after B11–B12 |
-| **Lane S (proposed)** | Selective sleeve stack research under Track A — not ICT “new alpha” Track B |
+| **Lane S** | S2 Reaper v0 **away/desert** (n=7 · no OOS · RR~2 shape interesting) — [[lane-s-s2-reaper-ifvg-v0]] · optional S2b only with new note |
 | **0b on kills** | Forbidden |
 
 ## Agent use

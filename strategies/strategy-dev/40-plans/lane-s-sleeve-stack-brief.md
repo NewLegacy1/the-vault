@@ -22,7 +22,7 @@ Build a **portfolio of selective sleeves** with explicit correlation gates — n
 |---|---|---|
 | **S0 gated PRB** | Primary selective book | `regime-gate-v0` PASS · live ops [[gated-prb-live-guide]] |
 | **S1 Macro A-tier** | Optional cadence | B1a **sleeve-only** · not standalone income |
-| **S2 Reaper IFVG (1H)** | Optional entry *trigger* under bias | Assessment-only · measure when freezes chosen · **not** Track B Stage-0 |
+| **S2 Reaper IFVG (1H)** | Optional entry *trigger* / selective Stage-0 | **Active measure** [[lane-s-s2-reaper-ifvg-v0]] · **not** Track B “new ICT alpha” |
 
 ## Loss-gap mitigation (prop lifecycle) — hierarchy
 

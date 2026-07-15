@@ -4,17 +4,16 @@ tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
 
-> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — **Track A ops primary.** Lane F paused after B12. Optional: [[lane-s-sleeve-stack-brief]].  
+> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — **Track A ops primary.** Lane F paused. S2 Reaper v0 closed desert.  
 
 ## NEXT
 
-**B12 EMA Pull = KILL** (n=293 · EV −$8 · OOS −$15 · [[event-study-trackb-emapull-mnq-5m]]). Graveyard through B12. **Do not retune.**
+**S2 Reaper v0 = AWAY / DESERT** (n=7 · EV +$55 CI covers 0 · OOS n=0 · RR~2 · [[event-study-lane-s-reaper-mnq-1h]]). Not a Lane-F drain kill — **underpowered**.
 
 **Now:**
 
 1. **Ops:** Jul STAND_DOWN / Aug–Sep gated PRB — [[gated-prb-live-guide]].  
-2. **Lane F:** paused.  
-3. **Lane S (optional):** selective sleeve stack research — gated PRB + Macro A sleeve rules + Reaper IFVG measure — [[lane-s-sleeve-stack-brief]].
+2. Optional later: **S2b** new Stage-0 (looser arm / LTF CE) only with fresh pre-register — do not salvage v0 CSV.
 
 ---
 
