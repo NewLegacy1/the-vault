@@ -83,6 +83,31 @@ Lab settled **PASS** 2026-07-14 ([[findings-prb]]). Calendar ops overlay — not
 
 **Live / replay:** paste `Powell_Rejection_Block_gate_v0.pine` → leave Jul/Oct skip **ON**. Use locked v1 only if you intentionally want ungated months.
 
+**Live stack (recommended):** see [[gated-prb-live-guide]].
+
+| Pane | Script | Role |
+|---|---|---|
+| Coach | `PRB_Gate_LiveCoach_v0.pine` | STAND_DOWN banner · Eval/Funded risk · qty from planned stop |
+| Engine | `gate_v0` with **Manual levels only = ON** | LIMIT/STOP/TP boxes — you click / copy to broker |
+
+Do not use Manual OFF auto-orders as live prop authority until paper checklist fidelity is proven.
+
+## Track B v0 — ORBreak (`TrackB_ORBreak_v0.pine`)
+
+**Idea class B0** (time/vol session + hard stop) — not ICT/PRB/Macro · not Lab `matrix-b0`.  
+Design: [[track-b-candidate-v0]]. **KILL** 2026-07-14 (3y exp −$6.76 · max L=11 · DD −$2.8k). Do not reopen.
+
+## Track B B1 — ERXor (`TrackB_ERXor_v0.pine`)
+
+**Idea class B1** — [[track-b-b1-erxor-v0]]. **KILL** 2026-07-14 (3y exp −$5.10 · DD −$2.0k · OOS −$7.59 · no xor lift). Do not retune.
+
+## Track B B2 — MPSF events (`TrackB_MPSF_events_v0.pine`)
+
+**Idea class B2** Morning PD Sweep Fade — [[track-b-b2-mpsf-v0]] · [[event-study-b2-mpsf]].  
+**Indicator only** (Stage-0 visual). No `strategy.entry`.
+
+**Deep BT CSV:** `TrackB_MPSF_measure_v0.pine` → export `matrix/trackb-mpsf-3y.csv` (same locked inputs). Measurement scrape — not Lab promote.
+
 ## Macro Model v2 (`Macro_Model_v2.pine`) — income track
 
 v1.4 entry engine + PRB-style BE ratchet. Does **not** replace `Macro_Model_v1.pine`. Lab series **M · Macro income**.

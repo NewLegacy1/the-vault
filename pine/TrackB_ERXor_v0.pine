@@ -1,0 +1,326 @@
+//@version=6
+// Track B · ERXor v0 — B1 regime switch (ER) · VWAP reclaim xor ±2σ fade
+// NOT ICT / NOT PRB / NOT Macro / NOT ORBreak. Design: strategies/strategy-dev/60-track-b/track-b-b1-erxor-v0.md
+// Lab Macro matrix-b1a is unrelated — this is TrackB_* research.
+//
+// Rules (v0):
+//   1) ER(10): TREND ≥0.40 · CHOP ≤0.30 · sticky hysteresis · start FLAT
+//   2) TREND: session-VWAP pullback reclaim · 1.5R · arm 10:00–14:00
+//   3) CHOP: ±2σ VWAP fade → VWAP · arm 10:00–14:30
+//   4) Risk $100 · max stop 40 pts · max 1/day · flat 15:55
+//
+// Use on MNQ continuous · 5m. Status: research — NO Lab PASS until 3y export + kill settle.
+
+strategy(
+     title                   = "TrackB ERXor v0",
+     shorttitle              = "TrackB ERXor",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_lines_count         = 50,
+     max_labels_count        = 50)
+
+// ─── Inputs ──────────────────────────────────────────────────────────────────
+grpReg = "Regime (Kaufman ER)"
+i_erLen   = input.int(10, "ER lookback", minval = 5, maxval = 50, group = grpReg)
+i_erTrend = input.float(0.40, "TREND enter (ER ≥)", minval = 0.05, maxval = 0.95, step = 0.05, group = grpReg)
+i_erChop  = input.float(0.30, "CHOP enter (ER ≤)", minval = 0.05, maxval = 0.95, step = 0.05, group = grpReg)
+
+grpSess = "Session (NY time)"
+i_sessOpen  = input.int(930, "Session / VWAP start (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_trendArm  = input.int(1000, "TREND arm from (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_trendEnd  = input.int(1400, "TREND last entry (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_chopArm   = input.int(1000, "CHOP arm from (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_chopEnd   = input.int(1430, "CHOP last entry (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_flatTime  = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_onePerDay = input.bool(true, "Max 1 trade per day", group = grpSess)
+i_biasBars  = input.int(6, "TREND bias bars above/below VWAP", minval = 1, maxval = 30, group = grpSess)
+
+grpEnt = "Entries"
+i_sigmaMult = input.float(2.0, "CHOP σ band multiple", minval = 1.0, maxval = 3.0, step = 0.25, group = grpEnt)
+i_rr        = input.float(1.5, "TREND target (R multiple)", minval = 0.5, step = 0.25, group = grpEnt)
+i_stopBuf   = input.float(1.0, "Stop buffer (pts)", minval = 0.0, step = 0.25, group = grpEnt)
+i_atrLen    = input.int(14, "ATR length (CHOP stop buffer)", minval = 5, group = grpEnt)
+i_atrStop   = input.float(0.5, "CHOP stop = extreme + ATR×", minval = 0.0, step = 0.25, group = grpEnt)
+
+grpRisk = "Risk (TPT $2k trail — $100 × 20L = trail)"
+i_maxStop = input.float(40.0, "Max stop (pts) — skip wider", minval = 2.0, step = 1.0, group = grpRisk)
+i_riskUsd = input.float(100.0, "Risk per trade (USD)", minval = 25.0, step = 25.0, group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", minval = 1, maxval = 60, group = grpRisk)
+i_dayLoss = input.float(300.0, "Daily loss stop (USD)", minval = 0.0, step = 50.0, group = grpRisk)
+i_instrMode = input.string("Auto (chart symbol)", "Instrument $ / pt", options = ["Auto (chart symbol)", "MNQ micro ($2/pt)", "NQ mini ($20/pt)"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showVwap  = input.bool(true, "Show session VWAP / bands", group = grpVis)
+i_showTable = input.bool(true, "Show funnel table", group = grpVis)
+
+// ─── Time ────────────────────────────────────────────────────────────────────
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool inRth  = nyHhmm >= i_sessOpen and nyHhmm < i_flatTime
+bool canTrend = nyHhmm >= i_trendArm and nyHhmm < i_trendEnd
+bool canChop  = nyHhmm >= i_chopArm and nyHhmm < i_chopEnd
+
+// ─── Point value (MNQ continuous sometimes reports 20) ───────────────────────
+f_chartIsMnq() =>
+    string t = str.upper(syminfo.ticker)
+    string r = str.upper(syminfo.root)
+    str.contains(t, "MNQ") or str.contains(r, "MNQ")
+
+f_chartIsNq() =>
+    not f_chartIsMnq() and (str.contains(str.upper(syminfo.ticker), "NQ") or str.contains(str.upper(syminfo.root), "NQ"))
+
+f_pointVal() =>
+    switch i_instrMode
+        "MNQ micro ($2/pt)" => 2.0
+        "NQ mini ($20/pt)" => 20.0
+        =>
+            f_chartIsMnq() ? 2.0 : f_chartIsNq() ? 20.0 : (syminfo.pointvalue > 0 ? syminfo.pointvalue : 2.0)
+
+f_qty(float stopPts) =>
+    int q = int(math.floor(i_riskUsd / (stopPts * f_pointVal())))
+    math.max(1, math.min(i_maxCtr, q))
+
+// ─── Kaufman ER ──────────────────────────────────────────────────────────────
+f_er(int len) =>
+    float direction = math.abs(close - close[len])
+    float volatility = math.sum(math.abs(close - close[1]), len)
+    volatility > 0 ? direction / volatility : 0.0
+
+float er = f_er(i_erLen)
+
+// Regime: 0 FLAT · 1 TREND · -1 CHOP (sticky hysteresis)
+var int regime = 0
+if regime == 0
+    if er >= i_erTrend
+        regime := 1
+    else if er <= i_erChop
+        regime := -1
+else if regime == 1
+    if er <= i_erChop
+        regime := -1
+else // CHOP
+    if er >= i_erTrend
+        regime := 1
+
+// ─── Session VWAP + σ (reset at first RTH bar each day) ─────────────────────
+var float sumPV = 0.0
+var float sumV  = 0.0
+var float sumP2V = 0.0
+var int   sessBars = 0
+
+bool justRthOpen = inRth and not inRth[1]
+if justRthOpen
+    sumPV := 0.0
+    sumV := 0.0
+    sumP2V := 0.0
+    sessBars := 0
+
+float src = hlc3
+float vol = math.max(nz(volume, 1.0), 1.0)
+
+if inRth
+    sumPV += src * vol
+    sumV += vol
+    sumP2V += src * src * vol
+    sessBars += 1
+
+float sessVwap = sumV > 0 ? sumPV / sumV : na
+float variance = sumV > 0 ? math.max(sumP2V / sumV - sessVwap * sessVwap, 0.0) : na
+float sigma = not na(variance) ? math.sqrt(variance) : na
+float upper2 = not na(sessVwap) and not na(sigma) ? sessVwap + i_sigmaMult * sigma : na
+float lower2 = not na(sessVwap) and not na(sigma) ? sessVwap - i_sigmaMult * sigma : na
+
+// Bias streak vs VWAP
+var int aboveCnt = 0
+var int belowCnt = 0
+if newDay
+    aboveCnt := 0
+    belowCnt := 0
+if not na(sessVwap)
+    if close > sessVwap
+        aboveCnt += 1
+        belowCnt := 0
+    else if close < sessVwap
+        belowCnt += 1
+        aboveCnt := 0
+    else
+        aboveCnt := 0
+        belowCnt := 0
+
+float atr = ta.atr(i_atrLen)
+
+// ─── Day accounting ──────────────────────────────────────────────────────────
+var float dayStartEquity = na
+var bool tradedToday = false
+var bool signalFired = false
+var int lastMode = 0
+
+var int cntDays = 0
+var int cntTrendDays = 0
+var int cntChopDays = 0
+var int cntFlatSkip = 0
+var int cntOrders = 0
+var int cntSkipStop = 0
+var int regimeBarsTrend = 0
+var int regimeBarsChop = 0
+var int regimeEpisodes = 0
+var int regimePrev = 0
+
+if newDay
+    dayStartEquity := strategy.equity
+    tradedToday := false
+    signalFired := false
+    cntDays += 1
+    if regime == 1
+        cntTrendDays += 1
+    else if regime == -1
+        cntChopDays += 1
+
+if regime != regimePrev and regime != 0
+    regimeEpisodes += 1
+regimePrev := regime
+if regime == 1
+    regimeBarsTrend += 1
+else if regime == -1
+    regimeBarsChop += 1
+
+float dayClosed = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
+bool dayOk = i_dayLoss <= 0 or dayClosed > -i_dayLoss
+
+if strategy.position_size != 0
+    tradedToday := true
+
+bool flat = strategy.position_size == 0
+bool room = not i_onePerDay or not tradedToday
+bool sessOk = not na(sessVwap) and sessBars >= 3
+
+// ─── TREND · VWAP reclaim ────────────────────────────────────────────────────
+bool longTrend =
+     regime == 1 and canTrend and sessOk and flat and room and dayOk and not signalFired and
+     aboveCnt[1] >= i_biasBars and low <= sessVwap and close > sessVwap
+
+bool shortTrend =
+     regime == 1 and canTrend and sessOk and flat and room and dayOk and not signalFired and
+     belowCnt[1] >= i_biasBars and high >= sessVwap and close < sessVwap
+
+// ─── CHOP · ±2σ fade ─────────────────────────────────────────────────────────
+float body = math.abs(close - open)
+float lowerWick = math.min(open, close) - low
+float upperWick = high - math.max(open, close)
+bool rejLong  = close > open and lowerWick > body and body > 0
+bool rejShort = close < open and upperWick > body and body > 0
+
+bool longChop =
+     regime == -1 and canChop and sessOk and flat and room and dayOk and not signalFired and
+     not na(lower2) and low <= lower2 and rejLong
+
+bool shortChop =
+     regime == -1 and canChop and sessOk and flat and room and dayOk and not signalFired and
+     not na(upper2) and high >= upper2 and rejShort
+
+if regime == 0 and (canTrend or canChop) and flat and room
+    cntFlatSkip += 1
+
+// ─── Orders ──────────────────────────────────────────────────────────────────
+if longTrend
+    float stop = low - i_stopBuf
+    float risk = close - stop
+    if risk > 0 and risk <= i_maxStop
+        float tp = close + i_rr * risk
+        strategy.entry("T-Long", strategy.long, qty = f_qty(risk))
+        strategy.exit("T-LX", "T-Long", stop = stop, limit = tp)
+        cntOrders += 1
+        signalFired := true
+        tradedToday := true
+        lastMode := 1
+    else
+        cntSkipStop += 1
+        signalFired := true
+
+if shortTrend
+    float stop = high + i_stopBuf
+    float risk = stop - close
+    if risk > 0 and risk <= i_maxStop
+        float tp = close - i_rr * risk
+        strategy.entry("T-Short", strategy.short, qty = f_qty(risk))
+        strategy.exit("T-SX", "T-Short", stop = stop, limit = tp)
+        cntOrders += 1
+        signalFired := true
+        tradedToday := true
+        lastMode := 1
+    else
+        cntSkipStop += 1
+        signalFired := true
+
+if longChop
+    float stop = low - i_atrStop * atr - i_stopBuf
+    float risk = close - stop
+    if risk > 0 and risk <= i_maxStop
+        strategy.entry("C-Long", strategy.long, qty = f_qty(risk))
+        strategy.exit("C-LX", "C-Long", stop = stop, limit = sessVwap)
+        cntOrders += 1
+        signalFired := true
+        tradedToday := true
+        lastMode := -1
+    else
+        cntSkipStop += 1
+        signalFired := true
+
+if shortChop
+    float stop = high + i_atrStop * atr + i_stopBuf
+    float risk = stop - close
+    if risk > 0 and risk <= i_maxStop
+        strategy.entry("C-Short", strategy.short, qty = f_qty(risk))
+        strategy.exit("C-SX", "C-Short", stop = stop, limit = sessVwap)
+        cntOrders += 1
+        signalFired := true
+        tradedToday := true
+        lastMode := -1
+    else
+        cntSkipStop += 1
+        signalFired := true
+
+if nyHhmm >= i_flatTime and strategy.position_size != 0
+    strategy.close_all(comment = "flat")
+
+// ─── Visuals ─────────────────────────────────────────────────────────────────
+plot(i_showVwap and inRth ? sessVwap : na, "VWAP", color.new(color.orange, 0), style = plot.style_linebr)
+plot(i_showVwap and inRth ? upper2 : na, "+2σ", color.new(color.teal, 50), style = plot.style_linebr)
+plot(i_showVwap and inRth ? lower2 : na, "-2σ", color.new(color.maroon, 50), style = plot.style_linebr)
+
+// ─── Funnel ──────────────────────────────────────────────────────────────────
+f_row(table t, int r, string k, string v) =>
+    table.cell(t, 0, r, k, text_color = color.new(color.lime, 20), text_size = size.small, text_halign = text.align_left)
+    table.cell(t, 1, r, v, text_color = color.white, text_size = size.small, text_halign = text.align_right)
+
+var table diag = table.new(position.top_right, 2, 14, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
+if i_showTable and barstate.islast
+    string regName = regime == 1 ? "TREND" : regime == -1 ? "CHOP" : "FLAT"
+    string lastN = lastMode == 1 ? "TREND" : lastMode == -1 ? "CHOP" : "—"
+    float medDwell = regimeEpisodes > 0 ? (regimeBarsTrend + regimeBarsChop) / regimeEpisodes : na
+    string tfWarn = timeframe.in_seconds() > 300 ? "USE 5m" : timeframe.period
+    f_row(diag, 0, "TrackB ERXor v0", "B1 research")
+    f_row(diag, 1, "Chart TF", tfWarn + " · " + syminfo.ticker)
+    f_row(diag, 2, "ER / regime", str.tostring(er, "#.###") + " · " + regName)
+    f_row(diag, 3, "Days", str.tostring(cntDays))
+    f_row(diag, 4, "TREND days", str.tostring(cntTrendDays))
+    f_row(diag, 5, "CHOP days", str.tostring(cntChopDays))
+    f_row(diag, 6, "FLAT skip ticks", str.tostring(cntFlatSkip))
+    f_row(diag, 7, "Skip stop>max", str.tostring(cntSkipStop))
+    f_row(diag, 8, "Orders placed", str.tostring(cntOrders))
+    f_row(diag, 9, "Filled trades", str.tostring(strategy.closedtrades))
+    f_row(diag, 10, "Avg regime bars", na(medDwell) ? "—" : str.tostring(medDwell, "#.#"))
+    f_row(diag, 11, "Last mode", lastN)
+    f_row(diag, 12, "$/pt used", str.tostring(f_pointVal(), "#.#"))
+    f_row(diag, 13, "Risk", "$" + str.tostring(i_riskUsd, "#") + " · RR " + str.tostring(i_rr, "#.#"))

@@ -1,0 +1,95 @@
+//@version=6
+// PRB Gate Live Coach — clean risk HUD + Jul/Oct STAND_DOWN (does NOT find RB setups).
+// Pair with Powell_Rejection_Block_gate_v0 Manual ON for entry/stop/TP boxes.
+// Guide: strategies/strategy-dev/20-playbooks/gated-prb-live-guide.md
+
+indicator(
+     title      = "PRB Gate Live Coach v0",
+     shorttitle = "PRB Coach",
+     overlay    = true,
+     max_labels_count = 20,
+     max_lines_count  = 10)
+
+grpProf = "Profile"
+i_profile = input.string("Eval (A0a)", "Risk profile", options = ["Eval (A0a)", "Funded (D1)"], group = grpProf)
+i_skipJulOct = input.bool(true, "Jul/Oct STAND_DOWN (regime-gate-v0)", group = grpProf)
+
+grpRisk = "Risk (TPT $50K)"
+i_riskUsd = input.float(400.0, "Risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk)
+i_rrEval  = input.float(5.0, "Eval target R", minval = 1.0, step = 0.25, group = grpRisk)
+i_rrFund  = input.float(6.0, "Funded target R", minval = 1.0, step = 0.25, group = grpRisk)
+i_beAtR   = input.float(1.0, "Breakeven at +N R", minval = 0.0, step = 0.25, group = grpRisk)
+i_maxStop = input.float(20.0, "Max stop (pts)", minval = 2.0, step = 1.0, group = grpRisk)
+i_stopPts = input.float(10.0, "Planned stop (pts) — from box / estimate", minval = 1.0, step = 0.5, group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)"], group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", minval = 1, maxval = 60, group = grpRisk)
+
+grpVis = "Visuals"
+i_showBanner = input.bool(true, "Corner status label", group = grpVis)
+i_showShade  = input.bool(true, "Shade STAND_DOWN months", group = grpVis)
+i_showTable  = input.bool(true, "Risk table", group = grpVis)
+i_tablePos   = input.string("Top right", "Table position", options = ["Top right", "Bottom right"], group = grpVis)
+
+int nyMonth = month(time, "America/New_York")
+bool standDown = i_skipJulOct and (nyMonth == 7 or nyMonth == 10)
+bool enterSd = standDown and not standDown[1]
+bool exitSd  = not standDown and standDown[1]
+
+float pv = i_pvMode == "NQ ($20/pt)" ? 20.0 : 2.0
+int ctrCap = i_pvMode == "NQ ($20/pt)" ? math.min(i_maxCtr, 6) : i_maxCtr
+float rr = i_profile == "Funded (D1)" ? i_rrFund : i_rrEval
+string profTag = i_profile == "Funded (D1)" ? "FUNDED·D1" : "EVAL·A0a"
+
+int qty = 0
+float riskUsdActual = 0.0
+string qtyNote = ""
+bool stopWide = i_stopPts > i_maxStop
+if stopWide
+    qtyNote := "SKIP · stop>max"
+else if i_stopPts * pv <= 0
+    qtyNote := "—"
+else
+    qty := int(math.floor(i_riskUsd / (i_stopPts * pv)))
+    qty := math.max(0, math.min(qty, ctrCap))
+    riskUsdActual := qty * i_stopPts * pv
+    qtyNote := qty > 0 ? str.tostring(qty) : "0 · risk too small"
+
+float tpPts = i_stopPts * rr
+float bePts = i_stopPts * i_beAtR
+
+bgcolor(i_showShade and standDown ? color.new(color.orange, 92) : na, title = "STAND_DOWN wash")
+
+var label ban = na
+if barstate.islast and i_showBanner
+    if not na(ban)
+        label.delete(ban)
+    string msg = standDown ? "STAND_DOWN  Jul/Oct\nNo new PRB entries" : "LIVE  " + profTag + "\ngate_v0 Manual ON"
+    color c = standDown ? color.new(#ff8c42, 0) : color.new(#2dd4bf, 0)
+    ban := label.new(bar_index, high, msg, style = label.style_label_lower_left, color = c, textcolor = color.black, size = size.normal, textalign = text.align_left)
+
+var table t = na
+if barstate.isfirst
+    t := table.new(i_tablePos == "Bottom right" ? position.bottom_right : position.top_right, 2, 8, bgcolor = color.new(#0a0a0a, 10), border_width = 1, border_color = color.new(#333333, 0), frame_color = color.new(#333333, 0), frame_width = 1)
+
+if barstate.islast and i_showTable and not na(t)
+    table.cell(t, 0, 0, "COACH", text_color = color.new(#94a3b8, 0), text_size = size.tiny, bgcolor = color.new(#111111, 0))
+    table.cell(t, 1, 0, profTag, text_color = color.white, text_size = size.small, bgcolor = color.new(#111111, 0))
+    table.cell(t, 0, 1, "Month", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 1, standDown ? "STAND_DOWN" : "TRADE OK", text_color = standDown ? color.new(#ff8c42, 0) : color.new(#4ade80, 0), text_size = size.small)
+    table.cell(t, 0, 2, "Risk $", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 2, str.tostring(i_riskUsd, "#"), text_color = color.white, text_size = size.small)
+    table.cell(t, 0, 3, "Stop → qty", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 3, str.tostring(i_stopPts, "#.#") + "pt → " + qtyNote, text_color = stopWide or qty < 1 ? color.new(#ff8c42, 0) : color.new(#4ade80, 0), text_size = size.small)
+    table.cell(t, 0, 4, "Actual $", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 4, str.tostring(riskUsdActual, "#"), text_color = color.white, text_size = size.small)
+    table.cell(t, 0, 5, "TP / BE", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 5, str.tostring(tpPts, "#.#") + " / " + str.tostring(bePts, "#.#") + " pt", text_color = color.new(#2dd4bf, 0), text_size = size.small)
+    table.cell(t, 0, 6, "Trail", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 6, "OFF · BE only", text_color = color.new(#94a3b8, 0), text_size = size.small)
+    table.cell(t, 0, 7, "Engine", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 7, "gate_v0 Manual ON", text_color = color.new(#94a3b8, 0), text_size = size.tiny)
+
+plot(standDown ? 1 : 0, "stand_down", display = display.none)
+
+alertcondition(enterSd, title = "PRB · enter STAND_DOWN", message = "PRB COACH · STAND_DOWN Jul/Oct — {{ticker}} {{interval}}\nNo new gated PRB entries until month rolls.\nChecklist: close pending limits · do not stack March.")
+alertcondition(exitSd, title = "PRB · exit STAND_DOWN", message = "PRB COACH · LIVE month — {{ticker}} {{interval}}\nProfile: use Eval/Funded card on Coach.\nEngine: gate_v0 Manual ON · ARMED boxes only · checklist bias first.")

@@ -4,12 +4,26 @@ tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
 
-> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — after Tier 0, prioritize **autopsy / regime-gate Lab runs**, not new Hybrid/Macro variants.  
+> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — Track A gate ops live · Track B **B2 MPSF** in Stage-0.  
 > **Scoreboard:** [[prop-firm-math]] — `E[$/calendar week]` after fees (pass → payout → recycle).  
 > **Window:** Deep Backtest **~2023-07-01 → today** · Lab payout buffer **2000**.  
 > **OOS:** After each full RUN, Advanced dates → last **12 months** only · compare E[$/wk].  
 > **1y baselines archived:** `strategies/cohorts/_archive_365d_jul2026/` — do **not** MC-compare to new `*-3y-*` cohorts.  
 > **Calendar:** [[calendar-3y]] (2486 USD events · dense FF through 2025-04-07 · FRED gap after).
+
+## NEXT — after B0 + B1 kills
+
+**TB0 ORBreak = KILL** · **TB1 ERXor = KILL** · **TB2 MPSF = KILL** (2026-07-15 · n=30 · EV −$76 · [[event-study-trackb-mpsf-3y]]).  
+CSVs: `matrix/trackb-orbreak-3y.csv` · `matrix/trackb-erxor-3y.csv` · `matrix/trackb-mpsf-3y.csv`.
+
+**Now:**
+
+1. **Ops:** live / paper gated PRB — [[gated-prb-live-guide]] · `gate_v0` Manual ON + LiveCoach.  
+2. **Research:** next Track B only after a **new** Stage-0 note (B3/B4) — do not retune MPSF.
+
+Do **not** Lab-grind killed Track B scripts.
+
+---
 
 ## Settled from 1y premium (do not re-litigate unless 3y OOS reverses)
 

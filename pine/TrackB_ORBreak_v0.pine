@@ -1,0 +1,207 @@
+//@version=6
+// Track B · ORBreak v0 — Opening Range Break (idea class B0: time/vol + hard stop)
+// NOT ICT / NOT PRB / NOT Macro. Design: strategies/strategy-dev/60-track-b/track-b-candidate-v0.md
+// Lab Macro matrix-b0 is unrelated — this is TrackB_* research.
+//
+// Rules (v0):
+//   1) Build OR high/low 09:30–09:45 NY
+//   2) After OR locks, first close beyond OR high/low = entry
+//   3) Stop = opposite OR extreme (+ buffer)
+//   4) Target = RR × stop distance
+//   5) Skip if OR width outside min/max or stop > maxStopPts
+//   6) Max 1 trade/day · flat by flatTime · riskUsd sizing
+//
+// Use on MNQ continuous · 1m or 5m. Status: research — no Lab PASS until 3y export + MC.
+
+strategy(
+     title                   = "TrackB ORBreak v0",
+     shorttitle              = "TrackB ORB v0",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_lines_count         = 100,
+     max_labels_count        = 100,
+     max_boxes_count         = 50)
+
+// ─── Inputs ──────────────────────────────────────────────────────────────────
+grpSess = "Session (NY time)"
+i_orStart   = input.int(930, "OR start (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_orEnd     = input.int(945, "OR end / arm after (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_entryEnd  = input.int(1100, "Last entry (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_flatTime  = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpSess)
+i_onePerDay = input.bool(true, "Max 1 trade per day", group = grpSess)
+i_skipMon   = input.bool(false, "Skip Mondays (optional A/B)", group = grpSess)
+
+grpFilt = "OR / vol filter"
+// MNQ 15m OR is often 40–100+ pts — a 40-pt max was killing almost every day.
+i_minOrPts = input.float(8.0, "Min OR width (pts)", minval = 0.0, step = 0.5, group = grpFilt)
+i_maxOrPts = input.float(120.0, "Max OR width (pts)", minval = 1.0, step = 0.5, group = grpFilt)
+
+grpRisk = "Risk (TPT $2k trail design — $250 × 8L = trail)"
+i_stopBuf   = input.float(1.0, "Stop buffer beyond OR extreme (pts)", minval = 0.0, step = 0.25, group = grpRisk)
+i_maxStop   = input.float(60.0, "Max stop (pts) — skip wider", minval = 2.0, step = 1.0, group = grpRisk)
+i_rr        = input.float(1.5, "Target (R multiple)", minval = 0.5, step = 0.25, group = grpRisk)
+i_riskUsd   = input.float(250.0, "Risk per trade (USD)", minval = 50.0, step = 50.0, group = grpRisk)
+i_maxCtr    = input.int(60, "Max contracts", minval = 1, maxval = 60, group = grpRisk)
+i_dayLoss   = input.float(500.0, "Daily loss stop (USD)", minval = 0.0, step = 50.0, group = grpRisk)
+i_instrMode = input.string("Auto (chart symbol)", "Instrument $ / pt", options = ["Auto (chart symbol)", "MNQ micro ($2/pt)", "NQ mini ($20/pt)"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showOr    = input.bool(true, "Show OR box / levels", group = grpVis)
+i_showTable = input.bool(true, "Show funnel table", group = grpVis)
+
+// ─── Time ────────────────────────────────────────────────────────────────────
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool inOrBuild = nyHhmm >= i_orStart and nyHhmm < i_orEnd
+bool canEnter  = nyHhmm >= i_orEnd and nyHhmm < i_entryEnd
+bool dayOkMon  = not i_skipMon or dayofweek(time, "America/New_York") != dayofweek.monday
+
+// MNQ continuous sometimes reports pointvalue=20 — same guard as PRB v1.
+f_chartIsMnq() =>
+    string t = str.upper(syminfo.ticker)
+    string r = str.upper(syminfo.root)
+    str.contains(t, "MNQ") or str.contains(r, "MNQ")
+
+f_chartIsNq() =>
+    not f_chartIsMnq() and (str.contains(str.upper(syminfo.ticker), "NQ") or str.contains(str.upper(syminfo.root), "NQ"))
+
+f_pointVal() =>
+    switch i_instrMode
+        "MNQ micro ($2/pt)" => 2.0
+        "NQ mini ($20/pt)" => 20.0
+        =>
+            f_chartIsMnq() ? 2.0 : f_chartIsNq() ? 20.0 : (syminfo.pointvalue > 0 ? syminfo.pointvalue : 2.0)
+
+f_qty(float stopPts) =>
+    int q = int(math.floor(i_riskUsd / (stopPts * f_pointVal())))
+    math.max(1, math.min(i_maxCtr, q))
+
+// ─── OR state ────────────────────────────────────────────────────────────────
+var float orHigh = na
+var float orLow  = na
+var bool  orLocked = false
+var bool  orValid  = false
+var bool  tradedToday = false
+var bool  signalFired = false
+
+var int cntDays = 0
+var int cntOrOk = 0
+var int cntSkipWidth = 0
+var int cntSkipStop = 0
+var int cntSignals = 0
+var int cntOrders = 0
+
+var float dayStartEquity = na
+
+if newDay
+    orHigh := na
+    orLow := na
+    orLocked := false
+    orValid := false
+    tradedToday := false
+    signalFired := false
+    dayStartEquity := strategy.equity
+    cntDays += 1
+
+if inOrBuild
+    orHigh := na(orHigh) ? high : math.max(orHigh, high)
+    orLow  := na(orLow)  ? low  : math.min(orLow, low)
+
+if not orLocked and nyHhmm >= i_orEnd and not na(orHigh) and not na(orLow)
+    orLocked := true
+    float w = orHigh - orLow
+    orValid := w >= i_minOrPts and w <= i_maxOrPts
+    if orValid
+        cntOrOk += 1
+    else
+        cntSkipWidth += 1
+
+// Equity-delta day gate (no O(n²) closedtrades scan — that can blank Deep BT)
+float dayClosed = na(dayStartEquity) ? 0.0 : strategy.equity - dayStartEquity
+bool dayOk = i_dayLoss <= 0 or dayClosed > -i_dayLoss
+
+if strategy.position_size != 0
+    tradedToday := true
+
+// ─── Entry ───────────────────────────────────────────────────────────────────
+bool flat = strategy.position_size == 0
+bool room = not i_onePerDay or not tradedToday
+bool longBrk  = orLocked and orValid and canEnter and close > orHigh
+bool shortBrk = orLocked and orValid and canEnter and close < orLow
+
+float stopLong  = orLow  - i_stopBuf
+float stopShort = orHigh + i_stopBuf
+float riskLong  = close - stopLong
+float riskShort = stopShort - close
+
+bool longStopOk  = riskLong > 0 and riskLong <= i_maxStop
+bool shortStopOk = riskShort > 0 and riskShort <= i_maxStop
+
+if not signalFired and flat and room and dayOkMon and dayOk and longBrk
+    cntSignals += 1
+    if longStopOk
+        float tp = close + i_rr * riskLong
+        int q = f_qty(riskLong)
+        strategy.entry("Long", strategy.long, qty = q)
+        strategy.exit("L-X", "Long", stop = stopLong, limit = tp)
+        cntOrders += 1
+        signalFired := true
+        tradedToday := true
+    else
+        cntSkipStop += 1
+        signalFired := true
+
+if not signalFired and flat and room and dayOkMon and dayOk and shortBrk
+    cntSignals += 1
+    if shortStopOk
+        float tp = close - i_rr * riskShort
+        int q = f_qty(riskShort)
+        strategy.entry("Short", strategy.short, qty = q)
+        strategy.exit("S-X", "Short", stop = stopShort, limit = tp)
+        cntOrders += 1
+        signalFired := true
+        tradedToday := true
+    else
+        cntSkipStop += 1
+        signalFired := true
+
+if nyHhmm >= i_flatTime and strategy.position_size != 0
+    strategy.close_all(comment = "flat")
+
+// ─── Visuals ─────────────────────────────────────────────────────────────────
+plot(i_showOr and orLocked ? orHigh : na, "OR High", color.new(color.teal, 30), style = plot.style_linebr)
+plot(i_showOr and orLocked ? orLow : na, "OR Low", color.new(color.maroon, 30), style = plot.style_linebr)
+
+// ─── Funnel ──────────────────────────────────────────────────────────────────
+f_row(table t, int r, string k, string v) =>
+    table.cell(t, 0, r, k, text_color = color.new(color.lime, 20), text_size = size.small, text_halign = text.align_left)
+    table.cell(t, 1, r, v, text_color = color.white, text_size = size.small, text_halign = text.align_right)
+
+var table diag = table.new(position.top_right, 2, 12, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
+if i_showTable and barstate.islast
+    float wNow = orLocked and not na(orHigh) and not na(orLow) ? orHigh - orLow : na
+    string orState = not orLocked ? "building/waiting" : orValid ? "LOCKED ok" : "LOCKED skip width"
+    string tfWarn = timeframe.in_seconds() > 300 ? "USE 1m/5m" : timeframe.period
+    f_row(diag, 0, "TrackB ORBreak v0", "B0 research")
+    f_row(diag, 1, "Chart TF", tfWarn + " · " + syminfo.ticker)
+    f_row(diag, 2, "Days", str.tostring(cntDays))
+    f_row(diag, 3, "OR valid days", str.tostring(cntOrOk))
+    f_row(diag, 4, "Skip OR width", str.tostring(cntSkipWidth))
+    f_row(diag, 5, "Skip stop>max", str.tostring(cntSkipStop))
+    f_row(diag, 6, "Break signals", str.tostring(cntSignals))
+    f_row(diag, 7, "Orders placed", str.tostring(cntOrders))
+    f_row(diag, 8, "Filled trades", str.tostring(strategy.closedtrades))
+    f_row(diag, 9, "OR state", orState + (na(wNow) ? "" : " · " + str.tostring(wNow, "#.#") + "pt"))
+    f_row(diag, 10, "$/pt used", str.tostring(f_pointVal(), "#.#"))
+    f_row(diag, 11, "Risk", "$" + str.tostring(i_riskUsd, "#") + " · RR " + str.tostring(i_rr, "#.#"))

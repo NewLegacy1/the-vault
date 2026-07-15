@@ -1,0 +1,130 @@
+//@version=6
+// Track B · B2 MPSF — Morning PD Sweep Fade · EVENT PAINTER (Stage-0 visual QA)
+// No strategy.entry. For Deep BT Stage-0 CSV use TrackB_MPSF_measure_v0.pine
+// Design: strategies/strategy-dev/60-track-b/track-b-b2-mpsf-v0.md
+
+indicator(
+     title      = "TrackB MPSF events v0",
+     shorttitle = "MPSF evt",
+     overlay    = true,
+     max_labels_count = 80,
+     max_lines_count  = 20,
+     max_boxes_count  = 40)
+
+grpEvt = "Event (pre-registered)"
+i_minSweep = input.float(4.0, "Min sweep beyond PDH/PDL (pts)", minval = 1.0, step = 0.5, group = grpEvt)
+i_evtStart = input.int(930, "Event window start (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_evtEnd   = input.int(1000, "Event window end (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_flatTime = input.int(1130, "Outcome horizon flat (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_skipMon  = input.bool(true, "Skip Mondays", group = grpEvt)
+
+grpCtx = "Context (pre-registered)"
+i_atrLen = input.int(14, "ATR length", minval = 5, group = grpCtx)
+i_atrMax = input.float(0.012, "Max ATR/Close (skip if higher)", minval = 0.001, step = 0.001, group = grpCtx)
+
+grpOut = "Barrier sketch (not orders)"
+i_stopBuf = input.float(1.0, "Stop buffer (pts)", minval = 0.0, step = 0.25, group = grpOut)
+i_maxStop = input.float(25.0, "Max stop (pts) — skip wider", minval = 5.0, step = 1.0, group = grpOut)
+i_rr      = input.float(1.5, "Target R", minval = 0.5, step = 0.25, group = grpOut)
+i_showBoxes = input.bool(true, "Draw SL/TP on event (last 40 kept)", group = grpOut)
+
+grpVis = "Visuals"
+i_showPd = input.bool(true, "Show PDH/PDL", group = grpVis)
+i_shadeWin = input.bool(true, "Shade 9:30–10:00 event window", group = grpVis)
+i_showTable = input.bool(true, "Counter table", group = grpVis)
+i_labelSz = input.string("Normal", "Marker size", options = ["Small", "Normal"], group = grpVis)
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+int nyDow  = dayofweek(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool inEvt  = nyHhmm >= i_evtStart and nyHhmm < i_evtEnd
+bool monOk  = not i_skipMon or nyDow != dayofweek.monday
+
+float pdh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_off)
+float pdl = request.security(syminfo.tickerid, "D", low[1], lookahead = barmerge.lookahead_off)
+
+// Clean levels — dashed, muted (don’t fight candles)
+plot(i_showPd ? pdh : na, "PDH", color = color.new(#f87171, 35), linewidth = 1, style = plot.style_linebr)
+plot(i_showPd ? pdl : na, "PDL", color = color.new(#4ade80, 35), linewidth = 1, style = plot.style_linebr)
+bgcolor(i_shadeWin and inEvt ? color.new(#38bdf8, 94) : na, title = "Event window")
+
+float atr = ta.atr(i_atrLen)
+float atrFrac = close > 0 ? atr / close : 0.0
+bool volOk = atrFrac <= i_atrMax
+
+var int dayEvents = 0
+var int totEvents = 0
+var int totLong = 0
+var int totShort = 0
+var int totSkipVol = 0
+var int totSkipWide = 0
+if newDay
+    dayEvents := 0
+
+bool longEvt = false
+bool shortEvt = false
+float stopPx = na
+float tpPx = na
+float entryPx = na
+
+if inEvt and monOk and dayEvents == 0 and not na(pdh) and not na(pdl)
+    if low <= pdl - i_minSweep and close > pdl and volOk
+        longEvt := true
+        entryPx := close
+        stopPx := low - i_stopBuf
+        float risk = entryPx - stopPx
+        if risk > 0 and risk <= i_maxStop
+            tpPx := entryPx + i_rr * risk
+        else
+            totSkipWide := totSkipWide + 1
+            longEvt := false
+    else if high >= pdh + i_minSweep and close < pdh and volOk
+        shortEvt := true
+        entryPx := close
+        stopPx := high + i_stopBuf
+        float riskS = stopPx - entryPx
+        if riskS > 0 and riskS <= i_maxStop
+            tpPx := entryPx - i_rr * riskS
+        else
+            totSkipWide := totSkipWide + 1
+            shortEvt := false
+    if not volOk and ((low <= pdl - i_minSweep and close > pdl) or (high >= pdh + i_minSweep and close < pdh))
+        totSkipVol := totSkipVol + 1
+
+size labSz = i_labelSz == "Small" ? size.small : size.normal
+
+if longEvt or shortEvt
+    dayEvents := dayEvents + 1
+    totEvents := totEvents + 1
+    if longEvt
+        totLong := totLong + 1
+    else
+        totShort := totShort + 1
+    // Triangle markers — one glance L/S
+    if longEvt
+        label.new(bar_index, low, "L", style = label.style_triangleup, color = color.new(#2dd4bf, 0), textcolor = color.black, size = labSz, yloc = yloc.belowbar)
+    else
+        label.new(bar_index, high, "S", style = label.style_triangledown, color = color.new(#fb923c, 0), textcolor = color.black, size = labSz, yloc = yloc.abovebar)
+    if i_showBoxes and not na(entryPx) and not na(stopPx) and not na(tpPx)
+        int right = bar_index + 12
+        box.new(bar_index, math.max(entryPx, stopPx), right, math.min(entryPx, stopPx), bgcolor = color.new(#ef4444, 88), border_color = color.new(#ef4444, 40), border_width = 1)
+        box.new(bar_index, math.max(entryPx, tpPx), right, math.min(entryPx, tpPx), bgcolor = color.new(#2dd4bf, 88), border_color = color.new(#2dd4bf, 40), border_width = 1)
+        line.new(bar_index, entryPx, right, entryPx, color = color.new(#e2e8f0, 30), width = 1, style = line.style_dotted)
+
+var table t = table.new(position.bottom_left, 2, 6, bgcolor = color.new(#0a0a0a, 10), border_width = 1, border_color = color.new(#333333, 0))
+if barstate.islast and i_showTable
+    table.cell(t, 0, 0, "MPSF", text_color = color.new(#94a3b8, 0), text_size = size.tiny)
+    table.cell(t, 1, 0, "Stage-0 · no orders", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 0, 1, "Events", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 1, str.tostring(totEvents) + "  (L" + str.tostring(totLong) + " S" + str.tostring(totShort) + ")", text_color = color.white, text_size = size.small)
+    table.cell(t, 0, 2, "Skip vol", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 2, str.tostring(totSkipVol), text_color = color.new(#fb923c, 0), text_size = size.small)
+    table.cell(t, 0, 3, "Skip wide", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 3, str.tostring(totSkipWide), text_color = color.new(#fb923c, 0), text_size = size.small)
+    table.cell(t, 0, 4, "ATR/C", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 4, str.tostring(atrFrac, "#.####"), text_color = volOk ? color.new(#4ade80, 0) : color.new(#f87171, 0), text_size = size.small)
+    table.cell(t, 0, 5, "BT CSV", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 5, "use MPSF measure", text_color = color.new(#38bdf8, 0), text_size = size.tiny)
+
+alertcondition(longEvt, title = "MPSF · long event", message = "MPSF Stage-0 LONG — {{ticker}} {{interval}} {{time}}\nPDL sweep+reclaim · NOT a live order.\nPainter only — for fills use TrackB_MPSF_measure_v0 Deep BT.")
+alertcondition(shortEvt, title = "MPSF · short event", message = "MPSF Stage-0 SHORT — {{ticker}} {{interval}} {{time}}\nPDH sweep+reclaim · NOT a live order.\nPainter only — for fills use TrackB_MPSF_measure_v0 Deep BT.")

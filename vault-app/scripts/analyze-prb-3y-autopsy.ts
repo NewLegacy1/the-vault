@@ -23,7 +23,7 @@ const CAL = path.join(__dirname, "../data/calendar-bundle.json");
 const OUT_JSON = path.join(__dirname, "../data/tv-exports/prb-3y-autopsy.json");
 const OUT_MD = path.join(
   __dirname,
-  "../../strategies/strategy-dev/phase1-autopsy-a0a-d1.md"
+  "../../strategies/strategy-dev/50-analyses/phase1-autopsy-a0a-d1.md"
 );
 
 const BOOKS = [

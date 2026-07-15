@@ -6,6 +6,18 @@ import { runMonteCarlo, McResult } from "@/lib/monte-carlo";
 import { parseLabLedger, tradesPerWeek, type ParsedTrade } from "@/lib/csv";
 import { summarizeTradeEnrichment } from "@/lib/trade-enrichment";
 import { LedgerEnrichmentPanel } from "@/components/ledger-enrichment-panel";
+import { RiskGeometryPanel } from "@/components/risk-geometry-panel";
+import { Stage0Panel } from "@/components/stage0-panel";
+import { McDashboardHero } from "@/components/mc-dashboard-hero";
+import { ContextSlicePanel } from "@/components/context-slice-panel";
+import { AgentLedgerPanel } from "@/components/agent-ledger-panel";
+import { CopilotInsightsPanel, CopilotVerdictChip } from "@/components/copilot-insights-panel";
+import { ImplementationShortfallChip } from "@/components/implementation-shortfall-chip";
+import { IngestAuditPanel } from "@/components/ingest-audit-panel";
+import { bootstrapEvCi, computeRiskGeometry } from "@/lib/risk-geometry";
+import { auditLabIngest } from "@/lib/ingest-audit";
+import { shortfallFromEvCi } from "@/lib/implementation-shortfall";
+import type { McSimMode } from "@/lib/monte-carlo";
 import { ALL_SEED_TRADES, TRADES_DEC_MAR, TRADES_APR_JUL } from "@/lib/prb-data";
 import { TRADES_YTD_FULL, TRADES_YTD_MAY17 } from "@/lib/prb-ytd-data";
 import { TRADES_BE2R_PDH_12MO } from "@/lib/prb-be2r-data";
@@ -662,7 +674,7 @@ function ChartFindingsCard({ family }: { family: FindingFamily }) {
     return (
       <p className="small dim" style={{ marginTop: 0 }}>
         No settled chart findings for <span className="accent">{family}</span> yet. Run cohorts and update{" "}
-        <code className="inline">strategies/strategy-dev/findings-{family === "macro" ? "macro" : "prb"}.md</code>.
+        <code className="inline">strategies/strategy-dev/30-findings/findings-{family === "macro" ? "macro" : "prb"}.md</code>.
       </p>
     );
   }
@@ -973,6 +985,7 @@ export default function LabPage() {
   const [scorecardHistory, setScorecardHistory] = useLocal<ScorecardRunEntry[]>("vault.lab.scorecardHistory", []);
   const [savedCohorts, setSavedCohorts] = useState<LabScorecardMetrics[]>([]);
   const [cohortRecords, setCohortRecords] = useState<CohortRecord[]>([]);
+  const [mcSimMode, setMcSimMode] = useState<McSimMode>("eval_path");
   const mcResultsRef = useRef<HTMLDivElement>(null);
 
   const activePreset = presetById(study.presetId);
@@ -1023,10 +1036,27 @@ export default function LabPage() {
     () => summarizeTradeEnrichment(activeDs.parsed ?? []),
     [activeDs.parsed]
   );
+  const riskGeometry = useMemo(() => {
+    const pnls = activeDs.trades;
+    return {
+      geometry: computeRiskGeometry(pnls),
+      evCi: bootstrapEvCi(pnls, 1500),
+    };
+  }, [activeDs.trades]);
+  const ingestAudit = useMemo(
+    () =>
+      auditLabIngest({
+        trades: activeDs.trades,
+        dates: activeDs.dates,
+        parsed: activeDs.parsed,
+      }),
+    [activeDs.trades, activeDs.dates, activeDs.parsed]
+  );
   const dateFilterActive = Boolean(dateFilter.from || dateFilter.to);
   const displayName = ds ? datasetDisplayName(ds, datasetAliases) : "";
   const rule = ruleById(MATRIX_REFERENCE_FIRM_ID) ?? PROP_RULES[0];
-  const canRun = studyReady(study) && activeDs.trades.length > 0;
+  const canRun =
+    studyReady(study) && activeDs.trades.length > 0 && ingestAudit.canRunMc;
   const storageReady = dsReady && simsReady && maxTradesReady && payoutReady && studyHydrated && ledgersReady;
 
   const mcFirmParams = useMemo(
@@ -1091,6 +1121,27 @@ export default function LabPage() {
     };
   }, [activeDs, ds]);
 
+  useEffect(() => {
+    setMcSimMode(activePreset?.phase === "funded" ? "funded_only" : "eval_path");
+  }, [study.presetId, activePreset?.phase]);
+
+  const mcBarriers = useMemo(() => {
+    const built = buildMcParamsForLab({
+      ruleId: MATRIX_REFERENCE_FIRM_ID,
+      strategyPhase: activePreset?.phase,
+      trades: [],
+      dates: [],
+      sims: 1,
+      maxTrades: 1,
+      payoutBuffer: Number(payoutBuffer) || 1000,
+      simModeOverride: mcSimMode,
+    });
+    return {
+      passAt: built?.params.passAt ?? rule.passAt,
+      dd: built?.params.trailingDD ?? rule.trailingDD,
+    };
+  }, [activePreset?.phase, payoutBuffer, mcSimMode, rule.passAt, rule.trailingDD]);
+
   const computeMcRun = useMemo(() => {
     return () => {
       const preset = presetById(study.presetId);
@@ -1102,6 +1153,7 @@ export default function LabPage() {
         sims: Number(sims) || 2000,
         maxTrades: Number(maxTrades) || 80,
         payoutBuffer: Number(payoutBuffer) || 1000,
+        simModeOverride: mcSimMode,
       });
       const mcResult = runMonteCarlo(
         built?.params ?? {
@@ -1122,6 +1174,7 @@ export default function LabPage() {
               ? { consistencyPct: rule.consistencyPct, minDays: rule.minDays }
               : undefined,
           bootstrap: "week",
+          simMode: mcSimMode,
         }
       );
       const secondHalfPass = mcPassRateSecondHalf(
@@ -1147,7 +1200,7 @@ export default function LabPage() {
       const comparison = compareToBenchmark(metrics);
       return { mcResult, comparison };
     };
-  }, [activeDs, rule, sims, maxTrades, payoutBuffer, stats, consistency, study.presetId, dataKey, variantName, displayName]);
+  }, [activeDs, rule, sims, maxTrades, payoutBuffer, stats, consistency, study.presetId, dataKey, variantName, displayName, mcSimMode]);
 
   useEffect(() => {
     if (!storageReady) return;
@@ -1480,6 +1533,16 @@ export default function LabPage() {
     payoutBuffer,
   ]);
 
+  const shortfall = useMemo(() => {
+    if (!res) return null;
+    return shortfallFromEvCi(
+      riskGeometry.evCi,
+      stats.tpw,
+      res,
+      cycle?.expectedUsdPerCalendarWeek ?? null
+    );
+  }, [res, riskGeometry.evCi, stats.tpw, cycle]);
+
   return (
     <>
       <div className="lab-intro">
@@ -1667,6 +1730,15 @@ export default function LabPage() {
                   {dateFilterActive && stats.fullN !== stats.n && (
                     <span className="warn"> (filtered from {stats.fullN})</span>
                   )}
+                  {activeDs.trades.length > 0 ? (
+                    <>
+                      <IngestAuditPanel audit={ingestAudit} />
+                      <RiskGeometryPanel
+                        geometry={riskGeometry.geometry}
+                        evCi={riskGeometry.evCi}
+                      />
+                    </>
+                  ) : null}
                   {ds.parsed && ds.parsed.length > 0 ? (
                     <LedgerEnrichmentPanel summary={enrichment} />
                   ) : null}
@@ -1683,6 +1755,17 @@ export default function LabPage() {
                 <p className="small warn" style={{ marginTop: 6, marginBottom: 0 }}>
                   No trades in selected date range — widen dates in Advanced options.
                 </p>
+              )}
+
+              <Stage0Panel />
+              {activeDs.trades.length > 0 && (
+                <ContextSlicePanel trades={activeDs.trades} dates={activeDs.dates} />
+              )}
+              {activeDs.parsed && activeDs.parsed.length > 0 && (
+                <AgentLedgerPanel
+                  parsed={activeDs.parsed}
+                  scorecardVerdict={scorecardComparison?.verdict}
+                />
               )}
             </div>
           </div>
@@ -1950,6 +2033,16 @@ export default function LabPage() {
 
           {chainEvContext && <ChainEvPanel context={chainEvContext} />}
 
+          {shortfall && <ImplementationShortfallChip shortfall={shortfall} />}
+
+          {scorecardComparison && (
+            <CopilotVerdictChip
+              verdict={scorecardComparison.verdict}
+              compositeScore={scorecardComparison.compositeScore}
+              detail={scorecardComparison.verdictDetail}
+            />
+          )}
+
           {scorecardComparison && (
             <CollapsiblePanel
               title="Experiment scorecard"
@@ -1964,25 +2057,36 @@ export default function LabPage() {
             </CollapsiblePanel>
           )}
 
-          <div className="panel">
-            <div className="panel-title">
-              Monte Carlo simulation
-              <span className="sub">
-                {rule.name} reference · {res.sims.toLocaleString()} paths · {res.bootstrap}-block bootstrap
-                {res.consistencyAware ? " · consistency-aware" : ""}
-              </span>
-            </div>
-            <div className="panel-body chart-row">
+          <McDashboardHero
+            res={res}
+            firmName={rule.name}
+            passAt={mcBarriers.passAt}
+            payoutAt={eco.payoutAt}
+            dd={mcBarriers.dd}
+            mode={mcSimMode}
+            onModeChange={setMcSimMode}
+            windowBadge={
+              (dateFilterActive ? "filtered · " : "") +
+              (res.consistencyAware ? "consistency-aware" : stats.span)
+            }
+          >
+            <div className="chart-row">
               <FanChart
                 res={res}
-                passAt={rule.passAt}
+                passAt={mcBarriers.passAt}
                 payoutAt={eco.payoutAt}
-                dd={rule.trailingDD}
+                dd={mcBarriers.dd}
                 tradesPerWeek={eco.tradesPerWeek}
               />
               <OutcomeChart hist={res.outcomeHist} sims={res.sims} />
             </div>
-          </div>
+          </McDashboardHero>
+
+          <CopilotInsightsPanel
+            trades={activeDs.trades}
+            dates={activeDs.dates}
+            parsed={activeDs.parsed}
+          />
 
           <CollapsiblePanel title="News-day performance" sub="red-folder vs quiet · from F7 calendar" defaultOpen={false}>
             <NewsDayPanel

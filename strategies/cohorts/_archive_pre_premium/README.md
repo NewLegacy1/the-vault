@@ -12,7 +12,7 @@ Cohorts moved here **Jul 2026** during premium 365d matrix prep.
 
 Canonical Macro baseline: `../funded/2026-07-14_macro_v1_4_premium_365d_canonical.md`
 
-Agent rules: [[strategy-dev/cohort-hygiene]]
+Agent rules: [[strategy-dev/00-charter/cohort-hygiene]]
 
 ## Re-run expectation
 

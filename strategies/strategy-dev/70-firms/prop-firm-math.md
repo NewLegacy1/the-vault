@@ -65,12 +65,21 @@ Full Zendesk scrape: [[tpt-rules]]. Agent hygiene for cohorts: [[cohort-hygiene]
 
 Macro v1.2: +$16,749/yr but 30.5% pass — symmetric $800 wins/losses inside a $2,000 trail means routine 3-loss streaks bust the account. PRB v1.5 BE@2R: smaller net but 54.9% pass because BE mechanism caps losses. **The trail DD punishes loss size, not low win rate.**
 
+## Convex payoff + risk geometry
+
+Prop challenge + funded ≈ **convex structured product**: economic downside ≈ fees paid; payouts can be realized. Model with path MC (pass/bust/timeout, net EV after fees) — see [[SCORECARD]].
+
+**Risk geometry** (WR, avg win/loss ≈ RR, trade PnL SD) describes return-distribution *shape*. When trade EV is held equal, lower trade-PnL variance / milder RR / higher WR tends to raise **challenge pass%**. Best **funded payout** geometry can differ — always run **separate eval vs funded MC**. Geometry is diagnostic only; WR/RR alone never promote.
+
+Helper: `vault-app/lib/risk-geometry.ts` · Lab enrichment strip.
+
 ## Expectancy math (per-strategy targets)
 
-- Expectancy/trade = WR × avgWin − (1−WR) × avgLoss
+- Expectancy/trade = WR × avgWin − (1−WR) × avgLoss  (+ bootstrap CI via `risk-geometry` / event-study)
 - Eval survival ≈ f(max consecutive-loss run × avgLoss vs $2,000)
 - `expected_accounts` = 1 / pass_rate → dominant fee driver
 - Weekly edge $ = expectancy × trades/week (funded-phase metric)
+- Promote authority = **`E[$/wk]` after fees** (path MC), not WR/RR
 
 ## Current leaderboard (2000 sims, TPT $50K)
 

@@ -9,12 +9,15 @@
 
 ## Prime directives
 
-1. **Prop math first — the business loop.** Optimize **expected $ after fees per calendar week** from `pass → payout(s) → recycle`, not raw backtest P&L and not pass% alone. Core fields: `expectedNetPerAccountUsd`, `payoutRate` / `passRate` (= P(payout\|pass)), `medianWithdrawnUsd`, `weeksToPayoutP50`, `recycleRate`. Account churn is OK if EV/week stays positive after fees. See [[prop-firm-math]].
+1. **Prop math first — the business loop.** Optimize **expected $ after fees per calendar week** from `pass → payout(s) → recycle`, not raw backtest P&L and not pass% alone. Core fields: `expectedNetPerAccountUsd`, `payoutRate` / `passRate` (= P(payout\|pass)), `medianWithdrawnUsd`, `weeksToPayoutP50`, `recycleRate`. Account churn is OK if EV/week stays positive after fees. See [[prop-firm-math]] · [[SCORECARD]].
 2. **Never modify `pine/Powell_Rejection_Block_v1.pine`** (locked live). Create new variant files for experiments.
 3. **Every claim needs a cohort.** No promotion without a saved cohort note in `strategies/cohorts/` and MC run in F4 LAB.
-4. **One variable per experiment.** Mixed-input exports (e.g. pivot 5 on one chunk, pivot 10 on others) are not clean A/Bs.
-5. **Promotion rule:** MC pass ≥ baseline AND net P&L competitive AND forward test holds 20+ trades AND regime fit for upcoming month.
+4. **One variable per experiment (Occam).** Mixed-input exports are not clean A/Bs. Start univariate / one free param; idea-class tag `MR | momentum | breakout | other`.
+5. **Promotion rule:** Path MC + `E[$/wk]` ≥ baseline AND net competitive AND forward test holds AND regime fit. WR/avg RR alone never promote. Apply execution haircut / slippage band before “edge” language.
 6. **Loss shape before cadence.** Any new or gated book must document trail-compatible loss math ($2k DD) before treating frequency / hybrid sleeves as income levers.
+7. **Stage-0 before new Pine.** No new Track B / optimizable edge Pine until [[event-study-template]] artifact exists with EV/CI. Events ≠ signals. Public/published SOP claims are **default-null** (inspiration only) until private lift shown.
+8. **Four gates for optimizable edges.** IS excellence → IS **price-permutation** → walk-forward → WF price-permutation ([[permutation-tests]]). Do not burn OOS until IS-perm passes. Lab **trade-bootstrap** MC ≠ price-perm MC — both required for promote on new searchable-param strategies. Locked PRB v1 exempt from re-optimize loops.
+9. **Model ≠ strategy.** Predictive feature/event study first; then execution/risk protocol. Both required.
 
 ## The two-phase objective (eval vs funded)
 
@@ -32,7 +35,11 @@ See [[prop-firm-math]] for full rules and current MC standings.
 
 ## Core knowledge files (read these first)
 
+Map of content: [[strategy-dev/_index]] (section folders `00-charter` … `70-firms`).
+
 - **[[execution-plan-post-3y]]** — **ACTIVE BRIEF** (post-3y · autopsy → gate or Track B)
+- [[SCORECARD]] — success/failure / metric hierarchy / toward·away·kill
+- [[event-study-template]] · [[track-b-template]] · [[permutation-tests]] — Stage-0 + four gates
 - [[findings-prb]] — PRB winning trade formula + settled A/B results
 - [[findings-macro]] — Macro Model winning trade formula + tier data
 - [[prop-firm-math]] — TPT rules summary, MC methodology, leaderboard
@@ -67,11 +74,12 @@ See [[prop-firm-math]] for full rules and current MC standings.
 
 ## Workflow loop
 
+0. **Stage-0 (new ideas)** — fill event study → `npx tsx scripts/analyze-event-study.ts` → price-perm gates if searchable params → SCORECARD toward.
 1. **Ingest** — new TV export lands → parse with `vault-app/lib/csv.ts` (tier from Signal: `_AP`/`_A`/`_H`) → run F4 LAB MC → cohort auto-saves.
-2. **Synthesize** — update [[findings-prb]] / [[findings-macro]] with what the new cohort settled or contradicted.
-3. **Hypothesize** — add next experiment to [[roadmap]] with a falsifiable prediction and target metric.
+2. **Synthesize** — update [[findings-prb]] / [[findings-macro]] with what the new cohort settled or contradicted; SCORECARD toward/away/kill.
+3. **Hypothesize** — add next experiment to [[roadmap]] with a falsifiable prediction and target metric (`event | context | reference | outcome` purpose tag).
 4. **Build** — new Pine variant (never touch PRB live file), one variable changed.
-5. **Test** — full-year deep backtest export → repeat.
+5. **Test** — full-year deep backtest export → Lab prop MC → repeat. Weekly review includes OOS **decay check**.
 
 ## Standing questions for the agent
 

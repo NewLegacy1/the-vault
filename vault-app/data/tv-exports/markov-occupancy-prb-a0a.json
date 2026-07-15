@@ -1,0 +1,39 @@
+{
+  "title": "PRB A0a Jul+Oct regime occupancy",
+  "ledger": "matrix/prb-a0a-3y.csv",
+  "labels": [
+    "STAND_DOWN",
+    "TRADE"
+  ],
+  "counts": {
+    "STAND_DOWN": 26,
+    "TRADE": 130
+  },
+  "pi": {
+    "STAND_DOWN": 0.167,
+    "TRADE": 0.833
+  },
+  "transitions": {
+    "STAND_DOWN": {
+      "STAND_DOWN": 19,
+      "TRADE": 6
+    },
+    "TRADE": {
+      "STAND_DOWN": 6,
+      "TRADE": 124
+    }
+  },
+  "transitionP": {
+    "STAND_DOWN": {
+      "STAND_DOWN": 0.76,
+      "TRADE": 0.24
+    },
+    "TRADE": {
+      "STAND_DOWN": 0.046,
+      "TRADE": 0.954
+    }
+  },
+  "nWindows": 156,
+  "windowDays": 7,
+  "note": "Non-overlapping windows · majority vote · Lab footnote only — not a promote KPI."
+}

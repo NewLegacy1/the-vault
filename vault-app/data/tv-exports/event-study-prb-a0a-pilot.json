@@ -1,0 +1,107 @@
+{
+  "title": "PRB A0a fill events (pilot tooling)",
+  "note": "Pilot only — events = filled trade exits from existing book; not a Stage-0 claim of new edge.",
+  "ledger": "matrix/prb-a0a-3y.csv",
+  "oosStart": "2025-07-14",
+  "nBoot": 2000,
+  "windows": {
+    "full": {
+      "label": "full",
+      "geometry": {
+        "n": 120,
+        "wins": 16,
+        "losses": 62,
+        "scratches": 42,
+        "winRatePct": 13.3,
+        "avgWin": 1916.95,
+        "avgLoss": -340.74,
+        "rr": 5.63,
+        "tradePnlSd": 743.22,
+        "tradeEv": 71.06,
+        "medianPnl": -81.74
+      },
+      "evCi": {
+        "mean": 71.06,
+        "ciLow": -58.64,
+        "ciHigh": 216.11,
+        "nBoot": 2000
+      },
+      "coversZero": true
+    },
+    "is": {
+      "label": "IS",
+      "geometry": {
+        "n": 80,
+        "wins": 6,
+        "losses": 44,
+        "scratches": 30,
+        "winRatePct": 7.5,
+        "avgWin": 1895.55,
+        "avgLoss": -337.46,
+        "rr": 5.62,
+        "tradePnlSd": 581.05,
+        "tradeEv": -52.83,
+        "medianPnl": -132.03
+      },
+      "evCi": {
+        "mean": -52.83,
+        "ciLow": -171.59,
+        "ciHigh": 81.58,
+        "nBoot": 2000
+      },
+      "coversZero": true
+    },
+    "oos": {
+      "label": "OOS",
+      "geometry": {
+        "n": 40,
+        "wins": 10,
+        "losses": 18,
+        "scratches": 12,
+        "winRatePct": 25,
+        "avgWin": 1929.78,
+        "avgLoss": -348.77,
+        "rr": 5.53,
+        "tradePnlSd": 943.29,
+        "tradeEv": 318.84,
+        "medianPnl": -26.1
+      },
+      "evCi": {
+        "mean": 318.84,
+        "ciLow": 38.72,
+        "ciHigh": 615.77,
+        "nBoot": 2000
+      },
+      "coversZero": false
+    },
+    "randomBaseline": {
+      "label": "random_baseline",
+      "geometry": {
+        "n": 120,
+        "wins": 37,
+        "losses": 41,
+        "scratches": 42,
+        "winRatePct": 30.8,
+        "avgWin": 601.28,
+        "avgLoss": -720.73,
+        "rr": 0.83,
+        "tradePnlSd": 744.1,
+        "tradeEv": -61.19,
+        "medianPnl": -19.14
+      },
+      "evCi": {
+        "mean": -61.19,
+        "ciLow": -190.56,
+        "ciHigh": 69.91,
+        "nBoot": 2000
+      },
+      "coversZero": true
+    }
+  },
+  "scorecard": {
+    "verdict": "toward",
+    "blockStrategy": false,
+    "reason": "OOS EV CI exclusive of 0 — still requires prop path MC for promote"
+  },
+  "geometryFootnote": "WR / RR / SD are geometry diagnostics only — see SCORECARD.md"
+}

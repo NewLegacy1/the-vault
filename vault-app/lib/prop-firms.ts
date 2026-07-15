@@ -63,7 +63,7 @@ const TPT_50K_PHASES = [
     notes: [
       "PRO is still simulated; withdrawn profits are real.",
       "At $5,000 cumulative PRO profit you become eligible for PRO+ (opt-in via email).",
-      "Recycle strategy: withdraw at $52k buffer and restart test before PRO+ — see strategies/strategy-dev/tpt-rules.md.",
+      "Recycle strategy: withdraw at $52k buffer and restart test before PRO+ — see strategies/strategy-dev/70-firms/tpt-rules.md.",
     ],
     activationFee: 130,
     source: "takeprofittrader.com · TPT help center · fundedwiki.com (2026)",

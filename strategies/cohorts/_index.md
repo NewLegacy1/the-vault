@@ -13,14 +13,14 @@ Monte Carlo + backtest results from **F4 LAB** auto-save here. YAML frontmatter 
 | `_archive_pre_premium/` | Archived | Pre-premium / duplicate — **agent ignore** |
 | `_archive_365d_jul2026/` | Archived | 1y premium matrix MC — **Lab blank for 3y reset** · do not MC-compare to new `*-3y-*` |
 
-Phase folders (`eval/`, `funded/`, …) are empty after the 2026-07-14 3y reset. New Lab auto-saves land here again.
+Phase folders refill on every Lab RUN (auto-save). After the 2026-07-14 3y reset they started empty; current active notes are the post-reset / gated / Macro income runs (not the archived 1y matrix).
 
 Legacy flat files at this folder root were moved to `_archive_pre_premium/` (Jul 2026).
 
 ## Agent-only hygiene
 
-See [[strategy-dev/cohort-hygiene]] — not surfaced in Lab UI.  
-3y queue: [[strategy-dev/sim-queue]] · [[strategy-dev/tier0-3y-checklist]].  
+See [[strategy-dev/00-charter/cohort-hygiene]] — not surfaced in Lab UI.  
+3y queue: [[strategy-dev/40-plans/sim-queue]] · [[strategy-dev/40-plans/tier0-3y-checklist]].  
 1y baselines: `_archive_365d_jul2026/` (e.g. former Macro canonical note lives there).
 
 ## YAML fields (new saves)
@@ -86,11 +86,11 @@ SORT created DESC
 
 1. F4 LAB: strategy preset → upload CSV → RUN (auto-save on)
 2. Cohort lands in `eval/`, `funded/`, etc. from preset phase
-3. Agent updates [[strategy-dev/findings-prb]] or [[strategy-dev/findings-macro]]
-4. Next experiment added to [[strategy-dev/roadmap]]
+3. Agent updates [[strategy-dev/30-findings/findings-prb]] or [[strategy-dev/30-findings/findings-macro]]
+4. Next experiment added to [[strategy-dev/40-plans/roadmap]]
 
 ## Playbooks
 
-- [[strategy-dev/eval-playbook]]
-- [[strategy-dev/funded-playbook]]
-- [[strategy-dev/hybrid-playbook]]
+- [[strategy-dev/20-playbooks/eval-playbook]]
+- [[strategy-dev/20-playbooks/funded-playbook]]
+- [[strategy-dev/20-playbooks/hybrid-playbook]]

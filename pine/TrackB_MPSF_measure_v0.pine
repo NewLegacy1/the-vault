@@ -1,0 +1,116 @@
+//@version=6
+// Track B · B2 MPSF MEASURE — same rules as event painter, WITH orders for Deep BT CSV.
+// Stage-0 measurement only — NOT a Lab promote until event-study SCORECARD toward.
+// Design: strategies/strategy-dev/60-track-b/track-b-b2-mpsf-v0.md
+// Save CSV as: vault-app/data/tv-exports/matrix/trackb-mpsf-3y.csv
+
+strategy(
+     title                   = "TrackB MPSF measure v0",
+     shorttitle              = "MPSF measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 100,
+     max_lines_count         = 50)
+
+grpEvt = "Event (pre-registered — lock for Stage-0)"
+i_minSweep = input.float(4.0, "Min sweep beyond PDH/PDL (pts)", minval = 1.0, step = 0.5, group = grpEvt)
+i_evtStart = input.int(930, "Event window start (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_evtEnd   = input.int(1000, "Event window end (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_flatTime = input.int(1130, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_skipMon  = input.bool(true, "Skip Mondays", group = grpEvt)
+
+grpCtx = "Context"
+i_atrLen = input.int(14, "ATR length", minval = 5, group = grpCtx)
+i_atrMax = input.float(0.012, "Max ATR/Close", minval = 0.001, step = 0.001, group = grpCtx)
+
+grpRisk = "Risk / outcome"
+i_stopBuf = input.float(1.0, "Stop buffer (pts)", minval = 0.0, step = 0.25, group = grpRisk)
+i_maxStop = input.float(25.0, "Max stop (pts)", minval = 5.0, step = 1.0, group = grpRisk)
+i_rr      = input.float(1.5, "Target R", minval = 0.5, step = 0.25, group = grpRisk)
+i_riskUsd = input.float(150.0, "Risk per trade (USD)", minval = 25.0, step = 25.0, group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", minval = 1, maxval = 60, group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showMark = input.bool(true, "Entry markers", group = grpVis)
+i_showPd   = input.bool(true, "PDH/PDL", group = grpVis)
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+int nyDow  = dayofweek(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool inEvt  = nyHhmm >= i_evtStart and nyHhmm < i_evtEnd
+bool monOk  = not i_skipMon or nyDow != dayofweek.monday
+bool flatNow = nyHhmm >= i_flatTime
+
+float pdh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_off)
+float pdl = request.security(syminfo.tickerid, "D", low[1], lookahead = barmerge.lookahead_off)
+plot(i_showPd ? pdh : na, "PDH", color = color.new(#f87171, 40), linewidth = 1, style = plot.style_linebr)
+plot(i_showPd ? pdl : na, "PDL", color = color.new(#4ade80, 40), linewidth = 1, style = plot.style_linebr)
+bgcolor(inEvt ? color.new(#38bdf8, 95) : na)
+
+float atr = ta.atr(i_atrLen)
+float atrFrac = close > 0 ? atr / close : 0.0
+bool volOk = atrFrac <= i_atrMax
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+var int dayTrades = 0
+if newDay
+    dayTrades := 0
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 11:30")
+
+if inEvt and monOk and dayTrades == 0 and strategy.position_size == 0 and not na(pdh) and not na(pdl) and volOk
+    // Long: PDL sweep reclaim
+    if low <= pdl - i_minSweep and close > pdl
+        float stopL = low - i_stopBuf
+        float riskL = close - stopL
+        int qL = f_qty(riskL)
+        if qL > 0
+            float tpL = close + i_rr * riskL
+            strategy.entry("MPSF_L", strategy.long, qty = qL)
+            strategy.exit("MPSF_LX", from_entry = "MPSF_L", stop = stopL, limit = tpL)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, low, "L", style = label.style_triangleup, color = color.new(#2dd4bf, 0), textcolor = color.black, size = size.small, yloc = yloc.belowbar)
+    else if high >= pdh + i_minSweep and close < pdh
+        float stopS = high + i_stopBuf
+        float riskS = stopS - close
+        int qS = f_qty(riskS)
+        if qS > 0
+            float tpS = close - i_rr * riskS
+            strategy.entry("MPSF_S", strategy.short, qty = qS)
+            strategy.exit("MPSF_SX", from_entry = "MPSF_S", stop = stopS, limit = tpS)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, high, "S", style = label.style_triangledown, color = color.new(#fb923c, 0), textcolor = color.black, size = size.small, yloc = yloc.abovebar)
+
+alertcondition(dayTrades == 1 and dayTrades[1] == 0, title = "MPSF measure · entry", message = "MPSF MEASURE entry — {{ticker}} {{interval}}\nStage-0 scrape only — not promote / not live gated PRB.")

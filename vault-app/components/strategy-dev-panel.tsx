@@ -96,7 +96,7 @@ export function StrategyDevPanel({
         <p className="small dim" style={{ marginTop: 0, lineHeight: 1.65 }}>
           Compares every saved Monte Carlo cohort from Obsidian. Optimizes for prop math — pass rate and
           expected accounts on eval, weekly edge on funded. Full charter:{" "}
-          <code className="inline">strategies/strategy-dev/STRATEGY_DEV_AGENT.md</code>
+          <code className="inline">strategies/strategy-dev/00-charter/STRATEGY_DEV_AGENT.md</code>
         </p>
       )}
 

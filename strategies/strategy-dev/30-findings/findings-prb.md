@@ -26,13 +26,17 @@ Full YAML records: `strategies/cohorts/`.
 
 ## Settled (do not retest without new evidence)
 
-1. **BE@2R > BE@1R** — +12pt pass rate; +1R BE scratched too many eventual winners.
-2. **Auto PDH/PDL direction filter earns its trade-count cost** — fewer trades, better quality.
-3. **Skip Monday** holds.
-4. **1 trade/day** holds — slot discipline beats volume.
-5. Win profile is low win-rate / high payoff (13W/44L/12scr still nets $12k+) — the formula depends on **losses staying small** (BE mechanism), not on win rate.
-6. **`regime-gate-v0` PASS (2026-07-14)** — STAND_DOWN Jul+Oct on 3y A0a/D1. Lab-engine MC (`buildMcParamsForLab`, max 220, buffer 2000): E[$/wk] ↑ and bust ↓ on full + OOS vs ungated. Provisional **ops overlay** (calendar), not a causal market regime. Do **not** stack March into v0. **Ops encoded** in Pine `pine/Powell_Rejection_Block_gate_v0.pine` (`Skip July & October` default ON).
-7. **Chain EV A0a→D1 × gate PASS (2026-07-14)** — see [[phase2-chain-ev-gated]]. Full-loop lab-engine: ungated **−$18/wk** → gated **−$6/wk** (Δ +$12). OOS: $32 → **$50/wk**. Absolute full-3y chain E[$/acct] still **negative** (−$593 → −$209) — gate reduces damage; does **not** create a profitable 3y business loop. JSON: `vault-app/data/tv-exports/chain-ev-gated-vs-ungated.json`.
+Purpose tags: **event** = pattern/detect · **context** = when to take · **reference** = levels · **outcome** = result label.
+
+1. **BE@2R > BE@1R** — *(outcome management)* +12pt pass rate; +1R BE scratched too many eventual winners.
+2. **Auto PDH/PDL direction filter** — *(context)* earns its trade-count cost — fewer trades, better quality.
+3. **Skip Monday** — *(context)* holds.
+4. **1 trade/day** — *(context / slot)* holds — slot discipline beats volume.
+5. Win profile is low win-rate / high payoff — formula depends on **losses staying small** (BE = *outcome*), not on WR as KPI.
+6. **`regime-gate-v0` PASS (2026-07-14)** — *(context · calendar)* STAND_DOWN Jul+Oct on 3y A0a/D1. Lab-engine MC: E[$/wk] ↑ and bust ↓ on full + OOS vs ungated. Provisional **ops overlay**, not a causal market regime. Do **not** stack March into v0. Pine: `pine/Powell_Rejection_Block_gate_v0.pine`.
+7. **Chain EV A0a→D1 × gate PASS (2026-07-14)** — see [[phase2-chain-ev-gated]]. Ungated **−$18/wk** → gated **−$6/wk**. OOS: $32 → **$50/wk**. Absolute full-3y chain still ≤0. JSON: `vault-app/data/tv-exports/chain-ev-gated-vs-ungated.json`.
+
+**RB detect / leave-retest / confirming close** — *(event)*. **PDH/PDL / PM H/L / key opens** — *(reference)*.
 
 ## Phase 1–2 regime gate (3y · settled PASS)
 
@@ -62,17 +66,19 @@ Cohorts: `strategies/cohorts/eval/*regime_gate_v0*` · `strategies/cohorts/funde
 
 **Honesty:** Gate removes barren calendar months; does **not** prove forever PRB edge. Single-leg income still thin (~$26–37/wk). **Full-loop chain on 3y stays ≤0** even gated (−$6/wk) — see [[phase2-chain-ev-gated]].
 
-**Blocked until explicit next ask:** min-day pad (2.2), March stack. Chain EV (2.3) **done**. Phase 2.4 **KEEP calendar v0**. Track B = Lane D on [[parallel-impl-sprint2]].
+**Blocked until explicit next ask:** min-day pad (2.2), March stack. Chain EV (2.3) **done**. Phase 2.4 **KEEP calendar v0**. Track B: B0 ORBreak **KILL** · B1 ERXor **KILL** · **B2 MPSF KILL** ([[event-study-trackb-mpsf-3y]]). Live ops: [[gated-prb-live-guide]].
 
 ## Open questions
 
 - True OHLC vol/trend co-feature (vault had no daily bars — 2.4 used ledger proxies only)
-- Live forward test with gate ON (`Powell_Rejection_Block_gate_v0.pine`)
+- Live forward test with gate ON — **guide shipped** ([[gated-prb-live-guide]])
 - Does trail 2.0/1.5 beat BE-only specifically in give-back months (Feb–Mar type)?
 - Long-only vs short-only bias splits by regime?
-- Track B candidate — [[parallel-impl-sprint2]] Lane D
+- Next Track B (B3/B4) — only with fresh Stage-0; MPSF closed
 
 ## What failed (graveyard — don't resurrect)
 
 - Trail-on as a permanent setting (regressed vs BE-only outside give-back regimes)
+- Track B B0 ORBreak ([[track-b-candidate-v0]])
+- Track B B1 ERXor ([[track-b-b1-erxor-v0]] — 3y kill)
 - See F3 strategy page graveyard and `vault-app/lib/lab-findings.ts` (`CHART_FINDINGS`) for the settled A/B reference table.

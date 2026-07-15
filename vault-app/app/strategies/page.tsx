@@ -94,7 +94,7 @@ export default function StrategiesPage() {
         </div>
         <div className="panel-body small dim" style={{ lineHeight: 1.65 }}>
           Strategy development charter and playbooks live in{" "}
-          <code className="inline">strategies/strategy-dev/STRATEGY_DEV_AGENT.md</code>. Cohorts auto-save to{" "}
+          <code className="inline">strategies/strategy-dev/00-charter/STRATEGY_DEV_AGENT.md</code>. Cohorts auto-save to{" "}
           <code className="inline">strategies/cohorts/</code> when GitHub token is set on Vercel.
         </div>
       </div>

@@ -39,19 +39,19 @@ export function cohortWikiLinks(family: StrategyFamily): string {
     case "prb":
       return `- [[Powell_Rejection_Block_SOP]]
 - [[PRB_Trade_Checklist]]
-- [[strategy-dev/findings-prb]]`;
+- [[strategy-dev/30-findings/findings-prb]]`;
     case "macro":
       return `- [[Macro_Model_SOP]]
 - [[Macro_Trade_Checklist]]
-- [[strategy-dev/findings-macro]]`;
+- [[strategy-dev/30-findings/findings-macro]]`;
     case "hybrid":
-      return `- [[strategy-dev/hybrid-playbook]]
+      return `- [[strategy-dev/20-playbooks/hybrid-playbook]]
 - [[Powell_Rejection_Block_SOP]]
 - [[Macro_Model_SOP]]`;
     case "datahl":
-      return `- [[strategy-dev/roadmap]]`;
+      return `- [[strategy-dev/40-plans/roadmap]]`;
     case "custom":
-      return `- [[strategy-dev/STRATEGY_DEV_AGENT]]`;
+      return `- [[strategy-dev/00-charter/STRATEGY_DEV_AGENT]]`;
     default: {
       const _exhaustive: never = family;
       return _exhaustive;
@@ -386,8 +386,8 @@ _Compare pass rate and net P&L against baseline cohorts in this folder. Promotio
 ## Links
 
 ${cohortWikiLinks(input.strategyFamily)}
-- [[strategy-dev/prop-firm-math]]
-- [[strategy-dev/roadmap]]
+- [[strategy-dev/70-firms/prop-firm-math]]
+- [[strategy-dev/40-plans/roadmap]]
 `;
 
   return frontmatter + body;

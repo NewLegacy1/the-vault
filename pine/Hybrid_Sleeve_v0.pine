@@ -13,7 +13,7 @@
 //   · Macro A-tier only (TS required, no SMT boost, no half-wick)
 //   · Same-day conflict: first fill wins (Macro morning usually arms first)
 //
-// SOP refs: strategies/strategy-dev/hybrid-playbook.md · Macro_Model_SOP · PRB SOP
+// SOP refs: strategies/strategy-dev/20-playbooks/hybrid-playbook.md · Macro_Model_SOP · PRB SOP
 // NOT codeable: FF red-folder auto-detect — toggle "Macro: skip (treat as red)"
 
 strategy(

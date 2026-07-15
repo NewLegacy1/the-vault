@@ -206,13 +206,21 @@ Phase 1–2.1 **done** — `regime-gate-v0` **PASS**.
 | Lane | Work | Owner | Status |
 |---|---|---|---|
 | **C** | Phase 2.4 co-feature vs calendar | this chat | **DONE · KEEP calendar v0** · [[phase2-4-cofeature]] |
-| **D** | Track B design + Pine skeleton | other chat | ready |
+| **D** | Track B B0 ORBreak | other chat | **DONE · KILL** · [[track-b-candidate-v0]] |
 | Prior A/B | Ops gate + chain EV | — | **DONE** |
 
 1. [x] … Phase 1–2.3 complete (see above / change log).
 2. [x] **Lane C / 2.4** — KEEP calendar v0 (ledger path/gap features lost to Jul+Oct on OOS)
-3. [ ] **Lane D** — [[parallel-impl-sprint2]] Track B
-4. [ ] Merge when D done → Track B export / live forward gated PRB.
+3. [x] **Lane D** — Track B B0 ORBreak · killed after 3y BT
+4. [x] TB0 ORBreak Deep BT → **KILL** ([[track-b-candidate-v0]] · n=91 · exp −$6.76 · max L=11 · DD −$2.8k)
+5. [x] **B1 ERXor design + Pine** — [[track-b-b1-erxor-v0]] · `pine/TrackB_ERXor_v0.pine`
+6. [x] TB1 ERXor Deep BT → **KILL** (n=296 · exp −$5.10 · DD −$2.0k · OOS −$7.59 · no xor lift)
+7. [x] **Next testing priority (2026-07-15):** ops = [[gated-prb-live-guide]] + LiveCoach · research = Track B **B2 MPSF** → **KILL** after Stage-0 ([[event-study-trackb-mpsf-3y]]).
+
+### Phase 3 status — Track B **B0/B1/B2 KILLED**
+
+- B0 ORBreak **KILL** · B1 ERXor **KILL** · **B2 MPSF KILL** (EV −$76 · CI excl. 0 · n=30).
+- No active Track B candidate. Ops path = gated PRB live. Next idea = B3/B4 with a new Stage-0 note only.
 
 ## 6. How this overrides / relates to other docs
 
@@ -246,3 +254,6 @@ Phase 1–2.1 **done** — `regime-gate-v0` **PASS**.
 | 2026-07-14 | Lane B done — [[phase2-chain-ev-gated]] PASS relative (−$18→−$6/wk); absolute full-3y chain ≤0. |
 | 2026-07-14 | Parallel sprint 2 [[parallel-impl-sprint2]] — Lane C 2.4 cofeature + Lane D Track B design. |
 | 2026-07-14 | Lane C done — [[phase2-4-cofeature]] **KEEP calendar v0** (no ledger co-feature beat Jul+Oct OOS). |
+| 2026-07-14 | Lane D done — Track B **OPEN** · B0 ORBreak · [[track-b-candidate-v0]] · `TrackB_ORBreak_v0.pine` (design/skeleton; no Lab PASS). |
+| 2026-07-14 | TB0 ORBreak Deep BT → **KILL**. B1 ERXor opened — [[track-b-b1-erxor-v0]] · `TrackB_ERXor_v0.pine` · next = 3y export. |
+| 2026-07-14 | TB1 ERXor Deep BT → **KILL** (xor ≤0 · DD −$2k · OOS worse · no sleeve lift). |

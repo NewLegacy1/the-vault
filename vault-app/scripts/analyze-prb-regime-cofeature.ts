@@ -28,7 +28,7 @@ const MATRIX = path.join(__dirname, "../data/tv-exports/matrix");
 const OUT_JSON = path.join(__dirname, "../data/tv-exports/prb-regime-cofeature.json");
 const OUT_MD = path.join(
   __dirname,
-  "../../strategies/strategy-dev/phase2-4-cofeature.md"
+  "../../strategies/strategy-dev/50-analyses/phase2-4-cofeature.md"
 );
 
 const OOS_START = "2025-07-14";

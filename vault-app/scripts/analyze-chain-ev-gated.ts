@@ -1,6 +1,6 @@
 /**
  * Phase 2.3 — Chain EV ungated vs gated (regime-gate-v0 Jul+Oct STAND_DOWN).
- * Lane B of strategies/strategy-dev/parallel-impl-gated-prb.md
+ * Lane B of strategies/strategy-dev/40-plans/parallel-impl-gated-prb.md
  *
  * Usage: npx tsx scripts/analyze-chain-ev-gated.ts
  */
@@ -26,7 +26,7 @@ const OUT_JSON = path.join(
 );
 const OUT_MD = path.join(
   ROOT,
-  "strategies/strategy-dev/phase2-chain-ev-gated.md"
+  "strategies/strategy-dev/50-analyses/phase2-chain-ev-gated.md"
 );
 
 const SIMS = 2000;

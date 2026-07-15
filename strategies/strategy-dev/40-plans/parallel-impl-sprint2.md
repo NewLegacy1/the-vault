@@ -57,9 +57,9 @@ Answer: does a **live-known-before-session** market feature explain PRB barren m
 |---|---|
 | `vault-app/scripts/analyze-prb-regime-cofeature.ts` | CREATE |
 | `vault-app/data/tv-exports/prb-regime-cofeature.json` | WRITE |
-| `strategies/strategy-dev/phase2-4-cofeature.md` | CREATE settle note |
-| `strategies/strategy-dev/findings-prb.md` | One settled row for 2.4 |
-| `strategies/strategy-dev/execution-plan-post-3y.md` | Mark 2.4 done |
+| `strategies/strategy-dev/50-analyses/phase2-4-cofeature.md` | CREATE settle note |
+| `strategies/strategy-dev/30-findings/findings-prb.md` | One settled row for 2.4 |
+| `strategies/strategy-dev/40-plans/execution-plan-post-3y.md` | Mark 2.4 done |
 
 ### Do not touch
 
@@ -79,9 +79,9 @@ Answer: does a **live-known-before-session** market feature explain PRB barren m
 ### Copy-paste — Lane C (this agent)
 
 ```text
-Read strategies/strategy-dev/parallel-impl-sprint2.md — execute ONLY Lane C (Phase 2.4 co-feature).
+Read strategies/strategy-dev/40-plans/parallel-impl-sprint2.md — execute ONLY Lane C (Phase 2.4 co-feature).
 - Pre-register ≤3 pre-session observables, then test vs calendar Jul+Oct on A0a (full + OOS).
-- Create vault-app/scripts/analyze-prb-regime-cofeature.ts + JSON + strategies/strategy-dev/phase2-4-cofeature.md.
+- Create vault-app/scripts/analyze-prb-regime-cofeature.ts + JSON + strategies/strategy-dev/50-analyses/phase2-4-cofeature.md.
 - Settle PROMOTE feature vs KEEP calendar v0 in findings-prb; mark execution-plan 2.4.
 - Do not edit any pine files or Track B docs. No March stack, no Macro polish.
 Stop at Lane C acceptance. Report the verdict and key numbers.
@@ -106,11 +106,11 @@ Because full-3y gated chain is still ≤0, open **Track B**: one falsifiable non
 
 | Path | Action |
 |---|---|
-| `strategies/strategy-dev/track-b-candidate-v0.md` | CREATE — hypothesis, rules, loss math, kill criteria, export plan |
+| `strategies/strategy-dev/60-track-b/track-b-candidate-v0.md` | CREATE — hypothesis, rules, loss math, kill criteria, export plan |
 | `pine/TrackB_<name>_v0.pine` | CREATE skeleton (inputs + entry/exit stubs + funnel). **Not** ICT RB/FVG soup. |
 | `pine/PINE_GUIDE.md` | Short “Track B v0” pointer only |
-| `strategies/strategy-dev/findings-prb.md` | Optional one-liner “Track B opened — see track-b-candidate-v0” (no fake PASS) |
-| `strategies/strategy-dev/execution-plan-post-3y.md` | Mark Phase 3 started / Track B open |
+| `strategies/strategy-dev/30-findings/findings-prb.md` | Optional one-liner “Track B opened — see track-b-candidate-v0” (no fake PASS) |
+| `strategies/strategy-dev/40-plans/execution-plan-post-3y.md` | Mark Phase 3 started / Track B open |
 
 ### Do not touch
 
@@ -121,17 +121,17 @@ Because full-3y gated chain is still ≤0, open **Track B**: one falsifiable non
 
 ### Acceptance (Lane D done)
 
-1. [ ] `track-b-candidate-v0.md` complete: one idea · rules · trail math · kill criteria · next export steps
-2. [ ] Pine skeleton with inputs/state/entry/exit stubs · name `TrackB_…` (avoid Lab Macro `B0`/`B1a` collision)
-3. [ ] PINE_GUIDE pointer
-4. [ ] Execution plan notes Track B open (no spurious PASS)
+1. [x] `track-b-candidate-v0.md` complete: one idea · rules · trail math · kill criteria · next export steps
+2. [x] Pine skeleton with inputs/state/entry/exit stubs · name `TrackB_…` (avoid Lab Macro `B0`/`B1a` collision)
+3. [x] PINE_GUIDE pointer
+4. [x] Execution plan notes Track B open (no spurious PASS)
 
 ### Copy-paste — Lane D (other agent)
 
 ```text
-Read strategies/strategy-dev/parallel-impl-sprint2.md — execute ONLY Lane D (Track B design).
+Read strategies/strategy-dev/40-plans/parallel-impl-sprint2.md — execute ONLY Lane D (Track B design).
 - Pick exactly one: B0 (time/vol session + hard stop) OR B1 (regime switch). Not an ICT/PRB/Macro clone.
-- Write strategies/strategy-dev/track-b-candidate-v0.md with rules, $2k-trail loss math, kill criteria.
+- Write strategies/strategy-dev/60-track-b/track-b-candidate-v0.md with rules, $2k-trail loss math, kill criteria.
 - Create pine/TrackB_<name>_v0.pine skeleton + short PINE_GUIDE pointer.
 - Mark Track B open on execution-plan. Do NOT claim Lab PASS without a 3y export.
 - Do not touch Lane C cofeature scripts, phase2-4-cofeature.md, or locked Powell_Rejection_Block_v1.pine.
@@ -160,5 +160,5 @@ Stop at Lane D acceptance. Report files changed and the chosen idea class.
 | Lane | Status |
 |---|---|
 | C Co-feature 2.4 | **DONE · KEEP calendar v0** · [[phase2-4-cofeature]] |
-| D Track B design | **ready** (other agent) |
-| Merge | waiting on D |
+| D Track B design | **DONE · B0 ORBreak** · [[track-b-candidate-v0]] |
+| Merge | **ready** |

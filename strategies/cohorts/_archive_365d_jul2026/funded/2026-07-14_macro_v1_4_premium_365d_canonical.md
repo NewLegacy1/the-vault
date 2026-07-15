@@ -68,7 +68,7 @@ dataset: "Macro v1.4 premium 365d"
 | A+ | 8 | 2/6 | −$2,410 |
 | H | 4 | 2/2 | −$208 |
 
-**A-tier carries the book.** A+ net negative despite SMT-boosted TP — see [[strategy-dev/findings-macro]].
+**A-tier carries the book.** A+ net negative despite SMT-boosted TP — see [[strategy-dev/30-findings/findings-macro]].
 
 ## Monte Carlo (TPT $50K Test → PRO)
 
@@ -92,7 +92,7 @@ Canonical v1.4 year export. Enriched ledger: `vault-app/data/tv-exports/macro-v1
 
 - [[Macro_Model_SOP]]
 - [[Macro_Trade_Checklist]]
-- [[strategy-dev/findings-macro]]
-- [[strategy-dev/prop-firm-math]]
-- [[strategy-dev/roadmap]]
-- [[strategy-dev/funded-playbook]]
+- [[strategy-dev/30-findings/findings-macro]]
+- [[strategy-dev/70-firms/prop-firm-math]]
+- [[strategy-dev/40-plans/roadmap]]
+- [[strategy-dev/20-playbooks/funded-playbook]]

@@ -12,4 +12,4 @@
 
 Pine: `pine/Hybrid_Sleeve_v0.pine`  
 Rebuild shortcuts: `npx tsx scripts/build-hybrid-matrix.ts` from `vault-app/`.  
-See [[strategy-dev/hybrid-playbook]].
+See [[strategy-dev/20-playbooks/hybrid-playbook]].

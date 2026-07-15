@@ -1,0 +1,104 @@
+{
+  "kill": {
+    "K1_fullExpLe0": true,
+    "K2_maxLGe16_or_dd2k": true,
+    "K3_oosExpLe0_or_nlt25": true,
+    "K4_noXorLift": true,
+    "K5_nBelow40": false,
+    "K6_regimeThrash": null
+  },
+  "hits": [
+    "K1",
+    "K2",
+    "K3",
+    "K4"
+  ],
+  "verdict": "KILL",
+  "signals": {
+    "sample": [
+      "T-Long",
+      "T-Long",
+      "C-Short",
+      "C-Long",
+      "C-Long"
+    ],
+    "trendN": 143,
+    "chopN": 153,
+    "unkN": 0
+  },
+  "full": {
+    "n": 296,
+    "net": -1510,
+    "exp": -5.1,
+    "wr": 43.9,
+    "wins": 130,
+    "losses": 166,
+    "avgWin": 91.64,
+    "avgLoss": -80.87,
+    "maxL": 10,
+    "dd": -2029,
+    "first": "2023-07-14",
+    "last": "2026-07-10"
+  },
+  "is": {
+    "n": 221,
+    "net": -941,
+    "exp": -4.26,
+    "wr": 45.2,
+    "wins": 100,
+    "losses": 121,
+    "avgWin": 88.55,
+    "avgLoss": -80.96,
+    "maxL": 9,
+    "dd": -1473,
+    "first": "2023-07-14",
+    "last": "2025-07-09"
+  },
+  "oos": {
+    "n": 75,
+    "net": -569,
+    "exp": -7.59,
+    "wr": 40,
+    "wins": 30,
+    "losses": 45,
+    "avgWin": 101.95,
+    "avgLoss": -80.62,
+    "maxL": 10,
+    "dd": -802,
+    "first": "2025-07-14",
+    "last": "2026-07-10"
+  },
+  "trendOnly": {
+    "n": 143,
+    "net": -1409,
+    "exp": -9.86,
+    "wr": 39.2,
+    "wins": 56,
+    "losses": 87,
+    "avgWin": 121.61,
+    "avgLoss": -94.48,
+    "maxL": 6,
+    "dd": -2209,
+    "first": "2023-07-14",
+    "last": "2026-06-02"
+  },
+  "chopOnly": {
+    "n": 153,
+    "net": -101,
+    "exp": -0.66,
+    "wr": 48.4,
+    "wins": 74,
+    "losses": 79,
+    "avgWin": 68.97,
+    "avgLoss": -65.88,
+    "maxL": 7,
+    "dd": -1413,
+    "first": "2023-07-18",
+    "last": "2026-07-10"
+  },
+  "xorVsMaxSleeve": {
+    "xorExp": -5.1,
+    "maxSleeve": -0.66,
+    "xorLift": false
+  }
+}

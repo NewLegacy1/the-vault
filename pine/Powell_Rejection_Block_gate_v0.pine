@@ -1045,7 +1045,7 @@ if i_showTable and barstate.islast
     f_rowCol(diag, 16, "Manual state", manualState, manualReady ? color.new(color.yellow, 0) : color.white)
     f_row(diag, 17, "Log → Vault F2", i_manualOnly ? "Journal bias+take" : "—")
 
-alertcondition(i_manualOnly and manualReady and i_manualAlerts, title = "PRB manual level armed", message = "PRB manual: limit level armed — check bias then click or skip")
+alertcondition(i_manualOnly and manualReady and i_manualAlerts, title = "PRB · ARMED (Manual ON)", message = "PRB gate_v0 ARMED — {{ticker}} {{interval}} {{time}}\n1) Checklist bias / confluence\n2) Copy LIMIT · STOP · TP from boxes\n3) Coach qty from stop pts\nManual ON — you click. Jul/Oct STAND_DOWN blocks new arms.")
 
 // ─── Missed-trade autopsy table (bottom right) ───────────────────────────────
 var string[] ghNames = array.from("", "Before window (9:30→start)", "Monday", "Slot used (1/day, in pos)", "4H wick too small", "No liquidity sweep", "No confirming close", "Stop out of bounds", "Daily P&L lock", "Not near key open", "Bias filter", "After window (end→15:00)", "July/October stand-down")

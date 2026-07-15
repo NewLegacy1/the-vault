@@ -45,13 +45,13 @@ Make Jul+Oct STAND_DOWN **impossible to miss** in live / replay: Pine input on a
 | `pine/PINE_GUIDE.md` | Short section: gated variant · default on · why |
 | `strategies/PRB_Trade_Checklist.md` | One checkbox: Jul/Oct stand-down |
 | `strategies/Powell_Rejection_Block_SOP.md` | Short “ops overlay” note pointing at gate (do not rewrite whole SOP) |
-| `strategies/strategy-dev/findings-prb.md` | One line under PASS: “ops encoded in Pine variant X” when done |
+| `strategies/strategy-dev/30-findings/findings-prb.md` | One line under PASS: “ops encoded in Pine variant X” when done |
 
 ### Do not touch (Lane B / locked)
 
 - `Powell_Rejection_Block_v1.pine`
 - `vault-app/scripts/analyze-chain-ev.ts` / chain-ev lib
-- `strategies/strategy-dev/phase2-chain-ev-gated.md` (Lane B owns this)
+- `strategies/strategy-dev/50-analyses/phase2-chain-ev-gated.md` (Lane B owns this)
 - Macro / Hybrid pines
 - Matrix CSVs
 
@@ -65,7 +65,7 @@ Make Jul+Oct STAND_DOWN **impossible to miss** in live / replay: Pine input on a
 ### Copy-paste prompt for Lane A agent
 
 ```text
-Read strategies/strategy-dev/parallel-impl-gated-prb.md — execute ONLY Lane A (Ops encode).
+Read strategies/strategy-dev/40-plans/parallel-impl-gated-prb.md — execute ONLY Lane A (Ops encode).
 - Create a NEW Pine variant (do NOT edit pine/Powell_Rejection_Block_v1.pine).
 - Add Skip July & October (regime-gate-v0) default ON, NY timezone, same spirit as Skip Monday.
 - Update PINE_GUIDE, PRB_Trade_Checklist, short SOP note, one line in findings-prb when done.
@@ -86,9 +86,9 @@ Answer: **does A0a→D1 full-loop `E[$/wk]` improve under regime-gate-v0 vs unga
 |---|---|
 | `vault-app/scripts/analyze-chain-ev-gated.ts` **or** extend `analyze-chain-ev.ts` with a `--gated` / pair flag | Compute chain EV for ungated A0a+D1 **and** gated A0a+D1 (use cohort files under `eval/*regime_gate_v0*` / `funded/*regime_gate_v0*` and/or gated matrix CSVs + `buildMcParamsForLab` — same engine as Lab confirm). |
 | `vault-app/data/tv-exports/chain-ev-gated-vs-ungated.json` | Write machine-readable compare |
-| `strategies/strategy-dev/phase2-chain-ev-gated.md` | **CREATE** human summary table + PASS/FAIL vs “gated chain EV ≥ ungated” |
-| `strategies/strategy-dev/findings-prb.md` | Add settled claim: gated chain EV ↑ / flat / ↓ with numbers |
-| `strategies/strategy-dev/execution-plan-post-3y.md` | Mark 2.3 done or fail; do not invent 2.2 |
+| `strategies/strategy-dev/50-analyses/phase2-chain-ev-gated.md` | **CREATE** human summary table + PASS/FAIL vs “gated chain EV ≥ ungated” |
+| `strategies/strategy-dev/30-findings/findings-prb.md` | Add settled claim: gated chain EV ↑ / flat / ↓ with numbers |
+| `strategies/strategy-dev/40-plans/execution-plan-post-3y.md` | Mark 2.3 done or fail; do not invent 2.2 |
 
 ### Do not touch (Lane A / locked)
 
@@ -115,10 +115,10 @@ Answer: **does A0a→D1 full-loop `E[$/wk]` improve under regime-gate-v0 vs unga
 ### Copy-paste prompt for Lane B agent
 
 ```text
-Read strategies/strategy-dev/parallel-impl-gated-prb.md — execute ONLY Lane B (Chain EV).
+Read strategies/strategy-dev/40-plans/parallel-impl-gated-prb.md — execute ONLY Lane B (Chain EV).
 - Compare chained E[$/wk] ungated A0a→D1 vs gated regime-gate-v0 A0a→D1.
 - Reuse vault-app/lib/chain-ev.ts / analyze-chain-ev.ts; add a small gated script or flag if needed.
-- Write vault-app/data/tv-exports/chain-ev-gated-vs-ungated.json and strategies/strategy-dev/phase2-chain-ev-gated.md.
+- Write vault-app/data/tv-exports/chain-ev-gated-vs-ungated.json and strategies/strategy-dev/50-analyses/phase2-chain-ev-gated.md.
 - Update findings-prb + mark execution-plan 2.3 PASS/FAIL.
 - Do not edit any pine files, SOP, checklist, or PINE_GUIDE. No March stack, no min-day pad, no Track B.
 Stop when Lane B acceptance checklist is complete. Report numbers in the chat.
