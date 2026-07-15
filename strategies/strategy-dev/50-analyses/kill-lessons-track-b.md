@@ -19,6 +19,7 @@ tags: [kill-lessons, track-b, strategy-dev]
 9. **No loose afternoon AM-continuation @ 12:05** family (B7 dead — EV −$8, n=516, same ~40%/1.3R drain).  
 9b. **No MTF-wrapped AM→PM continuation** either (B9 dead — EV −$9, n=425, maxL=13; 15m gate did not help).  
 9c. **No late open-magnet fade @ 14:30 → RTH open** (B10 dead — EV −$5, n=465).  
+9d. **No overnight gap continuation @ loose ≥1.0×ATR** (B8 dead — n=641, EV −$1, OOS CI covers 0; rarity failed).  
 10. **Loss shape first:** max modeled streak × $risk &lt; $2k trail before cadence claims.  
 11. **Do not retune** a killed idea’s free params to “rescue” without a **new** Stage-0 note and new event definition.  
 12. **Independence:** next book must differ from gated PRB on ≥2 of {time box, level set, regime feature, barrier geometry}.  
@@ -136,14 +137,24 @@ tags: [kill-lessons, track-b, strategy-dev]
 | Soft | Next class outside open-magnet + AM→PM + killed fades |
 | Breadth | Independent of PRB — still dead |
 
+### B8 — GapCont · KILL (2026-07-15)
+
+| Extract | Content |
+|---|---|
+| Falsified | ≥1.0×ATR overnight gap **continuation** has positive Stage-0 EV / OOS lift |
+| Structural | n=**641** (rarity fail) · EV −$1 · OOS +$0.44 CI covers 0 · ~42%/1.35R · same soft-drain family as B6 fade |
+| Hard constraint | No gap-cont costume at loose ATR; do **not** retune `gapMult` to rescue |
+| Soft | Polarity flip ≠ edge when event still fires constantly; prefer Track A ops or a *privately* rare event |
+| Breadth | Independent of PRB — still dead |
+
 ## Implication
 
 | Path | Notes |
 |---|---|
-| **B8 GapCont** | **Active Stage-0** — [[track-b-b8-gap-cont-v0]] · flip of B6 + rarity lever · see [[track-b-error-synthesis-b0-b10]] |
-| **0b 1m on B9/B10** | Forbidden |
-| **Track A** | Still primary ops path (gated PRB) |
+| **Track A** | **Primary** — gated PRB is the only book with demonstrated positive 3y trade EV in this vault |
+| **Track B spray** | Pause — B0–B10 + B8 closed; do not invent B11 same day |
+| **0b on kills** | Forbidden |
 
 ## Agent use
 
-Print five harvest extracts in chat on kill. Do not auto-draft another AM→PM / open-magnet / gap-fade variant.
+Print five harvest extracts in chat on kill. Do not auto-draft gap / AM→PM / open-magnet / VWAP retunes.
