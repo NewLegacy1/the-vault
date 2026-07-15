@@ -74,7 +74,8 @@ Map of content: [[strategy-dev/_index]] (section folders `00-charter` … `70-fi
 
 ## Workflow loop
 
-0. **Stage-0 (new ideas)** — fill event study → `npx tsx scripts/analyze-event-study.ts` → price-perm gates if searchable params → SCORECARD toward.
+0. **Stage-0 (new ideas)** — read [[kill-lessons-track-b]] hard constraints → fill event study → measure export → `npx tsx scripts/analyze-event-study.ts` → price-perm gates if searchable params → SCORECARD toward.
+0b. **Failure harvest (on kill/away closeout)** — [[failure-harvest]] → update [[kill-lessons-track-b]] before drafting the next idea. Continuous loop: [[RESEARCH_AGENT_LOOP]].
 1. **Ingest** — new TV export lands → parse with `vault-app/lib/csv.ts` (tier from Signal: `_AP`/`_A`/`_H`) → run F4 LAB MC → cohort auto-saves.
 2. **Synthesize** — update [[findings-prb]] / [[findings-macro]] with what the new cohort settled or contradicted; SCORECARD toward/away/kill.
 3. **Hypothesize** — add next experiment to [[roadmap]] with a falsifiable prediction and target metric (`event | context | reference | outcome` purpose tag).

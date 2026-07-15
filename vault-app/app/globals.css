@@ -109,6 +109,25 @@ details.panel > summary.panel-title .summary-badge {
 .scorecard-header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
 .scorecard-verdict-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 6px; }
 .scorecard-verdict { font-weight: 700; letter-spacing: 2px; font-size: 13px; }
+.copilot-verdict-chip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  background: #0a0a0a;
+  margin-bottom: 12px;
+}
+.copilot-letter {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  font-family: ui-monospace, monospace;
+  line-height: 1;
+  min-width: 36px;
+  text-align: center;
+}
+.copilot-verdict-chip .scorecard-verdict { font-size: 18px; letter-spacing: 3px; }
 .scorecard-composite { color: var(--cyan); font-weight: 600; }
 .scorecard-table { margin-bottom: 10px; }
 .scorecard-table.compact td, .scorecard-table.compact th { padding: 4px 8px; font-size: 11px; }

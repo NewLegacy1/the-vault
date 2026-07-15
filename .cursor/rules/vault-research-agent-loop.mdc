@@ -1,0 +1,35 @@
+---
+description: Vault Research Agent Loop — Track B continuous R&D with failure harvest and prop math gates
+alwaysApply: true
+---
+
+# Research Agent Loop (The Vault)
+
+When the user asks to develop strategies continuously, run a research cycle, start a research loop, or process a new Track B / event-study CSV:
+
+## Must read first
+
+1. `strategies/strategy-dev/00-charter/RESEARCH_AGENT_LOOP.md`
+2. `strategies/strategy-dev/50-analyses/kill-lessons-track-b.md`
+3. `strategies/strategy-dev/00-charter/SCORECARD.md`
+4. `strategies/strategy-dev/40-plans/sim-queue.md`
+
+## Hard stops
+
+- Never edit `pine/Powell_Rejection_Block_v1.pine`.
+- Never reopen killed Track B (ORBreak, ERXor, MPSF) via param retune.
+- Never Lab-promote or claim income without Stage-0 **toward** + path MC `E[$/wk]`.
+- Never invent Deep Backtest numbers — ask for CSV or stop at “waiting for export.”
+- One open Stage-0 candidate at a time.
+
+## One cycle
+
+1. Check `vault-app/data/tv-exports/matrix/trackb-*.csv` for new/unanalyzed files.
+2. If new: `npx tsx scripts/analyze-event-study.ts <file>` then write SCORECARD + harvest into `kill-lessons-track-b.md` on kill/away closeout.
+3. Compare to prior kill lessons (not WR/RR stories).
+4. If idle: refine **one** next Stage-0 draft (B3/B4) that obeys hard constraints; do not spawn multiple ideas.
+5. End with: verdict · blockers · exact human TV export steps (if any).
+
+## Prop math hierarchy
+
+Path MC / `E[$/wk]` → trade EV±CI → geometry diagnostics only.

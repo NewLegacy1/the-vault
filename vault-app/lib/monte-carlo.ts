@@ -118,6 +118,13 @@ export interface McResult {
   /** Engine + rule-pack metadata for UI / cohort versioning. */
   engineVersion?: number;
   rulePackFeatures?: string[];
+  /** Net EV after fees — percentile band across sims (dashboard). */
+  netEvP05?: number;
+  netEvP95?: number;
+  /** Approximate calendar days to terminal outcome (from trade count / tpw). */
+  avgDaysPass?: number | null;
+  avgDaysBust?: number | null;
+  avgDaysTimeout?: number | null;
 }
 
 export interface McSamplePath {
@@ -395,6 +402,9 @@ export function runMonteCarlo(params: McParams): McResult {
   let consistencyBlocked = 0;
   let recycleCompletes = 0;
   let outcomeCounts = { payout: 0, pass: 0, consBlock: 0, bust: 0, open: 0 };
+  const daysPass: number[] = [];
+  const daysBust: number[] = [];
+  const daysTimeout: number[] = [];
 
   for (let s = 0; s < sims; s++) {
     const sequence = generateBootstrapSequence(trades, dailyPnls, weekBlocks, maxTrades, bootstrap);
@@ -563,6 +573,11 @@ export function runMonteCarlo(params: McParams): McResult {
     else if (phase === "bust") outcomeCounts.bust++;
     else outcomeCounts.open++;
 
+    const daysApprox = (eventTrades / Math.max(tpw, 0.01)) * 7;
+    if (passed || hadAnyPayout) daysPass.push(daysApprox);
+    else if (phase === "bust") daysBust.push(daysApprox);
+    else daysTimeout.push(daysApprox);
+
     finalEquities.push(eq);
     maxDDs.push(maxDD);
 
@@ -622,6 +637,10 @@ export function runMonteCarlo(params: McParams): McResult {
       : 0;
   const medianNetPerAccount = simNetSorted.length ? Math.round(percentile(simNetSorted, 0.5)) : 0;
   const medianWithdrawn = withdrawnSorted.length ? Math.round(percentile(withdrawnSorted, 0.5)) : 0;
+  const netEvP05 = simNetSorted.length ? Math.round(percentile(simNetSorted, 0.05)) : 0;
+  const netEvP95 = simNetSorted.length ? Math.round(percentile(simNetSorted, 0.95)) : 0;
+  const avgDays = (arr: number[]) =>
+    arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10 : null;
   const costOnFail = evalCost;
 
   const expectedNetPerAttempt = payoutRate * medianNet - bustRate * costOnFail;
@@ -683,5 +702,10 @@ export function runMonteCarlo(params: McParams): McResult {
     recycleRate,
     engineVersion: MC_ENGINE_VERSION,
     rulePackFeatures: params.rulePack ? rulePackFeatureIds(params.rulePack) : [],
+    netEvP05,
+    netEvP95,
+    avgDaysPass: avgDays(daysPass),
+    avgDaysBust: avgDays(daysBust),
+    avgDaysTimeout: avgDays(daysTimeout),
   };
 }

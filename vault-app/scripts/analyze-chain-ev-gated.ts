@@ -229,7 +229,7 @@ function main() {
   }, null, 2));
 }
 
-function renderMd(p: ReturnType<typeof Object.assign> & typeof payloadShape): string {
+function renderMd(p: any): string {
   const uf = p.pairs.ungated_full.labEngine;
   const gf = p.pairs.gated_full.labEngine;
   const uo = p.pairs.ungated_oos.labEngine;

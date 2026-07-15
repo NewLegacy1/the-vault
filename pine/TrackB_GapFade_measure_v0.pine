@@ -1,0 +1,118 @@
+//@version=6
+// Track B · B6 overnight gap fade MEASURE — Deep BT only.
+// Spec: strategies/strategy-dev/60-track-b/track-b-b6-gap-fade-v0.md
+// Save CSV: vault-app/data/tv-exports/matrix/trackb-gapfade-3y.csv
+// NOT ORB · NOT PDH/PDL sweep · fade open→prior close only.
+
+strategy(
+     title                   = "TrackB GapFade measure v0",
+     shorttitle              = "GapFade measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 50)
+
+grpEvt = "Event (locked — do not sweep)"
+i_gapMult  = input.float(0.35, "Min |gap| = ATR ×", minval = 0.1, step = 0.05, group = grpEvt)
+i_sessOpen = input.int(930, "RTH open (HHMM)", group = grpEvt)
+i_armFrom  = input.int(935, "Arm from (HHMM)", group = grpEvt)
+i_armTo    = input.int(1030, "Last entry (HHMM)", group = grpEvt)
+i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpEvt)
+
+grpRisk = "Risk"
+i_atrLen  = input.int(14, "ATR length", minval = 5, group = grpRisk)
+i_atrMult = input.float(1.0, "Stop = ATR ×", group = grpRisk)
+i_maxStop = input.float(20.0, "Max stop (pts)", group = grpRisk)
+i_rr      = input.float(1.5, "Target R", group = grpRisk)
+i_riskUsd = input.float(150.0, "Risk USD", group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showMark = input.bool(true, "Markers", group = grpVis)
+i_showPc   = input.bool(true, "Prior close", group = grpVis)
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool canArm = nyHhmm >= i_armFrom and nyHhmm < i_armTo
+bool flatNow = nyHhmm >= i_flatTime
+bool isOpenBar = nyHhmm == i_sessOpen
+
+float priorClose = request.security(syminfo.tickerid, "D", close[1], lookahead = barmerge.lookahead_off)
+plot(i_showPc ? priorClose : na, "PriorClose", color = color.new(#e2e8f0, 30), style = plot.style_linebr)
+
+float atr = ta.atr(i_atrLen)
+
+var float open930 = na
+var float gapPts = na
+var bool gapOk = false
+var int gapDir = 0
+var int dayTrades = 0
+
+if newDay
+    open930 := na
+    gapPts := na
+    gapOk := false
+    gapDir := 0
+    dayTrades := 0
+
+if isOpenBar
+    open930 := open
+    if not na(priorClose) and not na(atr)
+        gapPts := open - priorClose
+        gapOk := math.abs(gapPts) >= i_gapMult * atr
+        gapDir := gapPts < 0 ? 1 : gapPts > 0 ? -1 : 0
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+if canArm and gapOk and gapDir != 0 and dayTrades == 0 and strategy.position_size == 0 and not na(atr)
+    float stopPts = i_atrMult * atr
+    int q = f_qty(stopPts)
+    if q > 0
+        if gapDir == 1
+            float stopL = close - stopPts
+            float tpL = close + i_rr * stopPts
+            strategy.entry("G_L", strategy.long, qty = q)
+            strategy.exit("G_LX", from_entry = "G_L", stop = stopL, limit = tpL)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, low, "Gap▲", style = label.style_label_up, color = color.new(#67e8f9, 0), textcolor = color.black, size = size.small)
+        else if gapDir == -1
+            float stopS = close + stopPts
+            float tpS = close - i_rr * stopPts
+            strategy.entry("G_S", strategy.short, qty = q)
+            strategy.exit("G_SX", from_entry = "G_S", stop = stopS, limit = tpS)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, high, "Gap▼", style = label.style_label_down, color = color.new(#f9a8d4, 0), textcolor = color.black, size = size.small)
+
+alertcondition(dayTrades == 1 and dayTrades[1] == 0, title = "GapFade measure · entry", message = "GapFade MEASURE — Stage-0 only · not promote.")

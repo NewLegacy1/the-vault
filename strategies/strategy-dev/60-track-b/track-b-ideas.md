@@ -1,35 +1,28 @@
 ---
 updated: 2026-07-15
 status: active
-tags: [track-b, ideas, strategy-dev]
+tags: [track-b, ideas]
 ---
 # Track B idea roster
 
-> Pick **one**. Graveyard: ORBreak · ERXor · MPSF · Macro/ICT clones.  
-> Process: Stage-0 event study → (perm gates if free params) → Pine strategy → Lab 3y+OOS.
+> Meta: [[track-b-meta-progress]] · [[stage-0-mtf-breadth]]. Graveyard B0–B10.
 
 ## Active
 
-| ID | Name | Class | Status |
-|---|---|---|---|
-| — | — | — | **None** — pick B3 or B4 next |
+| ID | Name | Status |
+|---|---|---|
+| — | — | **None** — pause overnight · morning next-steps |
 
-## Backlog (next candidates)
+## Deferred
 
-| ID | Name | Class | Why interesting | Risk |
-|---|---|---|---|---|
-| **B3** | NR-day → next RTH expansion | breakout | Classic vol compression; not ICT | Needs daily bars + perm on NR lookback |
-| **B4** | Session VWAP distance z fade (no ER xor) | MR | Occam univariate; simpler than ERXor | May rediscover ERXor failure |
-| B5 | Fixed 10:05 impulse + ATR stop | momentum | Time-based taxonomy | Thin n; near PRB window — mind overlap |
-
-## Killed (do not retune)
-
-| ID | Result |
+| ID | Notes |
 |---|---|
-| B0 ORBreak | KILL · trail-hostile · [[track-b-candidate-v0]] |
-| B1 ERXor | KILL · no xor lift · [[track-b-b1-erxor-v0]] |
-| **B2 MPSF** | **KILL** · full EV −$76 CI excl. 0 · n=30 · [[track-b-b2-mpsf-v0]] · [[event-study-trackb-mpsf-3y]] |
+| B8 GapCont | Shelved |
+
+## Killed
+
+B0–B9 · **B10 LOM** (n=465 · EV −$5 · [[event-study-trackb-lom-mnq-5m]])
 
 ## Ops
 
-Gated PRB live remains the active Track A path — [[gated-prb-live-guide]].
+[[gated-prb-live-guide]] — Jul STAND_DOWN / Aug–Sep live. Track B resumes with a **new class** in the morning.

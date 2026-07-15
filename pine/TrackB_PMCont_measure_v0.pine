@@ -1,0 +1,169 @@
+//@version=6
+// Track B · B7 PM continuation MEASURE — Deep BT only.
+// Spec: strategies/strategy-dev/60-track-b/track-b-b7-pm-continuation-v0.md
+// Save CSV: vault-app/data/tv-exports/matrix/trackb-pmcont-3y.csv
+// Afternoon continuation of morning move — NOT fade / NOT ORB / NOT 10:05.
+//
+// Fix 2026-07-15: HHMM minute subtract (1200-5 ≠ 1155) left moveOk always false → 0 trades.
+
+strategy(
+     title                   = "TrackB PMCont measure v0",
+     shorttitle              = "PMCont measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 50)
+
+grpEvt = "Event (locked)"
+i_moveMult = input.float(0.8, "Min |AM move| = ATR ×", minval = 0.3, step = 0.1, group = grpEvt)
+i_sessOpen = input.int(930, "RTH open (HHMM)", group = grpEvt)
+i_amEnd    = input.int(1200, "AM window end (HHMM)", group = grpEvt)
+i_entry    = input.int(1205, "Entry bar (HHMM)", group = grpEvt)
+i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpEvt)
+
+grpRisk = "Risk"
+i_atrLen  = input.int(14, "ATR length", minval = 5, group = grpRisk)
+i_atrMult = input.float(1.0, "Stop = ATR ×", group = grpRisk)
+i_maxStop = input.float(40.0, "Max stop (pts) — skip wider", minval = 5.0, step = 1.0, group = grpRisk)
+i_rr      = input.float(1.5, "Target R", group = grpRisk)
+i_riskUsd = input.float(150.0, "Risk USD", group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showMark  = input.bool(true, "Markers", group = grpVis)
+i_showDebug = input.bool(true, "Funnel table (debug)", group = grpVis)
+
+// HHMM − minutes (1200 − 5 → 1155, not 1195)
+f_hhmmMinus(int hhmm, int mins) =>
+    int h = int(math.floor(hhmm / 100))
+    int m = hhmm % 100
+    int total = h * 60 + m - mins
+    if total < 0
+        total += 24 * 60
+    int nh = int(math.floor(total / 60))
+    int nm = total % 60
+    nh * 100 + nm
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+int amCloseHhmm = f_hhmmMinus(i_amEnd, 5)
+bool isOpenBar = nyHhmm == i_sessOpen
+bool amCloseBar = nyHhmm == amCloseHhmm
+bool isEntryBar = nyHhmm == i_entry
+bool flatNow = nyHhmm >= i_flatTime
+
+float atr = ta.atr(i_atrLen)
+
+var float open930 = na
+var float amMove = na
+var bool moveOk = false
+var int dayTrades = 0
+
+var int cntDays = 0
+var int cntAmSet = 0
+var int cntMoveOk = 0
+var int cntEntryTry = 0
+var int cntOrders = 0
+var int cntSkipStop = 0
+var int cntSkipNoOpen = 0
+
+if newDay
+    open930 := na
+    amMove := na
+    moveOk := false
+    dayTrades := 0
+    cntDays += 1
+
+if isOpenBar
+    open930 := open
+
+if amCloseBar
+    if na(open930)
+        cntSkipNoOpen += 1
+    else
+        amMove := close - open930
+        moveOk := not na(atr) and math.abs(amMove) >= i_moveMult * atr
+        cntAmSet += 1
+        if moveOk
+            cntMoveOk += 1
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+if isEntryBar and dayTrades == 0 and strategy.position_size == 0
+    cntEntryTry += 1
+    if moveOk and not na(atr) and not na(amMove)
+        float stopPts = i_atrMult * atr
+        int q = f_qty(stopPts)
+        if q > 0
+            if amMove > 0
+                float stopL = close - stopPts
+                float tpL = close + i_rr * stopPts
+                strategy.entry("P_L", strategy.long, qty = q)
+                strategy.exit("P_LX", from_entry = "P_L", stop = stopL, limit = tpL)
+                dayTrades := 1
+                cntOrders += 1
+                if i_showMark
+                    label.new(bar_index, low, "PM▲", style = label.style_label_up, color = color.new(#86efac, 0), textcolor = color.black, size = size.small)
+            else if amMove < 0
+                float stopS = close + stopPts
+                float tpS = close - i_rr * stopPts
+                strategy.entry("P_S", strategy.short, qty = q)
+                strategy.exit("P_SX", from_entry = "P_S", stop = stopS, limit = tpS)
+                dayTrades := 1
+                cntOrders += 1
+                if i_showMark
+                    label.new(bar_index, high, "PM▼", style = label.style_label_down, color = color.new(#fca5a5, 0), textcolor = color.black, size = size.small)
+        else
+            cntSkipStop += 1
+            dayTrades := 1  // count as attempted day — don't retry
+
+if i_showDebug and barstate.islast
+    var table t = table.new(position.top_right, 2, 8, bgcolor = color.new(#0f172a, 20))
+    table.cell(t, 0, 0, "PMCont funnel", text_color = color.white, text_size = size.small)
+    table.cell(t, 1, 0, "v0 fix", text_color = color.gray, text_size = size.small)
+    table.cell(t, 0, 1, "AM close HHMM", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 1, str.tostring(amCloseHhmm), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 2, "Days", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 2, str.tostring(cntDays), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 3, "AM captured", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 3, str.tostring(cntAmSet), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 4, "Move OK", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 4, str.tostring(cntMoveOk), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 5, "Entry bars", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 5, str.tostring(cntEntryTry), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 6, "Orders", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 6, str.tostring(cntOrders), text_color = color.lime, text_size = size.tiny)
+    table.cell(t, 0, 7, "Skip stop>max", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 7, str.tostring(cntSkipStop), text_color = color.orange, text_size = size.tiny)
+
+alertcondition(dayTrades == 1 and dayTrades[1] == 0, title = "PMCont measure · entry", message = "PMCont MEASURE — Stage-0 only · not promote.")

@@ -1,0 +1,112 @@
+//@version=6
+// Track B · B3 NR→RTH expansion MEASURE — Deep BT CSV only.
+// Stage-0 — NOT Lab promote until SCORECARD toward.
+// Spec: strategies/strategy-dev/60-track-b/track-b-b3-nr-expansion-v0.md
+// Save CSV: vault-app/data/tv-exports/matrix/trackb-nr-exp-3y.csv
+
+strategy(
+     title                   = "TrackB NRExp measure v0",
+     shorttitle              = "NRExp measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 100)
+
+grpEvt = "Event (locked Stage-0 — do not sweep)"
+i_nrLookback = input.int(20, "NR lookback (RTH days)", minval = 5, maxval = 60, group = grpEvt)
+i_rthStart   = input.int(930, "RTH arm start (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_flatTime   = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+
+grpRisk = "Risk / outcome"
+i_atrLen  = input.int(14, "ATR length", minval = 5, group = grpRisk)
+i_atrMult = input.float(1.0, "Stop = ATR ×", minval = 0.5, step = 0.25, group = grpRisk)
+i_maxStop = input.float(20.0, "Max stop (pts)", minval = 5.0, step = 1.0, group = grpRisk)
+i_rr      = input.float(1.5, "Target R", minval = 0.5, step = 0.25, group = grpRisk)
+i_riskUsd = input.float(150.0, "Risk per trade (USD)", minval = 25.0, step = 25.0, group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", minval = 1, maxval = 60, group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showMark = input.bool(true, "Entry markers", group = grpVis)
+i_showPd   = input.bool(true, "PDH/PDL", group = grpVis)
+i_showNr   = input.bool(true, "Shade NR context days", group = grpVis)
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool inRth  = nyHhmm >= i_rthStart and nyHhmm < i_flatTime
+bool flatNow = nyHhmm >= i_flatTime
+
+// Daily: yesterday NR if its range ≤ min(ranges of last N completed days)
+f_nrBundle() =>
+    float rng = high - low
+    float yr  = high[1] - low[1]
+    float loN = ta.lowest(rng, i_nrLookback)[1]
+    bool isNr = not na(yr) and not na(loN) and yr <= loN + syminfo.mintick
+    [high[1], low[1], isNr]
+
+[pdh, pdl, isNrDay] = request.security(syminfo.tickerid, "D", f_nrBundle(), lookahead = barmerge.lookahead_off)
+
+plot(i_showPd ? pdh : na, "PDH", color = color.new(#f87171, 40), linewidth = 1, style = plot.style_linebr)
+plot(i_showPd ? pdl : na, "PDL", color = color.new(#4ade80, 40), linewidth = 1, style = plot.style_linebr)
+bgcolor(i_showNr and isNrDay ? color.new(#a78bfa, 94) : na)
+
+float atr = ta.atr(i_atrLen)
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+var int dayTrades = 0
+if newDay
+    dayTrades := 0
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+// First PDH/PDL break after NR day — NOT opening-range H/L
+if inRth and isNrDay and dayTrades == 0 and strategy.position_size == 0 and not na(pdh) and not na(pdl) and not na(atr)
+    float stopPts = i_atrMult * atr
+    int q = f_qty(stopPts)
+    if q > 0
+        if close > pdh
+            float stopL = close - stopPts
+            float tpL = close + i_rr * stopPts
+            strategy.entry("NR_L", strategy.long, qty = q)
+            strategy.exit("NR_LX", from_entry = "NR_L", stop = stopL, limit = tpL)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, low, "NR▲", style = label.style_label_up, color = color.new(#a78bfa, 0), textcolor = color.black, size = size.small)
+        else if close < pdl
+            float stopS = close + stopPts
+            float tpS = close - i_rr * stopPts
+            strategy.entry("NR_S", strategy.short, qty = q)
+            strategy.exit("NR_SX", from_entry = "NR_S", stop = stopS, limit = tpS)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, high, "NR▼", style = label.style_label_down, color = color.new(#c4b5fd, 0), textcolor = color.black, size = size.small)
+
+alertcondition(dayTrades == 1 and dayTrades[1] == 0, title = "NRExp measure · entry", message = "NRExp MEASURE entry — {{ticker}} {{interval}}\nStage-0 scrape only — not promote / not live gated PRB.")

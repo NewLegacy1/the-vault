@@ -13,7 +13,8 @@ tags: [stage-0, event-study, strategy-dev]
 |---|---|
 | Idea class | MR \| momentum \| breakout \| other |
 | Purpose tags | event / context / reference / outcome |
-| Instrument / TF | |
+| Instrument / TF | e.g. MNQ · HTF 15 / fill 5m (see [[stage-0-mtf-breadth]]) |
+| Planned runs | 0a MNQ-5m · 0b MNQ-1m · (0d symbols only if toward) |
 | Pre-registered date | |
 | Artifact JSON | `vault-app/data/tv-exports/…` |
 

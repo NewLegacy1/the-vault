@@ -1,0 +1,12 @@
+{
+  "title": "WF price-permutation demo — Donchian synthetic",
+  "note": "Demo only. WF-perm permutes bars after first train fold.",
+  "nBars": 5000,
+  "train": 2000,
+  "step": 250,
+  "nPerm": 80,
+  "realWalkForwardPf": 0.9859831731238573,
+  "quasiP": 0.7125,
+  "permPfMedian": 1.0792723426533148,
+  "passHint": "Lenient ~0.05 on short OOS; ~0.01 on multi-year — measures not fiddled targets"
+}

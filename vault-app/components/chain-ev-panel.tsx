@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { fmtUsd } from "@/lib/store";
 import type { ChainEvContext } from "@/lib/chain-ev";
+import { inventoryChainBreadth } from "@/lib/breadth-inventory";
 import { presetById } from "@/lib/lab-profile";
 import { CHAIN_BASELINE_PAIR_ID } from "@/lib/strategy-chain";
 
@@ -26,12 +27,26 @@ function methodLabel(method: ChainEvContext["result"]["method"]): string {
   }
 }
 
+function breadthTone(kind: string): string {
+  switch (kind) {
+    case "independent":
+      return "pos";
+    case "sequential_same_family":
+      return "dim";
+    case "correlated_filter":
+      return "warn";
+    default:
+      return "dim";
+  }
+}
+
 export function ChainEvPanel({ context, compact = false }: ChainEvPanelProps) {
   const { pair, result, evalPresetId, fundedPresetId, evalCohortSaved, fundedCohortSaved, baselineExpectedUsdPerWeek } =
     context;
   const evalPreset = presetById(evalPresetId);
   const fundedPreset = presetById(fundedPresetId);
   const portfolioPreset = pair.portfolioLegPresetId ? presetById(pair.portfolioLegPresetId) : undefined;
+  const breadth = inventoryChainBreadth(pair);
 
   const primaryWk = result.combinedUsdPerCalendarWeek ?? result.expectedUsdPerCalendarWeek;
   const beatsBaseline =
@@ -47,6 +62,10 @@ export function ChainEvPanel({ context, compact = false }: ChainEvPanelProps) {
           {primaryWk != null ? fmtUsd(primaryWk, true) : "—"}/wk
         </span>
         {result.weeksChainP50 != null && <> · {result.weeksChainP50}w cycle</>}
+        <span className="dim">
+          {" "}
+          · breadth≈{breadth.effectiveBreadth}
+        </span>
       </p>
     );
   }
@@ -145,7 +164,22 @@ export function ChainEvPanel({ context, compact = false }: ChainEvPanelProps) {
               <div className="small dim">independent funded leg</div>
             </div>
           )}
+
+          <div>
+            <div className="small dim">BREADTH INVENTORY</div>
+            <div className={"v " + breadthTone(breadth.kind)} style={{ fontSize: 18 }}>
+              ≈{breadth.effectiveBreadth}
+            </div>
+            <div className={"small " + breadthTone(breadth.kind)}>{breadth.verdict}</div>
+            <div className="small dim" style={{ marginTop: 2 }}>
+              {breadth.legs.map((l) => l.label).join(" · ")}
+            </div>
+          </div>
         </div>
+
+        <p className="small dim" style={{ marginTop: 0, marginBottom: 8, lineHeight: 1.55 }}>
+          {breadth.note} IR ≈ skill × √breadth — correlated A/Bs on the same fills stay breadth≈1.
+        </p>
 
         {result.warnings.length > 0 && (
           <div className="small dim" style={{ lineHeight: 1.55, marginBottom: 8 }}>

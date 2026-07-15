@@ -1,0 +1,141 @@
+//@version=6
+// Track B · B4 VWAP z fade MEASURE — Deep BT CSV only.
+// Univariate session-VWAP ±zσ fade — NO Kaufman ER · NO xor · NO TREND reclaim.
+// Spec: strategies/strategy-dev/60-track-b/track-b-b4-vwap-z-fade-v0.md
+// Save CSV: vault-app/data/tv-exports/matrix/trackb-vwapz-3y.csv
+
+strategy(
+     title                   = "TrackB VWAPz measure v0",
+     shorttitle              = "VWAPz measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 100,
+     max_lines_count         = 20)
+
+grpEvt = "Event (locked Stage-0 — do not sweep z)"
+i_sigmaMult = input.float(2.0, "z / σ multiple (frozen)", minval = 1.0, maxval = 3.0, step = 0.25, group = grpEvt)
+i_sessOpen  = input.int(930, "VWAP session start (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_armFrom   = input.int(1000, "Arm from (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_armTo     = input.int(1430, "Last entry (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_flatTime  = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = grpEvt)
+i_minBars   = input.int(6, "Min session bars before arm", minval = 3, group = grpEvt)
+
+grpRisk = "Risk / outcome"
+i_atrLen  = input.int(14, "ATR length", minval = 5, group = grpRisk)
+i_atrStop = input.float(0.5, "Stop = extreme + ATR×", minval = 0.0, step = 0.25, group = grpRisk)
+i_maxStop = input.float(20.0, "Max stop (pts)", minval = 5.0, step = 1.0, group = grpRisk)
+i_riskUsd = input.float(150.0, "Risk per trade (USD)", minval = 25.0, step = 25.0, group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", minval = 1, maxval = 60, group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showBands = input.bool(true, "Show VWAP / ±zσ", group = grpVis)
+i_showMark  = input.bool(true, "Entry markers", group = grpVis)
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool inRth  = nyHhmm >= i_sessOpen and nyHhmm < i_flatTime
+bool canArm = nyHhmm >= i_armFrom and nyHhmm < i_armTo
+bool flatNow = nyHhmm >= i_flatTime
+
+// Session VWAP + σ (RTH reset)
+var float sumPV = 0.0
+var float sumV = 0.0
+var float sumP2V = 0.0
+var int sessBars = 0
+
+bool justRthOpen = inRth and not inRth[1]
+if justRthOpen or newDay
+    sumPV := 0.0
+    sumV := 0.0
+    sumP2V := 0.0
+    sessBars := 0
+
+float src = hlc3
+float vol = math.max(nz(volume, 1.0), 1.0)
+if inRth
+    sumPV += src * vol
+    sumV += vol
+    sumP2V += src * src * vol
+    sessBars += 1
+
+float sessVwap = sumV > 0 ? sumPV / sumV : na
+float variance = sumV > 0 ? math.max(sumP2V / sumV - sessVwap * sessVwap, 0.0) : na
+float sigma = not na(variance) ? math.sqrt(variance) : na
+float upperZ = not na(sessVwap) and not na(sigma) ? sessVwap + i_sigmaMult * sigma : na
+float lowerZ = not na(sessVwap) and not na(sigma) ? sessVwap - i_sigmaMult * sigma : na
+
+plot(i_showBands ? sessVwap : na, "VWAP", color = color.new(#e2e8f0, 20), linewidth = 2)
+plot(i_showBands ? upperZ : na, "+zσ", color = color.new(#fb923c, 40), style = plot.style_linebr)
+plot(i_showBands ? lowerZ : na, "-zσ", color = color.new(#38bdf8, 40), style = plot.style_linebr)
+
+float atr = ta.atr(i_atrLen)
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+float body = math.abs(close - open)
+float lowerWick = math.min(open, close) - low
+float upperWick = high - math.max(open, close)
+bool rejLong  = close > open and lowerWick > body and body > 0
+bool rejShort = close < open and upperWick > body and body > 0
+
+var int dayTrades = 0
+if newDay
+    dayTrades := 0
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+bool sessOk = not na(sessVwap) and not na(sigma) and sessBars >= i_minBars and sigma > syminfo.mintick
+
+if canArm and sessOk and dayTrades == 0 and strategy.position_size == 0 and inRth
+    // Long fade from −zσ
+    if not na(lowerZ) and low <= lowerZ and rejLong
+        float stopL = low - i_atrStop * atr
+        float riskL = close - stopL
+        int qL = f_qty(riskL)
+        if qL > 0 and close < sessVwap
+            strategy.entry("Z_L", strategy.long, qty = qL)
+            strategy.exit("Z_LX", from_entry = "Z_L", stop = stopL, limit = sessVwap)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, low, "Z▲", style = label.style_label_up, color = color.new(#38bdf8, 0), textcolor = color.black, size = size.small)
+    else if not na(upperZ) and high >= upperZ and rejShort
+        float stopS = high + i_atrStop * atr
+        float riskS = stopS - close
+        int qS = f_qty(riskS)
+        if qS > 0 and close > sessVwap
+            strategy.entry("Z_S", strategy.short, qty = qS)
+            strategy.exit("Z_SX", from_entry = "Z_S", stop = stopS, limit = sessVwap)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, high, "Z▼", style = label.style_label_down, color = color.new(#fb923c, 0), textcolor = color.black, size = size.small)
+
+alertcondition(dayTrades == 1 and dayTrades[1] == 0, title = "VWAPz measure · entry", message = "VWAPz MEASURE entry — {{ticker}} {{interval}}\nStage-0 scrape only — not promote / not live gated PRB.")

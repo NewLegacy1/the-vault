@@ -1,5 +1,5 @@
 import { fundedPayoutConsistencyPct, payoutConfigForFirm } from "./firm-payout-economics";
-import type { McParams } from "./monte-carlo";
+import type { McParams, McSimMode } from "./monte-carlo";
 import {
   type McRulePack,
   type McRulePackConsistency,
@@ -226,7 +226,16 @@ export function buildMcParamsForLab(opts: {
   sims: number;
   maxTrades: number;
   payoutBuffer: number;
+  /** UI Challenge|Funded override — when set, ignores strategyPhase for barrier path. */
+  simModeOverride?: McSimMode;
 }): BuiltMcParams | null {
-  const compareMode = opts.strategyPhase === "funded" ? "funded" : "eval";
+  const compareMode =
+    opts.simModeOverride === "funded_only"
+      ? "funded"
+      : opts.simModeOverride === "eval_path"
+        ? "eval"
+        : opts.strategyPhase === "funded"
+          ? "funded"
+          : "eval";
   return buildMcParamsForFirm({ ...opts, compareMode });
 }

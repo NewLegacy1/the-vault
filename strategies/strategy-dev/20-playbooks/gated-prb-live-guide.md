@@ -23,6 +23,31 @@ Kill criteria for the live ops loop (not the Lab gate): **3 losses in a week tha
 
 ---
 
+## Calendar — you do **not** wait until October
+
+STAND_DOWN months are **July and October only**. **August and September are live/paper take months** under the same gate.
+
+| Window (NY) | Live PRB RTH fills? | What you practice |
+|---|---|---|
+| **Jul · Oct** | **No** — Coach/gate STAND_DOWN | Shadow log only (below) |
+| **Aug · Sep** | **Yes** — paper or small live | Full Manual ON stack + checklist |
+| Nov–Jun | **Yes** (except holidays / news skips) | Same ops |
+
+### “But this July would’ve been great”
+
+One good calendar month does **not** override Lab Jul+Oct. The gate was settled on **path survival** across the 3y window — not “did the last July print winners.” Taking July fills “because it felt good” is the kill criteria for the ops loop (personal override). Do not turn the coach skip off to chase a good July.
+
+### What to do right now (mid-July → Oct)
+
+1. **Rest of July + all of October:** leave `Jul/Oct STAND_DOWN` **ON**. Do **not** click RTH PRB into the prop account.  
+2. **Shadow journal (still useful):** when gate_v0 would ARMED, log *would take / would skip · stop · qty · checklist grade · hypothetical path* — zero size. That validates process without fighting the regime gate.  
+3. **Aug 1 → Sep 30:** this is the active live/paper window. Same stack, real (or paper) fills. Aim for checklist fidelity and trail discipline — not a new Lab claim from ≤20 takes.  
+4. **Parallel:** Track B Stage-0 research (TV CSV → scripts) runs **year-round** — it does not need PRB live fills.
+
+Optional: set Coach alerts **enter STAND_DOWN** / **exit STAND_DOWN** so Aug open and Oct close are calendar events, not willpower.
+
+---
+
 ## TradingView: strategy vs indicator
 
 ### Recommended live stack (two panes)

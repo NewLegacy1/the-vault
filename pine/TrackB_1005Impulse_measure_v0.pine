@@ -1,0 +1,112 @@
+//@version=6
+// Track B · B5 10:05 impulse MEASURE — Deep BT only.
+// Spec: strategies/strategy-dev/60-track-b/track-b-b5-1005-impulse-v0.md
+// Save CSV: vault-app/data/tv-exports/matrix/trackb-1005-3y.csv
+// NOT ORB break · NOT PRB RB · direction from 09:30–10:00 mid + 10:05 bar impulse only.
+
+strategy(
+     title                   = "TrackB 1005Impulse measure v0",
+     shorttitle              = "1005 measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 50)
+
+grpEvt = "Event (locked)"
+i_rangeStart = input.int(930, "Range start (HHMM)", group = grpEvt)
+i_rangeEnd   = input.int(1000, "Range end (HHMM)", group = grpEvt)
+i_entryTime  = input.int(1005, "Entry bar close (HHMM)", group = grpEvt)
+i_flatTime   = input.int(1555, "Flat by (HHMM)", group = grpEvt)
+
+grpRisk = "Risk"
+i_atrLen  = input.int(14, "ATR length", minval = 5, group = grpRisk)
+i_atrMult = input.float(1.0, "Stop = ATR ×", minval = 0.5, step = 0.25, group = grpRisk)
+i_maxStop = input.float(20.0, "Max stop (pts)", group = grpRisk)
+i_rr      = input.float(1.5, "Target R", group = grpRisk)
+i_riskUsd = input.float(150.0, "Risk USD", group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showMark = input.bool(true, "Markers", group = grpVis)
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool flatNow = nyHhmm >= i_flatTime
+bool inRangeBuild = nyHhmm >= i_rangeStart and nyHhmm < i_rangeEnd
+bool isEntryBar = nyHhmm == i_entryTime
+
+var float rngHi = na
+var float rngLo = na
+var int dayTrades = 0
+
+if newDay
+    rngHi := na
+    rngLo := na
+    dayTrades := 0
+
+if inRangeBuild
+    rngHi := na(rngHi) ? high : math.max(rngHi, high)
+    rngLo := na(rngLo) ? low : math.min(rngLo, low)
+
+plot(not na(rngHi) ? rngHi : na, "RangeH", color = color.new(#94a3b8, 50), style = plot.style_linebr)
+plot(not na(rngLo) ? rngLo : na, "RangeL", color = color.new(#94a3b8, 50), style = plot.style_linebr)
+
+float atr = ta.atr(i_atrLen)
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+if isEntryBar and dayTrades == 0 and strategy.position_size == 0 and not na(rngHi) and not na(rngLo) and not na(atr)
+    float mid = (rngHi + rngLo) / 2.0
+    float stopPts = i_atrMult * atr
+    int q = f_qty(stopPts)
+    if q > 0
+        bool longOk = close > mid and close > open
+        bool shortOk = close < mid and close < open
+        if longOk
+            float stopL = close - stopPts
+            float tpL = close + i_rr * stopPts
+            strategy.entry("I_L", strategy.long, qty = q)
+            strategy.exit("I_LX", from_entry = "I_L", stop = stopL, limit = tpL)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, low, "10:05▲", style = label.style_label_up, color = color.new(#86efac, 0), textcolor = color.black, size = size.small)
+        else if shortOk
+            float stopS = close + stopPts
+            float tpS = close - i_rr * stopPts
+            strategy.entry("I_S", strategy.short, qty = q)
+            strategy.exit("I_SX", from_entry = "I_S", stop = stopS, limit = tpS)
+            dayTrades := 1
+            if i_showMark
+                label.new(bar_index, high, "10:05▼", style = label.style_label_down, color = color.new(#fca5a5, 0), textcolor = color.black, size = size.small)
+
+alertcondition(dayTrades == 1 and dayTrades[1] == 0, title = "1005 measure · entry", message = "1005Impulse MEASURE — Stage-0 only · not promote.")

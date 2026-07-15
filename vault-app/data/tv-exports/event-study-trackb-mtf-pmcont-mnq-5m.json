@@ -1,0 +1,107 @@
+{
+  "title": "Event study — trackb-mtf-pmcont-mnq-5m",
+  "note": "Ledger fills as events — confirm purpose before promoting.",
+  "ledger": "matrix/trackb-mtf-pmcont-mnq-5m.csv",
+  "oosStart": "2025-07-14",
+  "nBoot": 2000,
+  "windows": {
+    "full": {
+      "label": "full",
+      "geometry": {
+        "n": 425,
+        "wins": 165,
+        "losses": 260,
+        "scratches": 0,
+        "winRatePct": 38.8,
+        "avgWin": 184.23,
+        "avgLoss": -131.78,
+        "rr": 1.4,
+        "tradePnlSd": 155.69,
+        "tradeEv": -9.09,
+        "medianPnl": -114.48
+      },
+      "evCi": {
+        "mean": -9.09,
+        "ciLow": -24.15,
+        "ciHigh": 6.64,
+        "nBoot": 2000
+      },
+      "coversZero": true
+    },
+    "is": {
+      "label": "IS",
+      "geometry": {
+        "n": 314,
+        "wins": 125,
+        "losses": 189,
+        "scratches": 0,
+        "winRatePct": 39.8,
+        "avgWin": 184.05,
+        "avgLoss": -131.87,
+        "rr": 1.4,
+        "tradePnlSd": 156.28,
+        "tradeEv": -6.1,
+        "medianPnl": -113.98
+      },
+      "evCi": {
+        "mean": -6.1,
+        "ciLow": -23.46,
+        "ciHigh": 10.22,
+        "nBoot": 2000
+      },
+      "coversZero": true
+    },
+    "oos": {
+      "label": "OOS",
+      "geometry": {
+        "n": 111,
+        "wins": 40,
+        "losses": 71,
+        "scratches": 0,
+        "winRatePct": 36,
+        "avgWin": 184.81,
+        "avgLoss": -131.54,
+        "rr": 1.4,
+        "tradePnlSd": 153.71,
+        "tradeEv": -17.54,
+        "medianPnl": -120.48
+      },
+      "evCi": {
+        "mean": -17.54,
+        "ciLow": -44.33,
+        "ciHigh": 11.79,
+        "nBoot": 2000
+      },
+      "coversZero": true
+    },
+    "randomBaseline": {
+      "label": "random_baseline",
+      "geometry": {
+        "n": 425,
+        "wins": 203,
+        "losses": 222,
+        "scratches": 0,
+        "winRatePct": 47.8,
+        "avgWin": 154.22,
+        "avgLoss": -150.25,
+        "rr": 1.03,
+        "tradePnlSd": 155.88,
+        "tradeEv": -4.82,
+        "medianPnl": -105.48
+      },
+      "evCi": {
+        "mean": -4.82,
+        "ciLow": -19.66,
+        "ciHigh": 9.88,
+        "nBoot": 2000
+      },
+      "coversZero": true
+    }
+  },
+  "scorecard": {
+    "verdict": "away",
+    "blockStrategy": true,
+    "reason": "OOS EV CI covers 0 or OOS mean ≤ 0 — do not invent new Pine promote from this alone"
+  },
+  "geometryFootnote": "WR / RR / SD are geometry diagnostics only — see SCORECARD.md"
+}

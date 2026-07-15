@@ -1,0 +1,137 @@
+//@version=6
+// Track B · B10 Late Open Magnet MEASURE — Deep BT only.
+// Spec: strategies/strategy-dev/60-track-b/track-b-b10-lom-v0.md
+// Late fade toward RTH open after HTF-ATR extension — NOT AM→PM cont / NOT VWAP / NOT gap.
+// CSV: matrix/trackb-lom-mnq-5m.csv
+
+strategy(
+     title                   = "TrackB LOM measure v0",
+     shorttitle              = "LOM measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 50)
+
+grpEvt = "Event (locked)"
+i_htf      = input.timeframe("15", "HTF for ATR gate", group = grpEvt)
+i_extMult  = input.float(1.5, "Min |px−open| = HTF ATR ×", minval = 0.5, step = 0.1, group = grpEvt)
+i_sessOpen = input.int(930, "RTH open (HHMM)", group = grpEvt)
+i_entry    = input.int(1430, "Entry bar (HHMM)", group = grpEvt)
+i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpEvt)
+
+grpRisk = "Risk"
+i_atrLen  = input.int(14, "Chart ATR length", minval = 5, group = grpRisk)
+i_atrMult = input.float(1.0, "Stop = chart ATR ×", group = grpRisk)
+i_maxStop = input.float(40.0, "Max stop (pts)", group = grpRisk)
+i_riskUsd = input.float(150.0, "Risk USD", group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showMark  = input.bool(true, "Markers", group = grpVis)
+i_showOpen  = input.bool(true, "RTH open line", group = grpVis)
+i_showDebug = input.bool(true, "Funnel table", group = grpVis)
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool isOpenBar = nyHhmm == i_sessOpen
+bool isEntryBar = nyHhmm == i_entry
+bool flatNow = nyHhmm >= i_flatTime
+
+float atr15 = request.security(syminfo.tickerid, i_htf, ta.atr(14), lookahead = barmerge.lookahead_off)
+float atrChart = ta.atr(i_atrLen)
+
+var float open930 = na
+var int dayTrades = 0
+var int cntDays = 0
+var int cntExtOk = 0
+var int cntOrders = 0
+var int cntSkip = 0
+
+if newDay
+    open930 := na
+    dayTrades := 0
+    cntDays += 1
+
+if isOpenBar
+    open930 := open
+
+plot(i_showOpen and not na(open930) ? open930 : na, "RTH open", color = color.new(#e2e8f0, 30), style = plot.style_linebr)
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+if isEntryBar and dayTrades == 0 and strategy.position_size == 0 and not na(open930) and not na(atr15) and not na(atrChart)
+    float dist = math.abs(close - open930)
+    bool extOk = dist >= i_extMult * atr15
+    if extOk
+        cntExtOk += 1
+        float stopPts = i_atrMult * atrChart
+        // Need room to open as TP: distance to open must exceed stop
+        bool roomToOpen = dist > stopPts + syminfo.mintick
+        int q = f_qty(stopPts)
+        if q > 0 and roomToOpen
+            if close < open930
+                float stopL = close - stopPts
+                strategy.entry("L_L", strategy.long, qty = q)
+                strategy.exit("L_LX", from_entry = "L_L", stop = stopL, limit = open930)
+                dayTrades := 1
+                cntOrders += 1
+                if i_showMark
+                    label.new(bar_index, low, "LOM▲", style = label.style_label_up, color = color.new(#22d3ee, 0), textcolor = color.black, size = size.small)
+            else if close > open930
+                float stopS = close + stopPts
+                strategy.entry("L_S", strategy.short, qty = q)
+                strategy.exit("L_SX", from_entry = "L_S", stop = stopS, limit = open930)
+                dayTrades := 1
+                cntOrders += 1
+                if i_showMark
+                    label.new(bar_index, high, "LOM▼", style = label.style_label_down, color = color.new(#e879f9, 0), textcolor = color.black, size = size.small)
+        else
+            cntSkip += 1
+            dayTrades := 1
+    else
+        dayTrades := 1  // mark day seen; no ext
+
+if i_showDebug and barstate.islast
+    var table t = table.new(position.top_right, 2, 5, bgcolor = color.new(#0f172a, 20))
+    table.cell(t, 0, 0, "B10 LOM", text_color = color.white, text_size = size.small)
+    table.cell(t, 1, 0, "→ open @14:30", text_color = color.gray, text_size = size.small)
+    table.cell(t, 0, 1, "Days", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 1, str.tostring(cntDays), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 2, "Ext OK", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 2, str.tostring(cntExtOk), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 3, "Orders", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 3, str.tostring(cntOrders), text_color = color.lime, text_size = size.tiny)
+    table.cell(t, 0, 4, "Skip/no room", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 4, str.tostring(cntSkip), text_color = color.orange, text_size = size.tiny)
+
+alertcondition(dayTrades == 1 and dayTrades[1] == 0, title = "LOM measure · entry", message = "B10 LOM MEASURE — Stage-0 only · not promote.")

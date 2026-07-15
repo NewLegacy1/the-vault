@@ -138,14 +138,15 @@ function saveCohort(opts: {
 }) {
   const preset = presetById(opts.book.presetId)!;
   const stats = bookStats(opts.ds.trades, opts.ds.dates);
-  const { mc } = runLabMc(opts.ds.trades, opts.ds.dates, preset.phase);
+  const phase: "eval" | "funded" = preset.phase === "funded" ? "funded" : "eval";
+  const { mc } = runLabMc(opts.ds.trades, opts.ds.dates, phase);
   const snapshots = compareFirmsForTrades({
     trades: opts.ds.trades,
     dates: opts.ds.dates,
     sims: SIMS,
     maxTrades: MAX_TRADES,
     payoutBuffer: PAYOUT_BUFFER,
-    strategyPhase: preset.phase,
+    strategyPhase: phase,
   });
   const input: CohortSaveInput = {
     variant: `${preset.label} · ${opts.labelSuffix}`,

@@ -1,0 +1,23 @@
+{
+  "title": "IS price-permutation demo — Donchian on synthetic OHLC",
+  "note": "Demo of tooling only. Do not trade. Production edges use real OHLC + SCORECARD.",
+  "nBars": 4000,
+  "nPerm": 200,
+  "lookbacks": [
+    10,
+    15,
+    20,
+    25,
+    30,
+    40,
+    50
+  ],
+  "real": {
+    "lookback": 30,
+    "pf": 1.0314765447475616
+  },
+  "quasiP": 0.77,
+  "permPfMedian": 1.0548073131594802,
+  "passHint": "IS target roughly quasiP < 0.01 with N≥1000 when feasible",
+  "vsLabPropMc": "This resamples OHLC paths + re-optimizes. Lab MC resamples trade PnLs for prop barriers."
+}

@@ -46,6 +46,8 @@ Each file is created when you **RUN** in F4 LAB (auto-save on). YAML includes `p
 
 Dedicated R&D agent — start at [[strategy-dev/_index]].
 
+- **[[RESEARCH_AGENT_LOOP]]** — continuous Track B research agent (failure harvest + gates)
+- **[[kill-lessons-track-b]]** — hard constraints from killed B0/B1/B2
 - **[[execution-plan-post-3y]]** — **ACTIVE BRIEF** (post-3y reset · autopsy → gate or Track B)
 - **[[parallel-impl-sprint2]]** — **PARALLEL SPRINT 2** (Lane C co-feature · Lane D Track B)
 - [[parallel-impl-gated-prb]] — sprint 1 (ops + chain EV) · DONE
