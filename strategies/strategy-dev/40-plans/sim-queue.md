@@ -4,16 +4,16 @@ tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
 
-> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — **Track A ops primary.** Track B idle after B11 kill.  
+> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — Track A ops + **Track B B12 Stage-0**.  
 
 ## NEXT
 
-**B11 BB Reclaim = KILL** (n=775 · EV −$1 · WR~52% / RR~0.88 · [[event-study-trackb-bbreclaim-mnq-5m]]). Graveyard through B11. **Do not retune.**
+**B11 BB Reclaim = KILL** (n=775 · EV −$1). Do not salvage.  
 
 **Now:**
 
 1. **Ops:** Jul STAND_DOWN / Aug–Sep gated PRB — [[gated-prb-live-guide]].  
-2. **Track B:** no open Stage-0 — next must be a new event (not B11 hour/ADX/stop salvage).
+2. **Stage-0 B12:** EMA Trend Pullback → Deep BT → `matrix/trackb-emapull-mnq-5m.csv` — [[track-b-b12-ema-pullback-v0]].
 
 ---
 

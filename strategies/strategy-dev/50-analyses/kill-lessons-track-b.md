@@ -166,7 +166,7 @@ tags: [kill-lessons, track-b, strategy-dev]
 | Path | Notes |
 |---|---|
 | **Track A** | Ops baseline — gated PRB still the only positive-EV ledger |
-| **Track B** | No open Stage-0 — Lane F learning captured; next needs new event (not B11 salvage) |
+| **Track B** | **B12 EMA Pullback** Stage-0 active — [[track-b-b12-ema-pullback-v0]] |
 | **0b on kills** | Forbidden |
 
 ## Agent use

@@ -18,10 +18,10 @@ tags: [kill-lessons, meta, track-b, strategy-dev]
 | Polarity flip insufficient | B6 fade → B8 cont still drained |
 | Baseline contrast | A0a n=120 · EV \$~71 · sum +\$8.5k vs GapCont n=641 · EV −\$1 |
 
-## Design rules after B8 / Lane F cycle
+## Design rules after B11
 
-1. **Do not** retune `gapMult` / VWAP z / clocks / MTF on dead families.  
-2. Active: **B11 BB Reclaim** (Lane F — reclaim event · ADX chop · 1.0R · max 3/day) — [[lane-f-research-cycle-2026-07-15]].  
-3. Cadence helps prop **only if** Stage-0 EV &gt; 0 and trail shape holds (H0b/M2 caveat).  
+1. **Do not** retune BB/ADX/hour/stop on B11.  
+2. Active: **B12 EMA Trend Pullback** (Lane F — trend ADX · EMA reclaim · **1.25R**) — [[track-b-b12-ema-pullback-v0]].  
+3. B11 lesson: WR≥50% without RR≥1 still drains after fees.  
 4. Track A gated PRB remains live ops baseline.  
 5. Prop path MC only after toward.

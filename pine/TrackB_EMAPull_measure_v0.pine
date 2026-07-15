@@ -1,0 +1,148 @@
+//@version=6
+// Track B · B12 EMA Trend Pullback MEASURE — Deep BT only (Lane F).
+// Spec: strategies/strategy-dev/60-track-b/track-b-b12-ema-pullback-v0.md
+// Save CSV: vault-app/data/tv-exports/matrix/trackb-emapull-mnq-5m.csv
+// NOT B11 BB reclaim. Trend ADX + EMA pullback reclaim + 1.25R.
+
+strategy(
+     title                   = "TrackB EMAPull measure v0",
+     shorttitle              = "EMAPull measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 50)
+
+grpEvt = "Event (locked — do not sweep)"
+i_emaLen   = input.int(20, "EMA length", minval = 5, group = grpEvt)
+i_slopeBars = input.int(3, "Slope lookback bars", minval = 1, group = grpEvt)
+i_adxLen   = input.int(14, "ADX length", minval = 5, group = grpEvt)
+i_adxMin   = input.float(25.0, "ADX min (trend)", minval = 10.0, step = 1.0, group = grpEvt)
+i_armFrom  = input.int(1005, "Arm from (HHMM)", group = grpEvt)
+i_armTo    = input.int(1500, "Last entry (HHMM)", group = grpEvt)
+i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpEvt)
+i_maxDay   = input.int(3, "Max trades / day", minval = 1, maxval = 10, group = grpEvt)
+
+grpRisk = "Risk (Lane F — 1.25R)"
+i_maxStop = input.float(30.0, "Max stop (pts)", group = grpRisk)
+i_minStop = input.float(2.0, "Min stop (pts)", group = grpRisk)
+i_rr      = input.float(1.25, "Target R", group = grpRisk)
+i_riskUsd = input.float(100.0, "Risk USD", group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showMark  = input.bool(true, "Markers", group = grpVis)
+i_showEma   = input.bool(true, "EMA overlay", group = grpVis)
+i_showDebug = input.bool(true, "Funnel table", group = grpVis)
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts < i_minStop or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool canArm = nyHhmm >= i_armFrom and nyHhmm < i_armTo
+bool flatNow = nyHhmm >= i_flatTime
+
+float ema = ta.ema(close, i_emaLen)
+[diPlus, diMinus, adx] = ta.dmi(i_adxLen, i_adxLen)
+bool trendOk = not na(adx) and not na(diPlus) and not na(diMinus) and adx > i_adxMin
+
+bool slopeUp = not na(ema) and not na(ema[i_slopeBars]) and ema > ema[i_slopeBars]
+bool slopeDn = not na(ema) and not na(ema[i_slopeBars]) and ema < ema[i_slopeBars]
+
+// Pullback then reclaim through EMA with slope agreement
+bool pullLong = slopeUp and close[1] < ema[1] and close > ema
+bool pullShort = slopeDn and close[1] > ema[1] and close < ema
+
+plot(i_showEma ? ema : na, "EMA", color = color.new(color.blue, 40))
+
+var int dayTrades = 0
+var int cntDays = 0
+var int cntTrend = 0
+var int cntSignal = 0
+var int cntOrders = 0
+bool enteredThisBar = false
+
+if newDay
+    dayTrades := 0
+    cntDays += 1
+
+if canArm and trendOk
+    cntTrend += 1
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+bool canTrade = canArm and trendOk and dayTrades < i_maxDay and strategy.position_size == 0
+
+if canTrade and pullLong
+    cntSignal += 1
+    float extreme = math.min(low, low[1])
+    float stopPts = close - extreme
+    int q = f_qty(stopPts)
+    if q > 0
+        float stopL = close - stopPts
+        float tpL = close + i_rr * stopPts
+        strategy.entry("P_L", strategy.long, qty = q)
+        strategy.exit("P_LX", from_entry = "P_L", stop = stopL, limit = tpL)
+        dayTrades += 1
+        cntOrders += 1
+        enteredThisBar := true
+        if i_showMark
+            label.new(bar_index, low, "EMA L", style = label.style_label_up, color = color.new(color.green, 0), textcolor = color.black, size = size.small)
+
+if canTrade and pullShort and not enteredThisBar and dayTrades < i_maxDay and strategy.position_size == 0
+    cntSignal += 1
+    float extremeS = math.max(high, high[1])
+    float stopPtsS = extremeS - close
+    int qS = f_qty(stopPtsS)
+    if qS > 0
+        float stopS = close + stopPtsS
+        float tpS = close - i_rr * stopPtsS
+        strategy.entry("P_S", strategy.short, qty = qS)
+        strategy.exit("P_SX", from_entry = "P_S", stop = stopS, limit = tpS)
+        dayTrades += 1
+        cntOrders += 1
+        enteredThisBar := true
+        if i_showMark
+            label.new(bar_index, high, "EMA S", style = label.style_label_down, color = color.new(color.red, 0), textcolor = color.black, size = size.small)
+
+var table t = table.new(position.top_right, 2, 5, bgcolor = color.new(color.black, 20))
+if i_showDebug and barstate.islast
+    table.cell(t, 0, 0, "EMAPull", text_color = color.white, text_size = size.small)
+    table.cell(t, 1, 0, "Lane F 1.25R", text_color = color.gray, text_size = size.small)
+    table.cell(t, 0, 1, "Days", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 1, str.tostring(cntDays), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 2, "Trend bars", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 2, str.tostring(cntTrend), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 3, "Signals", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 3, str.tostring(cntSignal), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 4, "Orders", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 4, str.tostring(cntOrders), text_color = color.lime, text_size = size.tiny)
+
+alertcondition(enteredThisBar, title = "EMAPull measure entry", message = "EMAPull MEASURE — Stage-0 only · not promote.")
