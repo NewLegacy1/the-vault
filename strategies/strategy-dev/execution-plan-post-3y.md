@@ -201,22 +201,18 @@ Until then: **no** multi-account as a substitute for edge.
 
 Phase 1–2.1 **done** — `regime-gate-v0` **PASS**.
 
-**Parallel next (both lanes at once):** [[parallel-impl-gated-prb]]
+**Parallel sprint 2 (both lanes):** [[parallel-impl-sprint2]]
 
-| Lane | Work | Status |
-|---|---|---|
-| **A** | Ops encode Jul+Oct into new Pine variant + checklist/SOP | ready (other agent) |
-| **B** | Chain EV ungated vs gated A0a→D1 | **DONE PASS** · [[phase2-chain-ev-gated]] |
+| Lane | Work | Owner | Status |
+|---|---|---|---|
+| **C** | Phase 2.4 co-feature vs calendar | this chat | **DONE · KEEP calendar v0** · [[phase2-4-cofeature]] |
+| **D** | Track B design + Pine skeleton | other chat | ready |
+| Prior A/B | Ops gate + chain EV | — | **DONE** |
 
-1. [x] Locate matrix CSVs: `prb-a0a-3y.csv`, `prb-d1-3y.csv`.
-2. [x] Year + OOS splits (script + MD).
-3. [x] Winner / loss-streak / news clusters.
-4. [x] Draft gate: **Jul+Oct STAND_DOWN** (`regime-gate-v0`).
-5. [x] **2.0 hygiene** — year×month Jul/Oct all w=0; no March stack; calendar = provisional ops overlay.
-6. [x] **2.1 Lab-engine MC** — cohorts saved · [[findings-prb]] PASS.
-7. [x] **Lane A** per [[parallel-impl-gated-prb]] — `pine/Powell_Rejection_Block_gate_v0.pine`
-8. [x] **Lane B / 2.3** — chain EV PASS relative (−$18→−$6/wk; OOS $32→$50); absolute full-3y chain still ≤0
-9. [ ] **Merge note** + user picks: 2.4 co-feature / live forward with gate / Track B for income. Still no March / multi-account until asked.
+1. [x] … Phase 1–2.3 complete (see above / change log).
+2. [x] **Lane C / 2.4** — KEEP calendar v0 (ledger path/gap features lost to Jul+Oct on OOS)
+3. [ ] **Lane D** — [[parallel-impl-sprint2]] Track B
+4. [ ] Merge when D done → Track B export / live forward gated PRB.
 
 ## 6. How this overrides / relates to other docs
 
@@ -248,3 +244,5 @@ Phase 1–2.1 **done** — `regime-gate-v0` **PASS**.
 | 2026-07-14 | Phase 2.0+2.1 Lab-engine confirm → **PASS**; findings-prb settled; stop before 2.2/2.3/Track B. |
 | 2026-07-14 | Parallel sprint brief [[parallel-impl-gated-prb]] — Lane A ops + Lane B chain EV. |
 | 2026-07-14 | Lane B done — [[phase2-chain-ev-gated]] PASS relative (−$18→−$6/wk); absolute full-3y chain ≤0. |
+| 2026-07-14 | Parallel sprint 2 [[parallel-impl-sprint2]] — Lane C 2.4 cofeature + Lane D Track B design. |
+| 2026-07-14 | Lane C done — [[phase2-4-cofeature]] **KEEP calendar v0** (no ledger co-feature beat Jul+Oct OOS). |

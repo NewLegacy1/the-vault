@@ -46,6 +46,7 @@ Chain: [[phase2-chain-ev-gated]] · `vault-app/scripts/analyze-chain-ev-gated.ts
 | Year×month Jul/Oct hygiene (0 winners every year cell) | **PASS** |
 | **`regime-gate-v0`** Jul+Oct STAND_DOWN (single-leg) | **PASS** (Lab-engine · both A0a + D1) |
 | **Chain EV A0a→D1 × gate** (full-loop) | **PASS** relative (−$18→−$6/wk; OOS $32→$50) · absolute full-3y still ≤0 |
+| **Phase 2.4 co-feature** vs calendar | **KEEP calendar v0** — path/gap proxies did not beat Jul+Oct on OOS ([[phase2-4-cofeature]]) |
 | Jul+Oct+Mar as v0 | **hold** — do not stack |
 
 ### Lab-engine confirm (TPT50 · max 220 · buf 2000)
@@ -61,14 +62,15 @@ Cohorts: `strategies/cohorts/eval/*regime_gate_v0*` · `strategies/cohorts/funde
 
 **Honesty:** Gate removes barren calendar months; does **not** prove forever PRB edge. Single-leg income still thin (~$26–37/wk). **Full-loop chain on 3y stays ≤0** even gated (−$6/wk) — see [[phase2-chain-ev-gated]].
 
-**Blocked until explicit next ask:** min-day pad (2.2), March stack, Track B. Chain EV (2.3) **done**.
+**Blocked until explicit next ask:** min-day pad (2.2), March stack. Chain EV (2.3) **done**. Phase 2.4 **KEEP calendar v0**. Track B = Lane D on [[parallel-impl-sprint2]].
 
 ## Open questions
 
-- Optional Phase 2.4: can a pre-session market co-feature explain barren Jul/Oct better than calendar alone?
-- Live forward test with gate ON (ops) once Lane A Pine lands
+- True OHLC vol/trend co-feature (vault had no daily bars — 2.4 used ledger proxies only)
+- Live forward test with gate ON (`Powell_Rejection_Block_gate_v0.pine`)
 - Does trail 2.0/1.5 beat BE-only specifically in give-back months (Feb–Mar type)?
 - Long-only vs short-only bias splits by regime?
+- Track B candidate — [[parallel-impl-sprint2]] Lane D
 
 ## What failed (graveyard — don't resurrect)
 

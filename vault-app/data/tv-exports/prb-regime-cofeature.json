@@ -1,0 +1,164 @@
+{
+  "generated": "2026-07-15T02:28:35.856Z",
+  "phase": "2.4",
+  "note": "Features 2–4 are path/price proxies from the trade ledger (no external OHLC in vault). Prefixed as live-known-before-next-trade.",
+  "preRegistered": [
+    {
+      "id": "calendar_jul_oct",
+      "label": "STAND_DOWN Jul+Oct (baseline)",
+      "kind": "calendar"
+    },
+    {
+      "id": "path_cold_3L",
+      "label": "STAND_DOWN after 3 consecutive losses",
+      "kind": "path"
+    },
+    {
+      "id": "path_roll10_neg",
+      "label": "STAND_DOWN when prior-10 pnl sum < 0",
+      "kind": "path"
+    },
+    {
+      "id": "gap_vol_top_q",
+      "label": "STAND_DOWN when |entry gap| ≥ prior-40 p75",
+      "kind": "price"
+    }
+  ],
+  "oosStart": "2025-07-14",
+  "mc": {
+    "sims": 800,
+    "maxTrades": 220,
+    "payoutBuffer": 2000
+  },
+  "verdict": "KEEP_CALENDAR_V0",
+  "promotedId": null,
+  "calendarOosEWeek": 147,
+  "rows": [
+    {
+      "id": "ungated",
+      "label": "Always trade (no stand-down)",
+      "kind": "control",
+      "full": {
+        "n": 120,
+        "eWeek": 13,
+        "bust": 56.9,
+        "pass": 43.1,
+        "net": 8528,
+        "nUngatedWindow": 120
+      },
+      "oos": {
+        "n": 40,
+        "eWeek": 107,
+        "bust": 17.3,
+        "pass": 82.8,
+        "net": 12754,
+        "nUngatedWindow": 40
+      }
+    },
+    {
+      "id": "calendar_jul_oct",
+      "label": "STAND_DOWN Jul+Oct (baseline)",
+      "kind": "calendar",
+      "full": {
+        "n": 100,
+        "eWeek": 27,
+        "bust": 41.1,
+        "pass": 58.9,
+        "net": 13431,
+        "nUngatedWindow": 120
+      },
+      "oos": {
+        "n": 36,
+        "eWeek": 147,
+        "bust": 8.1,
+        "pass": 91.9,
+        "net": 14078,
+        "nUngatedWindow": 40
+      }
+    },
+    {
+      "id": "path_cold_3L",
+      "label": "STAND_DOWN after 3 consecutive losses",
+      "kind": "path",
+      "full": {
+        "n": 106,
+        "eWeek": 9,
+        "bust": 61,
+        "pass": 39,
+        "net": 6737,
+        "nUngatedWindow": 120
+      },
+      "oos": {
+        "n": 33,
+        "eWeek": 86,
+        "bust": 14.8,
+        "pass": 85.3,
+        "net": 10306,
+        "nUngatedWindow": 40
+      }
+    },
+    {
+      "id": "path_roll10_neg",
+      "label": "STAND_DOWN when prior-10 pnl sum < 0",
+      "kind": "path",
+      "full": {
+        "n": 69,
+        "eWeek": 4,
+        "bust": 58.6,
+        "pass": 41.4,
+        "net": 5741,
+        "nUngatedWindow": 120
+      },
+      "oos": {
+        "n": 31,
+        "eWeek": 112,
+        "bust": 10.9,
+        "pass": 89.1,
+        "net": 12357,
+        "nUngatedWindow": 40
+      }
+    },
+    {
+      "id": "gap_vol_top_q",
+      "label": "STAND_DOWN when |entry gap| ≥ prior-40 p75",
+      "kind": "price",
+      "full": {
+        "n": 98,
+        "eWeek": -3,
+        "bust": 74.5,
+        "pass": 25.5,
+        "net": 229,
+        "nUngatedWindow": 120
+      },
+      "oos": {
+        "n": 30,
+        "eWeek": 24,
+        "bust": 44.4,
+        "pass": 55.6,
+        "net": 4349,
+        "nUngatedWindow": 40
+      }
+    },
+    {
+      "id": "calendar_and_path_cold_3L",
+      "label": "Jul+Oct AND after 3 consecutive losses",
+      "kind": "combo",
+      "full": {
+        "n": 94,
+        "eWeek": 18,
+        "bust": 43.4,
+        "pass": 56.6,
+        "net": 10515,
+        "nUngatedWindow": 120
+      },
+      "oos": {
+        "n": 32,
+        "eWeek": 99,
+        "bust": 13,
+        "pass": 87,
+        "net": 10701,
+        "nUngatedWindow": 40
+      }
+    }
+  ]
+}
