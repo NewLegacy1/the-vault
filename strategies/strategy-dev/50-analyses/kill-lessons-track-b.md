@@ -20,6 +20,7 @@ tags: [kill-lessons, track-b, strategy-dev]
 9b. **No MTF-wrapped AM→PM continuation** either (B9 dead — EV −$9, n=425, maxL=13; 15m gate did not help).  
 9c. **No late open-magnet fade @ 14:30 → RTH open** (B10 dead — EV −$5, n=465).  
 9d. **No overnight gap continuation @ loose ≥1.0×ATR** (B8 dead — n=641, EV −$1, OOS CI covers 0; rarity failed).  
+9e. **No BB pierce→reclaim + ADX chop @ 1.0R** (B11 dead — n=775, EV −$1, WR~52% but RR&lt;1; OOS CI covers 0). Do not salvage with hour/ADX/stop retunes.  
 10. **Loss shape first:** max modeled streak × $risk &lt; $2k trail before cadence claims.  
 11. **Do not retune** a killed idea’s free params to “rescue” without a **new** Stage-0 note and new event definition.  
 12. **Independence:** next book must differ from gated PRB on ≥2 of {time box, level set, regime feature, barrier geometry}.  
@@ -150,12 +151,22 @@ tags: [kill-lessons, track-b, strategy-dev]
 | Soft | Polarity flip ≠ edge when event still fires constantly; prefer Track A ops or a *privately* rare event |
 | Breadth | Independent of PRB — still dead |
 
+### B11 — BB Reclaim · KILL (2026-07-15)
+
+| Extract | Content |
+|---|---|
+| Falsified | BB pierce→reclaim + ADX&lt;25 @ 1.0R has positive Stage-0 EV / OOS lift |
+| Structural | n=775 · EV −$0.93 · WR~52% · RR~0.88 · maxL=7 · losers already ~2.4 bars · 12–14h exploratory drain |
+| Hard constraint | No BB-reclaim/ADX costume; do **not** salvage with hour filter / tighter stop / ADX sweep without new Stage-0 |
+| Soft | Lane F: fix **payoff asymmetry** or pre-trade regime — mid-trade “cut faster” weak when MAE≈stop already |
+| Breadth | Independent of PRB — still dead |
+
 ## Implication
 
 | Path | Notes |
 |---|---|
 | **Track A** | Ops baseline — gated PRB still the only positive-EV ledger |
-| **Track B** | **B11 BB Reclaim** Stage-0 active (Lane F) — [[track-b-b11-bb-reclaim-v0]] · [[lane-f-research-cycle-2026-07-15]] |
+| **Track B** | No open Stage-0 — Lane F learning captured; next needs new event (not B11 salvage) |
 | **0b on kills** | Forbidden |
 
 ## Agent use

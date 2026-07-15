@@ -1,12 +1,12 @@
 ---
 updated: 2026-07-15
-status: waiting-for-csv
+status: settled
+verdict: kill
 tags: [stage-0, event-study, b11, lane-f]
 ---
 # Event study — B11 BB Reclaim (Lane F)
 
-> [[track-b-b11-bb-reclaim-v0]] · Research: [[lane-f-research-cycle-2026-07-15]]  
-> **Waiting on human Deep BT CSV** — no inventable numbers.
+> [[track-b-b11-bb-reclaim-v0]] · Closed → [[event-study-trackb-bbreclaim-mnq-5m]] (**away / BLOCK** · n=775 · EV −$0.93 · WR~52% / RR~0.88).
 
 ## Pre-registered event
 
