@@ -1,6 +1,6 @@
 //@version=6
 // PRB Gate Live Coach — clean risk HUD + Jul/Oct STAND_DOWN (does NOT find RB setups).
-// Pair with Powell_Rejection_Block_gate_v0 Manual ON for entry/stop/TP boxes.
+// Pair with Powell_Rejection_Block_gate_v0 Manual ON for RB labels + entry/stop/TP boxes.
 // Guide: strategies/strategy-dev/20-playbooks/gated-prb-live-guide.md
 
 indicator(
@@ -8,7 +8,7 @@ indicator(
      shorttitle = "PRB Coach",
      overlay    = true,
      max_labels_count = 20,
-     max_lines_count  = 10)
+     max_lines_count  = 20)
 
 grpProf = "Profile"
 i_profile = input.string("Eval (A0a)", "Risk profile", options = ["Eval (A0a)", "Funded (D1)"], group = grpProf)
@@ -29,6 +29,8 @@ i_showBanner = input.bool(true, "Corner status label", group = grpVis)
 i_showShade  = input.bool(true, "Shade STAND_DOWN months", group = grpVis)
 i_showTable  = input.bool(true, "Risk table", group = grpVis)
 i_tablePos   = input.string("Top right", "Table position", options = ["Top right", "Bottom right"], group = grpVis)
+i_showGeom   = input.bool(true, "Show planned stop / TP / BE lines", group = grpVis, tooltip = "Risk geometry from Planned stop pts around the last close — NOT an RB entry signal. Copy stop distance from gate_v0 boxes into Planned stop, then read qty.")
+i_geomSide   = input.string("Both", "Geometry side", options = ["Both", "Long", "Short"], group = grpVis)
 
 int nyMonth = month(time, "America/New_York")
 bool standDown = i_skipJulOct and (nyMonth == 7 or nyMonth == 10)
@@ -63,13 +65,13 @@ var label ban = na
 if barstate.islast and i_showBanner
     if not na(ban)
         label.delete(ban)
-    string msg = standDown ? "STAND_DOWN  Jul/Oct\nNo new PRB entries" : "LIVE  " + profTag + "\ngate_v0 Manual ON"
+    string msg = standDown ? "STAND_DOWN  Jul/Oct\nNo new PRB entries\n(gate_v0 = SHADOW boxes)" : "LIVE  " + profTag + "\ngate_v0 Manual ON"
     color c = standDown ? color.new(#ff8c42, 0) : color.new(#2dd4bf, 0)
     ban := label.new(bar_index, high, msg, style = label.style_label_lower_left, color = c, textcolor = color.black, size = size.normal, textalign = text.align_left)
 
 var table t = na
 if barstate.isfirst
-    t := table.new(i_tablePos == "Bottom right" ? position.bottom_right : position.top_right, 2, 8, bgcolor = color.new(#0a0a0a, 10), border_width = 1, border_color = color.new(#333333, 0), frame_color = color.new(#333333, 0), frame_width = 1)
+    t := table.new(i_tablePos == "Bottom right" ? position.bottom_right : position.top_right, 2, 9, bgcolor = color.new(#0a0a0a, 10), border_width = 1, border_color = color.new(#333333, 0), frame_color = color.new(#333333, 0), frame_width = 1)
 
 if barstate.islast and i_showTable and not na(t)
     table.cell(t, 0, 0, "COACH", text_color = color.new(#94a3b8, 0), text_size = size.tiny, bgcolor = color.new(#111111, 0))
@@ -88,8 +90,62 @@ if barstate.islast and i_showTable and not na(t)
     table.cell(t, 1, 6, "OFF · BE only", text_color = color.new(#94a3b8, 0), text_size = size.small)
     table.cell(t, 0, 7, "Engine", text_color = color.new(#64748b, 0), text_size = size.tiny)
     table.cell(t, 1, 7, "gate_v0 Manual ON", text_color = color.new(#94a3b8, 0), text_size = size.tiny)
+    table.cell(t, 0, 8, "Entries", text_color = color.new(#64748b, 0), text_size = size.tiny)
+    table.cell(t, 1, 8, "Coach ≠ RB finder", text_color = color.new(#f59e0b, 0), text_size = size.tiny)
+
+// Planned R geometry around last close — sizing aid only (not RB detection).
+var line lnLongStop = na
+var line lnLongTp = na
+var line lnLongBe = na
+var line lnShortStop = na
+var line lnShortTp = na
+var line lnShortBe = na
+var label geomLbl = na
+
+if barstate.islast
+    if not na(lnLongStop)
+        line.delete(lnLongStop)
+    if not na(lnLongTp)
+        line.delete(lnLongTp)
+    if not na(lnLongBe)
+        line.delete(lnLongBe)
+    if not na(lnShortStop)
+        line.delete(lnShortStop)
+    if not na(lnShortTp)
+        line.delete(lnShortTp)
+    if not na(lnShortBe)
+        line.delete(lnShortBe)
+    if not na(geomLbl)
+        label.delete(geomLbl)
+    lnLongStop := na
+    lnLongTp := na
+    lnLongBe := na
+    lnShortStop := na
+    lnShortTp := na
+    lnShortBe := na
+    geomLbl := na
+    if i_showGeom and not stopWide and i_stopPts > 0
+        float e = close
+        int x1 = math.max(0, bar_index - 8)
+        int x2 = bar_index + 2
+        color stopC = standDown ? color.new(#ff8c42, 20) : color.new(#f87171, 10)
+        color tpC = standDown ? color.new(#94a3b8, 30) : color.new(#2dd4bf, 10)
+        color beC = color.new(#facc15, 25)
+        bool drawLong = i_geomSide == "Both" or i_geomSide == "Long"
+        bool drawShort = i_geomSide == "Both" or i_geomSide == "Short"
+        if drawLong
+            lnLongStop := line.new(x1, e - i_stopPts, x2, e - i_stopPts, color = stopC, width = 1, style = line.style_dashed)
+            lnLongTp := line.new(x1, e + tpPts, x2, e + tpPts, color = tpC, width = 1, style = line.style_dotted)
+            if i_beAtR > 0
+                lnLongBe := line.new(x1, e + bePts, x2, e + bePts, color = beC, width = 1, style = line.style_dotted)
+        if drawShort
+            lnShortStop := line.new(x1, e + i_stopPts, x2, e + i_stopPts, color = stopC, width = 1, style = line.style_dashed)
+            lnShortTp := line.new(x1, e - tpPts, x2, e - tpPts, color = tpC, width = 1, style = line.style_dotted)
+            if i_beAtR > 0
+                lnShortBe := line.new(x1, e - bePts, x2, e - bePts, color = beC, width = 1, style = line.style_dotted)
+        geomLbl := label.new(bar_index + 2, e, "PLAN@" + str.tostring(i_stopPts, "#.#") + "pt\n(not RB)", style = label.style_label_left, color = color.new(#111111, 20), textcolor = color.new(#94a3b8, 0), size = size.tiny)
 
 plot(standDown ? 1 : 0, "stand_down", display = display.none)
 
-alertcondition(enterSd, title = "PRB · enter STAND_DOWN", message = "PRB COACH · STAND_DOWN Jul/Oct — {{ticker}} {{interval}}\nNo new gated PRB entries until month rolls.\nChecklist: close pending limits · do not stack March.")
+alertcondition(enterSd, title = "PRB · enter STAND_DOWN", message = "PRB COACH · STAND_DOWN Jul/Oct — {{ticker}} {{interval}}\nNo new gated PRB entries until month rolls.\nChecklist: close pending limits · do not stack March.\ngate_v0 Manual ON may still show SHADOW boxes for journaling.")
 alertcondition(exitSd, title = "PRB · exit STAND_DOWN", message = "PRB COACH · LIVE month — {{ticker}} {{interval}}\nProfile: use Eval/Funded card on Coach.\nEngine: gate_v0 Manual ON · ARMED boxes only · checklist bias first.")

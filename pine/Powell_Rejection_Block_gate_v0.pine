@@ -5,6 +5,9 @@
 // EXTRA vs locked v1:
 //   · Skip July & October (regime-gate-v0) — default ON · America/New_York month
 //     Lab PASS 2026-07-14 · STAND_DOWN calendar months 7 and 10
+//   · Live UX: Manual ON still draws SHADOW boxes in Jul/Oct (and Mon skip) so
+//     process / journal practice stays visible; strategy orders stay blocked.
+//     Pair with PRB_Gate_LiveCoach_v0 for risk HUD (Coach does not find RBs).
 //
 // CODED FROM THE SOP:
 //   · Formal RB (T03): candle sweeps liquidity, prints rejection wick; RB level
@@ -107,9 +110,9 @@ i_showPos   = input.bool(true, "Show position boxes (entry / SL / TP)", group = 
 i_showPend  = input.bool(true, "Show pending limit + stop lines", group = "Visuals")
 i_showTable = input.bool(true, "Show diagnostic funnel table", group = "Visuals")
 
-i_manualOnly = input.bool(false, "Manual levels only — NO orders (you click)", group = "Manual / discretionary replay", tooltip = "Draws LIMIT / STOP / TP boxes when a setup arms. No strategy orders — you decide after morning bias. Log take/skip in Vault F2 Journal. Use for 12mo discretionary replay; keep OFF for automated Strategy Tester exports.")
+i_manualOnly = input.bool(false, "Manual levels only — NO orders (you click)", group = "Manual / discretionary replay", tooltip = "LIVE CHART REQUIREMENT: ON for paper/live. Draws LIMIT / STOP / TP boxes (and Jul/Oct SHADOW boxes). No strategy orders — you click. Keep OFF only for Strategy Tester / Deep BT CSV exports.")
 i_showBlockedBias = input.bool(true, "Mark RB blocked by your bias filter", group = "Manual / discretionary replay", tooltip = "Shows when a raw RB failed only the Direction filter — your discretion dataset.")
-i_manualAlerts = input.bool(false, "Alert when limit level arms", group = "Manual / discretionary replay")
+i_manualAlerts = input.bool(false, "Alert when limit level arms", group = "Manual / discretionary replay", tooltip = "Fires only on live ARMED (not Jul/Oct or Monday SHADOW).")
 
 float effTrailStartR = i_trailRegime ? 2.0 : i_trailStartR
 float effTrailGapR = i_trailRegime ? 1.5 : i_trailGapR
@@ -335,7 +338,15 @@ if newDay
     if not i_manualOnly
         strategy.cancel_all()
 
-bool canArm = flat and roomToday and canPlace and dayOk and dayAllowed and suDir == 0 and not suOrd
+// Manual ON: allow setup → SHADOW boxes when Jul/Oct or Monday would block live arms.
+// Manual OFF (Deep BT): calendar gate still hard-blocks canArm (Lab-faithful).
+bool canArm = flat and roomToday and canPlace and dayOk and suDir == 0 and not suOrd and (dayAllowed or i_manualOnly)
+
+f_shadowArmLabel() =>
+    not monthOk ? "SHADOW Jul/Oct — journal only" : not mondayOk ? "SHADOW Mon — journal only" : "ARMED — you click"
+
+f_isLiveArm() =>
+    dayAllowed
 
 // Pick entry level per mode; returns [entryPx, stopPx] or na to skip
 f_plan(float wickStart, float ce, float extreme, bool isShort) =>
@@ -651,16 +662,25 @@ if rbBear and canArm
         suExtreme := high
         suBar := bar_index
         suTapped := false
+        manualState := "CISD tap CE"
     else
         [entryPx, stopPx] = f_plan(wickStart, ce, high, true)
         if na(entryPx)
             cntSkipStop += 1
         else
+            float riskPts0 = math.abs(stopPx - entryPx)
             suDir := -1
+            suWickStart := wickStart
+            suCe := ce
+            suExtreme := high
             suEntry := entryPx
             suStop := stopPx
+            pendStop := stopPx
+            pendTp := entryPx - f_effRr() * riskPts0
             suBar := bar_index
             suLeft := i_leaveR == 0
+            manualReady := false
+            manualState := suLeft ? "WAIT approach" : "WAIT leave"
 
 if rbBull and canArm and suDir == 0
     float wickStart = math.min(open, close)
@@ -672,16 +692,25 @@ if rbBull and canArm and suDir == 0
         suExtreme := low
         suBar := bar_index
         suTapped := false
+        manualState := "CISD tap CE"
     else
         [entryPx, stopPx] = f_plan(wickStart, ce, low, false)
         if na(entryPx)
             cntSkipStop += 1
         else
+            float riskPts0 = math.abs(stopPx - entryPx)
             suDir := 1
+            suWickStart := wickStart
+            suCe := ce
+            suExtreme := low
             suEntry := entryPx
             suStop := stopPx
+            pendStop := stopPx
+            pendTp := entryPx + f_effRr() * riskPts0
             suBar := bar_index
             suLeft := i_leaveR == 0
+            manualReady := false
+            manualState := suLeft ? "WAIT approach" : "WAIT leave"
 
 // ── Leave-then-retest arming (SOP T03: wait for price to LEAVE, then retest) ──
 // The order is re-evaluated every bar while the setup is live: it only stays
@@ -705,7 +734,8 @@ if not isTrigger and suDir != 0 and flat
             if suDir == 1 and high >= suEntry + i_leaveR * riskPts
                 suLeft := true
         bool nearOk = i_maxApproachR == 0 or math.abs(close - suEntry) <= i_maxApproachR * riskPts
-        manualState := not suLeft ? "WAIT leave" : not nearOk ? "WAIT approach" : not roomToday ? "1/day used" : not dayOk ? "Daily lock" : "ARMED — you click"
+        string armLbl = f_shadowArmLabel()
+        manualState := not suLeft ? "WAIT leave" : not nearOk ? "WAIT approach" : not roomToday ? "1/day used" : not dayOk ? "Daily lock" : armLbl
         if suLeft and roomToday and dayOk
             if nearOk
                 float tpPx = suDir == -1 ? suEntry - f_effRr() * riskPts : suEntry + f_effRr() * riskPts
@@ -714,7 +744,8 @@ if not isTrigger and suDir != 0 and flat
                 int qty = f_qty(riskPts)
                 if qty > 0
                     manualReady := true
-                    if not i_manualOnly
+                    manualState := armLbl
+                    if not i_manualOnly and f_isLiveArm()
                         if suDir == -1
                             strategy.entry("Short", strategy.short, qty = qty, limit = suEntry)
                             strategy.exit("S-X", from_entry = "Short", stop = suStop, limit = tpPx)
@@ -766,9 +797,10 @@ if isTrigger and suDir == -1 and flat and bar_index > suBar
             if qty > 0
                 pendStop := stopPx
                 pendTp := close - f_effRr() * riskPts
+                suEntry := close
                 manualReady := i_manualOnly
-                manualState := i_manualOnly ? "CISD GO — you click" : "CISD fill"
-                if not i_manualOnly
+                manualState := i_manualOnly ? (f_isLiveArm() ? "CISD GO — you click" : f_shadowArmLabel()) : "CISD fill"
+                if not i_manualOnly and f_isLiveArm()
                     strategy.entry("Short", strategy.short, qty = qty)
                     strategy.exit("S-X", from_entry = "Short", stop = stopPx, limit = pendTp)
                     openRiskPts := riskPts
@@ -794,9 +826,10 @@ if isTrigger and suDir == 1 and flat and bar_index > suBar
             if qty > 0
                 pendStop := stopPx
                 pendTp := close + f_effRr() * riskPts
+                suEntry := close
                 manualReady := i_manualOnly
-                manualState := i_manualOnly ? "CISD GO — you click" : "CISD fill"
-                if not i_manualOnly
+                manualState := i_manualOnly ? (f_isLiveArm() ? "CISD GO — you click" : f_shadowArmLabel()) : "CISD fill"
+                if not i_manualOnly and f_isLiveArm()
                     strategy.entry("Long", strategy.long, qty = qty)
                     strategy.exit("L-X", from_entry = "Long", stop = stopPx, limit = pendTp)
                     openRiskPts := riskPts
@@ -929,21 +962,30 @@ if not inPos and not na(posLnEntry) and strategy.position_size[1] != 0
     posBxRisk := na
     posBxReward := na
 
-// Pending limit preview: semi-transparent risk / reward zones while the limit
-// is armed. Red box = entry→stop (what you risk), teal box = entry→target.
-// The label prints the exact prices to place in the broker DOM.
+// Pending limit preview: semi-transparent risk / reward zones while a setup
+// is live (WAIT leave → ARMED / SHADOW). Red = entry→stop, teal = entry→TP.
+// Manual ON shows boxes through the whole leave/retest; Auto shows once ordered.
 var box   pendBxRisk2  = na
 var box   pendBxRew2   = na
 var line  pendLnEntry2 = na
 var label pendLbl2     = na
-bool pendVis = i_showPend and (suOrd or (i_manualOnly and manualReady)) and (flat or i_manualOnly)
+bool pendVis = i_showPend and not na(suEntry) and not na(pendStop) and not na(pendTp) and suDir != 0 and (flat or i_manualOnly) and (suOrd or i_manualOnly)
 if pendVis
-    float dispEntry = na(suEntry) ? close : suEntry
+    float dispEntry = suEntry
+    bool isShadow = i_manualOnly and manualReady and not f_isLiveArm()
+    color riskBd = isShadow ? color.new(color.orange, 40) : color.new(color.red, 55)
+    color riskBg = isShadow ? color.new(color.orange, 88) : color.new(color.red, 86)
+    color rewBd = isShadow ? color.new(color.gray, 40) : color.new(color.teal, 55)
+    color rewBg = isShadow ? color.new(color.gray, 90) : color.new(color.teal, 88)
     if na(pendBxRisk2)
-        pendBxRisk2 := box.new(bar_index, math.max(dispEntry, pendStop), bar_index + 1, math.min(dispEntry, pendStop), border_color = color.new(color.red, 55), bgcolor = color.new(color.red, 86))
-        pendBxRew2 := box.new(bar_index, math.max(dispEntry, pendTp), bar_index + 1, math.min(dispEntry, pendTp), border_color = color.new(color.teal, 55), bgcolor = color.new(color.teal, 88))
+        pendBxRisk2 := box.new(bar_index, math.max(dispEntry, pendStop), bar_index + 1, math.min(dispEntry, pendStop), border_color = riskBd, bgcolor = riskBg)
+        pendBxRew2 := box.new(bar_index, math.max(dispEntry, pendTp), bar_index + 1, math.min(dispEntry, pendTp), border_color = rewBd, bgcolor = rewBg)
         pendLnEntry2 := line.new(bar_index, dispEntry, bar_index + 1, dispEntry, color = color.new(color.white, 10), width = 2, style = line.style_dashed)
         pendLbl2 := label.new(bar_index + 1, dispEntry, "", style = label.style_label_left, color = color.new(color.black, 25), textcolor = color.white, size = size.small)
+    box.set_border_color(pendBxRisk2, riskBd)
+    box.set_bgcolor(pendBxRisk2, riskBg)
+    box.set_border_color(pendBxRew2, rewBd)
+    box.set_bgcolor(pendBxRew2, rewBg)
     box.set_right(pendBxRisk2, bar_index + 1)
     box.set_right(pendBxRew2, bar_index + 1)
     box.set_top(pendBxRisk2, math.max(dispEntry, pendStop))
@@ -953,7 +995,7 @@ if pendVis
     line.set_x2(pendLnEntry2, bar_index + 1)
     label.set_x(pendLbl2, bar_index + 1)
     string dirTxt = suDir == -1 ? "SHORT" : "LONG"
-    string modeTxt = i_manualOnly ? " (MANUAL)" : ""
+    string modeTxt = i_manualOnly ? (isShadow ? " (SHADOW)" : " (MANUAL)") : ""
     label.set_text(pendLbl2, dirTxt + modeTxt + " @ " + str.tostring(dispEntry, format.mintick) + "\nSTOP " + str.tostring(pendStop, format.mintick) + "\nTP " + str.tostring(pendTp, format.mintick) + "\n" + manualState)
     line.set_y1(pendLnEntry2, dispEntry)
     line.set_y2(pendLnEntry2, dispEntry)
@@ -996,7 +1038,11 @@ plot(i_showLvls ? ko1000 : na, "10:00 open", color.new(color.fuchsia, 45), style
 plot(i_showLvls and i_useAmOpens ? ko0830 : na, "8:30 open", color.new(color.silver, 60), style = plot.style_linebr)
 plot(i_showLvls and i_useAmOpens ? ko0900 : na, "9:00 open", color.new(color.silver, 70), style = plot.style_linebr)
 plot(i_showLvls and i_useAmOpens ? ko0930 : na, "9:30 open", color.new(color.silver, 65), style = plot.style_linebr)
-plot(isTrigger and suDir != 0 ? suCe : na, "RB zone CE", color.new(color.white, 40), style = plot.style_linebr)
+// Zone / entry geometry while a setup is open (all entry modes — not CISD-only)
+plot(i_showLvls and suDir != 0 and not na(suCe) ? suCe : na, "RB zone CE", color.new(color.white, 35), style = plot.style_linebr)
+plot(i_showLvls and suDir != 0 and not na(suWickStart) ? suWickStart : na, "RB wick start", color.new(color.aqua, 45), style = plot.style_linebr)
+plot(i_showPend and suDir != 0 and not na(suEntry) ? suEntry : na, "RB limit entry", color.new(color.white, 20), style = plot.style_linebr)
+plot(i_showPend and suDir != 0 and not na(suStop) ? suStop : na, "RB stop", color.new(color.red, 35), style = plot.style_linebr)
 
 // ─── Diagnostic funnel table ─────────────────────────────────────────────────
 f_row(table t, int r, string k, string v) =>
@@ -1045,7 +1091,7 @@ if i_showTable and barstate.islast
     f_rowCol(diag, 16, "Manual state", manualState, manualReady ? color.new(color.yellow, 0) : color.white)
     f_row(diag, 17, "Log → Vault F2", i_manualOnly ? "Journal bias+take" : "—")
 
-alertcondition(i_manualOnly and manualReady and i_manualAlerts, title = "PRB · ARMED (Manual ON)", message = "PRB gate_v0 ARMED — {{ticker}} {{interval}} {{time}}\n1) Checklist bias / confluence\n2) Copy LIMIT · STOP · TP from boxes\n3) Coach qty from stop pts\nManual ON — you click. Jul/Oct STAND_DOWN blocks new arms.")
+alertcondition(i_manualOnly and manualReady and i_manualAlerts and monthOk and mondayOk, title = "PRB · ARMED (Manual ON)", message = "PRB gate_v0 ARMED — {{ticker}} {{interval}} {{time}}\n1) Checklist bias / confluence\n2) Copy LIMIT · STOP · TP from boxes\n3) Coach qty from stop pts\nManual ON — you click. Jul/Oct SHADOW is journal-only (no alert).")
 
 // ─── Missed-trade autopsy table (bottom right) ───────────────────────────────
 var string[] ghNames = array.from("", "Before window (9:30→start)", "Monday", "Slot used (1/day, in pos)", "4H wick too small", "No liquidity sweep", "No confirming close", "Stop out of bounds", "Daily P&L lock", "Not near key open", "Bias filter", "After window (end→15:00)", "July/October stand-down")

@@ -87,8 +87,12 @@ Lab settled **PASS** 2026-07-14 ([[findings-prb]]). Calendar ops overlay — not
 
 | Pane | Script | Role |
 |---|---|---|
-| Coach | `PRB_Gate_LiveCoach_v0.pine` | STAND_DOWN banner · Eval/Funded risk · qty from planned stop |
-| Engine | `gate_v0` with **Manual levels only = ON** | LIMIT/STOP/TP boxes — you click / copy to broker |
+| Coach | `PRB_Gate_LiveCoach_v0.pine` | STAND_DOWN banner · Eval/Funded risk · qty from planned stop · optional PLAN stop/TP/BE lines (not RB finder) |
+| Engine | `gate_v0` with **Manual levels only = ON** | RB labels · PDH/PDL · CE/limit/stop · LIMIT/STOP/TP boxes — you click / copy to broker |
+
+**Coach-only = table only.** Entry visuals require gate_v0 Manual ON on the same MNQ 1m/5m chart.
+
+**Jul/Oct + Manual ON:** gate draws **SHADOW** boxes (journal / process) while STAND_DOWN blocks live ARMED alerts and strategy orders. Do not flip Jul/Oct OFF to force ARMED in July.
 
 Do not use Manual OFF auto-orders as live prop authority until paper checklist fidelity is proven.
 

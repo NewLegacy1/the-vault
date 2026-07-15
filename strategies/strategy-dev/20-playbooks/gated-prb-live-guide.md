@@ -40,8 +40,8 @@ One good calendar month does **not** override Lab Jul+Oct. The gate was settled 
 ### What to do right now (mid-July → Oct)
 
 1. **Rest of July + all of October:** leave `Jul/Oct STAND_DOWN` **ON**. Do **not** click RTH PRB into the prop account.  
-2. **Shadow journal (still useful):** when gate_v0 would ARMED, log *would take / would skip · stop · qty · checklist grade · hypothetical path* — zero size. That validates process without fighting the regime gate.  
-3. **Aug 1 → Sep 30:** this is the active live/paper window. Same stack, real (or paper) fills. Aim for checklist fidelity and trail discipline — not a new Lab claim from ≤20 takes.  
+2. **Shadow journal (still useful):** with gate_v0 **Manual ON** + Jul/Oct **ON**, setups still draw **SHADOW** boxes (orange) and funnel `SHADOW Jul/Oct — journal only`. Log *would take / would skip · stop · qty · checklist grade · hypothetical path* — zero size. Do not flip Jul/Oct OFF to get teal ARMED labels.  
+3. **Aug 1 → Sep 30:** this is the active live/paper window. Same stack, real (or paper) fills — funnel reads `ARMED — you click`. Aim for checklist fidelity and trail discipline — not a new Lab claim from ≤20 takes.  
 4. **Parallel:** Track B Stage-0 research (TV CSV → scripts) runs **year-round** — it does not need PRB live fills.
 
 Optional: set Coach alerts **enter STAND_DOWN** / **exit STAND_DOWN** so Aug open and Oct close are calendar events, not willpower.
@@ -50,27 +50,58 @@ Optional: set Coach alerts **enter STAND_DOWN** / **exit STAND_DOWN** so Aug ope
 
 ## TradingView: strategy vs indicator
 
-### Recommended live stack (two panes)
+### Who draws what (read this if you only see a table)
+
+| Script | What it draws | What it does **not** do |
+|---|---|---|
+| **`PRB_Gate_LiveCoach_v0`** | STAND_DOWN wash · corner LIVE/STAND_DOWN · risk table · optional **planned** stop/TP/BE lines from *Planned stop (pts)* | Find RBs · arm LIMIT/STOP/TP boxes · emit entry signals |
+| **`Powell_Rejection_Block_gate_v0`** | RB labels · PDH/PDL/PM/key opens · CE / wick-start / limit / stop lines · red+teal boxes when setup arms | Live Coach sizing (use Coach qty) |
+
+If the chart shows only a HUD/table: you almost certainly have **Coach only**. Add **gate_v0** on the same MNQ chart (overlay strategy). Locked `Powell_Rejection_Block_v1.pine` stays untouched.
+
+### Minimal MNQ setup (copy into TV)
+
+1. Chart: `CME_MINI:MNQ1!` · **1m** (CISD package) or **5m** (limit/Auto leave-retest) · NY session visible.  
+2. Add **`Powell_Rejection_Block gate_v0`** (strategy, overlay).  
+3. Inputs — must match live ops:
+   - **Manual levels only — NO orders = ON**
+   - **Skip July & October = ON** (leave on through Aug practice; do not flip off to “see more” in July)
+   - Visuals: **Show RB labels / liquidity+key opens / position boxes / pending limit+stop = ON**
+   - Funnel table ON until you trust the boxes; then optional off
+4. Add **`PRB Gate Live Coach v0`** (indicator, same pane). Profile Eval or Funded.  
+5. Style tab: leave gate_v0 plots (PDH/PDL, CE, limit, stop) **visible** — TV can hide them if a previous style was saved.  
+6. Confirm funnel row **Mode = MANUAL (no orders)** and **Jul/Oct gate** shows `STAND_DOWN` (Jul) or `ON · month ok` (Aug/Sep).
+
+### Recommended live stack (same pane or two)
 
 | Pane | Script | Setting | Role |
 |---|---|---|---|
-| **A — Coach** | `PRB_Gate_LiveCoach_v0` | Eval or Funded profile | STAND_DOWN banner · sizing · risk numbers |
-| **B — Setup engine** | `Powell_Rejection_Block_gate_v0` | **Manual levels only = ON** · Jul/Oct = ON | Draws LIMIT / STOP / TP boxes when ARMED — **no** `strategy.entry` |
+| **A — Coach** | `PRB_Gate_LiveCoach_v0` | Eval or Funded profile | STAND_DOWN banner · sizing · planned R lines |
+| **B — Setup engine** | `Powell_Rejection_Block_gate_v0` | **Manual levels only = ON** · Jul/Oct = ON | Draws LIMIT / STOP / TP boxes when ARMED / SHADOW — **no** `strategy.entry` |
 
-You copy box prices into the broker (or click TradingView futures if that’s your fill path). The checklist bias filter stays **human**.
+You copy box prices into the broker (or click TradingView futures if that’s your fill path). The checklist bias filter stays **human**. Paste Coach **Planned stop (pts)** from the red-box stop distance to get qty.
+
+### July SHADOW vs Aug–Sep ARMED
+
+| Window | Manual ON + Jul/Oct ON | What you see on gate_v0 |
+|---|---|---|
+| **Jul · Oct** | Process / journal only | Orange **SHADOW** boxes + `SHADOW Jul/Oct — journal only` — **do not** click live size |
+| **Aug · Sep** (and other live months) | Paper / small live | Teal/red **MANUAL** boxes + `ARMED — you click` |
+
+Turning Jul/Oct **OFF** to force “real” ARMED labels in July is an ops kill criterion. Use SHADOW.
 
 ### When to use Strategy Manual OFF
 
 | Mode | Use for |
 |---|---|
-| Manual **OFF** | Periodic Deep BT CSV → Lab (control / decay check) only |
-| Manual **ON** | Live and discretionary replay |
+| Manual **OFF** | Periodic Deep BT CSV → Lab (control / decay check) only — **no** live entry boxes while flat |
+| Manual **ON** | Live, shadow (Jul/Oct), and discretionary replay |
 
 Do **not** rely on TradingView strategy auto-orders as the live prop account authority until you’ve logged ≥20 paper takes with checklist fidelity. Even then, prefer Manual ON + broker — TV strategy fills ≠ prop DOM fills.
 
 ### Pure indicator alternative
 
-There is **no second full RB encoder**. The “indicator” for entries **is** gate_v0 with Manual ON (same logic as Lab, zero orders). LiveCoach only adds risk HUD / stand-down — it does not find RBs.
+There is **no second full RB encoder**. The “indicator” for entries **is** gate_v0 with Manual ON (same logic as Lab, zero orders). LiveCoach only adds risk HUD / stand-down / planned R lines — it does not find RBs.
 
 ---
 
@@ -168,11 +199,20 @@ Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 
 | Script | What you should see |
 |---|---|
-| LiveCoach | Soft orange wash in Jul/Oct · one corner LIVE/STAND_DOWN label · compact risk table |
-| gate_v0 Manual ON | Red entry→stop box · teal entry→TP · funnel ARMED |
-| MPSF events | Blue wash 9:30–10:00 · dashed PDH/PDL · L▲ / S▼ only · light SL/TP boxes |
+| LiveCoach | Soft orange wash in Jul/Oct · corner LIVE/STAND_DOWN · risk table · faint PLAN@Npt stop/TP/BE (not an RB) |
+| gate_v0 Manual ON (live month) | RB labels · PDH/PDL lines · CE + wick-start while setup open · red entry→stop + teal entry→TP · funnel `ARMED — you click` |
+| gate_v0 Manual ON (Jul/Oct) | Same cues in **orange SHADOW** · funnel `SHADOW Jul/Oct — journal only` · no ARMED alert |
+| MPSF events | Separate Track B marker — do not use as PRB entry engine |
 
 Turn **off** gate soup triangles / ghost marks if the live chart feels busy.
+
+### If you still see no RB / boxes
+
+1. Confirm **gate_v0** is on the chart (not Coach alone).  
+2. Confirm **Manual levels only = ON**.  
+3. Timeframe 1m or 5m; look during **10:00–11:30 NY** (entry window wash). Outside that, expect liquidity lines only.  
+4. Funnel: if `RB candles (raw)` stays 0 in-window, filters (wick / 4H / sweep) are blocking — widen nothing for Lab; use bar-replay on a known historical RB day for UX check.  
+5. Style → reset gate_v0 plot visibility.
 
 ---
 
