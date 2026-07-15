@@ -154,8 +154,8 @@ tags: [kill-lessons, track-b, strategy-dev]
 
 | Path | Notes |
 |---|---|
-| **Track A** | **Primary** — gated PRB is the only book with demonstrated positive 3y trade EV in this vault |
-| **Track B** | Pause spray; next candidate = Lane R *or* Lane F (see soft prefs) — not a retune of dead costumes |
+| **Track A** | Ops baseline — gated PRB still the only positive-EV ledger |
+| **Track B** | **B11 BB Reclaim** Stage-0 active (Lane F) — [[track-b-b11-bb-reclaim-v0]] · [[lane-f-research-cycle-2026-07-15]] |
 | **0b on kills** | Forbidden |
 
 ## Agent use

@@ -4,16 +4,17 @@ tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
 
-> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — **Track A ops primary.** Track B paused after B8 kill.  
+> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — Track A ops + **Track B Lane F Stage-0 (B11)**. Research: [[lane-f-research-cycle-2026-07-15]].  
 
 ## NEXT
 
-**B8 GapCont = KILL** (n=641 · EV −$1 · rarity fail · [[event-study-trackb-gapcont-3y]]). Graveyard B0–B10 + B8. **Do not retune.**
+**B8 GapCont = KILL** (n=641 · EV −$1). Graveyard B0–B10 + B8. **Do not retune.**
 
 **Now:**
 
 1. **Ops:** Jul STAND_DOWN / Aug–Sep gated PRB — [[gated-prb-live-guide]].  
-2. **Track B:** pause spray — no same-day B11; next candidate only with a genuinely rare *private* event (not gap/AM-PM/VWAP/ORB).
+2. **Stage-0 B11:** BB Reclaim Lane F → Deep BT → `matrix/trackb-bbreclaim-mnq-5m.csv` — [[track-b-b11-bb-reclaim-v0]].  
+3. One open Stage-0 only; no VWAP-z / gap retunes.
 
 ---
 
