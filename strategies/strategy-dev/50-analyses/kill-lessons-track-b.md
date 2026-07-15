@@ -126,14 +126,24 @@ tags: [kill-lessons, track-b, strategy-dev]
 | Soft | Pause spray; Track A ops; next class must not be morning-move→afternoon 1.5R |
 | Breadth | MTF plumbing validated · edge not |
 
+### B10 — LOM · KILL (2026-07-15)
+
+| Extract | Content |
+|---|---|
+| Falsified | Late 14:30 fade to RTH open after ≥1.5×ATR15 extension has positive EV |
+| Structural | n=465 · EV −$5 · ~26% WR / RR~2.5 trap · high-n soft drain |
+| Hard constraint | No late open-magnet fade costume; do not retune extMult / 14:30 |
+| Soft | Next class outside open-magnet + AM→PM + killed fades |
+| Breadth | Independent of PRB — still dead |
+
 ## Implication
 
 | Path | Notes |
 |---|---|
-| **B10** | Late Open Magnet — [[track-b-b10-lom-v0]] · outside AM→PM / VWAP / overnight gap |
-| **0b 1m on B9** | Forbidden |
-| **Track A** | Still primary ops path |
+| **B8 GapCont** | **Active Stage-0** — [[track-b-b8-gap-cont-v0]] · flip of B6 + rarity lever · see [[track-b-error-synthesis-b0-b10]] |
+| **0b 1m on B9/B10** | Forbidden |
+| **Track A** | Still primary ops path (gated PRB) |
 
 ## Agent use
 
-Print five harvest extracts in chat on kill. Do not auto-draft another AM→PM continuation variant.
+Print five harvest extracts in chat on kill. Do not auto-draft another AM→PM / open-magnet / gap-fade variant.

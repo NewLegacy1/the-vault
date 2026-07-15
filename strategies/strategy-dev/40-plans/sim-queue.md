@@ -1,21 +1,20 @@
 ---
-updated: 2026-07-14
+updated: 2026-07-15
 tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
 
-> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — Track A ops primary. Track B **paused** overnight after B10.  
+> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — Track A ops primary. Track B **B8 GapCont** Stage-0 after [[track-b-error-synthesis-b0-b10]].  
 
-## NEXT — morning
+## NEXT
 
-**B10 LOM = KILL** (n=465 · EV −$5 · [[event-study-trackb-lom-mnq-5m]]). Graveyard B0–B10.
+**B10 LOM = KILL** (n=465 · EV −$5). Graveyard B0–B7 · B9–B10. **Do not retune.**
 
 **Now:**
 
 1. **Ops:** Jul STAND_DOWN / Aug–Sep gated PRB — [[gated-prb-live-guide]].  
-2. **Morning:** pick next Stage-0 class outside open-magnet + AM→PM + killed fades — [[kill-lessons-track-b]].
-
-Do **not** retune B0–B10.
+2. **Stage-0:** export B8 GapCont Deep BT → `matrix/trackb-gapcont-3y.csv` — [[track-b-b8-gap-cont-v0]] · [[event-study-b8-gap-cont]].  
+3. Agent analyzes CSV when it lands; no second Stage-0 while B8 is open.
 
 ---
 
