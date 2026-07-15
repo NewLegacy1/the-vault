@@ -17,7 +17,7 @@ tags: [track-b, ideas]
 
 | ID | Notes |
 |---|---|
-| — | No new Stage-0 until deliberate new *private* event class (not gap/AM-PM/VWAP/ORB retune) |
+| — | Next Stage-0 = Lane R (rare/private) **or** Lane F (HF with new barrier/info) — not gap/AM-PM/VWAP/ORB retune |
 
 ## Killed
 

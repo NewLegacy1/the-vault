@@ -31,9 +31,12 @@ tags: [kill-lessons, track-b, strategy-dev]
 ## Soft preferences (not blockers)
 
 - Prefer univariate / one free param (Occam).  
-- Prefer event rate ~0.3–2 / week on MNQ 5m over spam (&gt;3/day) or desert (&lt;40 / 3y).  
-- Prefer 1.0–2.0R targets for first Stage-0 (loss-shape), not 5R fantasy.  
-- Calendar Jul/Oct is **ops for PRB**, not a free “edge” to copy onto every book.
+- **Two lanes are both allowed** (rarity is not dogma):  
+  - **Lane R — rare / private event:** ~0.3–2 / week (PRB-shaped). Escapes our high-n soft-drain cluster.  
+  - **Lane F — higher frequency:** allowed if it changes **barrier or information source**, not just the clock/label. Our kills falsified *common TA + ~40%/1.3R/$150 Stage-0*, not “all HF.” Viable HF usually needs higher WR / tighter stop / different exit math, or a non-TA input — still trail-safe.  
+- Prefer 1.0–2.0R for Lane R Stage-0; Lane F may use tighter targets if loss shape still fits $2k trail.  
+- Calendar Jul/Oct is **ops for PRB**, not a free “edge” to copy onto every book.  
+- Desert (&lt;40 / 3y) still weak for Stage-0 power — rarity ≠ invisibility.
 
 ## Per-kill cards
 
@@ -152,7 +155,7 @@ tags: [kill-lessons, track-b, strategy-dev]
 | Path | Notes |
 |---|---|
 | **Track A** | **Primary** — gated PRB is the only book with demonstrated positive 3y trade EV in this vault |
-| **Track B spray** | Pause — B0–B10 + B8 closed; do not invent B11 same day |
+| **Track B** | Pause spray; next candidate = Lane R *or* Lane F (see soft prefs) — not a retune of dead costumes |
 | **0b on kills** | Forbidden |
 
 ## Agent use

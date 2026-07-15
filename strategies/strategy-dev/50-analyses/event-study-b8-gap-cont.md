@@ -1,12 +1,12 @@
 ---
 updated: 2026-07-15
-status: waiting-for-csv
+status: settled
+verdict: kill
 tags: [stage-0, event-study, b8]
 ---
 # Event study — B8 gap continuation
 
-> [[track-b-b8-gap-cont-v0]] · Activated after [[track-b-error-synthesis-b0-b10]]  
-> **No Deep BT numbers inventable** — waiting on human export.
+> [[track-b-b8-gap-cont-v0]] · Closed → [[event-study-trackb-gapcont-3y]] (**away / BLOCK** · n=641 · EV −$1).
 
 ## Pre-registered event
 

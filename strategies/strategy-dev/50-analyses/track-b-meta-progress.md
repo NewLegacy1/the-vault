@@ -8,20 +8,20 @@ tags: [kill-lessons, meta, track-b, strategy-dev]
 
 ## Verdict on progress
 
-**Useful elimination. No Stage-0 toward.** B0–B10 closed overnight spray. Patterns: high-n soft drain, geometry-trap costumes, MTF/label wrappers without new claims. Track A gated PRB remains primary ops.
+**Useful elimination. No Stage-0 toward.** B8 GapCont also died (n=641 — “rare” threshold failed). Track A gated PRB is still the only positive-EV ledger in vault.
 
 | Settled | Evidence |
 |---|---|
 | Process + MTF coding | HTF via `request.security` + dual-TF protocol ready |
-| Continuation @ loose threshold dead | B7 + B9 |
-| Fade magnets / VWAP / gap fade dead | B2 · B4 · B6 · B10 |
-| Geometry trap real | ~slight-neg EV across many common TA events |
-| Synthesis | Activate **B8 GapCont** (fade→cont + rarity) — one open Stage-0 |
+| Cont + fade gaps / PM / magnets dead | B6–B10 · B8 |
+| Geometry trap real | Common TA events ≈ −$1 to −$15 EV @ ~1.3R |
+| Polarity flip insufficient | B6 fade → B8 cont still drained |
+| Baseline contrast | A0a n=120 · EV \$~71 · sum +\$8.5k vs GapCont n=641 · EV −\$1 |
 
-## Design rules after B10
+## Design rules after B8
 
-1. **Do not** run 0b on killed books.  
-2. **Do not** draft AM→PM cont, open-magnet fade, or gap-fade retunes.  
-3. **Do not** stack Jul+Oct onto Track B as a fake edge.  
-4. One open Stage-0: **B8** until SCORECARD closeout.  
+1. **Pause** spray before drafting the next candidate (no costume churn).  
+2. **Do not** retune `gapMult` / clocks / MTF on dead families.  
+3. Next Track B may be **Lane R** (rare/private) *or* **Lane F** (higher frequency with a *different* barrier / info source) — see [[kill-lessons-track-b]] soft prefs. Rarity is one escape hatch from *our* drain cluster, not a claim that HF cannot work.  
+4. Default work = Track A gated PRB ops until a deliberate next Stage-0.  
 5. Prop path MC only after toward.

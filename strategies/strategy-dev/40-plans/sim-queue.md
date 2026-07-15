@@ -4,17 +4,16 @@ tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
 
-> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — Track A ops primary. Track B **B8 GapCont** Stage-0 after [[track-b-error-synthesis-b0-b10]].  
+> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — **Track A ops primary.** Track B paused after B8 kill.  
 
 ## NEXT
 
-**B10 LOM = KILL** (n=465 · EV −$5). Graveyard B0–B7 · B9–B10. **Do not retune.**
+**B8 GapCont = KILL** (n=641 · EV −$1 · rarity fail · [[event-study-trackb-gapcont-3y]]). Graveyard B0–B10 + B8. **Do not retune.**
 
 **Now:**
 
 1. **Ops:** Jul STAND_DOWN / Aug–Sep gated PRB — [[gated-prb-live-guide]].  
-2. **Stage-0:** export B8 GapCont Deep BT → `matrix/trackb-gapcont-3y.csv` — [[track-b-b8-gap-cont-v0]] · [[event-study-b8-gap-cont]].  
-3. Agent analyzes CSV when it lands; no second Stage-0 while B8 is open.
+2. **Track B:** pause spray — no same-day B11; next candidate only with a genuinely rare *private* event (not gap/AM-PM/VWAP/ORB).
 
 ---
 
