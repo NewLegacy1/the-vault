@@ -4,16 +4,17 @@ tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
 
-> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — Track A ops + **Track B B12 Stage-0**.  
+> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — **Track A ops primary.** Lane F paused after B12. Optional: [[lane-s-sleeve-stack-brief]].  
 
 ## NEXT
 
-**B11 BB Reclaim = KILL** (n=775 · EV −$1). Do not salvage.  
+**B12 EMA Pull = KILL** (n=293 · EV −$8 · OOS −$15 · [[event-study-trackb-emapull-mnq-5m]]). Graveyard through B12. **Do not retune.**
 
 **Now:**
 
 1. **Ops:** Jul STAND_DOWN / Aug–Sep gated PRB — [[gated-prb-live-guide]].  
-2. **Stage-0 B12:** EMA Trend Pullback → Deep BT → `matrix/trackb-emapull-mnq-5m.csv` — [[track-b-b12-ema-pullback-v0]].
+2. **Lane F:** paused.  
+3. **Lane S (optional):** selective sleeve stack research — gated PRB + Macro A sleeve rules + Reaper IFVG measure — [[lane-s-sleeve-stack-brief]].
 
 ---
 

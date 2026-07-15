@@ -21,6 +21,7 @@ tags: [kill-lessons, track-b, strategy-dev]
 9c. **No late open-magnet fade @ 14:30 → RTH open** (B10 dead — EV −$5, n=465).  
 9d. **No overnight gap continuation @ loose ≥1.0×ATR** (B8 dead — n=641, EV −$1, OOS CI covers 0; rarity failed).  
 9e. **No BB pierce→reclaim + ADX chop @ 1.0R** (B11 dead — n=775, EV −$1, WR~52% but RR&lt;1; OOS CI covers 0). Do not salvage with hour/ADX/stop retunes.  
+9f. **No EMA(20) trend pullback + ADX&gt;25 @ 1.25R** (B12 dead — n=293, EV −$8, OOS −$15). Lane F TA spray paused.  
 10. **Loss shape first:** max modeled streak × $risk &lt; $2k trail before cadence claims.  
 11. **Do not retune** a killed idea’s free params to “rescue” without a **new** Stage-0 note and new event definition.  
 12. **Independence:** next book must differ from gated PRB on ≥2 of {time box, level set, regime feature, barrier geometry}.  
@@ -161,12 +162,23 @@ tags: [kill-lessons, track-b, strategy-dev]
 | Soft | Lane F: fix **payoff asymmetry** or pre-trade regime — mid-trade “cut faster” weak when MAE≈stop already |
 | Breadth | Independent of PRB — still dead |
 
+### B12 — EMA Pullback · KILL (2026-07-15)
+
+| Extract | Content |
+|---|---|
+| Falsified | EMA pullback reclaim + ADX&gt;25 @ 1.25R has positive Stage-0 EV / OOS lift |
+| Structural | n=293 · EV −$8 · OOS −$15 · WR~43% / RR~1.09 — returned to soft-drain package |
+| Hard constraint | No EMA-trend-pullback costume; do not retune EMA/ADX/RR |
+| Soft | **Pause Lane F** common-TA spray; return focus to selective high-RR Track A + optional sleeve research |
+| Breadth | Independent of PRB — still dead |
+
 ## Implication
 
 | Path | Notes |
 |---|---|
-| **Track A** | Ops baseline — gated PRB still the only positive-EV ledger |
-| **Track B** | **B12 EMA Pullback** Stage-0 active — [[track-b-b12-ema-pullback-v0]] |
+| **Track A** | **Primary** — gated PRB / D1; loss-gap mitigation via gates + BE, not HF |
+| **Lane F** | Paused after B11–B12 |
+| **Lane S (proposed)** | Selective sleeve stack research under Track A — not ICT “new alpha” Track B |
 | **0b on kills** | Forbidden |
 
 ## Agent use

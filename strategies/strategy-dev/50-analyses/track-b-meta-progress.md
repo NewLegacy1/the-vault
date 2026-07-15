@@ -18,10 +18,10 @@ tags: [kill-lessons, meta, track-b, strategy-dev]
 | Polarity flip insufficient | B6 fade → B8 cont still drained |
 | Baseline contrast | A0a n=120 · EV \$~71 · sum +\$8.5k vs GapCont n=641 · EV −\$1 |
 
-## Design rules after B11
+## Design rules after B12
 
-1. **Do not** retune BB/ADX/hour/stop on B11.  
-2. Active: **B12 EMA Trend Pullback** (Lane F — trend ADX · EMA reclaim · **1.25R**) — [[track-b-b12-ema-pullback-v0]].  
-3. B11 lesson: WR≥50% without RR≥1 still drains after fees.  
-4. Track A gated PRB remains live ops baseline.  
+1. **Lane F paused** — B11–B12 found no HF TA edge.  
+2. Do not retune EMA/BB/ADX/gap costumes.  
+3. Vault money geometry remains **selective high-RR** (PRB-shaped) + ops gates.  
+4. Optional next research: **Lane S** sleeve stack — [[lane-s-sleeve-stack-brief]].  
 5. Prop path MC only after toward.

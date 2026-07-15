@@ -5,25 +5,26 @@ tags: [track-b, ideas]
 ---
 # Track B idea roster
 
-> Meta: [[track-b-meta-progress]]. Graveyard B0–B11 + B8.
+> Meta: [[track-b-meta-progress]]. Graveyard B0–B12 + B8. **Lane F paused.**
 
 ## Active
 
 | ID | Name | Status |
 |---|---|---|
-| **B12** | EMA Trend Pullback (Lane F · ADX trend · 1.25R) | Stage-0 · waiting CSV `trackb-emapull-mnq-5m.csv` · [[track-b-b12-ema-pullback-v0]] |
+| — | — | **None** — after B12 kill · no open Stage-0 |
 
-## Deferred
+## Deferred / research lanes
 
 | ID | Notes |
 |---|---|
-| Lane R rare private event | Backup after Lane F closeout |
-| ICT Reaper IFVG (1H) | Track A measure/sleeve only — not Track B |
+| Lane F HF TA | **Paused** — B11–B12 no edge |
+| Lane R rare private non-ICT | Allowed later if needed |
+| **Lane S — selective sleeve stack** | Track A portfolio research: gated PRB + Macro A sleeve rules + optional Reaper IFVG **measure** (1H) — see [[lane-s-sleeve-stack-brief]] · **not** a Track B ICT clone Stage-0 |
 
 ## Killed
 
-B0–B7 · B9 · B10 · B8 GapCont · B11 BB Reclaim ([[event-study-trackb-bbreclaim-mnq-5m]])
+B0–B7 · B9 · B10 · B8 · B11 · **B12 EMA Pull** (n=293 · EV −$8 · [[event-study-trackb-emapull-mnq-5m]])
 
-## Ops (parallel)
+## Ops (primary)
 
 [[gated-prb-live-guide]] — Jul STAND_DOWN / Aug–Sep gated PRB live.

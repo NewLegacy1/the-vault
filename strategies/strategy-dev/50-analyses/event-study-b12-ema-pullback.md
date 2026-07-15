@@ -1,12 +1,12 @@
 ---
 updated: 2026-07-15
-status: waiting-for-csv
+status: settled
+verdict: kill
 tags: [stage-0, event-study, b12, lane-f]
 ---
 # Event study — B12 EMA Trend Pullback (Lane F)
 
-> [[track-b-b12-ema-pullback-v0]]  
-> **Waiting on human Deep BT CSV** — no inventable numbers.
+> [[track-b-b12-ema-pullback-v0]] · Closed → [[event-study-trackb-emapull-mnq-5m]] (**away / BLOCK** · n=293 · EV −$8 · OOS −$15).
 
 ## Pre-registered event
 
