@@ -1261,7 +1261,7 @@ f_msZone(string name, float top, float bot, color col, int xSpan) =>
         int xR = bar_index + xSpan
         f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = color.new(col, 88), border_width = 2))
         f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 2, style = line.style_dotted))
-        f_msCapLabel(label.new(bar_index, hi, name + "\nCE " + str.tostring(ce, format.mintick), style = label.style_label_down, color = color.new(col, 10), textcolor = color.white, size = size.normal))
+        f_msCapLabel(label.new(bar_index, hi, name, style = label.style_label_down, color = color.new(col, 10), textcolor = color.white, size = size.normal))
 
 f_msPaintRb(bool isShort, string tfLbl, float ex, float ws, color col) =>
     if barstate.isconfirmed and not na(ex) and not na(ws)
@@ -1272,7 +1272,7 @@ f_msPaintRb(bool isShort, string tfLbl, float ex, float ws, color col) =>
         string arrow = isShort ? "↓" : "↑"
         f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = color.new(col, 85), border_width = 2))
         f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 2, style = line.style_dotted))
-        f_msCapLabel(label.new(bar_index, isShort ? hi : lo, "RB " + tfLbl + " " + arrow + "\nCE " + str.tostring(ce, format.mintick), style = isShort ? label.style_label_down : label.style_label_up, color = color.new(col, 5), textcolor = color.black, size = size.normal))
+        f_msCapLabel(label.new(bar_index, isShort ? hi : lo, "RB " + tfLbl + " " + arrow, style = isShort ? label.style_label_down : label.style_label_up, color = color.new(col, 5), textcolor = color.black, size = size.normal))
 
 // ─── Morningstar confluence grade (Manual · eyes only — never arms) ──────────
 f_msNear(float px) =>
@@ -1314,10 +1314,9 @@ if msShow and suDir != 0 and not na(suBar) and bar_index >= suBar
         if ms5IfvgBull and f_msNear(ms5Close)
             msIfvg5 := true
 
+    // One compact grade only (not duplicated on LIMIT label)
     int msHits = (msPoi ? 1 : 0) + (msH4 ? 1 : 0) + (msCisd ? 1 : 0) + (msIfvg1 ? 1 : 0) + (msIfvg5 ? 1 : 0)
-    int msPct = msHits * 20
-    string msBits = (msPoi ? "POI" : "—") + "  " + (msH4 ? "4H" : "—") + "  " + (msCisd ? "CISD" : "—") + "  " + (msIfvg1 ? "iFVG1" : "—") + "  " + (msIfvg5 ? "iFVG5" : "—")
-    string msTxt = "MS " + str.tostring(msHits) + "/5 · " + str.tostring(msPct) + "%\n" + msBits
+    string msTxt = "MS " + str.tostring(msHits) + "/5"
     float msY = suDir == -1 ? nz(suExtreme, high) + i_msBuf : nz(suExtreme, low) - i_msBuf
     color msCol = msHits >= 4 ? #a3e635 : msHits == 3 ? #facc15 : #e2e8f0
     if na(lblMsGrade)
@@ -1404,22 +1403,18 @@ if planLive
     color tCol = isShadowPlan ? color.new(color.gray, 10) : c_tp
     color rBg = color.new(sCol, 86)
     color wBg = color.new(tCol, 88)
-    string side = suDir == -1 ? "SHORT" : "LONG"
+    // Compact: one short tag — prices are the lines; grade is the single MS n/5 label
+    string side = suDir == -1 ? "S" : "L"
     string trig = f_trigState()
-    string limTxt = side + " · " + trig + "\nLIMIT " + str.tostring(suEntry, format.mintick)
-    if i_showTriggers and suSweepTag != "—"
-        limTxt += "\n" + suSweepTag
-    if i_manualOnly and i_msGrade
-        int msN = (msPoi ? 1 : 0) + (msH4 ? 1 : 0) + (msCisd ? 1 : 0) + (msIfvg1 ? 1 : 0) + (msIfvg5 ? 1 : 0)
-        limTxt += "\nMS " + str.tostring(msN) + "/5"
+    string limTxt = i_showTriggers and suSweepTag != "—" ? suSweepTag : side + " · " + trig
     if newPlan
         planLeft := suBar
         planLnE := line.new(suBar, suEntry, xR, suEntry, color = eCol, width = 2, style = line.style_solid)
         planLnS := line.new(suBar, pendStop, xR, pendStop, color = sCol, width = 2, style = line.style_solid)
         planLnT := line.new(suBar, pendTp, xR, pendTp, color = tCol, width = 2, style = line.style_solid)
-        planLbE := label.new(xR, suEntry, limTxt, style = label.style_label_left, color = color.new(color.black, 15), textcolor = eCol, size = size.small)
-        planLbS := label.new(xR, pendStop, "STOP " + str.tostring(pendStop, format.mintick), style = label.style_label_left, color = color.new(color.black, 15), textcolor = sCol, size = size.small)
-        planLbT := label.new(xR, pendTp, "TP " + str.tostring(pendTp, format.mintick), style = label.style_label_left, color = color.new(color.black, 15), textcolor = tCol, size = size.small)
+        planLbE := label.new(xR, suEntry, limTxt, style = label.style_label_left, color = color.new(color.black, 25), textcolor = eCol, size = size.small)
+        planLbS := label.new(xR, pendStop, "S", style = label.style_label_left, color = color.new(color.black, 40), textcolor = sCol, size = size.tiny)
+        planLbT := label.new(xR, pendTp, "T", style = label.style_label_left, color = color.new(color.black, 40), textcolor = tCol, size = size.tiny)
         planBxRisk := box.new(suBar, math.max(suEntry, pendStop), xR, math.min(suEntry, pendStop), border_color = color.new(sCol, 60), bgcolor = rBg, border_width = 1)
         planBxRew := box.new(suBar, math.max(suEntry, pendTp), xR, math.min(suEntry, pendTp), border_color = color.new(tCol, 60), bgcolor = wBg, border_width = 1)
     else
