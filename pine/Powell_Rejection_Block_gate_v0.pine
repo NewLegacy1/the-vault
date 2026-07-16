@@ -133,17 +133,17 @@ i_freezeTrades = input.bool(true, "Freeze closed trades on chart", group = "Visu
 i_showTable = input.bool(false, "Show diagnostic tables (Lab)", group = "Visuals")
 
 grpCol = "Colors"
-c_rbShortBd = input.color(#ef4444, "RB short border", group = grpCol)
-c_rbShortBg = input.color(#ef4444, "RB short fill", group = grpCol)
-c_rbLongBd  = input.color(#f97316, "RB long border", group = grpCol)
-c_rbLongBg  = input.color(#f97316, "RB long fill", group = grpCol)
-i_rbFillTrans = input.int(84, "RB fill transparency", minval = 50, maxval = 95, group = grpCol)
+c_rbShortBd = input.color(#fb7185, "RB short border", group = grpCol)
+c_rbShortBg = input.color(#fb7185, "RB short fill", group = grpCol)
+c_rbLongBd  = input.color(#5eead4, "RB long border", group = grpCol)
+c_rbLongBg  = input.color(#5eead4, "RB long fill", group = grpCol)
+i_rbFillTrans = input.int(90, "RB fill transparency", minval = 50, maxval = 95, group = grpCol)
 i_rbMarkTrans = input.int(60, "RB watermark text transparency", minval = 40, maxval = 90, group = grpCol)
-c_ce     = input.color(#ffffff, "CE dotted", group = grpCol)
-c_wickSt = input.color(#22d3ee, "Wick-start dashed", group = grpCol)
-c_limit  = input.color(#ffffff, "LIMIT", group = grpCol)
+c_ce     = input.color(#e2e8f0, "CE dotted", group = grpCol)
+c_wickSt = input.color(#94a3b8, "Wick-start dashed", group = grpCol)
+c_limit  = input.color(#f8fafc, "ENTRY / LIMIT", group = grpCol)
 c_stop   = input.color(#f87171, "STOP", group = grpCol)
-c_tp     = input.color(#2dd4bf, "TP", group = grpCol)
+c_tp     = input.color(#34d399, "TP", group = grpCol)
 c_pdh    = input.color(#22c55e, "PDH (prior high)", group = grpCol)
 c_pdl    = input.color(#ef4444, "PDL (prior low)", group = grpCol)
 c_leave  = input.color(#facc15, "LEAVE marker", group = grpCol)
@@ -151,12 +151,12 @@ c_go     = input.color(#a3e635, "GO marker", group = grpCol)
 c_win10  = input.color(#eab308, "10:00 wash", group = grpCol)
 c_winSess = input.color(#64748b, "Entry window wash", group = grpCol)
 
-i_manualOnly = input.bool(false, "Manual levels only — NO orders (you click)", group = "Manual / discretionary replay", tooltip = "LIVE / bar replay: ON. Draws LIMIT/STOP/TP on chart — you decide bias and click. OFF = Deep BT CSV only.")
+i_manualOnly = input.bool(true, "Manual levels only — NO orders (you click)", group = "Manual / discretionary replay", tooltip = "Morningstar default ON. Draws ENTRY/STOP/TP + LTF score — you click. OFF = Deep BT CSV / Lab auto only.")
 i_showBlockedBias = input.bool(false, "Mark bias-blocked RBs (journal)", group = "Manual / discretionary replay", tooltip = "Off by default — bias is your discretion, not chart clutter.")
 i_manualAlerts = input.bool(false, "Alert when limit level arms", group = "Manual / discretionary replay", tooltip = "Fires only on live ARMED (not Jul/Oct or Monday SHADOW).")
 
 grpMs = "Morningstar grade (Manual · eyes only)"
-i_msGrade = input.bool(true, "Show Morningstar LTF-in-RB score", group = grpMs, tooltip = "Manual ON only. Counts 1m CISD · 1m IFVG · 5m IFVG · 5m RB inside the armed HTF wick — NEVER arms.")
+i_msGrade = input.bool(true, "Show Morningstar LTF-in-RB score", group = grpMs, tooltip = "Needs Manual ON. Counts 1m CISD · 1m IFVG · 5m IFVG · 5m RB inside the armed HTF wick — NEVER arms.")
 i_msShowRb5 = input.bool(true, "Mark 5m RBs + CE (LTF)", group = grpMs, tooltip = "Eyes only. Counts toward LTF n/4 when the 5m RB sits inside the armed HTF box.")
 i_msShowRb15 = input.bool(true, "Mark 15m RBs + CE", group = grpMs)
 i_msShowRb30 = input.bool(false, "Mark 30m RBs + CE", group = grpMs, tooltip = "OFF by default — enable if you need it; extra drawings cost CPU.")
@@ -166,14 +166,14 @@ i_msShowIfvg = input.bool(true, "Mark 1m/5m IFVG zones + CE", group = grpMs)
 i_msShowOb = input.bool(true, "Mark 15m/1H order blocks + CE", group = grpMs)
 i_msMaxDraw = input.int(8, "Max drawings per type (lag guard)", minval = 3, maxval = 14, group = grpMs, tooltip = "Old boxes/labels delete when over limit — stops TV freeze from unbounded drawings. Lower if still laggy.")
 i_msBuf = input.float(12.0, "Confluence near RB zone (pts)", minval = 2.0, step = 1.0, group = grpMs)
-c_ms5 = input.color(#a78bfa, "5m RB mark", group = grpMs)
-c_ms15 = input.color(#22d3ee, "15m mark", group = grpMs)
-c_ms30 = input.color(#facc15, "30m mark", group = grpMs)
-c_ms60 = input.color(#fb923c, "1H mark", group = grpMs)
-c_ms240 = input.color(#f472b6, "4H mark", group = grpMs)
-c_msIfvg = input.color(#c084fc, "IFVG zone", group = grpMs)
-c_msOb = input.color(#38bdf8, "Order block", group = grpMs)
-c_msCe = input.color(#ffffff, "CE dotted", group = grpMs)
+c_ms5 = input.color(#c4b5fd, "5m RB mark", group = grpMs)
+c_ms15 = input.color(#7dd3fc, "15m mark", group = grpMs)
+c_ms30 = input.color(#fde68a, "30m mark", group = grpMs)
+c_ms60 = input.color(#fdba74, "1H mark", group = grpMs)
+c_ms240 = input.color(#f9a8d4, "4H mark", group = grpMs)
+c_msIfvg = input.color(#d8b4fe, "IFVG zone", group = grpMs)
+c_msOb = input.color(#93c5fd, "Order block", group = grpMs)
+c_msCe = input.color(#e2e8f0, "CE dotted", group = grpMs)
 
 float effTrailStartR = i_trailRegime ? 2.0 : i_trailStartR
 float effTrailGapR = i_trailRegime ? 1.5 : i_trailGapR
@@ -1264,16 +1264,21 @@ f_msCapLabel(label lb) =>
         label old = array.shift(msLabels)
         label.delete(old)
 
-// Zone + CE dotted + readable label (eyes only)
+// Small readable text on the box (no big solid pill)
+f_msTag(int x, float y, string txt, color col) =>
+    f_msCapLabel(label.new(x, y, txt, style = label.style_none, color = color.new(color.black, 100), textcolor = col, size = size.small))
+
+// Zone + CE dotted + small tag (eyes only)
 f_msZone(string name, float top, float bot, color col, int xSpan) =>
     if barstate.isconfirmed and not na(top) and not na(bot)
         float hi = math.max(top, bot)
         float lo = math.min(top, bot)
         float ce = (hi + lo) * 0.5
         int xR = bar_index + xSpan
-        f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = color.new(col, 88), border_width = 2))
-        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 2, style = line.style_dotted))
-        f_msCapLabel(label.new(bar_index, hi, name, style = label.style_label_down, color = color.new(col, 10), textcolor = color.white, size = size.normal))
+        color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, 90)
+        f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = fillC, border_width = 2))
+        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 1, style = line.style_dotted))
+        f_msTag(bar_index + 1, hi, name, col)
 
 f_msPaintRb(bool isShort, string tfLbl, float ex, float ws, color col) =>
     if barstate.isconfirmed and not na(ex) and not na(ws)
@@ -1282,10 +1287,10 @@ f_msPaintRb(bool isShort, string tfLbl, float ex, float ws, color col) =>
         float ce = (hi + lo) * 0.5
         int xR = bar_index + 16
         string arrow = isShort ? "↓" : "↑"
-        color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, 88)
-        f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = fillC, border_width = 3))
-        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 2, style = line.style_dotted))
-        f_msCapLabel(label.new(bar_index, hi, "RB " + tfLbl + " " + arrow, style = label.style_label_down, color = color.new(col, 0), textcolor = color.white, size = size.normal))
+        color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, 90)
+        f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = fillC, border_width = 2))
+        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 1, style = line.style_dotted))
+        f_msTag(bar_index + 1, hi, tfLbl + arrow, col)
 
 // ─── Morningstar LTF-in-RB score (eyes only — never arms) ────────────────────
 // Count only LTF tells that print *inside* the armed HTF RB wick zone.
