@@ -6,7 +6,7 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 
 **Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · **structure TF = arming parent only** (default **15m**) · chart marks RBs as border-only boxes (`RB 5m` / `15m` / `30m` / `1H` / `4H`) · armed setup header = `RB 15m · LTF n/4` (1m CISD · 1m IFVG · 5m IFVG · **5m RB** inside that HTF wick) — **eyes only**, never arms · LIMIT/STOP/TP from the **arming** HTF wick · leave-retest on **5m**. Direction **Both**. Journal → **Morningstar study**.
 
-**Letter from chart grade:** `4–5/5 → A+` · `3/5 → B` · `≤2/5 → C` (overridable).
+**Letter from journal flags:** `5–6/6 → A+` · `3–4/6 → B` · `≤2/6 → C` (overridable). Chart header uses **LTF n/4** only. No setup day → leave LTF unchecked + skip **No setup armed**.
 
 **Lab (Manual OFF):** still **PRB** Chart structure (Deep BT control) — not Morningstar. Do not invent promote numbers from Manual visuals.
 

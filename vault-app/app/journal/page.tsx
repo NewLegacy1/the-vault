@@ -23,17 +23,22 @@ const MORNING_BIASES: MorningBias[] = ["long", "short", "neutral", "skip"];
 const PRB_FILTERS: PrbFilter[] = ["Both", "Long only", "Short only"];
 const STRUCT_TFS: StructTf[] = ["15", "30", "60", "240", "chart"];
 
-/** Chart Morningstar slots — tap what lit up on TV; score = count. */
-const MS_FLAGS: { key: "msPoi" | "msH4" | "msCisd" | "msIfvg1" | "msIfvg5"; label: string; hint: string }[] =
-  [
-    { key: "msPoi", label: "Draw POI", hint: "Tag like PDH / PDL / PM / key open on the RB" },
-    { key: "msH4", label: "4H wick OK", hint: "Developing 4H manipulation wick looked real" },
-    { key: "msCisd", label: "1m CISD", hint: "Chart showed 1m CISD mark" },
-    { key: "msIfvg1", label: "1m IFVG", hint: "Chart showed 1m IFVG mark" },
-    { key: "msIfvg5", label: "5m IFVG", hint: "Chart showed 5m IFVG mark" },
-  ];
+/** Context + LTF slots — check only what lit; empty day = leave all off (0/6 is valid). */
+const MS_FLAGS: {
+  key: "msPoi" | "msH4" | "msCisd" | "msIfvg1" | "msIfvg5" | "msRb5";
+  label: string;
+  hint: string;
+}[] = [
+  { key: "msPoi", label: "Draw POI", hint: "Context — PDH / PDL / PM / key open on the RB" },
+  { key: "msH4", label: "4H wick OK", hint: "Context — 4H↑/↓ pts green (~15+) or grey (~8+)" },
+  { key: "msCisd", label: "1m CISD", hint: "LTF — only if chart marked CISD inside the HTF box" },
+  { key: "msIfvg1", label: "1m IFVG", hint: "LTF — only if 1IFVG lit inside the HTF box" },
+  { key: "msIfvg5", label: "5m IFVG", hint: "LTF — only if 5IFVG lit inside the HTF box" },
+  { key: "msRb5", label: "5m RB", hint: "LTF — only if 5RB counted inside the HTF box" },
+];
 
 const SKIP_REASONS: { id: SkipReason; label: string }[] = [
+  { id: "no_setup", label: "No setup armed" },
   { id: "no_poi", label: "No draw POI" },
   { id: "counter_draw", label: "Against the draw" },
   { id: "eqhl", label: "EQH / EQL in way" },
@@ -64,6 +69,7 @@ function emptyForm(mode: JournalLogMode) {
     msCisd: false,
     msIfvg1: false,
     msIfvg5: false,
+    msRb5: false,
     showOutcome: false,
     pnl: "",
     r: "",
@@ -81,8 +87,13 @@ function msScoreFromFlags(f: FormState): number {
     (f.msH4 ? 1 : 0) +
     (f.msCisd ? 1 : 0) +
     (f.msIfvg1 ? 1 : 0) +
-    (f.msIfvg5 ? 1 : 0)
+    (f.msIfvg5 ? 1 : 0) +
+    (f.msRb5 ? 1 : 0)
   );
+}
+
+function msLtfFromFlags(f: FormState): number {
+  return (f.msCisd ? 1 : 0) + (f.msIfvg1 ? 1 : 0) + (f.msIfvg5 ? 1 : 0) + (f.msRb5 ? 1 : 0);
 }
 
 export default function JournalPage() {
@@ -97,6 +108,7 @@ export default function JournalPage() {
   const [shotErr, setShotErr] = useState("");
 
   const msScore = msScoreFromFlags(f);
+  const msLtf = msLtfFromFlags(f);
   const letter = letterFromMsScore(msScore);
   const tookTrade = f.direction === "long" || f.direction === "short";
 
@@ -169,6 +181,7 @@ export default function JournalPage() {
       msCisd: isStudy ? f.msCisd : undefined,
       msIfvg1: isStudy ? f.msIfvg1 : undefined,
       msIfvg5: isStudy ? f.msIfvg5 : undefined,
+      msRb5: isStudy ? f.msRb5 : undefined,
       chartShot: f.chartShot || undefined,
     };
     setJournal([...journal, entry]);
@@ -420,8 +433,9 @@ export default function JournalPage() {
                 3 · CONFLUENCE (same as Morningstar chart marks)
               </div>
               <p className="small dim" style={{ marginTop: 0, marginBottom: 8 }}>
-                Check each that was lit for this setup. Grade = count of checks (no separate score or letter
-                entry).
+                Check only what lit. No armed setup / no LTF stack → leave LTF boxes off (0 is valid). Use
+                skip reason <b>No setup armed</b>. Context (POI / 4H) can still be checked from the session
+                even when nothing armed.
               </p>
               <div className="frm-row" style={{ alignItems: "stretch", gap: 8 }}>
                 {MS_FLAGS.map((flag) => (
@@ -461,11 +475,12 @@ export default function JournalPage() {
               >
                 <span className="dim small">Auto grade · </span>
                 <span className="accent" style={{ fontSize: 18, fontWeight: 600 }}>
-                  Morningstar {msScore}/5 · {letter}
+                  {msScore}/6 · {letter}
                 </span>
                 <span className="dim small">
                   {" "}
-                  ({msScore >= 4 ? "A+ band" : msScore === 3 ? "B band" : "C band"})
+                  · chart LTF {msLtf}/4
+                  {msScore === 0 ? " · empty stack OK" : msScore >= 5 ? " · A+ band" : msScore >= 3 ? " · B band" : " · C band"}
                 </span>
               </div>
 
@@ -631,7 +646,7 @@ export default function JournalPage() {
                   <td>
                     {typeof j.msScore === "number" ? (
                       <>
-                        <span className="accent">{j.msScore}/5</span> {j.grade}
+                        <span className="accent">{j.msScore}/6</span> {j.grade}
                       </>
                     ) : (
                       j.grade

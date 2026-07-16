@@ -36,6 +36,7 @@ export type RedFolderTag = "yes" | "no" | "unknown";
 export type JournalLogMode = "morningstar" | "live";
 export type StructTf = "15" | "30" | "60" | "240" | "chart";
 export type SkipReason =
+  | "no_setup"
   | "no_poi"
   | "counter_draw"
   | "eqhl"
@@ -70,13 +71,15 @@ export interface JournalEntry {
   strategy?: "Morningstar" | "PRB";
   structureTf?: StructTf;
   structureTag?: string;
-  /** Chart Morningstar grade 0–5. */
+  /** Journal confluence count (context + LTF flags checked). */
   msScore?: number;
   msPoi?: boolean;
   msH4?: boolean;
   msCisd?: boolean;
   msIfvg1?: boolean;
   msIfvg5?: boolean;
+  /** 5m RB inside HTF wick (chart LTF slot). */
+  msRb5?: boolean;
   /** NY news time HHMM when redFolder=yes. */
   redFolderTime?: string;
   redFolderEvent?: string;
@@ -86,11 +89,12 @@ export interface JournalEntry {
   chartShot?: string;
 }
 
-/** Map chart Morningstar n/5 → letter grade suggestion. */
+/** Map journal confluence count → letter suggestion. 0 = empty stack (no setup) → "-". */
 export function letterFromMsScore(n: number): JournalEntry["grade"] {
-  if (n >= 4) return "A+";
-  if (n === 3) return "B";
-  if (n >= 0 && n <= 2) return "C";
+  if (n <= 0) return "-";
+  if (n >= 5) return "A+";
+  if (n === 3 || n === 4) return "B";
+  if (n <= 2) return "C";
   return "-";
 }
 

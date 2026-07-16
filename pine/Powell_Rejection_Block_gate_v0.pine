@@ -162,6 +162,7 @@ i_msShowRb60 = input.bool(true, "Mark 1H RBs + CE", group = grpMs)
 i_msShowRb240 = input.bool(false, "Mark 4H RBs + CE", group = grpMs)
 i_msShowIfvg = input.bool(true, "Mark 1m/5m IFVG zones + CE", group = grpMs)
 i_msShowOb = input.bool(true, "Mark 15m/1H order blocks + CE", group = grpMs)
+i_showH4Wick = input.bool(true, "Show developing 4H wick (pts on 5m)", group = grpMs, tooltip = "Live 4H upper/lower wick length on the 5m chart — no need to flip to 4H. ≥15 good · ≥8 grey · else weak.")
 i_msMaxDraw = input.int(8, "Max drawings per type (lag guard)", minval = 3, maxval = 14, group = grpMs, tooltip = "Old boxes/labels delete when over limit — stops TV freeze from unbounded drawings. Lower if still laggy.")
 i_msBuf = input.float(12.0, "Confluence near RB zone (pts)", minval = 2.0, step = 1.0, group = grpMs)
 
@@ -279,17 +280,27 @@ f_nearKo(float px) =>
 var float h4Open = na
 var float h4High = na
 var float h4Low  = na
+var int h4LeftBar = na
 if ta.change(time("240")) != 0
     h4Open := open
     h4High := high
     h4Low := low
+    h4LeftBar := bar_index
 else
     h4High := math.max(nz(h4High, high), high)
     h4Low := math.min(nz(h4Low, low), low)
-float h4UpperWick = nz(h4High, high) - math.max(nz(h4Open, open), close)
-float h4LowerWick = math.min(nz(h4Open, open), close) - nz(h4Low, low)
+    if na(h4LeftBar)
+        h4LeftBar := bar_index
+float h4BodyTop = math.max(nz(h4Open, open), close)
+float h4BodyBot = math.min(nz(h4Open, open), close)
+float h4UpperWick = nz(h4High, high) - h4BodyTop
+float h4LowerWick = h4BodyBot - nz(h4Low, low)
 bool h4OkBear = not i_useH4Wick or h4UpperWick >= i_minH4WickPts
 bool h4OkBull = not i_useH4Wick or h4LowerWick >= i_minH4WickPts
+
+// Quality tint for the on-chart 4H wick read (SOP: ~15 good / ~8 grey / speck bad)
+f_h4QCol(float pts) =>
+    pts >= 15.0 ? #34d399 : pts >= i_minH4WickPts ? #facc15 : #f87171
 
 // ─── Formal rejection block (T03) — chart OR HTF structure ───────────────────
 // SOP: wick CE hunt on 15m/30m/1H/4H; chart TF only for leave-retest / fills.
@@ -1493,6 +1504,50 @@ bool showDiagTables = i_showTable and not i_liveClean
 bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00 key open")
 bgcolor(inWindow ? color.new(c_winSess, 96) : na, title = "Entry window")
 
+// Developing 4H wick on the 5m chart (bias / gate context — no TF flip)
+var box bxH4 = na
+var line lnH4Hi = na
+var line lnH4Lo = na
+var label lblH4U = na
+var label lblH4L = na
+if i_showH4Wick and i_manualOnly and not na(h4LeftBar) and not na(h4High) and not na(h4Low)
+    color uCol = f_h4QCol(h4UpperWick)
+    color lCol = f_h4QCol(h4LowerWick)
+    color boxBd = h4UpperWick >= h4LowerWick ? uCol : lCol
+    if na(bxH4)
+        bxH4 := box.new(h4LeftBar, h4High, bar_index, h4Low, border_color = color.new(boxBd, 40), bgcolor = color.new(boxBd, 94), border_width = 1)
+        lnH4Hi := line.new(h4LeftBar, h4High, bar_index, h4High, color = uCol, width = 2, style = line.style_solid)
+        lnH4Lo := line.new(h4LeftBar, h4Low, bar_index, h4Low, color = lCol, width = 2, style = line.style_solid)
+        lblH4U := label.new(bar_index, h4High, "4H↑ " + str.tostring(h4UpperWick, "#.#"), style = label.style_none, color = color.new(color.black, 100), textcolor = uCol, size = size.small)
+        lblH4L := label.new(bar_index, h4Low, "4H↓ " + str.tostring(h4LowerWick, "#.#"), style = label.style_none, color = color.new(color.black, 100), textcolor = lCol, size = size.small)
+    else
+        // New 4H candle — reset left edge
+        if ta.change(time("240")) != 0
+            box.set_left(bxH4, h4LeftBar)
+            line.set_x1(lnH4Hi, h4LeftBar)
+            line.set_x1(lnH4Lo, h4LeftBar)
+        box.set_right(bxH4, bar_index)
+        box.set_top(bxH4, h4High)
+        box.set_bottom(bxH4, h4Low)
+        box.set_border_color(bxH4, color.new(boxBd, 40))
+        box.set_bgcolor(bxH4, color.new(boxBd, 94))
+        line.set_x2(lnH4Hi, bar_index)
+        line.set_y1(lnH4Hi, h4High)
+        line.set_y2(lnH4Hi, h4High)
+        line.set_color(lnH4Hi, uCol)
+        line.set_x2(lnH4Lo, bar_index)
+        line.set_y1(lnH4Lo, h4Low)
+        line.set_y2(lnH4Lo, h4Low)
+        line.set_color(lnH4Lo, lCol)
+        label.set_x(lblH4U, bar_index)
+        label.set_y(lblH4U, h4High)
+        label.set_text(lblH4U, "4H↑ " + str.tostring(h4UpperWick, "#.#"))
+        label.set_textcolor(lblH4U, uCol)
+        label.set_x(lblH4L, bar_index)
+        label.set_y(lblH4L, h4Low)
+        label.set_text(lblH4L, "4H↓ " + str.tostring(h4LowerWick, "#.#"))
+        label.set_textcolor(lblH4L, lCol)
+
 // Extended rejection-block zone + dotted CE · watermark "RB" (not a solid tag)
 var box bxRb = na
 var line lnRbCe = na
@@ -1513,7 +1568,8 @@ if i_showSig and barstate.isconfirmed and (rbBear or rbBull) and suDir != 0 and 
     color bg = i_rbNoFill ? color.new(bd, 100) : color.new(bd, i_rbFillTrans)
     int xR0 = bar_index + i_rbExtend
     string armTag = structTf == "15" ? "15RB" : structTf == "30" ? "30RB" : structTf == "60" ? "1HRB" : structTf == "240" ? "4HRB" : "RB"
-    string rbHead0 = armTag + " · LTF " + str.tostring(msLtfHitsLive) + "/4"
+    string h4Bit0 = not na(suH4Pts) ? " · " + (rbBear ? "4H↑ " : "4H↓ ") + str.tostring(suH4Pts, "#.#") : ""
+    string rbHead0 = armTag + " · LTF " + str.tostring(msLtfHitsLive) + "/4" + h4Bit0
     bxRb := box.new(bar_index, math.max(ex, ws), xR0, math.min(ex, ws), border_color = bd, bgcolor = bg, border_width = 2)
     // Small text on top of the armed RB (TF + LTF score)
     lblRbMark := label.new(bar_index + 1, math.max(ex, ws), rbHead0, style = label.style_none, color = color.new(color.black, 100), textcolor = bd, size = size.small)
@@ -1535,9 +1591,11 @@ if i_showSig and suDir != 0 and not na(rbLeft) and not na(suBar) and rbLeft == s
             box.set_bgcolor(bxRb, color.new(suDir == -1 ? c_bear : c_bull, 100))
     if not na(lblRbMark)
         string armLive = structTf == "15" ? "15RB" : structTf == "30" ? "30RB" : structTf == "60" ? "1HRB" : structTf == "240" ? "4HRB" : "RB"
+        float h4Live = not na(suH4Pts) ? suH4Pts : suDir == -1 ? h4UpperWick : h4LowerWick
+        string h4Bit = " · " + (suDir == -1 ? "4H↑ " : "4H↓ ") + str.tostring(h4Live, "#.#")
         label.set_x(lblRbMark, rbLeft + 1)
         label.set_y(lblRbMark, rbTop)
-        label.set_text(lblRbMark, armLive + " · LTF " + str.tostring(msLtfHitsLive) + "/4")
+        label.set_text(lblRbMark, armLive + " · LTF " + str.tostring(msLtfHitsLive) + "/4" + h4Bit)
         label.set_textcolor(lblRbMark, suDir == -1 ? c_bear : c_bull)
         label.set_color(lblRbMark, color.new(color.black, 100))
         label.set_size(lblRbMark, size.small)
