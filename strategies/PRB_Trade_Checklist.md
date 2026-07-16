@@ -7,7 +7,7 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 **Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · window **10:00–13:00**.
 
 - **Path A:** HTF RB (default **15m**) → leave-retest → ENTRY/STOP/TP. Eyes-only: untested **WFVG / 4HFVG / 1HFVG / 15FVG** · RB/OB · 4H wick · fib OTE + PDA overlap tag — **never arms**.
-- **Path B (ON by default):** 10:00 manip → leave through KO → fib OTE (0.62–0.79) with KO inside ± align → **5m/1m RB** near KO → arms ENTRY/STOP/TP tagged `PathB · 10:00 · 5RB` (or `1RB`). Manual only — you click. Path A still wins if both fire same bar.
+- **Path B (ON by default):** 10:00 manip (same-bar wick OK) → leave through KO → fib OTE with KO inside (**long = discount** hi−0.79…hi−0.62 · **short = premium** lo+0.62…lo+0.79) → **5m/1m RB** near KO → arms `PathB · 10:00 · 5RB`/`1RB`. Status tag shows why not armed. Path B can replace Path A still waiting leave.
 
 Journal → **Morningstar study**. OTE ≠ 15m-IFVG-only.
 

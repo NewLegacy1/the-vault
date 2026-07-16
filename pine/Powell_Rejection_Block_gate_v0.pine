@@ -154,12 +154,13 @@ i_showBlockedBias = input.bool(false, "Mark bias-blocked RBs (journal)", group =
 i_manualAlerts = input.bool(false, "Alert when limit level arms", group = "Manual / discretionary replay", tooltip = "Fires only on live ARMED (not Jul/Oct or Monday SHADOW).")
 
 grpPb = "Morningstar Path B (KO + fib + LTF RB)"
-i_pathB = input.bool(true, "Enable Path B arming (Manual)", group = grpPb, tooltip = "Powell stack: 10:00 manip→leave → fib OTE → 5m/1m RB trigger at KO. Draws ENTRY/STOP/TP. Manual only — you click. Path A (HTF RB) still runs first if both fire.")
-i_pathBAlign = input.float(10.0, "10:00 must sit in fib OTE ± pts", minval = 2.0, step = 1.0, group = grpPb)
+i_pathB = input.bool(true, "Enable Path B arming (Manual)", group = grpPb, tooltip = "Powell stack: 10:00 manip→leave → fib OTE (discount long / premium short) → 5m/1m RB at KO. Manual only. When Path B is ready it replaces a Path A still waiting leave.")
+i_pathBAlign = input.float(15.0, "10:00 must sit in fib OTE ± pts", minval = 2.0, step = 1.0, group = grpPb, tooltip = "Powell: KO lines up with 0.62–0.79. Slightly loose for tick noise on MNQ.")
 i_pathBUse5 = input.bool(true, "Allow 5m RB trigger", group = grpPb)
 i_pathBUse1 = input.bool(true, "Allow 1m RB trigger", group = grpPb)
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_pathBShowFib = input.bool(true, "Show Path B fib OTE lines", group = grpPb)
+i_pathBShowState = input.bool(true, "Show Path B status (why not armed)", group = grpPb, tooltip = "Corner/near-price tag: wait manip · wait leave · KO outside OTE · wait RB · ARMED.")
 
 grpMs = "Morningstar grade (Manual · eyes only)"
 i_msGrade = input.bool(true, "Show Morningstar LTF-in-RB score", group = grpMs, tooltip = "Needs Manual ON. Counts 1m CISD · 1m IFVG · 5m IFVG · 5m RB inside the armed HTF wick — NEVER arms.")
@@ -583,12 +584,19 @@ var bool suPathB = false
 var int pbDir = 0
 var bool pbManip = false
 var bool pbLeft = false
+var bool pbPierceAbove = false
+var bool pbPierceBelow = false
 var float pbHi = na
 var float pbLo = na
+var float pbFibHi = na
+var float pbFibLo = na
+var bool pbOteLatched = false
 var line pbLn62 = na
 var line pbLn705 = na
 var line pbLn79 = na
 var label pbLbl = na
+var label pbStateLbl = na
+var string pbState = "—"
 
 // Morningstar confluence latches (Manual grade only — never used in canArm / rb*)
 var bool msPoi = false
@@ -619,8 +627,14 @@ if newDay
     pbDir := 0
     pbManip := false
     pbLeft := false
+    pbPierceAbove := false
+    pbPierceBelow := false
     pbHi := na
     pbLo := na
+    pbFibHi := na
+    pbFibLo := na
+    pbOteLatched := false
+    pbState := "—"
     if not na(pbLn62)
         line.delete(pbLn62)
     if not na(pbLn705)
@@ -629,10 +643,13 @@ if newDay
         line.delete(pbLn79)
     if not na(pbLbl)
         label.delete(pbLbl)
+    if not na(pbStateLbl)
+        label.delete(pbStateLbl)
     pbLn62 := na
     pbLn705 := na
     pbLn79 := na
     pbLbl := na
+    pbStateLbl := na
     msPoi := false
     msH4 := false
     msCisd := false
@@ -1034,36 +1051,67 @@ if rbBull and canArm and suDir == 0
             manualState := suLeft ? "WAIT approach" : "WAIT leave"
 
 // ── Path B: 10:00 manip → leave → fib OTE → 5m/1m RB at KO (Manual only) ─────
-// Powell: key open + fib-validated PDA + LTF RB trigger (limit at RB start).
+// Powell long (video recap): Judas/PDL → 10:00 lower wick → distribute → retest
+// KO at discount 0.79 + 1m/5m RB. Short = mirror (premium 0.79).
 bool c1 = ta.change(time("1", "America/New_York")) != 0
 bool c5 = ta.change(time("5", "America/New_York")) != 0
 bool pbOn = i_manualOnly and i_pathB and not na(ko1000) and nyHhmm >= 1000 and nyHhmm < i_winEnd
+// Path B may replace Path A that is still waiting leave (not yet GO / not Path B).
+bool canArmPb = flat and roomToday and canPlace and dayOk and not suOrd and (dayAllowed or i_manualOnly) and (suDir == 0 or (not suPathB and not manualReady))
 
-if pbOn and suDir == 0
-    // Track swing of the 10:00 leg
+float pbOteLo = na
+float pbOteHi = na
+float pbOteMid = na
+bool koInOte = false
+
+if pbOn
+    // Live extremes (for leave detection); fib anchors freeze after leave then only expand with trend
     pbHi := na(pbHi) ? high : math.max(pbHi, high)
     pbLo := na(pbLo) ? low : math.min(pbLo, low)
 
-    // Manip: pierce KO one side
-    if not pbManip and high > ko1000
+    if high > ko1000
+        pbPierceAbove := true
         pbManip := true
-    if not pbManip and low < ko1000
+    if low < ko1000
+        pbPierceBelow := true
         pbManip := true
 
-    // Leave / distribute: close back through KO → set bias
+    // Same-bar leave OK (Powell: 10:00 wick then distribute on that complex)
     if pbManip and not pbLeft and barstate.isconfirmed
-        if close < ko1000 and high[1] > ko1000
+        if pbPierceAbove and close < ko1000
             pbLeft := true
             pbDir := -1
-        if close > ko1000 and low[1] < ko1000
+            pbFibHi := pbHi
+            pbFibLo := pbLo
+        else if pbPierceBelow and close > ko1000
             pbLeft := true
             pbDir := 1
+            pbFibHi := pbHi
+            pbFibLo := pbLo
 
-    // Fib OTE band of active swing (0 = lo, 1 = hi): 0.62–0.79
-    float pbOteLo = not na(pbHi) and not na(pbLo) ? pbLo + (pbHi - pbLo) * 0.62 : na
-    float pbOteHi = not na(pbHi) and not na(pbLo) ? pbLo + (pbHi - pbLo) * 0.79 : na
-    float pbOteMid = not na(pbHi) and not na(pbLo) ? pbLo + (pbHi - pbLo) * 0.705 : na
-    bool koInOte = pbLeft and not na(pbOteLo) and ko1000 >= pbOteLo - i_pathBAlign and ko1000 <= pbOteHi + i_pathBAlign
+    // After leave: expand only with trend (freeze opposite extreme = impulse wick)
+    if pbLeft
+        if pbDir == 1
+            pbFibHi := math.max(pbFibHi, high)
+        if pbDir == -1
+            pbFibLo := math.min(pbFibLo, low)
+
+    float pbRange = not na(pbFibHi) and not na(pbFibLo) ? pbFibHi - pbFibLo : na
+    // Short = premium near highs (lo+0.62…0.79). Long = discount near lows (hi−0.79…hi−0.62).
+    if pbLeft and not na(pbRange) and pbRange > 0
+        if pbDir == -1
+            pbOteLo := pbFibLo + pbRange * 0.62
+            pbOteHi := pbFibLo + pbRange * 0.79
+            pbOteMid := pbFibLo + pbRange * 0.705
+        else
+            pbOteLo := pbFibHi - pbRange * 0.79
+            pbOteHi := pbFibHi - pbRange * 0.62
+            pbOteMid := pbFibHi - pbRange * 0.705
+        bool koInBand = ko1000 >= pbOteLo - i_pathBAlign and ko1000 <= pbOteHi + i_pathBAlign
+        // Latch once true — further distribute must not kick KO out of OTE mid-retrace
+        if koInBand
+            pbOteLatched := true
+        koInOte := koInBand or pbOteLatched
 
     if i_pathBShowFib and pbLeft and not na(pbOteLo)
         if na(pbLn62)
@@ -1082,17 +1130,16 @@ if pbOn and suDir == 0
             label.set_text(pbLbl, (pbDir == -1 ? "B SHORT" : "B LONG") + " · OTE · 10:00")
             label.set_textcolor(pbLbl, pbDir == -1 ? c_bear : c_bull)
 
-    // LTF RB trigger near 10:00 while KO sits in OTE
     bool trig5Bear = i_pathBUse5 and c5 and b5
     bool trig5Bull = i_pathBUse5 and c5 and u5
     bool trig1Bear = i_pathBUse1 and c1 and b1
     bool trig1Bull = i_pathBUse1 and c1 and u1
-    bool nearKo5B = not na(h5) and (math.abs(h5 - ko1000) <= i_pathBAlign or math.abs(wsB5 - ko1000) <= i_pathBAlign)
-    bool nearKo5U = not na(l5) and (math.abs(l5 - ko1000) <= i_pathBAlign or math.abs(wsU5 - ko1000) <= i_pathBAlign)
-    bool nearKo1B = not na(h1) and (math.abs(h1 - ko1000) <= i_pathBAlign or math.abs(wsB1 - ko1000) <= i_pathBAlign)
-    bool nearKo1U = not na(l1) and (math.abs(l1 - ko1000) <= i_pathBAlign or math.abs(wsU1 - ko1000) <= i_pathBAlign)
+    bool nearKo5B = (not na(h5) and math.abs(h5 - ko1000) <= i_pathBAlign) or (not na(wsB5) and math.abs(wsB5 - ko1000) <= i_pathBAlign) or (not na(h5) and not na(wsB5) and math.abs((h5 + wsB5) * 0.5 - ko1000) <= i_pathBAlign)
+    bool nearKo5U = (not na(l5) and math.abs(l5 - ko1000) <= i_pathBAlign) or (not na(wsU5) and math.abs(wsU5 - ko1000) <= i_pathBAlign) or (not na(l5) and not na(wsU5) and math.abs((l5 + wsU5) * 0.5 - ko1000) <= i_pathBAlign)
+    bool nearKo1B = (not na(h1) and math.abs(h1 - ko1000) <= i_pathBAlign) or (not na(wsB1) and math.abs(wsB1 - ko1000) <= i_pathBAlign) or (not na(h1) and not na(wsB1) and math.abs((h1 + wsB1) * 0.5 - ko1000) <= i_pathBAlign)
+    bool nearKo1U = (not na(l1) and math.abs(l1 - ko1000) <= i_pathBAlign) or (not na(wsU1) and math.abs(wsU1 - ko1000) <= i_pathBAlign) or (not na(l1) and not na(wsU1) and math.abs((l1 + wsU1) * 0.5 - ko1000) <= i_pathBAlign)
 
-    if canArm and koInOte and pbDir == -1 and barstate.isconfirmed
+    if canArmPb and koInOte and pbDir == -1 and barstate.isconfirmed
         float tws = na
         float tce = na
         float tex = na
@@ -1123,14 +1170,15 @@ if pbOn and suDir == 0
                 pendTp := entryPx - f_effRr() * riskPts0
                 suBar := bar_index
                 suLeft := true
-                suLeavePx := pbLo
+                suLeavePx := pbFibLo
                 suPathB := true
                 suSweepTag := ttag
                 suH4Pts := h4UpperWick
                 manualReady := true
                 manualState := f_shadowArmLabel()
+                pbState := "ARMED short"
 
-    if canArm and koInOte and pbDir == 1 and suDir == 0 and barstate.isconfirmed
+    if canArmPb and koInOte and pbDir == 1 and (suDir == 0 or not suPathB) and barstate.isconfirmed
         float tws = na
         float tce = na
         float tex = na
@@ -1161,12 +1209,36 @@ if pbOn and suDir == 0
                 pendTp := entryPx + f_effRr() * riskPts0
                 suBar := bar_index
                 suLeft := true
-                suLeavePx := pbHi
+                suLeavePx := pbFibHi
                 suPathB := true
                 suSweepTag := ttag
                 suH4Pts := h4LowerWick
                 manualReady := true
                 manualState := f_shadowArmLabel()
+                pbState := "ARMED long"
+
+    // Status (why this morning's stack might not arm)
+    if suPathB and manualReady
+        pbState := suDir == -1 ? "ARMED short" : "ARMED long"
+    else if not pbManip
+        pbState := "B wait manip"
+    else if not pbLeft
+        pbState := "B wait leave"
+    else if not koInOte
+        pbState := "B KO outside OTE"
+    else if not canArmPb
+        pbState := "B blocked (slot/PathA)"
+    else
+        pbState := pbDir == -1 ? "B wait bear RB@KO" : "B wait bull RB@KO"
+
+    if i_pathBShowState
+        if na(pbStateLbl)
+            pbStateLbl := label.new(bar_index, high, pbState, style = label.style_label_down, color = color.new(#0f172a, 20), textcolor = color.white, size = size.small)
+        else
+            label.set_xy(pbStateLbl, bar_index, high)
+            label.set_text(pbStateLbl, pbState)
+else if i_pathBShowState and not na(pbStateLbl) and not pbOn
+    label.set_text(pbStateLbl, nyHhmm < 1000 ? "B before 10:00" : "B window closed")
 
 // ── Leave-then-retest arming (SOP T03: wait for price to LEAVE, then retest) ──
 // The order is re-evaluated every bar while the setup is live: it only stays
