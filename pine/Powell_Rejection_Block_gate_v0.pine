@@ -106,8 +106,10 @@ i_showGhost = input.bool(false, "Mark ghosts on chart (G + reason #)", group = "
 i_showSig   = input.bool(true, "Show RB labels", group = "Visuals")
 i_showSoup  = input.bool(false, "Show sweep triangles (soup markers)", group = "Visuals", tooltip = "Off by default — sweeps fire often and clutter the chart. The RB label already implies a valid sweep when the sweep filter is on.")
 i_showLvls  = input.bool(true, "Show liquidity + key opens", group = "Visuals")
+i_liveClean = input.bool(true, "Live clean chart", group = "Visuals", tooltip = "ON (default): PDH/PDL as labeled day boxes · 10:00 wash only (no fuchsia line) · soup/BIAS as tiny text · hide midnight/18:00/PM spaghetti. OFF restores classic full-width lines.")
+i_extraLvls = input.bool(false, "Show extra liquidity lines", group = "Visuals", tooltip = "PM H/L · 18:00 · midnight · AM opens. Lab/debug only — off for live.")
 i_showPos   = input.bool(true, "Show position boxes (entry / SL / TP)", group = "Visuals")
-i_showPend  = input.bool(true, "Show pending limit + stop lines", group = "Visuals")
+i_showPend  = input.bool(true, "Show pending limit + stop lines", group = "Visuals", tooltip = "When Manual ON, CE/limit/stop plot lines stay off — ARMED/SHADOW boxes are the source of truth.")
 i_showTable = input.bool(true, "Show diagnostic funnel table", group = "Visuals")
 
 i_manualOnly = input.bool(false, "Manual levels only — NO orders (you click)", group = "Manual / discretionary replay", tooltip = "LIVE CHART REQUIREMENT: ON for paper/live. Draws LIMIT / STOP / TP boxes (and Jul/Oct SHADOW boxes). No strategy orders — you click. Keep OFF only for Strategy Tester / Deep BT CSV exports.")
@@ -1010,6 +1012,13 @@ else if not na(pendBxRisk2)
     pendLbl2 := na
 
 // ─── Visuals ─────────────────────────────────────────────────────────────────
+// Live clean (default ON): PDH/PDL day boxes + labels · 10:00 bgcolor wash ·
+// soup/BIAS tiny text · no KO/PM line spaghetti · no CE/limit/stop plots when Manual.
+bool showClassicLvls = i_showLvls and not i_liveClean
+bool showExtraLines = i_showLvls and (not i_liveClean or i_extraLvls)
+bool showGeomPlots = i_showLvls and suDir != 0 and not i_manualOnly
+bool showPendPlots = i_showPend and suDir != 0 and not i_manualOnly
+
 bgcolor(nyHhmm == 1000 ? color.new(color.yellow, 82) : na, title = "10:00 key open")
 bgcolor(inWindow ? color.new(color.gray, 95) : na, title = "Entry window")
 
@@ -1017,32 +1026,96 @@ plotshape(i_showSig and rbBear, "RB Bear", shape.labeldown, location.abovebar, c
 plotshape(i_showSig and rbBull, "RB Bull", shape.labelup, location.belowbar, color.lime, size = size.small, text = "RB")
 bool biasBlkBear = i_showBlockedBias and rbBearRaw and h4OkBear and (not i_reqSweep or sweptAbove) and (not i_koConfl or f_nearKo(high)) and not biasOkShort
 bool biasBlkBull = i_showBlockedBias and rbBullRaw and h4OkBull and (not i_reqSweep or sweptBelow) and (not i_koConfl or f_nearKo(low)) and not biasOkLong
-plotshape(biasBlkBear, "Bias block short", shape.xcross, location.abovebar, color.new(color.orange, 0), size = size.tiny, text = "BIAS?")
-plotshape(biasBlkBull, "Bias block long", shape.xcross, location.belowbar, color.new(color.orange, 0), size = size.tiny, text = "BIAS?")
+
+// BIAS / soup: tiny labels (no xcross clutter). Soup once per level per day.
+var bool soupPdhMarked = false
+var bool soupPdlMarked = false
+if newDay
+    soupPdhMarked := false
+    soupPdlMarked := false
+
+if barstate.isconfirmed and biasBlkBear
+    label.new(bar_index, high, "BIAS", style = label.style_label_down, color = color.new(color.orange, 25), textcolor = color.white, size = size.tiny)
+if barstate.isconfirmed and biasBlkBull
+    label.new(bar_index, low, "BIAS", style = label.style_label_up, color = color.new(color.orange, 25), textcolor = color.white, size = size.tiny)
+
 plotshape(i_showSoup and sweptAbove and inWindow, "Soup above", shape.triangledown, location.abovebar, color.orange, size = size.tiny)
 plotshape(i_showSoup and sweptBelow and inWindow, "Soup below", shape.triangleup, location.belowbar, color.aqua, size = size.tiny)
-plotshape(i_showSig and autoBiasOn and f_soupAbove(prevDayHigh), "PDH soup", shape.xcross, location.abovebar, color.new(color.red, 30), size = size.tiny)
-plotshape(i_showSig and autoBiasOn and f_soupBelow(prevDayLow), "PDL soup", shape.xcross, location.belowbar, color.new(color.lime, 30), size = size.tiny)
+
+bool pdhSoupNow = i_showSig and autoBiasOn and f_soupAbove(prevDayHigh)
+bool pdlSoupNow = i_showSig and autoBiasOn and f_soupBelow(prevDayLow)
+if barstate.isconfirmed and pdhSoupNow and not soupPdhMarked
+    label.new(bar_index, high, "PDH↑", style = label.style_label_down, color = color.new(color.red, 35), textcolor = color.white, size = size.tiny)
+    soupPdhMarked := true
+if barstate.isconfirmed and pdlSoupNow and not soupPdlMarked
+    label.new(bar_index, low, "PDL↓", style = label.style_label_up, color = color.new(color.lime, 35), textcolor = color.black, size = size.tiny)
+    soupPdlMarked := true
 
 if i_showSig and autoBiasOn and nyHhmm == i_winStart and barstate.isconfirmed
     string drawTxt = dayDraw == -1 ? "PD draw ↓ shorts" : dayDraw == 1 ? "PD draw ↑ longs" : "PD draw — both"
     label.new(bar_index, high, drawTxt, style = label.style_label_down, color = color.new(color.black, 40), textcolor = dayDraw == -1 ? color.red : dayDraw == 1 ? color.lime : color.gray, size = size.tiny)
 
-plot(i_showLvls ? prevDayHigh : na, "PDH", color.new(color.red, 60), style = plot.style_linebr)
-plot(i_showLvls ? prevDayLow : na, "PDL", color.new(color.lime, 60), style = plot.style_linebr)
-plot(i_showLvls and nyHhmm >= 930 ? pmHigh : na, "PM High", color.new(color.orange, 60), style = plot.style_linebr)
-plot(i_showLvls and nyHhmm >= 930 ? pmLow : na, "PM Low", color.new(color.aqua, 60), style = plot.style_linebr)
-plot(i_showLvls ? ko1800 : na, "18:00 open", color.new(color.green, 45), style = plot.style_linebr)
-plot(i_showLvls ? ko0000 : na, "Midnight open", color.new(color.yellow, 45), style = plot.style_linebr)
-plot(i_showLvls ? ko1000 : na, "10:00 open", color.new(color.fuchsia, 45), style = plot.style_linebr)
-plot(i_showLvls and i_useAmOpens ? ko0830 : na, "8:30 open", color.new(color.silver, 60), style = plot.style_linebr)
-plot(i_showLvls and i_useAmOpens ? ko0900 : na, "9:00 open", color.new(color.silver, 70), style = plot.style_linebr)
-plot(i_showLvls and i_useAmOpens ? ko0930 : na, "9:30 open", color.new(color.silver, 65), style = plot.style_linebr)
-// Zone / entry geometry while a setup is open (all entry modes — not CISD-only)
-plot(i_showLvls and suDir != 0 and not na(suCe) ? suCe : na, "RB zone CE", color.new(color.white, 35), style = plot.style_linebr)
-plot(i_showLvls and suDir != 0 and not na(suWickStart) ? suWickStart : na, "RB wick start", color.new(color.aqua, 45), style = plot.style_linebr)
-plot(i_showPend and suDir != 0 and not na(suEntry) ? suEntry : na, "RB limit entry", color.new(color.white, 20), style = plot.style_linebr)
-plot(i_showPend and suDir != 0 and not na(suStop) ? suStop : na, "RB stop", color.new(color.red, 35), style = plot.style_linebr)
+// Live clean: day-scoped PDH/PDL bands + right-edge labels (replaces full-width red/lime lines)
+var box bxPdh = na
+var box bxPdl = na
+var label lblPdh = na
+var label lblPdl = na
+var int lvlDayStart = na
+float lvlHalf = math.max(syminfo.mintick * 4.0, (syminfo.mintick > 0 ? syminfo.mintick : 0.25) * 4.0)
+
+if newDay
+    lvlDayStart := bar_index
+    bxPdh := na
+    bxPdl := na
+    lblPdh := na
+    lblPdl := na
+
+if i_showLvls and i_liveClean and not na(prevDayHigh) and not na(lvlDayStart)
+    float topH = prevDayHigh + lvlHalf
+    float botH = prevDayHigh - lvlHalf
+    if na(bxPdh)
+        bxPdh := box.new(lvlDayStart, topH, bar_index, botH, border_color = color.new(color.red, 40), bgcolor = color.new(color.red, 88), border_width = 1)
+        lblPdh := label.new(bar_index, prevDayHigh, "PDH", style = label.style_label_left, color = color.new(color.red, 30), textcolor = color.white, size = size.tiny)
+    else
+        box.set_right(bxPdh, bar_index)
+        box.set_top(bxPdh, topH)
+        box.set_bottom(bxPdh, botH)
+        label.set_x(lblPdh, bar_index)
+        label.set_y(lblPdh, prevDayHigh)
+
+if i_showLvls and i_liveClean and not na(prevDayLow) and not na(lvlDayStart)
+    float topL = prevDayLow + lvlHalf
+    float botL = prevDayLow - lvlHalf
+    if na(bxPdl)
+        bxPdl := box.new(lvlDayStart, topL, bar_index, botL, border_color = color.new(color.lime, 40), bgcolor = color.new(color.lime, 88), border_width = 1)
+        lblPdl := label.new(bar_index, prevDayLow, "PDL", style = label.style_label_left, color = color.new(color.lime, 30), textcolor = color.black, size = size.tiny)
+    else
+        box.set_right(bxPdl, bar_index)
+        box.set_top(bxPdl, topL)
+        box.set_bottom(bxPdl, botL)
+        label.set_x(lblPdl, bar_index)
+        label.set_y(lblPdl, prevDayLow)
+
+// Short 10:00 open marker (wash already on) — no full-width fuchsia line in Live clean
+if i_showLvls and i_liveClean and nyHhmm == 1000 and barstate.isconfirmed and not na(ko1000)
+    label.new(bar_index, ko1000, "10:00", style = label.style_label_left, color = color.new(color.yellow, 35), textcolor = color.black, size = size.tiny)
+
+// Classic full-width lines (Live clean OFF) + optional extra liquidity
+plot(showClassicLvls ? prevDayHigh : na, "PDH", color.new(color.red, 60), style = plot.style_linebr)
+plot(showClassicLvls ? prevDayLow : na, "PDL", color.new(color.lime, 60), style = plot.style_linebr)
+plot(showExtraLines and nyHhmm >= 930 ? pmHigh : na, "PM High", color.new(color.orange, 60), style = plot.style_linebr)
+plot(showExtraLines and nyHhmm >= 930 ? pmLow : na, "PM Low", color.new(color.aqua, 60), style = plot.style_linebr)
+plot(showExtraLines ? ko1800 : na, "18:00 open", color.new(color.green, 45), style = plot.style_linebr)
+plot(showExtraLines ? ko0000 : na, "Midnight open", color.new(color.yellow, 45), style = plot.style_linebr)
+plot(showClassicLvls ? ko1000 : na, "10:00 open", color.new(color.fuchsia, 45), style = plot.style_linebr)
+plot(showExtraLines and i_useAmOpens ? ko0830 : na, "8:30 open", color.new(color.silver, 60), style = plot.style_linebr)
+plot(showExtraLines and i_useAmOpens ? ko0900 : na, "9:00 open", color.new(color.silver, 70), style = plot.style_linebr)
+plot(showExtraLines and i_useAmOpens ? ko0930 : na, "9:30 open", color.new(color.silver, 65), style = plot.style_linebr)
+// Zone / entry geometry — suppressed when Manual boxes are the live source of truth
+plot(showGeomPlots and not na(suCe) ? suCe : na, "RB zone CE", color.new(color.white, 35), style = plot.style_linebr)
+plot(showGeomPlots and not na(suWickStart) ? suWickStart : na, "RB wick start", color.new(color.aqua, 45), style = plot.style_linebr)
+plot(showPendPlots and not na(suEntry) ? suEntry : na, "RB limit entry", color.new(color.white, 20), style = plot.style_linebr)
+plot(showPendPlots and not na(suStop) ? suStop : na, "RB stop", color.new(color.red, 35), style = plot.style_linebr)
 
 // ─── Diagnostic funnel table ─────────────────────────────────────────────────
 f_row(table t, int r, string k, string v) =>

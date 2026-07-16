@@ -55,7 +55,7 @@ Optional: set Coach alerts **enter STAND_DOWN** / **exit STAND_DOWN** so Aug ope
 | Script | What it draws | What it does **not** do |
 |---|---|---|
 | **`PRB_Gate_LiveCoach_v0`** | STAND_DOWN wash · corner LIVE/STAND_DOWN · risk table · optional **planned** stop/TP/BE lines from *Planned stop (pts)* | Find RBs · arm LIMIT/STOP/TP boxes · emit entry signals |
-| **`Powell_Rejection_Block_gate_v0`** | RB labels · PDH/PDL/PM/key opens · CE / wick-start / limit / stop lines · red+teal boxes when setup arms | Live Coach sizing (use Coach qty) |
+| **`Powell_Rejection_Block_gate_v0`** | RB labels · Live-clean PDH/PDL boxes · 10:00 wash · ARMED/SHADOW entry boxes | Live Coach sizing (use Coach qty) |
 
 If the chart shows only a HUD/table: you almost certainly have **Coach only**. Add **gate_v0** on the same MNQ chart (overlay strategy). Locked `Powell_Rejection_Block_v1.pine` stays untouched.
 
@@ -66,10 +66,10 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 3. Inputs — must match live ops:
    - **Manual levels only — NO orders = ON**
    - **Skip July & October = ON** (leave on through Aug practice; do not flip off to “see more” in July)
-   - Visuals: **Show RB labels / liquidity+key opens / position boxes / pending limit+stop = ON**
+   - Visuals: **Live clean chart = ON** · Show RB labels / liquidity / position boxes = ON · Extra liquidity lines = OFF
    - Funnel table ON until you trust the boxes; then optional off
 4. Add **`PRB Gate Live Coach v0`** (indicator, same pane). Profile Eval or Funded.  
-5. Style tab: leave gate_v0 plots (PDH/PDL, CE, limit, stop) **visible** — TV can hide them if a previous style was saved.  
+5. Style tab: leave gate_v0 overlays visible — TV can hide them if a previous style was saved. Re-paste after Live-clean update so defaults apply.  
 6. Confirm funnel row **Mode = MANUAL (no orders)** and **Jul/Oct gate** shows `STAND_DOWN` (Jul) or `ON · month ok` (Aug/Sep).
 
 ### Recommended live stack (same pane or two)
@@ -200,17 +200,18 @@ Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 | Script | What you should see |
 |---|---|
 | LiveCoach | Soft orange wash in Jul/Oct · corner LIVE/STAND_DOWN · risk table · faint PLAN@Npt stop/TP/BE (not an RB) |
-| gate_v0 Manual ON (live month) | RB labels · PDH/PDL lines · CE + wick-start while setup open · red entry→stop + teal entry→TP · funnel `ARMED — you click` |
-| gate_v0 Manual ON (Jul/Oct) | Same cues in **orange SHADOW** · funnel `SHADOW Jul/Oct — journal only` · no ARMED alert |
+| gate_v0 Manual ON + **Live clean ON** (default) | 10:00 yellow wash · **PDH/PDL labeled day boxes** · RB labels · tiny `PDH↑` / `PDL↓` / `BIAS` text (no X-crosses) · teal/red **ARMED** boxes (or orange **SHADOW** in Jul/Oct) · no magenta/yellow/green key-open spaghetti · no duplicate CE/limit/stop plot lines |
+| gate_v0 Live clean OFF | Classic full-width PDH/PDL/KO lines (Lab/debug) |
+| gate_v0 **Show extra liquidity lines** | PM H/L · 18:00 · midnight · AM opens (opt-in) |
 | MPSF events | Separate Track B marker — do not use as PRB entry engine |
 
-Turn **off** gate soup triangles / ghost marks if the live chart feels busy.
+Turn **off** gate soup triangles / ghost marks if the live chart feels busy. Keep **Live clean** ON for paper/live; only flip Extra liquidity / Live clean OFF when diagnosing levels.
 
 ### If you still see no RB / boxes
 
 1. Confirm **gate_v0** is on the chart (not Coach alone).  
 2. Confirm **Manual levels only = ON**.  
-3. Timeframe 1m or 5m; look during **10:00–11:30 NY** (entry window wash). Outside that, expect liquidity lines only.  
+3. Timeframe 1m or 5m; look during **10:00–11:30 NY** (entry window wash). Outside that, expect PDH/PDL boxes only.  
 4. Funnel: if `RB candles (raw)` stays 0 in-window, filters (wick / 4H / sweep) are blocking — widen nothing for Lab; use bar-replay on a known historical RB day for UX check.  
 5. Style → reset gate_v0 plot visibility.
 
