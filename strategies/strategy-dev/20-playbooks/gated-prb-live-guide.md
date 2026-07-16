@@ -61,14 +61,25 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 
 ### Minimal MNQ setup (copy into TV)
 
-1. Chart: `CME_MINI:MNQ1!` · **1m** (CISD package) or **5m** (limit/Auto leave-retest) · NY session visible.  
+1. Chart: `CME_MINI:MNQ1!` · **5m** (Manual leave-retest; CISD package can use 1m) · NY session visible.  
 2. Add **`Powell_Rejection_Block gate_v0`** (strategy, overlay).  
 3. Inputs — must match live ops:
    - **Skip July & October = OFF** (your Manual discretion; Lab used ON)
    - **Direction filter = Both** (bias is yours — not coded on chart)
    - **Manual levels only = ON** · **Clean chart = ON**
+   - **RB structure TF = Auto** (Manual → **15m**; or force **15** / try **60** if busy)
+   - **Require draw POI at HTF RB = ON** · **Block RB against unfinished PD draw = ON**
    - **Show trade plan** + **Show CE dotted** + **Show entry triggers** = ON
 4. Add **`PRB Gate Live Coach v0`** (optional). Profile Eval or Funded — **qty only**, move table to bottom-right if used.
+
+### HTF Manual vs Lab Chart
+
+| Mode | Structure TF | Draw POI gate | Geometry |
+|---|---|---|---|
+| **Manual ON** (live / bar replay) | Auto → **15m** (or 60 / 240) | **ON** — RB extreme must tag PDH/PDL · PM H/L · key open | LIMIT / STOP / CE from **HTF wick**; leave-retest on chart bars |
+| **Manual OFF** (Lab Deep BT) | Auto → **Chart** | Ignored | Preserves today’s chart-TF Lab control until a dedicated HTF Stage-0 |
+
+This is a **geometry + context fix**, not a Lab promote. Schedule HTF Stage-0 Deep BT only after Lane S S3 closes.
 
 ### Recommended live stack (same pane or two)
 
@@ -196,11 +207,11 @@ Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 
 | Mode | On the candles |
 |---|---|
-| **Manual ON** (live / bar replay) | Long **RB** box · dotted **CE** · dashed wick-start · **LIMIT / STOP / TP** · **LEAVE** then **GO** when leave-retest arms · RB tag shows swept level + 4H pts |
-| **Manual OFF** (Deep BT) | Same live plan + frozen **WIN/LOSS** after fills |
+| **Manual ON** (live / bar replay) | **HTF** RB box (15m/1H/4H wick) · dotted **CE** · dashed wick-start · tag `15m · PDH` (etc.) · **LIMIT / STOP / TP** from HTF geometry · **LEAVE** then **GO** on 5m leave-retest |
+| **Manual OFF** (Deep BT) | Chart-TF structure (Lab control) + frozen **WIN/LOSS** after fills |
 | **Jul/Oct** | Default **Skip Jul/Oct = OFF** for your Manual discretion — Lab used ON; flip ON only for Lab-faithful exports |
 
-Bias stays off the chart (**Direction = Both**). Paper checklist for news / SMT / EQH / gut.
+Bias stays off the chart (**Direction = Both**). Paper checklist for news / SMT / EQH / gut. Micro mid-trend 5m RBs should mostly disappear when structure = 15 and draw POI is ON.
 
 ### If you still see no RB / boxes
 

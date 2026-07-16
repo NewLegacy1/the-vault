@@ -3,15 +3,17 @@
 // DO NOT edit pine/Powell_Rejection_Block_v1.pine (locked live).
 //
 // EXTRA vs locked v1:
-//   · Skip July & October (regime-gate-v0) — default ON · America/New_York month
-//     Lab PASS 2026-07-14 · STAND_DOWN calendar months 7 and 10
+//   · Skip July & October (regime-gate-v0) — default OFF for Manual discretion
+//     Lab PASS 2026-07-14 · STAND_DOWN calendar months 7 and 10 when ON
 //   · Live UX: Manual ON still draws SHADOW boxes in Jul/Oct (and Mon skip) so
 //     process / journal practice stays visible; strategy orders stay blocked.
 //     Pair with PRB_Gate_LiveCoach_v0 for risk HUD (Coach does not find RBs).
+//   · HTF structure TF (15/60/240) via request.security — Manual Auto = 15m;
+//     Lab Auto = Chart (preserves Deep BT control). Draw-POI gate on Manual.
 //
 // CODED FROM THE SOP:
-//   · Formal RB (T03): candle sweeps liquidity, prints rejection wick; RB level
-//     = wick start (body top/bottom), alt entry = wick CE (50% of wick)
+//   · Formal RB (T03): HTF candle sweeps / tags draw POI + rejection wick;
+//     RB level = wick start; alt entry = wick CE (50% of wick); chart TF = timing
 //   · Key opens (T02): 18:00 / midnight / 10:00 opens tracked as liquidity —
 //     souping a key open counts as a sweep; optional proximity confluence
 //   · Sweep pool: premarket H/L, prior-day H/L, key opens, rolling 20-bar swing
@@ -59,14 +61,23 @@ i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = "Session (NY tim
 i_skipMonday  = input.bool(true, "Skip Mondays (SOP: lower expectancy)", group = "Session (NY time)")
 i_skipJulOct  = input.bool(false, "Skip July & October (regime-gate-v0)", group = "Session (NY time)", tooltip = "Lab used ON (2026-07-14). Default OFF for Manual / bar-replay discretion — you take Jul/Oct if your checklist says so. Flip ON only for Lab-faithful Deep BT.")
 i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Long only", "Short only", "Auto PDH/PDL draw"], group = "Session (NY time)", tooltip = "Manual practice: leave Both — bias is your discretionary checklist. Auto PDH/PDL = SOP §3 liquidity sweep draw (not turtle soup).")
-i_minWickPts = input.float(5.0, "Min rejection wick (pts)", minval = 0.0, step = 0.5, group = "Rejection block (formal, T03)")
-i_localLen   = input.int(12, "RB must be extreme of last N bars", minval = 4, maxval = 50, group = "Rejection block (formal, T03)")
-i_reqSweep   = input.bool(true, "Require liquidity sweep on RB candle", group = "Rejection block (formal, T03)", tooltip = "RB candle must wick through a liquidity level (PDH/PDL/PM/key open) and close back. Not turtle-soup displacement.")
-i_confClose  = input.bool(true, "Require confirming close (bear RB closes down)", group = "Rejection block (formal, T03)")
-i_leaveR     = input.float(1.0, "Price must leave by N×risk before limit arms (0 = arm at once)", minval = 0.0, step = 0.25, group = "Rejection block (formal, T03)", tooltip = "SOP: 'wait for price to leave, then retest the RB'. Kills same-bar blow-through fills.")
-i_strictLeave = input.bool(false, "Strict retest: leave must happen AFTER the RB candle", group = "Rejection block (formal, T03)", tooltip = "Big-bodied RB candles satisfy the leave distance by themselves, arming the limit instantly. Strict mode requires the departure on a later bar. A/B this: it targets the remaining duration-0 losses but may delay some winners.")
-i_maxApproachR = input.float(0.0, "Approach guard: pause limit unless close is within N×risk (0 = off)", minval = 0.0, step = 0.5, group = "Rejection block (formal, T03)", tooltip = "FAILED A/B (Run B, Feb–Mar): default 2.0 killed the Feb 10 +$1,943 winner and left mostly soft losses/scratches (−$803). Leave at 0. Softened a couple blows but the winners need the aggressive fills the guard blocks.")
-i_tapTimeout = input.int(24, "Setup expires after N bars", minval = 4, maxval = 120, group = "Rejection block (formal, T03)")
+
+grpRb = "Rejection block (formal, T03)"
+i_structTf = input.string("Auto (Manual→15 · Lab→chart)", "RB structure TF", options = ["Auto (Manual→15 · Lab→chart)", "Chart", "15", "60", "240"], group = grpRb, tooltip = "SOP: wick CEs live on 15m/1H/4H — not micro 5m locals. Manual Auto = 15m structure on a 5m chart. Lab Auto = Chart (preserves Deep BT control).")
+i_minWickPts = input.float(5.0, "Min chart-TF wick (pts) — Lab/Chart mode", minval = 0.0, step = 0.5, group = grpRb)
+i_minWick15 = input.float(12.0, "Min 15m structure wick (pts)", minval = 4.0, step = 1.0, group = grpRb)
+i_minWick60 = input.float(20.0, "Min 1H structure wick (pts)", minval = 8.0, step = 1.0, group = grpRb)
+i_minWick240 = input.float(30.0, "Min 4H structure wick (pts)", minval = 10.0, step = 1.0, group = grpRb)
+i_localLen   = input.int(12, "RB must be extreme of last N bars (structure TF)", minval = 4, maxval = 50, group = grpRb)
+i_reqSweep   = input.bool(true, "Require liquidity sweep on RB candle", group = grpRb, tooltip = "Structure candle must wick through a liquidity level and close back.")
+i_reqDrawPoi = input.bool(true, "Require draw POI at HTF RB (Manual)", group = grpRb, tooltip = "Manual only: RB extreme must tag unfinished PDH/PDL · PM H/L · key open. Kills mid-trend micro reversals with no nearby draw. Lab (Manual OFF) ignores this.")
+i_poiPts     = input.float(12.0, "Draw POI proximity (pts)", minval = 2.0, step = 1.0, group = grpRb)
+i_blockCounterDraw = input.bool(true, "Block RB against unfinished PD draw", group = grpRb, tooltip = "If PDH was swept (draw→lows), block longs; if PDL swept (draw→highs), block shorts — even when Direction=Both.")
+i_confClose  = input.bool(true, "Require confirming close (bear RB closes down)", group = grpRb)
+i_leaveR     = input.float(1.0, "Price must leave by N×risk before limit arms (0 = arm at once)", minval = 0.0, step = 0.25, group = grpRb, tooltip = "SOP: 'wait for price to leave, then retest the RB'. Kills same-bar blow-through fills.")
+i_strictLeave = input.bool(false, "Strict retest: leave must happen AFTER the RB candle", group = grpRb, tooltip = "Big-bodied RB candles satisfy the leave distance by themselves, arming the limit instantly. Strict mode requires the departure on a later bar.")
+i_maxApproachR = input.float(0.0, "Approach guard: pause limit unless close is within N×risk (0 = off)", minval = 0.0, step = 0.5, group = grpRb)
+i_tapTimeout = input.int(24, "Setup expires after N chart bars", minval = 4, maxval = 120, group = grpRb)
 
 i_useRollSweep = input.bool(false, "Rolling 20-bar swing counts as sweep liquidity (noisy)", group = "Key opens (T02)")
 i_useKoSweep = input.bool(true, "Key opens count as sweep liquidity", group = "Key opens (T02)")
@@ -265,19 +276,106 @@ float h4LowerWick = math.min(nz(h4Open, open), close) - nz(h4Low, low)
 bool h4OkBear = not i_useH4Wick or h4UpperWick >= i_minH4WickPts
 bool h4OkBull = not i_useH4Wick or h4LowerWick >= i_minH4WickPts
 
-// ─── Formal rejection block (T03) ────────────────────────────────────────────
-// Bearish RB: local high + rejection wick after sweeping liquidity above.
-// RB level = wick start (top of body). CE = midpoint of wick.
-float upperWick = high - math.max(open, close)
-float lowerWick = math.min(open, close) - low
-bool localHigh = high >= ta.highest(high, i_localLen)
-bool localLow  = low <= ta.lowest(low, i_localLen)
+// ─── Formal rejection block (T03) — chart OR HTF structure ───────────────────
+// SOP: wick CE hunt on 15m/1H/4H; chart TF only for leave-retest / fills.
+// Manual Auto → 15m. Lab (Manual OFF) Auto → Chart (Deep BT control preserved).
+f_effStruct() =>
+    i_structTf == "Auto (Manual→15 · Lab→chart)" ? (i_manualOnly ? "15" : "Chart") : i_structTf
 
-bool rbBearRaw = inWindow and localHigh and upperWick >= i_minWickPts and (not i_confClose or close < open)
-bool rbBullRaw = inWindow and localLow  and lowerWick >= i_minWickPts and (not i_confClose or close > open)
+string structTf = f_effStruct()
+bool useChartRb = structTf == "Chart"
+string structLabel = useChartRb ? "Chart" : structTf == "15" ? "15m" : structTf == "60" ? "1H" : "4H"
 
-bool rbBear = rbBearRaw and h4OkBear and (not i_reqSweep or sweptAbove) and (not i_koConfl or f_nearKo(high)) and biasOkShort
-bool rbBull = rbBullRaw and h4OkBull and (not i_reqSweep or sweptBelow) and (not i_koConfl or f_nearKo(low)) and biasOkLong
+// Closed HTF candle pack (lookahead_off · [1] = last completed structure bar).
+// Always request 15/60/240 — Pine forbids dynamic TF strings in request.security.
+f_htfPack(float minW) =>
+    float o1 = open[1]
+    float h1 = high[1]
+    float l1 = low[1]
+    float c1 = close[1]
+    float uw = h1 - math.max(o1, c1)
+    float lw = math.min(o1, c1) - l1
+    bool locH = h1 >= ta.highest(high, i_localLen)[1]
+    bool locL = l1 <= ta.lowest(low, i_localLen)[1]
+    bool bear = locH and uw >= minW and (not i_confClose or c1 < o1)
+    bool bull = locL and lw >= minW and (not i_confClose or c1 > o1)
+    [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1), uw, lw]
+
+[b15, u15, h15, l15, wsB15, wsU15, uw15, lw15] = request.security(syminfo.tickerid, "15", f_htfPack(i_minWick15), barmerge.gaps_off, barmerge.lookahead_off)
+[b60, u60, h60, l60, wsB60, wsU60, uw60, lw60] = request.security(syminfo.tickerid, "60", f_htfPack(i_minWick60), barmerge.gaps_off, barmerge.lookahead_off)
+[b240, u240, h240, l240, wsB240, wsU240, uw240, lw240] = request.security(syminfo.tickerid, "240", f_htfPack(i_minWick240), barmerge.gaps_off, barmerge.lookahead_off)
+
+float cUpperWick = high - math.max(open, close)
+float cLowerWick = math.min(open, close) - low
+bool cLocalHigh = high >= ta.highest(high, i_localLen)
+bool cLocalLow  = low <= ta.lowest(low, i_localLen)
+bool cBearRaw = inWindow and cLocalHigh and cUpperWick >= i_minWickPts and (not i_confClose or close < open)
+bool cBullRaw = inWindow and cLocalLow and cLowerWick >= i_minWickPts and (not i_confClose or close > open)
+
+// Aliases for ghost autopsy (chart-TF micro RBs)
+bool localHigh = cLocalHigh
+bool localLow = cLocalLow
+float upperWick = cUpperWick
+float lowerWick = cLowerWick
+
+string htfKey = structTf == "Chart" ? "15" : structTf
+bool htfBarClosed = not useChartRb and ta.change(time(htfKey, "America/New_York")) != 0
+bool hBear = htfKey == "15" ? b15 : htfKey == "60" ? b60 : b240
+bool hBull = htfKey == "15" ? u15 : htfKey == "60" ? u60 : u240
+float hExtHi = htfKey == "15" ? h15 : htfKey == "60" ? h60 : h240
+float hExtLo = htfKey == "15" ? l15 : htfKey == "60" ? l60 : l240
+float hWsBear = htfKey == "15" ? wsB15 : htfKey == "60" ? wsB60 : wsB240
+float hWsBull = htfKey == "15" ? wsU15 : htfKey == "60" ? wsU60 : wsU240
+float hUw = htfKey == "15" ? uw15 : htfKey == "60" ? uw60 : uw240
+float hLw = htfKey == "15" ? lw15 : htfKey == "60" ? lw60 : lw240
+
+bool rbBearRaw = useChartRb ? cBearRaw : (htfBarClosed and inWindow and hBear)
+bool rbBullRaw = useChartRb ? cBullRaw : (htfBarClosed and inWindow and hBull)
+
+// Structure wick geometry used for entry/stop (HTF when not Chart)
+float rbExtBear = useChartRb ? high : hExtHi
+float rbExtBull = useChartRb ? low : hExtLo
+float rbWsBear = useChartRb ? math.max(open, close) : hWsBear
+float rbWsBull = useChartRb ? math.min(open, close) : hWsBull
+float rbUw = useChartRb ? cUpperWick : hUw
+float rbLw = useChartRb ? cLowerWick : hLw
+float rbCeBear = (rbExtBear + rbWsBear) * 0.5
+float rbCeBull = (rbExtBull + rbWsBull) * 0.5
+
+// Draw POI ranking — sell-side for shorts · buy-side for longs (Manual gate)
+f_nearLvl(float px, float lvl) =>
+    not na(px) and not na(lvl) and math.abs(px - lvl) <= i_poiPts
+
+f_poiTagShort(float extreme) =>
+    f_nearLvl(extreme, prevDayHigh) ? "PDH" : f_nearLvl(extreme, pmHigh) ? "PMH" : i_useKoSweep and f_nearLvl(extreme, ko1000) ? "10:00" : i_useKoSweep and f_nearLvl(extreme, ko0000) ? "00:00" : i_useKoSweep and f_nearLvl(extreme, ko1800) ? "18:00" : i_useAmOpens and f_nearLvl(extreme, ko0930) ? "9:30" : i_useRollSweep and f_nearLvl(extreme, roll20High) ? "Roll20H" : "—"
+
+f_poiTagLong(float extreme) =>
+    f_nearLvl(extreme, prevDayLow) ? "PDL" : f_nearLvl(extreme, pmLow) ? "PML" : i_useKoSweep and f_nearLvl(extreme, ko1000) ? "10:00" : i_useKoSweep and f_nearLvl(extreme, ko0000) ? "00:00" : i_useKoSweep and f_nearLvl(extreme, ko1800) ? "18:00" : i_useAmOpens and f_nearLvl(extreme, ko0930) ? "9:30" : i_useRollSweep and f_nearLvl(extreme, roll20Low) ? "Roll20L" : "—"
+
+// Proximity POI first; chart-bar soup tag as fallback (Lab/Chart mode)
+string poiShortRaw = f_poiTagShort(rbExtBear)
+string poiLongRaw = f_poiTagLong(rbExtBull)
+string poiShort = poiShortRaw != "—" ? poiShortRaw : (sweptAbove ? f_sweepAboveTag() : "—")
+string poiLong = poiLongRaw != "—" ? poiLongRaw : (sweptBelow ? f_sweepBelowTag() : "—")
+
+bool effReqDraw = i_manualOnly and i_reqDrawPoi and not useChartRb
+bool poiOkShort = not effReqDraw or poiShort != "—"
+bool poiOkLong = not effReqDraw or poiLong != "—"
+
+// Block orphans against unfinished PD draw (even when Direction=Both)
+// dayDraw -1 = PDH swept → draw to lows → block longs; +1 = PDL swept → draw to highs → block shorts
+bool counterOkShort = not i_blockCounterDraw or dayDraw != 1
+bool counterOkLong = not i_blockCounterDraw or dayDraw != -1
+
+bool sweepOkShort = not i_reqSweep or sweptAbove or (not useChartRb and poiShort != "—")
+bool sweepOkLong = not i_reqSweep or sweptBelow or (not useChartRb and poiLong != "—")
+
+bool rbBear = rbBearRaw and h4OkBear and sweepOkShort and (not i_koConfl or f_nearKo(rbExtBear)) and biasOkShort and poiOkShort and counterOkShort
+bool rbBull = rbBullRaw and h4OkBull and sweepOkLong and (not i_koConfl or f_nearKo(rbExtBull)) and biasOkLong and poiOkLong and counterOkLong
+
+f_rbMetaTag(string poi) =>
+    string base = structLabel
+    poi != "—" ? base + " · " + poi : base
 
 // ─── Trade accounting / TPT risk engine ──────────────────────────────────────
 int totalTrades = strategy.opentrades + strategy.closedtrades
@@ -358,9 +456,9 @@ if rbBearRaw or rbBullRaw
     cntRbRaw += 1
 if rbBear or rbBull
     cntRbCtx += 1
-if rbBearRaw and h4OkBear and (not i_reqSweep or sweptAbove) and (not i_koConfl or f_nearKo(high)) and not biasOkShort
+if rbBearRaw and h4OkBear and sweepOkShort and (not i_koConfl or f_nearKo(rbExtBear)) and not biasOkShort
     cntBiasBlk += 1
-if rbBullRaw and h4OkBull and (not i_reqSweep or sweptBelow) and (not i_koConfl or f_nearKo(low)) and not biasOkLong
+if rbBullRaw and h4OkBull and sweepOkLong and (not i_koConfl or f_nearKo(rbExtBull)) and not biasOkLong
     cntBiasBlk += 1
 
 // ─── Setup state ─────────────────────────────────────────────────────────────
@@ -716,22 +814,23 @@ if array.size(beaCfDir) > 0
             array.remove(beaCfRisk, ci)
             array.remove(beaCfGhost, ci)
 
-// ── Arm on RB (limit modes place the order immediately; trigger mode waits) ──
+// ── Arm on RB (LIMIT/STOP/CE from structure wick; leave-retest timing on chart) ──
 if rbBear and canArm
-    float wickStart = math.max(open, close)
-    float ce = (high + wickStart) / 2.0
-    suSweepTag := f_sweepAboveTag()
+    float wickStart = rbWsBear
+    float ce = rbCeBear
+    float extreme = rbExtBear
+    suSweepTag := f_rbMetaTag(poiShort)
     suH4Pts := h4UpperWick
     if isTrigger
         suDir := -1
         suWickStart := wickStart
         suCe := ce
-        suExtreme := high
+        suExtreme := extreme
         suBar := bar_index
         suTapped := false
         manualState := "CISD tap CE"
     else
-        [entryPx, stopPx] = f_plan(wickStart, ce, high, true)
+        [entryPx, stopPx] = f_plan(wickStart, ce, extreme, true)
         if na(entryPx)
             cntSkipStop += 1
         else
@@ -739,7 +838,7 @@ if rbBear and canArm
             suDir := -1
             suWickStart := wickStart
             suCe := ce
-            suExtreme := high
+            suExtreme := extreme
             suEntry := entryPx
             suStop := stopPx
             pendStop := stopPx
@@ -750,20 +849,21 @@ if rbBear and canArm
             manualState := suLeft ? "WAIT approach" : "WAIT leave"
 
 if rbBull and canArm and suDir == 0
-    float wickStart = math.min(open, close)
-    float ce = (low + wickStart) / 2.0
-    suSweepTag := f_sweepBelowTag()
+    float wickStart = rbWsBull
+    float ce = rbCeBull
+    float extreme = rbExtBull
+    suSweepTag := f_rbMetaTag(poiLong)
     suH4Pts := h4LowerWick
     if isTrigger
         suDir := 1
         suWickStart := wickStart
         suCe := ce
-        suExtreme := low
+        suExtreme := extreme
         suBar := bar_index
         suTapped := false
         manualState := "CISD tap CE"
     else
-        [entryPx, stopPx] = f_plan(wickStart, ce, low, false)
+        [entryPx, stopPx] = f_plan(wickStart, ce, extreme, false)
         if na(entryPx)
             cntSkipStop += 1
         else
@@ -771,7 +871,7 @@ if rbBull and canArm and suDir == 0
             suDir := 1
             suWickStart := wickStart
             suCe := ce
-            suExtreme := low
+            suExtreme := extreme
             suEntry := entryPx
             suStop := stopPx
             pendStop := stopPx
@@ -1091,7 +1191,7 @@ if planLive
     string trig = f_trigState()
     string limTxt = side + " · " + trig + "\nLIMIT " + str.tostring(suEntry, format.mintick)
     if i_showTriggers and suSweepTag != "—"
-        limTxt += "\nSweep " + suSweepTag
+        limTxt += "\n" + suSweepTag
     if newPlan
         planLeft := suBar
         planLnE := line.new(suBar, suEntry, xR, suEntry, color = eCol, width = 2, style = line.style_solid)
@@ -1165,9 +1265,9 @@ var float rbCeLv = na
 var float rbWsLv = na
 
 if i_showSig and barstate.isconfirmed and (rbBear or rbBull) and suDir != 0 and not na(suBar) and suBar == bar_index
-    float ws = rbBear ? math.max(open, close) : math.min(open, close)
-    float ex = rbBear ? high : low
-    float ceNow = (ex + ws) * 0.5
+    float ws = nz(suWickStart, rbBear ? rbWsBear : rbWsBull)
+    float ex = nz(suExtreme, rbBear ? rbExtBear : rbExtBull)
+    float ceNow = nz(suCe, (ex + ws) * 0.5)
     color bd = rbBear ? c_rbShortBd : c_rbLongBd
     color bg = color.new(rbBear ? c_rbShortBg : c_rbLongBg, i_rbFillTrans)
     color markC = color.new(bd, i_rbMarkTrans)
@@ -1214,14 +1314,12 @@ else if suDir == 0 and not na(bxRb) and not na(rbLeft) and bar_index > rbLeft + 
     lblRbMeta := na
 
 // Optional journal: bias-blocked raw RB (off by default)
-bool biasBlkBear = i_showBlockedBias and rbBearRaw and h4OkBear and (not i_reqSweep or sweptAbove) and (not i_koConfl or f_nearKo(high)) and not biasOkShort
-bool biasBlkBull = i_showBlockedBias and rbBullRaw and h4OkBull and (not i_reqSweep or sweptBelow) and (not i_koConfl or f_nearKo(low)) and not biasOkLong
+bool biasBlkBear = i_showBlockedBias and rbBearRaw and h4OkBear and sweepOkShort and (not i_koConfl or f_nearKo(rbExtBear)) and not biasOkShort
+bool biasBlkBull = i_showBlockedBias and rbBullRaw and h4OkBull and sweepOkLong and (not i_koConfl or f_nearKo(rbExtBull)) and not biasOkLong
 if barstate.isconfirmed and biasBlkBear
-    float wsB = math.max(open, close)
-    box.new(bar_index, high, bar_index + i_rbExtend, wsB, border_color = color.new(color.gray, 50), bgcolor = color.new(color.gray, 92), border_width = 1)
+    box.new(bar_index, rbExtBear, bar_index + i_rbExtend, rbWsBear, border_color = color.new(color.gray, 50), bgcolor = color.new(color.gray, 92), border_width = 1)
 if barstate.isconfirmed and biasBlkBull
-    float wsL = math.min(open, close)
-    box.new(bar_index, wsL, bar_index + i_rbExtend, low, border_color = color.new(color.gray, 50), bgcolor = color.new(color.gray, 92), border_width = 1)
+    box.new(bar_index, rbWsBull, bar_index + i_rbExtend, rbExtBull, border_color = color.new(color.gray, 50), bgcolor = color.new(color.gray, 92), border_width = 1)
 
 plotshape(i_showSoup and sweptAbove and inWindow, "Sweep above", shape.triangledown, location.abovebar, color.orange, size = size.tiny)
 plotshape(i_showSoup and sweptBelow and inWindow, "Sweep below", shape.triangleup, location.belowbar, color.aqua, size = size.tiny)

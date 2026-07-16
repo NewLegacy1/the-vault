@@ -4,7 +4,9 @@
 
 The script finds the setup. **You** are the bias filter. Three checkpoints.
 
-**On chart (gate_v0):** RB wick box on the rejection candle → **LIMIT / STOP / TP** lines when a setup arms. No corner tables. Bias stays in your head + paper checklist. For manual/bar-replay testing set **Direction filter = Both**.
+**On chart (gate_v0 Manual):** RB detected on **structure TF** (default **15m**; try **60** if still busy) · LIMIT/STOP/TP from the **HTF wick** · leave-retest timing on **5m** · tag like `15m · PDH`. Require draw POI ON. No corner tables. Bias stays in your head + paper checklist. **Direction filter = Both**.
+
+**Lab (Manual OFF):** structure TF stays **Chart** (today’s Deep BT control) until a dedicated HTF Stage-0 — do not invent promote numbers from Manual visuals.
 
 ---
 
@@ -23,15 +25,16 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 
 ## 2. When the script arms a setup (LIMIT / STOP / TP lines on chart)
 
+- [ ] **Structure tag makes sense** (`15m · PDH` / `1H · 10:00` / …) — not a naked mid-trend micro wick
 - [ ] **Direction agrees with the daily/4H draw** (don't short into a clean bullish draw below)
-- [ ] The swept level is **real liquidity** (PDH/PDL, premarket, key open — your read)
+- [ ] The tagged POI is **real unfinished liquidity** (PDH/PDL, premarket, key open — your read)
 - [ ] **4H wick read:** clear wick (~15 pts) = good · ~8 = grey, size down or demand more confluence · speck = skip
 - [ ] Not fighting **equal highs/lows** that haven't been swept yet (SOP hard filter)
 - [ ] No **NDOG/NWOG magnet** sitting right where the trade needs to travel
 - [ ] Gut check: can you instantly list 2–3 reasons it fails? → **not an A setup, skip**
 - [ ] Scary-but-clean is good; easy-looking is the trap
 
-**Skip the trade** (remove strategy or flatten manually) when 2+ of these fail. Log every skip and its reason — that's the discretion dataset.
+**Skip the trade** (remove strategy or flatten manually) when 2+ of these fail. Log every skip and its reason — that's the discretion dataset. Skips that cluster on “no HTF draw POI” are expected with Require draw POI ON.
 
 ## 3. In-trade / post-trade
 
