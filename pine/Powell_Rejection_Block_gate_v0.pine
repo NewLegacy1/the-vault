@@ -58,11 +58,10 @@ i_flatTime  = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group
 i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = "Session (NY time)")
 i_skipMonday  = input.bool(true, "Skip Mondays (SOP: lower expectancy)", group = "Session (NY time)")
 i_skipJulOct  = input.bool(true, "Skip July & October (regime-gate-v0)", group = "Session (NY time)", tooltip = "Lab-settled ops overlay (2026-07-14): STAND_DOWN when NY calendar month is July or October. Barren months on 3y A0a/D1 (WR 0%). Default ON. Does not stack March.")
-i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Long only", "Short only", "Auto PDH/PDL draw"], group = "Session (NY time)", tooltip = "Both = no gate. Long/Short only = your manual morning read. Auto PDH/PDL draw = SOP §3: PDH souped + close back below → shorts only (draw to lows); PDL souped + close back above → longs only. Neutral until a PD side soups. Latest soup wins if both fire same day.")
-
+i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Long only", "Short only", "Auto PDH/PDL draw"], group = "Session (NY time)", tooltip = "Both = no gate. Long/Short only = your manual morning read. Auto PDH/PDL draw = SOP §3: PDH swept (wick above + close back below) → shorts; PDL swept → longs. Neutral until a PD side sweeps. Latest sweep wins if both fire same day. This is a liquidity sweep — not turtle-soup + displacement.")
 i_minWickPts = input.float(5.0, "Min rejection wick (pts)", minval = 0.0, step = 0.5, group = "Rejection block (formal, T03)")
 i_localLen   = input.int(12, "RB must be extreme of last N bars", minval = 4, maxval = 50, group = "Rejection block (formal, T03)")
-i_reqSweep   = input.bool(true, "Require liquidity sweep on RB candle", group = "Rejection block (formal, T03)")
+i_reqSweep   = input.bool(true, "Require liquidity sweep on RB candle", group = "Rejection block (formal, T03)", tooltip = "RB candle must wick through a liquidity level (PDH/PDL/PM/key open) and close back. Not turtle-soup displacement.")
 i_confClose  = input.bool(true, "Require confirming close (bear RB closes down)", group = "Rejection block (formal, T03)")
 i_leaveR     = input.float(1.0, "Price must leave by N×risk before limit arms (0 = arm at once)", minval = 0.0, step = 0.25, group = "Rejection block (formal, T03)", tooltip = "SOP: 'wait for price to leave, then retest the RB'. Kills same-bar blow-through fills.")
 i_strictLeave = input.bool(false, "Strict retest: leave must happen AFTER the RB candle", group = "Rejection block (formal, T03)", tooltip = "Big-bodied RB candles satisfy the leave distance by themselves, arming the limit instantly. Strict mode requires the departure on a later bar. A/B this: it targets the remaining duration-0 losses but may delay some winners.")
@@ -103,14 +102,15 @@ i_dailyProfitLock = input.float(1400.0, "Daily profit lock (USD)", minval = 0.0,
 i_ghost     = input.bool(true, "Track near-miss setups (ghost trades)", group = "Missed-trade autopsy", tooltip = "Every RB candle that failed EXACTLY ONE filter is simulated as a ghost trade (same leave-retest, BE and 5R rules). The bottom-right table tallies wins/losses per rejection reason — it shows which filter is blocking profitable trades and which are earning their keep. Ghost fills are slightly conservative: same-bar stop+target resolves as a loss.")
 i_showGhost = input.bool(false, "Mark ghosts on chart (G + reason #)", group = "Missed-trade autopsy", tooltip = "Off by default to keep the live chart clean — the bottom-right autopsy table still tallies every ghost.")
 
-i_showSig   = input.bool(true, "Show RB labels", group = "Visuals")
-i_showSoup  = input.bool(false, "Show sweep triangles (soup markers)", group = "Visuals", tooltip = "Off by default — sweeps fire often and clutter the chart. The RB label already implies a valid sweep when the sweep filter is on.")
+i_showSig   = input.bool(true, "Show RB zone + labels", group = "Visuals")
+i_showSoup  = input.bool(false, "Show sweep triangles (any liquidity take)", group = "Visuals", tooltip = "Off by default. Liquidity sweeps (wick thru level + close back) — NOT turtle-soup confirmation.")
 i_showLvls  = input.bool(true, "Show liquidity + key opens", group = "Visuals")
-i_liveClean = input.bool(true, "Live clean chart", group = "Visuals", tooltip = "ON (default): PDH/PDL as labeled day boxes · 10:00 wash only (no fuchsia line) · soup/BIAS as tiny text · hide midnight/18:00/PM spaghetti. OFF restores classic full-width lines.")
+i_liveClean = input.bool(true, "Live clean chart", group = "Visuals", tooltip = "ON (default): FVG-style RB zones · PDH/PDL labeled bands · Sweep PDH/PDL pills · hide KO spaghetti · hide funnel/MISSED tables in Manual.")
 i_extraLvls = input.bool(false, "Show extra liquidity lines", group = "Visuals", tooltip = "PM H/L · 18:00 · midnight · AM opens. Lab/debug only — off for live.")
 i_showPos   = input.bool(true, "Show position boxes (entry / SL / TP)", group = "Visuals")
-i_showPend  = input.bool(true, "Show pending limit + stop lines", group = "Visuals", tooltip = "When Manual ON, CE/limit/stop plot lines stay off — ARMED/SHADOW boxes are the source of truth.")
-i_showTable = input.bool(true, "Show diagnostic funnel table", group = "Visuals")
+i_showPend  = input.bool(true, "Show pending limit + stop zones", group = "Visuals", tooltip = "Risk/reward boxes while setup is live. When Manual ON, CE/limit/stop plot lines stay off.")
+i_showTable = input.bool(true, "Show diagnostic tables", group = "Visuals", tooltip = "Funnel + MISSED autopsy. Live clean + Manual hides these — flip Live clean OFF to debug.")
+i_showCheck = input.bool(true, "Show pre-trade checklist HUD", group = "Visuals", tooltip = "Maps [[PRB_Trade_Checklist]] rows to PASS / FAIL / YOU. Primary live + bar-replay panel.")
 
 i_manualOnly = input.bool(false, "Manual levels only — NO orders (you click)", group = "Manual / discretionary replay", tooltip = "LIVE CHART REQUIREMENT: ON for paper/live. Draws LIMIT / STOP / TP boxes (and Jul/Oct SHADOW boxes). No strategy orders — you click. Keep OFF only for Strategy Tester / Deep BT CSV exports.")
 i_showBlockedBias = input.bool(true, "Mark RB blocked by your bias filter", group = "Manual / discretionary replay", tooltip = "Shows when a raw RB failed only the Direction filter — your discretion dataset.")
@@ -166,9 +166,21 @@ if nyHhmm >= 930 and nyHhmm[1] < 930
 float roll20High = ta.highest(high, 20)[1]
 float roll20Low  = ta.lowest(low, 20)[1]
 
-// Sweep = wick through a level, close back on the origin side (soup)
+// Sweep = liquidity take: wick through a level, close back on the origin side.
+// This is NOT "turtle soup" (external HL/LH + next-bar displacement). PRB Lab
+// only requires this wick-through-close-back for the sweep filter and Auto bias.
 f_soupAbove(float lvl) => not na(lvl) and high > lvl and close < lvl
 f_soupBelow(float lvl) => not na(lvl) and low < lvl and close > lvl
+
+// First matching liquidity tag for checklist HUD (priority: PD → PM → KO → roll)
+f_sweepAboveTag() =>
+    f_soupAbove(prevDayHigh) ? "PDH" : f_soupAbove(pmHigh) ? "PMH" : i_useKoSweep and f_soupAbove(ko1000) ? "10:00" : i_useKoSweep and f_soupAbove(ko0000) ? "00:00" : i_useKoSweep and f_soupAbove(ko1800) ? "18:00" : i_useAmOpens and f_soupAbove(ko0930) ? "9:30" : i_useAmOpens and f_soupAbove(ko0900) ? "9:00" : i_useAmOpens and f_soupAbove(ko0830) ? "8:30" : i_useRollSweep and f_soupAbove(roll20High) ? "Roll20H" : "—"
+
+f_sweepBelowTag() =>
+    f_soupBelow(prevDayLow) ? "PDL" : f_soupBelow(pmLow) ? "PML" : i_useKoSweep and f_soupBelow(ko1000) ? "10:00" : i_useKoSweep and f_soupBelow(ko0000) ? "00:00" : i_useKoSweep and f_soupBelow(ko1800) ? "18:00" : i_useAmOpens and f_soupBelow(ko0930) ? "9:30" : i_useAmOpens and f_soupBelow(ko0900) ? "9:00" : i_useAmOpens and f_soupBelow(ko0830) ? "8:30" : i_useRollSweep and f_soupBelow(roll20Low) ? "Roll20L" : "—"
+
+f_h4Grade(float pts) =>
+    pts >= 15.0 ? "GOOD" : pts >= 8.0 ? "GREY" : "SPECK"
 
 bool sweptAbove = f_soupAbove(pmHigh) or f_soupAbove(prevDayHigh) or (i_useRollSweep and f_soupAbove(roll20High)) or (i_useKoSweep and (f_soupAbove(ko1800) or f_soupAbove(ko0000) or f_soupAbove(ko1000))) or (i_useAmOpens and (f_soupAbove(ko0830) or f_soupAbove(ko0900) or f_soupAbove(ko0930)))
 bool sweptBelow = f_soupBelow(pmLow) or f_soupBelow(prevDayLow) or (i_useRollSweep and f_soupBelow(roll20Low)) or (i_useKoSweep and (f_soupBelow(ko1800) or f_soupBelow(ko0000) or f_soupBelow(ko1000))) or (i_useAmOpens and (f_soupBelow(ko0830) or f_soupBelow(ko0900) or f_soupBelow(ko0930)))
@@ -1012,56 +1024,99 @@ else if not na(pendBxRisk2)
     pendLbl2 := na
 
 // ─── Visuals ─────────────────────────────────────────────────────────────────
-// Live clean (default ON): PDH/PDL day boxes + labels · 10:00 bgcolor wash ·
-// soup/BIAS tiny text · no KO/PM line spaghetti · no CE/limit/stop plots when Manual.
+// Live clean: FVG-style RB wick zones · PDH/PDL bands · Sweep pills (liquidity
+// take, NOT turtle soup) · hide KO spaghetti · hide heavy tables in Manual.
 bool showClassicLvls = i_showLvls and not i_liveClean
 bool showExtraLines = i_showLvls and (not i_liveClean or i_extraLvls)
 bool showGeomPlots = i_showLvls and suDir != 0 and not i_manualOnly
 bool showPendPlots = i_showPend and suDir != 0 and not i_manualOnly
+bool showDiagTables = i_showTable and not (i_liveClean and i_manualOnly)
 
 bgcolor(nyHhmm == 1000 ? color.new(color.yellow, 82) : na, title = "10:00 key open")
 bgcolor(inWindow ? color.new(color.gray, 95) : na, title = "Entry window")
 
-plotshape(i_showSig and rbBear, "RB Bear", shape.labeldown, location.abovebar, color.red, size = size.small, text = "RB")
-plotshape(i_showSig and rbBull, "RB Bull", shape.labelup, location.belowbar, color.lime, size = size.small, text = "RB")
 bool biasBlkBear = i_showBlockedBias and rbBearRaw and h4OkBear and (not i_reqSweep or sweptAbove) and (not i_koConfl or f_nearKo(high)) and not biasOkShort
 bool biasBlkBull = i_showBlockedBias and rbBullRaw and h4OkBull and (not i_reqSweep or sweptBelow) and (not i_koConfl or f_nearKo(low)) and not biasOkLong
 
-// BIAS / soup: tiny labels (no xcross clutter). Soup once per level per day.
+// ── FVG-style rejection-block zone (wick extreme → wick start / body) ─────────
+var box bxRbZone = na
+var label lblRbZone = na
+var int rbZoneLeft = na
+
+if i_showSig and barstate.isconfirmed and (rbBear or rbBull)
+    float ws = rbBear ? math.max(open, close) : math.min(open, close)
+    float ex = rbBear ? high : low
+    color bd = rbBear ? color.new(color.red, 20) : color.new(color.teal, 20)
+    color bg = rbBear ? color.new(color.red, 82) : color.new(color.teal, 82)
+    color tc = rbBear ? color.white : color.white
+    string tag = rbBear ? "RB Short" : "RB Long"
+    // Freeze prior zone (leave on chart like first-presented FVG)
+    bxRbZone := na
+    lblRbZone := na
+    rbZoneLeft := bar_index
+    bxRbZone := box.new(bar_index, math.max(ex, ws), bar_index + 1, math.min(ex, ws), border_color = bd, bgcolor = bg, border_width = 2)
+    lblRbZone := label.new(bar_index, (ex + ws) * 0.5, tag, style = label.style_label_left, color = bd, textcolor = tc, size = size.small)
+
+// Extend live setup RB zone while armed / waiting
+if i_showSig and suDir != 0 and not na(suExtreme) and not na(suWickStart) and not na(suBar)
+    color bd2 = suDir == -1 ? color.new(color.red, 15) : color.new(color.teal, 15)
+    color bg2 = suDir == -1 ? color.new(color.red, 80) : color.new(color.teal, 80)
+    if na(bxRbZone) or rbZoneLeft != suBar
+        bxRbZone := box.new(suBar, math.max(suExtreme, suWickStart), bar_index, math.min(suExtreme, suWickStart), border_color = bd2, bgcolor = bg2, border_width = 2)
+        lblRbZone := label.new(bar_index, (suExtreme + suWickStart) * 0.5, suDir == -1 ? "RB Short" : "RB Long", style = label.style_label_left, color = bd2, textcolor = color.white, size = size.small)
+        rbZoneLeft := suBar
+    else
+        box.set_right(bxRbZone, bar_index)
+        box.set_border_color(bxRbZone, bd2)
+        box.set_bgcolor(bxRbZone, bg2)
+        if not na(lblRbZone)
+            label.set_x(lblRbZone, bar_index)
+            label.set_y(lblRbZone, (suExtreme + suWickStart) * 0.5)
+else if suDir == 0 and not na(bxRbZone) and not na(rbZoneLeft) and bar_index > rbZoneLeft + 1
+    // Freeze finished zone — drop live handle so next RB can paint
+    bxRbZone := na
+    lblRbZone := na
+
+// Bias-blocked RB: orange zone + BIAS pill (journal only)
+if barstate.isconfirmed and biasBlkBear
+    float wsB = math.max(open, close)
+    box.new(bar_index, high, bar_index + 1, wsB, border_color = color.new(color.orange, 30), bgcolor = color.new(color.orange, 88), border_width = 1)
+    label.new(bar_index, high, "BIAS", style = label.style_label_down, color = color.new(color.orange, 10), textcolor = color.white, size = size.small)
+if barstate.isconfirmed and biasBlkBull
+    float wsL = math.min(open, close)
+    box.new(bar_index, wsL, bar_index + 1, low, border_color = color.new(color.orange, 30), bgcolor = color.new(color.orange, 88), border_width = 1)
+    label.new(bar_index, low, "BIAS", style = label.style_label_up, color = color.new(color.orange, 10), textcolor = color.white, size = size.small)
+
+plotshape(i_showSoup and sweptAbove and inWindow, "Sweep above", shape.triangledown, location.abovebar, color.orange, size = size.tiny)
+plotshape(i_showSoup and sweptBelow and inWindow, "Sweep below", shape.triangleup, location.belowbar, color.aqua, size = size.tiny)
+
+// Liquidity sweep of PDH/PDL (bias) — NOT turtle soup. Once per side per day.
 var bool soupPdhMarked = false
 var bool soupPdlMarked = false
 if newDay
     soupPdhMarked := false
     soupPdlMarked := false
 
-if barstate.isconfirmed and biasBlkBear
-    label.new(bar_index, high, "BIAS", style = label.style_label_down, color = color.new(color.orange, 25), textcolor = color.white, size = size.tiny)
-if barstate.isconfirmed and biasBlkBull
-    label.new(bar_index, low, "BIAS", style = label.style_label_up, color = color.new(color.orange, 25), textcolor = color.white, size = size.tiny)
-
-plotshape(i_showSoup and sweptAbove and inWindow, "Soup above", shape.triangledown, location.abovebar, color.orange, size = size.tiny)
-plotshape(i_showSoup and sweptBelow and inWindow, "Soup below", shape.triangleup, location.belowbar, color.aqua, size = size.tiny)
-
 bool pdhSoupNow = i_showSig and autoBiasOn and f_soupAbove(prevDayHigh)
 bool pdlSoupNow = i_showSig and autoBiasOn and f_soupBelow(prevDayLow)
 if barstate.isconfirmed and pdhSoupNow and not soupPdhMarked
-    label.new(bar_index, high, "PDH↑", style = label.style_label_down, color = color.new(color.red, 35), textcolor = color.white, size = size.tiny)
+    label.new(bar_index, high, "Sweep PDH", style = label.style_label_down, color = color.new(color.red, 10), textcolor = color.white, size = size.small)
     soupPdhMarked := true
 if barstate.isconfirmed and pdlSoupNow and not soupPdlMarked
-    label.new(bar_index, low, "PDL↓", style = label.style_label_up, color = color.new(color.lime, 35), textcolor = color.black, size = size.tiny)
+    label.new(bar_index, low, "Sweep PDL", style = label.style_label_up, color = color.new(color.teal, 10), textcolor = color.white, size = size.small)
     soupPdlMarked := true
 
 if i_showSig and autoBiasOn and nyHhmm == i_winStart and barstate.isconfirmed
-    string drawTxt = dayDraw == -1 ? "PD draw ↓ shorts" : dayDraw == 1 ? "PD draw ↑ longs" : "PD draw — both"
-    label.new(bar_index, high, drawTxt, style = label.style_label_down, color = color.new(color.black, 40), textcolor = dayDraw == -1 ? color.red : dayDraw == 1 ? color.lime : color.gray, size = size.tiny)
+    string drawTxt = dayDraw == -1 ? "Bias → shorts" : dayDraw == 1 ? "Bias → longs" : "Bias → both"
+    label.new(bar_index, high, drawTxt, style = label.style_label_down, color = color.new(color.black, 25), textcolor = dayDraw == -1 ? color.red : dayDraw == 1 ? color.lime : color.gray, size = size.small)
 
-// Live clean: day-scoped PDH/PDL bands + right-edge labels (replaces full-width red/lime lines)
+// Live clean: day-scoped PDH/PDL bands + right-edge pills
 var box bxPdh = na
 var box bxPdl = na
 var label lblPdh = na
 var label lblPdl = na
 var int lvlDayStart = na
-float lvlHalf = math.max(syminfo.mintick * 4.0, (syminfo.mintick > 0 ? syminfo.mintick : 0.25) * 4.0)
+float lvlHalf = math.max(2.0, syminfo.mintick * 8.0)
 
 if newDay
     lvlDayStart := bar_index
@@ -1074,8 +1129,8 @@ if i_showLvls and i_liveClean and not na(prevDayHigh) and not na(lvlDayStart)
     float topH = prevDayHigh + lvlHalf
     float botH = prevDayHigh - lvlHalf
     if na(bxPdh)
-        bxPdh := box.new(lvlDayStart, topH, bar_index, botH, border_color = color.new(color.red, 40), bgcolor = color.new(color.red, 88), border_width = 1)
-        lblPdh := label.new(bar_index, prevDayHigh, "PDH", style = label.style_label_left, color = color.new(color.red, 30), textcolor = color.white, size = size.tiny)
+        bxPdh := box.new(lvlDayStart, topH, bar_index, botH, border_color = color.new(color.red, 35), bgcolor = color.new(color.red, 90), border_width = 1)
+        lblPdh := label.new(bar_index, prevDayHigh, "PDH", style = label.style_label_left, color = color.new(color.red, 15), textcolor = color.white, size = size.small)
     else
         box.set_right(bxPdh, bar_index)
         box.set_top(bxPdh, topH)
@@ -1087,8 +1142,8 @@ if i_showLvls and i_liveClean and not na(prevDayLow) and not na(lvlDayStart)
     float topL = prevDayLow + lvlHalf
     float botL = prevDayLow - lvlHalf
     if na(bxPdl)
-        bxPdl := box.new(lvlDayStart, topL, bar_index, botL, border_color = color.new(color.lime, 40), bgcolor = color.new(color.lime, 88), border_width = 1)
-        lblPdl := label.new(bar_index, prevDayLow, "PDL", style = label.style_label_left, color = color.new(color.lime, 30), textcolor = color.black, size = size.tiny)
+        bxPdl := box.new(lvlDayStart, topL, bar_index, botL, border_color = color.new(color.teal, 35), bgcolor = color.new(color.teal, 90), border_width = 1)
+        lblPdl := label.new(bar_index, prevDayLow, "PDL", style = label.style_label_left, color = color.new(color.teal, 15), textcolor = color.white, size = size.small)
     else
         box.set_right(bxPdl, bar_index)
         box.set_top(bxPdl, topL)
@@ -1096,11 +1151,9 @@ if i_showLvls and i_liveClean and not na(prevDayLow) and not na(lvlDayStart)
         label.set_x(lblPdl, bar_index)
         label.set_y(lblPdl, prevDayLow)
 
-// Short 10:00 open marker (wash already on) — no full-width fuchsia line in Live clean
 if i_showLvls and i_liveClean and nyHhmm == 1000 and barstate.isconfirmed and not na(ko1000)
-    label.new(bar_index, ko1000, "10:00", style = label.style_label_left, color = color.new(color.yellow, 35), textcolor = color.black, size = size.tiny)
+    label.new(bar_index, ko1000, "10:00", style = label.style_label_left, color = color.new(color.yellow, 20), textcolor = color.black, size = size.small)
 
-// Classic full-width lines (Live clean OFF) + optional extra liquidity
 plot(showClassicLvls ? prevDayHigh : na, "PDH", color.new(color.red, 60), style = plot.style_linebr)
 plot(showClassicLvls ? prevDayLow : na, "PDL", color.new(color.lime, 60), style = plot.style_linebr)
 plot(showExtraLines and nyHhmm >= 930 ? pmHigh : na, "PM High", color.new(color.orange, 60), style = plot.style_linebr)
@@ -1111,7 +1164,6 @@ plot(showClassicLvls ? ko1000 : na, "10:00 open", color.new(color.fuchsia, 45), 
 plot(showExtraLines and i_useAmOpens ? ko0830 : na, "8:30 open", color.new(color.silver, 60), style = plot.style_linebr)
 plot(showExtraLines and i_useAmOpens ? ko0900 : na, "9:00 open", color.new(color.silver, 70), style = plot.style_linebr)
 plot(showExtraLines and i_useAmOpens ? ko0930 : na, "9:30 open", color.new(color.silver, 65), style = plot.style_linebr)
-// Zone / entry geometry — suppressed when Manual boxes are the live source of truth
 plot(showGeomPlots and not na(suCe) ? suCe : na, "RB zone CE", color.new(color.white, 35), style = plot.style_linebr)
 plot(showGeomPlots and not na(suWickStart) ? suWickStart : na, "RB wick start", color.new(color.aqua, 45), style = plot.style_linebr)
 plot(showPendPlots and not na(suEntry) ? suEntry : na, "RB limit entry", color.new(color.white, 20), style = plot.style_linebr)
@@ -1127,7 +1179,7 @@ f_rowCol(table t, int r, string k, string v, color vc) =>
     table.cell(t, 1, r, v, text_color = vc, text_size = size.small, text_halign = text.align_right)
 
 var table diag = table.new(position.top_right, 2, 18, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
-if i_showTable and barstate.islast
+if showDiagTables and barstate.islast
     int gbRoll = f_gbRolling() + sessionGiveBacks
     bool suggestTrail = not i_trailRegime and gbRoll >= i_regimeThreshold
     string trailLbl = i_trailRegime ? "ON (2.0 / 1.5)" : "OFF (BE-only)"
@@ -1163,6 +1215,8 @@ if i_showTable and barstate.islast
     f_rowCol(diag, 15, "Jul/Oct gate", julOctLbl, julOctCol)
     f_rowCol(diag, 16, "Manual state", manualState, manualReady ? color.new(color.yellow, 0) : color.white)
     f_row(diag, 17, "Log → Vault F2", i_manualOnly ? "Journal bias+take" : "—")
+else if barstate.islast
+    table.clear(diag, 0, 0, 1, 17)
 
 alertcondition(i_manualOnly and manualReady and i_manualAlerts and monthOk and mondayOk, title = "PRB · ARMED (Manual ON)", message = "PRB gate_v0 ARMED — {{ticker}} {{interval}} {{time}}\n1) Checklist bias / confluence\n2) Copy LIMIT · STOP · TP from boxes\n3) Coach qty from stop pts\nManual ON — you click. Jul/Oct SHADOW is journal-only (no alert).")
 
@@ -1176,7 +1230,7 @@ f_ghRow(table t, int r, string c0, string c1, string c2, string c3, color tc) =>
     table.cell(t, 3, r, c3, text_color = tc, text_size = size.small, text_halign = text.align_right)
 
 var table ghT = table.new(position.bottom_right, 4, 15, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
-if i_ghost and i_showTable and barstate.islast
+if i_ghost and showDiagTables and barstate.islast
     f_ghRow(ghT, 0, "MISSED (failed 1 filter)", "n", "W/L/scr", "net R", color.new(color.orange, 10))
     int totN = 0
     int totW = 0
@@ -1197,10 +1251,11 @@ if i_ghost and i_showTable and barstate.islast
         color rowCol = n == 0 ? color.new(color.gray, 55) : nr > 0 ? color.new(color.lime, 15) : color.white
         f_ghRow(ghT, rs, array.get(ghNames, rs), str.tostring(n), str.tostring(w) + "/" + str.tostring(l) + "/" + str.tostring(sc), str.tostring(nr, "#.#"), rowCol)
     f_ghRow(ghT, 13, "TOTAL", str.tostring(totN), str.tostring(totW) + "/" + str.tostring(totL) + "/" + str.tostring(totS), str.tostring(totR, "#.#"), color.new(color.orange, 10))
+else if barstate.islast
+    table.clear(ghT, 0, 0, 3, 14)
 
-// BE +1R retest audit (paste into Vault F4 LAB ghost panel)
 var table beT = table.new(position.bottom_center, 4, 4, bgcolor = color.new(color.black, 15), border_width = 1, border_color = color.new(color.gray, 70))
-if i_ghost and i_showTable and barstate.islast
+if i_ghost and showDiagTables and barstate.islast
     int beScrTot = beScratchGh + beScratchRt
     int beMissTot = beMissedGh + beMissedRt
     int beRtWinTot = beRetestWinGh + beRetestWinRt
@@ -1209,3 +1264,5 @@ if i_ghost and i_showTable and barstate.islast
     f_ghRow(beT, 1, "Ghosts", str.tostring(beScratchGh), str.tostring(beMissedGh), str.tostring(beRetestWinGh), color.white)
     f_ghRow(beT, 2, "Real fills", str.tostring(beScratchRt), str.tostring(beMissedRt), str.tostring(beRetestWinRt), color.white)
     f_ghRow(beT, 3, "TOTAL", str.tostring(beScrTot), str.tostring(beMissTot), str.tostring(beRtWinTot), missCol)
+else if barstate.islast
+    table.clear(beT, 0, 0, 3, 3)

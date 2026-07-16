@@ -55,7 +55,7 @@ Optional: set Coach alerts **enter STAND_DOWN** / **exit STAND_DOWN** so Aug ope
 | Script | What it draws | What it does **not** do |
 |---|---|---|
 | **`PRB_Gate_LiveCoach_v0`** | STAND_DOWN wash · corner LIVE/STAND_DOWN · risk table · optional **planned** stop/TP/BE lines from *Planned stop (pts)* | Find RBs · arm LIMIT/STOP/TP boxes · emit entry signals |
-| **`Powell_Rejection_Block_gate_v0`** | RB labels · Live-clean PDH/PDL boxes · 10:00 wash · ARMED/SHADOW entry boxes | Live Coach sizing (use Coach qty) |
+| **`Powell_Rejection_Block_gate_v0`** | FVG-style **RB Short/Long** zones · PDH/PDL bands · Sweep PDH/PDL pills · ARMED/SHADOW risk boxes · 10:00 wash | Turtle-soup displacement · Live Coach sizing |
 
 If the chart shows only a HUD/table: you almost certainly have **Coach only**. Add **gate_v0** on the same MNQ chart (overlay strategy). Locked `Powell_Rejection_Block_v1.pine` stays untouched.
 
@@ -66,10 +66,10 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 3. Inputs — must match live ops:
    - **Manual levels only — NO orders = ON**
    - **Skip July & October = ON** (leave on through Aug practice; do not flip off to “see more” in July)
-   - Visuals: **Live clean chart = ON** · Show RB labels / liquidity / position boxes = ON · Extra liquidity lines = OFF
-   - Funnel table ON until you trust the boxes; then optional off
+   - Visuals: **Live clean chart = ON** · Show RB zone + labels / liquidity / position boxes = ON · Extra liquidity = OFF
+   - Funnel/MISSED tables stay hidden while Live clean + Manual (turn Live clean OFF to debug)
 4. Add **`PRB Gate Live Coach v0`** (indicator, same pane). Profile Eval or Funded.  
-5. Style tab: leave gate_v0 overlays visible — TV can hide them if a previous style was saved. Re-paste after Live-clean update so defaults apply.  
+5. Style tab: leave gate_v0 overlays visible — TV can hide them if a previous style was saved. **Re-paste** after visual updates so defaults apply.  
 6. Confirm funnel row **Mode = MANUAL (no orders)** and **Jul/Oct gate** shows `STAND_DOWN` (Jul) or `ON · month ok` (Aug/Sep).
 
 ### Recommended live stack (same pane or two)
@@ -200,12 +200,21 @@ Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 | Script | What you should see |
 |---|---|
 | LiveCoach | Soft orange wash in Jul/Oct · corner LIVE/STAND_DOWN · risk table · faint PLAN@Npt stop/TP/BE (not an RB) |
-| gate_v0 Manual ON + **Live clean ON** (default) | 10:00 yellow wash · **PDH/PDL labeled day boxes** · RB labels · tiny `PDH↑` / `PDL↓` / `BIAS` text (no X-crosses) · teal/red **ARMED** boxes (or orange **SHADOW** in Jul/Oct) · no magenta/yellow/green key-open spaghetti · no duplicate CE/limit/stop plot lines |
-| gate_v0 Live clean OFF | Classic full-width PDH/PDL/KO lines (Lab/debug) |
-| gate_v0 **Show extra liquidity lines** | PM H/L · 18:00 · midnight · AM opens (opt-in) |
+| gate_v0 Manual ON + **Live clean ON** | **RB Short / RB Long** filled wick zones (FVG-style) · PDH/PDL labeled bands · `Sweep PDH` / `Sweep PDL` pills · `Bias → longs/shorts` · 10:00 wash · teal/red ARMED (or orange SHADOW) risk boxes · **no** funnel/MISSED tables · no KO line spaghetti |
+| gate_v0 Live clean OFF | Classic lines + full diagnostic tables (Lab/debug) |
 | MPSF events | Separate Track B marker — do not use as PRB entry engine |
 
-Turn **off** gate soup triangles / ghost marks if the live chart feels busy. Keep **Live clean** ON for paper/live; only flip Extra liquidity / Live clean OFF when diagnosing levels.
+### Soup vs turtle soup (read this)
+
+| Term | What PRB gate_v0 means | What it is **not** |
+|---|---|---|
+| **Liquidity sweep** (code still says `f_soup*`) | Wick through a level (PDH/PDL/PM/key open) + **close back** on the origin side | Your turtle soup: external HL/LH wick pierce **without** body close beyond + **next candle ≥10 pt displacement** |
+| **Auto bias Sweep PDH / Sweep PDL** | Same wick-through-close-back on **prior day high/low** → sets day draw (shorts after PDH sweep, longs after PDL) | A confirmed turtle-soup entry signal |
+| **Require liquidity sweep on RB** | The RB candle itself must take liquidity that way | Displacement confirmation |
+
+Lab / live PRB does **not** require 10-pt displacement. Do not retune Lab to turtle-soup rules without a new Stage-0. Chart labels now say **Sweep**, not “soup,” to avoid that mix-up.
+
+Turn **off** gate sweep triangles / ghost marks if the live chart feels busy. Keep **Live clean** ON for paper/live.
 
 ### If you still see no RB / boxes
 
