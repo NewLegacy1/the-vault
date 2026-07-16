@@ -71,7 +71,7 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
    - **RB structure TF = Auto** (→ **15m**) or **15** / **30** / **60**
    - **Require draw POI = ON** · **Block against unfinished PD draw = ON**
    - **Show Morningstar confluence grade = ON** (eyes only — never arms)
-   - **Show all HTF RB markers = ON** — see **15m / 30m / 1H / 4H** RBs together; arming parent (structure TF) still picks which one arms LIMIT
+   - **Mark 15m + 1H RBs + CE = ON** (30m/4H OFF by default — less lag). **IFVG zones + OB 15m/1H = ON**. Labels are large + CE dotted. Arming parent still picks which RB arms LIMIT.
    - **Show trade plan** + **CE dotted** + **entry triggers** = ON
 4. Journal: Vault → **Morningstar study** (no account) — log MS n/5, skip reasons, red-folder **time**, optional chart shot.
 

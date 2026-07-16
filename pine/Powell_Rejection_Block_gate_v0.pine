@@ -51,8 +51,8 @@ strategy(
      slippage                = 1,
      margin_long             = 0,
      margin_short            = 0,
-     max_lines_count         = 300,
-     max_boxes_count         = 300,
+     max_lines_count         = 500,
+     max_boxes_count         = 500,
      max_labels_count        = 500)
 
 // ─── Inputs ──────────────────────────────────────────────────────────────────
@@ -154,10 +154,22 @@ i_showBlockedBias = input.bool(false, "Mark bias-blocked RBs (journal)", group =
 i_manualAlerts = input.bool(false, "Alert when limit level arms", group = "Manual / discretionary replay", tooltip = "Fires only on live ARMED (not Jul/Oct or Monday SHADOW).")
 
 grpMs = "Morningstar grade (Manual · eyes only)"
-i_msGrade = input.bool(true, "Show Morningstar confluence grade", group = grpMs, tooltip = "Manual ON only. Labels POI · 4H · 1m CISD · 1m/5m IFVG and score n/5. NEVER arms, cancels, or blocks LIMIT/GO — you decide.")
-i_msMarks = input.bool(true, "Mark each confluence when it hits", group = grpMs)
-i_msAllRb = input.bool(true, "Show all HTF RB markers (15/30/1H/4H)", group = grpMs, tooltip = "Eyes only. Marks every formal RB on 15m · 30m · 1H · 4H when that candle closes — even if arming parent is only 15. Does not change which TF arms LIMIT.")
-i_msBuf = input.float(8.0, "Confluence near RB zone (pts)", minval = 2.0, step = 1.0, group = grpMs)
+i_msGrade = input.bool(true, "Show Morningstar confluence grade", group = grpMs, tooltip = "Manual ON only. Score n/5 — NEVER arms. Zones + CE for RB/IFVG/OB.")
+i_msShowRb15 = input.bool(true, "Mark 15m RBs + CE", group = grpMs)
+i_msShowRb30 = input.bool(false, "Mark 30m RBs + CE", group = grpMs, tooltip = "OFF by default — enable if you need it; extra drawings cost CPU.")
+i_msShowRb60 = input.bool(true, "Mark 1H RBs + CE", group = grpMs)
+i_msShowRb240 = input.bool(false, "Mark 4H RBs + CE", group = grpMs)
+i_msShowIfvg = input.bool(true, "Mark 1m/5m IFVG zones + CE", group = grpMs)
+i_msShowOb = input.bool(true, "Mark 15m/1H order blocks + CE", group = grpMs)
+i_msMaxDraw = input.int(8, "Max drawings per type (lag guard)", minval = 3, maxval = 14, group = grpMs, tooltip = "Old boxes/labels delete when over limit — stops TV freeze from unbounded drawings. Lower if still laggy.")
+i_msBuf = input.float(12.0, "Confluence near RB zone (pts)", minval = 2.0, step = 1.0, group = grpMs)
+c_ms15 = input.color(#22d3ee, "15m mark", group = grpMs)
+c_ms30 = input.color(#facc15, "30m mark", group = grpMs)
+c_ms60 = input.color(#fb923c, "1H mark", group = grpMs)
+c_ms240 = input.color(#f472b6, "4H mark", group = grpMs)
+c_msIfvg = input.color(#c084fc, "IFVG zone", group = grpMs)
+c_msOb = input.color(#38bdf8, "Order block", group = grpMs)
+c_msCe = input.color(#ffffff, "CE dotted", group = grpMs)
 
 float effTrailStartR = i_trailRegime ? 2.0 : i_trailStartR
 float effTrailGapR = i_trailRegime ? 1.5 : i_trailGapR
@@ -315,24 +327,33 @@ f_htfPack(float minW) =>
 [b60, u60, h60, l60, wsB60, wsU60, uw60, lw60] = request.security(syminfo.tickerid, "60", f_htfPack(i_minWick60), barmerge.gaps_off, barmerge.lookahead_off)
 [b240, u240, h240, l240, wsB240, wsU240, uw240, lw240] = request.security(syminfo.tickerid, "240", f_htfPack(i_minWick240), barmerge.gaps_off, barmerge.lookahead_off)
 
-// Morningstar LTF tells (eyes only — never gate arming)
+// Morningstar LTF / OB packs (eyes only — never gate arming)
 f_msLtfPack() =>
     bool prevBull = close[1] > open[1]
     bool prevBear = close[1] < open[1]
     bool cisdBear = prevBull and close < open[1]
     bool cisdBull = prevBear and close > open[1]
-    // IFVG: close through a fresh 3-candle FVG (bullish FVG inverted → bearish IFVG)
+    // IFVG: invert a 3-candle FVG — return zone bounds + CE
     bool ifvgBear = low[1] > high[3] and close < high[3]
     bool ifvgBull = high[1] < low[3] and close > low[3]
-    [cisdBear, cisdBull, ifvgBear, ifvgBull, close]
+    float iTop = ifvgBear ? low[1] : ifvgBull ? low[3] : na
+    float iBot = ifvgBear ? high[3] : ifvgBull ? high[1] : na
+    float iCe = not na(iTop) and not na(iBot) ? (iTop + iBot) * 0.5 : na
+    [cisdBear, cisdBull, ifvgBear, ifvgBull, close, iTop, iBot, iCe]
 
-f_msIfvgOnly() =>
-    bool ifvgBear = low[1] > high[3] and close < high[3]
-    bool ifvgBull = high[1] < low[3] and close > low[3]
-    [ifvgBear, ifvgBull, close]
+// Order block: last opposing candle before displacement close through it
+f_htfObPack() =>
+    bool bearOb = close[1] > open[1] and close < open and close < low[1]
+    bool bullOb = close[1] < open[1] and close > open and close > high[1]
+    float oTop = high[1]
+    float oBot = low[1]
+    float oCe = (oTop + oBot) * 0.5
+    [bearOb, bullOb, oTop, oBot, oCe]
 
-[ms1CisdBear, ms1CisdBull, ms1IfvgBear, ms1IfvgBull, ms1Close] = request.security(syminfo.tickerid, "1", f_msLtfPack(), barmerge.gaps_off, barmerge.lookahead_off)
-[ms5IfvgBear, ms5IfvgBull, ms5Close] = request.security(syminfo.tickerid, "5", f_msIfvgOnly(), barmerge.gaps_off, barmerge.lookahead_off)
+[ms1CisdBear, ms1CisdBull, ms1IfvgBear, ms1IfvgBull, ms1Close, ms1IfvgTop, ms1IfvgBot, ms1IfvgCe] = request.security(syminfo.tickerid, "1", f_msLtfPack(), barmerge.gaps_off, barmerge.lookahead_off)
+[ms5CisdBear, ms5CisdBull, ms5IfvgBear, ms5IfvgBull, ms5Close, ms5IfvgTop, ms5IfvgBot, ms5IfvgCe] = request.security(syminfo.tickerid, "5", f_msLtfPack(), barmerge.gaps_off, barmerge.lookahead_off)
+[ob15Bear, ob15Bull, ob15Top, ob15Bot, ob15Ce] = request.security(syminfo.tickerid, "15", f_htfObPack(), barmerge.gaps_off, barmerge.lookahead_off)
+[ob60Bear, ob60Bull, ob60Top, ob60Bot, ob60Ce] = request.security(syminfo.tickerid, "60", f_htfObPack(), barmerge.gaps_off, barmerge.lookahead_off)
 
 float cUpperWick = high - math.max(open, close)
 float cLowerWick = math.min(open, close) - low
@@ -1207,8 +1228,53 @@ if not inPos and not na(posLnEntry) and strategy.position_size[1] != 0
     posBxRisk := na
     posBxReward := na
 
+// ─── Morningstar drawings (ring-buffered — lag guard) ─────────────────────────
+var array<box> msBoxes = array.new_box()
+var array<line> msLines = array.new_line()
+var array<label> msLabels = array.new_label()
+
+int msCap = i_msMaxDraw * 3
+f_msCapBox(box b) =>
+    array.push(msBoxes, b)
+    if array.size(msBoxes) > msCap
+        box old = array.shift(msBoxes)
+        box.delete(old)
+
+f_msCapLine(line ln) =>
+    array.push(msLines, ln)
+    if array.size(msLines) > msCap
+        line old = array.shift(msLines)
+        line.delete(old)
+
+f_msCapLabel(label lb) =>
+    array.push(msLabels, lb)
+    if array.size(msLabels) > msCap
+        label old = array.shift(msLabels)
+        label.delete(old)
+
+// Zone + CE dotted + readable label (eyes only)
+f_msZone(string name, float top, float bot, color col, int xSpan) =>
+    if barstate.isconfirmed and not na(top) and not na(bot)
+        float hi = math.max(top, bot)
+        float lo = math.min(top, bot)
+        float ce = (hi + lo) * 0.5
+        int xR = bar_index + xSpan
+        f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = color.new(col, 88), border_width = 2))
+        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 2, style = line.style_dotted))
+        f_msCapLabel(label.new(bar_index, hi, name + "\nCE " + str.tostring(ce, format.mintick), style = label.style_label_down, color = color.new(col, 10), textcolor = color.white, size = size.normal))
+
+f_msPaintRb(bool isShort, string tfLbl, float ex, float ws, color col) =>
+    if barstate.isconfirmed and not na(ex) and not na(ws)
+        float hi = math.max(ex, ws)
+        float lo = math.min(ex, ws)
+        float ce = (hi + lo) * 0.5
+        int xR = bar_index + 16
+        string arrow = isShort ? "↓" : "↑"
+        f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = color.new(col, 85), border_width = 2))
+        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 2, style = line.style_dotted))
+        f_msCapLabel(label.new(bar_index, isShort ? hi : lo, "RB " + tfLbl + " " + arrow + "\nCE " + str.tostring(ce, format.mintick), style = isShort ? label.style_label_down : label.style_label_up, color = color.new(col, 5), textcolor = color.black, size = size.normal))
+
 // ─── Morningstar confluence grade (Manual · eyes only — never arms) ──────────
-// Must run before LIMIT label so MS n/5 is current on this bar.
 f_msNear(float px) =>
     not na(px) and not na(suCe) and (math.abs(px - suCe) <= i_msBuf or math.abs(px - nz(suExtreme, suCe)) <= i_msBuf or math.abs(px - nz(suWickStart, suCe)) <= i_msBuf)
 
@@ -1250,61 +1316,64 @@ if msShow and suDir != 0 and not na(suBar) and bar_index >= suBar
 
     int msHits = (msPoi ? 1 : 0) + (msH4 ? 1 : 0) + (msCisd ? 1 : 0) + (msIfvg1 ? 1 : 0) + (msIfvg5 ? 1 : 0)
     int msPct = msHits * 20
-    string msBits = (msPoi ? "POI" : "poi") + " · " + (msH4 ? "4H" : "4h") + " · " + (msCisd ? "CISD" : "cisd") + " · " + (msIfvg1 ? "iFVG1" : "ifvg1") + " · " + (msIfvg5 ? "iFVG5" : "ifvg5")
-    string msTxt = "Morningstar " + str.tostring(msHits) + "/5 · " + str.tostring(msPct) + "%\n" + msBits
+    string msBits = (msPoi ? "POI" : "—") + "  " + (msH4 ? "4H" : "—") + "  " + (msCisd ? "CISD" : "—") + "  " + (msIfvg1 ? "iFVG1" : "—") + "  " + (msIfvg5 ? "iFVG5" : "—")
+    string msTxt = "MS " + str.tostring(msHits) + "/5 · " + str.tostring(msPct) + "%\n" + msBits
     float msY = suDir == -1 ? nz(suExtreme, high) + i_msBuf : nz(suExtreme, low) - i_msBuf
-    color msCol = msHits >= 4 ? color.new(#a3e635, 0) : msHits == 3 ? color.new(#facc15, 0) : color.new(#94a3b8, 0)
+    color msCol = msHits >= 4 ? #a3e635 : msHits == 3 ? #facc15 : #e2e8f0
     if na(lblMsGrade)
-        lblMsGrade := label.new(bar_index, msY, msTxt, style = suDir == -1 ? label.style_label_down : label.style_label_up, color = color.new(color.black, 20), textcolor = msCol, size = size.small)
+        lblMsGrade := label.new(bar_index, msY, msTxt, style = suDir == -1 ? label.style_label_down : label.style_label_up, color = color.new(#0f172a, 0), textcolor = msCol, size = size.normal)
     else
         label.set_x(lblMsGrade, bar_index)
         label.set_y(lblMsGrade, msY)
         label.set_text(lblMsGrade, msTxt)
         label.set_textcolor(lblMsGrade, msCol)
 
-    if i_msMarks and barstate.isconfirmed
-        if msCisd and not msMarkedCisd
-            label.new(bar_index, close, "1m CISD", style = label.style_label_left, color = color.new(color.black, 70), textcolor = color.new(#22d3ee, 0), size = size.tiny)
-            msMarkedCisd := true
-        if msIfvg1 and not msMarkedIfvg1
-            label.new(bar_index, close, "1m IFVG", style = label.style_label_left, color = color.new(color.black, 70), textcolor = color.new(#c084fc, 0), size = size.tiny)
+    // Paint IFVG zones once when they latch (readable + CE)
+    if barstate.isconfirmed
+        if msIfvg1 and not msMarkedIfvg1 and i_msShowIfvg and not na(ms1IfvgTop)
+            f_msZone("1m IFVG", ms1IfvgTop, ms1IfvgBot, c_msIfvg, 20)
             msMarkedIfvg1 := true
-        if msIfvg5 and not msMarkedIfvg5
-            label.new(bar_index, close, "5m IFVG", style = label.style_label_left, color = color.new(color.black, 70), textcolor = color.new(#f472b6, 0), size = size.tiny)
+        if msIfvg5 and not msMarkedIfvg5 and i_msShowIfvg and not na(ms5IfvgTop)
+            f_msZone("5m IFVG", ms5IfvgTop, ms5IfvgBot, color.new(c_msIfvg, 0), 20)
             msMarkedIfvg5 := true
+        if msCisd and not msMarkedCisd
+            f_msCapLabel(label.new(bar_index, close, "1m CISD", style = label.style_label_left, color = color.new(#0f172a, 0), textcolor = #22d3ee, size = size.normal))
+            msMarkedCisd := true
 else if suDir == 0 and not na(lblMsGrade)
     lblMsGrade := na
 
-// ─── All HTF RB markers (eyes only — every TF, not just arming parent) ────────
-// Structure TF still controls which RB arms LIMIT. These marks are visibility.
-f_msPaintRb(bool isShort, string tfLbl, float ex, float ws, color bd) =>
-    if barstate.isconfirmed and not na(ex) and not na(ws)
-        int xR = bar_index + math.min(i_rbExtend, 12)
-        box.new(bar_index, math.max(ex, ws), xR, math.min(ex, ws), border_color = color.new(bd, 35), bgcolor = color.new(bd, 92), border_width = 1)
-        label.new(bar_index, isShort ? ex : ws, "RB " + tfLbl + (isShort ? " ↓" : " ↑"), style = isShort ? label.style_label_down : label.style_label_up, color = color.new(color.black, 75), textcolor = color.new(bd, 0), size = size.tiny)
-
-bool msAllViz = i_manualOnly and i_msAllRb
+// HTF RB markers + CE (capped) · OB markers + CE
+bool msViz = i_manualOnly
 bool c15 = ta.change(time("15", "America/New_York")) != 0
 bool c30 = ta.change(time("30", "America/New_York")) != 0
 bool c60 = ta.change(time("60", "America/New_York")) != 0
 bool c240 = ta.change(time("240", "America/New_York")) != 0
-if msAllViz and inWindow
-    if c15 and b15
-        f_msPaintRb(true, "15m", h15, wsB15, c_rbShortBd)
-    if c15 and u15
-        f_msPaintRb(false, "15m", l15, wsU15, c_rbLongBd)
-    if c30 and b30
-        f_msPaintRb(true, "30m", h30, wsB30, c_rbShortBd)
-    if c30 and u30
-        f_msPaintRb(false, "30m", l30, wsU30, c_rbLongBd)
-    if c60 and b60
-        f_msPaintRb(true, "1H", h60, wsB60, c_rbShortBd)
-    if c60 and u60
-        f_msPaintRb(false, "1H", l60, wsU60, c_rbLongBd)
-    if c240 and b240
-        f_msPaintRb(true, "4H", h240, wsB240, c_rbShortBd)
-    if c240 and u240
-        f_msPaintRb(false, "4H", l240, wsU240, c_rbLongBd)
+if msViz and inWindow and barstate.isconfirmed
+    if i_msShowRb15 and c15 and b15
+        f_msPaintRb(true, "15m", h15, wsB15, c_ms15)
+    if i_msShowRb15 and c15 and u15
+        f_msPaintRb(false, "15m", l15, wsU15, c_ms15)
+    if i_msShowRb30 and c30 and b30
+        f_msPaintRb(true, "30m", h30, wsB30, c_ms30)
+    if i_msShowRb30 and c30 and u30
+        f_msPaintRb(false, "30m", l30, wsU30, c_ms30)
+    if i_msShowRb60 and c60 and b60
+        f_msPaintRb(true, "1H", h60, wsB60, c_ms60)
+    if i_msShowRb60 and c60 and u60
+        f_msPaintRb(false, "1H", l60, wsU60, c_ms60)
+    if i_msShowRb240 and c240 and b240
+        f_msPaintRb(true, "4H", h240, wsB240, c_ms240)
+    if i_msShowRb240 and c240 and u240
+        f_msPaintRb(false, "4H", l240, wsU240, c_ms240)
+    // Order blocks on 15m / 1H close
+    if i_msShowOb and c15 and ob15Bear
+        f_msZone("OB 15m ↓", ob15Top, ob15Bot, c_msOb, 18)
+    if i_msShowOb and c15 and ob15Bull
+        f_msZone("OB 15m ↑", ob15Top, ob15Bot, c_msOb, 18)
+    if i_msShowOb and c60 and ob60Bear
+        f_msZone("OB 1H ↓", ob60Top, ob60Bot, color.new(c_msOb, 0), 22)
+    if i_msShowOb and c60 and ob60Bull
+        f_msZone("OB 1H ↑", ob60Top, ob60Bot, color.new(c_msOb, 0), 22)
 
 // ─── On-chart trade plan (LIMIT · STOP · TP) ─────────────────────────────────
 // Anchored on setup bar — not a corner HUD. Bias is yours; chart = geometry only.
