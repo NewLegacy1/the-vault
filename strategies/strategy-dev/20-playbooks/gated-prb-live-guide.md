@@ -66,18 +66,18 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 1. Chart: `CME_MINI:MNQ1!` · **5m** · NY session.  
 2. Add **`Morningstar (PRB gate_v0)`** (strategy, overlay).  
 3. Inputs:
-   - **Manual levels only = ON** · **Direction = Both** · **Clean chart = ON**
+   - **Manual levels only = ON** (default on this script — required for LTF score / 5m RB / IFVG / OB marks)
+   - **Direction = Both** · **Clean chart = ON** · **Show trade plan = ON**
    - **Skip July & October = OFF** (your discretion; Lab used ON)
    - **RB structure TF = Auto** (→ **15m**) or **15** / **30** / **60**
    - **Require draw POI = ON** · **Block against unfinished PD draw = ON**
-   - **Show Morningstar confluence grade = ON** (eyes only — never arms)
-   - **Mark 15m + 1H RBs + CE = ON** (30m/4H OFF by default — less lag). **IFVG zones + OB 15m/1H = ON**. Labels are large + CE dotted. Arming parent still picks which RB arms LIMIT.
-   - **Show trade plan** + **CE dotted** + **entry triggers** = ON
-4. Journal: Vault → **Morningstar study** (no account) — log MS n/5, skip reasons, red-folder **time**, optional chart shot.
+   - **Show Morningstar LTF-in-RB score = ON** (eyes only — never arms)
+   - Mark **5m + 15m + 1H** RBs · IFVG · OB = ON. Small tags on boxes. Arming parent still picks which RB arms ENTRY/STOP/TP.
+4. Journal: Vault → **Morningstar study** (no account) — log LTF n/4, skip reasons, red-folder **time**, optional chart shot.
 
 | Mode | Structure TF | Draw POI | Morningstar grade |
 |---|---|---|---|
-| **Morningstar** (Manual ON) | Auto → **15m** (or 30 / 60 / 240) | ON | `n/5 · %` labels — **does not arm** |
+| **Morningstar** (Manual ON) | Auto → **15m** (or 30 / 60 / 240) | ON | `LTF n/4` on armed RB — **does not arm** |
 | **Lab PRB** (Manual OFF) | Auto → **Chart** | Ignored | Off / ignored |
 
 Grade slots: POI · 4H · 1m CISD · 1m IFVG · 5m IFVG. Letter suggest: 4–5→A+ · 3→B · ≤2→C. Not a Lab promote.

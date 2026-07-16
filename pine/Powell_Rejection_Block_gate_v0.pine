@@ -1346,13 +1346,13 @@ if msShow and suDir != 0 and not na(suBar) and bar_index >= suBar
 
     if barstate.isconfirmed
         if msIfvg1 and not msMarkedIfvg1 and i_msShowIfvg and not na(ms1IfvgTop)
-            f_msZone("1m IFVG", ms1IfvgTop, ms1IfvgBot, c_msIfvg, 20)
+            f_msZone("1IFVG", ms1IfvgTop, ms1IfvgBot, c_msIfvg, 20)
             msMarkedIfvg1 := true
         if msIfvg5 and not msMarkedIfvg5 and i_msShowIfvg and not na(ms5IfvgTop)
-            f_msZone("5m IFVG", ms5IfvgTop, ms5IfvgBot, c_msIfvg, 20)
+            f_msZone("5IFVG", ms5IfvgTop, ms5IfvgBot, c_msIfvg, 20)
             msMarkedIfvg5 := true
         if msCisd and not msMarkedCisd
-            f_msCapLabel(label.new(bar_index, close, "1m CISD", style = label.style_label_left, color = color.new(#0f172a, 0), textcolor = #22d3ee, size = size.normal))
+            f_msTag(bar_index, close, "CISD", #7dd3fc)
             msMarkedCisd := true
         if msRb5 and not msMarkedRb5 and i_msShowRb5
             if suDir == -1
@@ -1366,6 +1366,7 @@ else if suDir == 0
         lblMsGrade := na
 
 // HTF/LTF RB markers + CE (capped) · OB markers + CE
+// Needs Manual ON (Morningstar study) — defaults ON on this script
 bool msViz = i_manualOnly
 bool c5 = ta.change(time("5", "America/New_York")) != 0
 bool c15 = ta.change(time("15", "America/New_York")) != 0
@@ -1393,15 +1394,15 @@ if msViz and inWindow and barstate.isconfirmed
         f_msPaintRb(true, "4H", h240, wsB240, c_ms240)
     if i_msShowRb240 and c240 and u240
         f_msPaintRb(false, "4H", l240, wsU240, c_ms240)
-    // Order blocks on 15m / 1H close
+    // Order blocks — short tags (15OB / 1HOB)
     if i_msShowOb and c15 and ob15Bear
-        f_msZone("OB 15m ↓", ob15Top, ob15Bot, c_msOb, 18)
+        f_msZone("15OB↓", ob15Top, ob15Bot, c_msOb, 18)
     if i_msShowOb and c15 and ob15Bull
-        f_msZone("OB 15m ↑", ob15Top, ob15Bot, c_msOb, 18)
+        f_msZone("15OB↑", ob15Top, ob15Bot, c_msOb, 18)
     if i_msShowOb and c60 and ob60Bear
-        f_msZone("OB 1H ↓", ob60Top, ob60Bot, color.new(c_msOb, 0), 22)
+        f_msZone("1HOB↓", ob60Top, ob60Bot, c_msOb, 22)
     if i_msShowOb and c60 and ob60Bull
-        f_msZone("OB 1H ↑", ob60Top, ob60Bot, color.new(c_msOb, 0), 22)
+        f_msZone("1HOB↑", ob60Top, ob60Bot, c_msOb, 22)
 
 // ─── On-chart trade plan (LIMIT · STOP · TP) ─────────────────────────────────
 // Anchored on setup bar — not a corner HUD. Bias is yours; chart = geometry only.
@@ -1427,25 +1428,25 @@ bool isShadowPlan = i_manualOnly and not f_isLiveArm()
 if planLive
     int xR = f_planRight(suBar)
     bool newPlan = na(planLeft) or planLeft != suBar
-    color eCol = isShadowPlan ? color.new(color.orange, 0) : c_limit
-    color sCol = isShadowPlan ? color.new(color.orange, 20) : c_stop
-    color tCol = isShadowPlan ? color.new(color.gray, 10) : c_tp
-    color rBg = color.new(sCol, 86)
-    color wBg = color.new(tCol, 88)
-    // Compact: one short tag — prices are the lines; grade is the single MS n/5 label
-    string side = suDir == -1 ? "S" : "L"
+    color eCol = isShadowPlan ? color.new(#fb923c, 0) : c_limit
+    color sCol = isShadowPlan ? color.new(#fb923c, 15) : c_stop
+    color tCol = isShadowPlan ? color.new(#94a3b8, 0) : c_tp
+    color rBg = color.new(sCol, 92)
+    color wBg = color.new(tCol, 94)
     string trig = f_trigState()
-    string limTxt = i_showTriggers and suSweepTag != "—" ? suSweepTag : side + " · " + trig
+    string eTxt = "ENTRY · " + trig
+    string sTxt = "STOP"
+    string tTxt = "TP"
     if newPlan
         planLeft := suBar
         planLnE := line.new(suBar, suEntry, xR, suEntry, color = eCol, width = 2, style = line.style_solid)
         planLnS := line.new(suBar, pendStop, xR, pendStop, color = sCol, width = 2, style = line.style_solid)
         planLnT := line.new(suBar, pendTp, xR, pendTp, color = tCol, width = 2, style = line.style_solid)
-        planLbE := label.new(xR, suEntry, limTxt, style = label.style_label_left, color = color.new(color.black, 25), textcolor = eCol, size = size.small)
-        planLbS := label.new(xR, pendStop, "S", style = label.style_label_left, color = color.new(color.black, 40), textcolor = sCol, size = size.tiny)
-        planLbT := label.new(xR, pendTp, "T", style = label.style_label_left, color = color.new(color.black, 40), textcolor = tCol, size = size.tiny)
-        planBxRisk := box.new(suBar, math.max(suEntry, pendStop), xR, math.min(suEntry, pendStop), border_color = color.new(sCol, 60), bgcolor = rBg, border_width = 1)
-        planBxRew := box.new(suBar, math.max(suEntry, pendTp), xR, math.min(suEntry, pendTp), border_color = color.new(tCol, 60), bgcolor = wBg, border_width = 1)
+        planLbE := label.new(xR, suEntry, eTxt, style = label.style_none, color = color.new(color.black, 100), textcolor = eCol, size = size.small)
+        planLbS := label.new(xR, pendStop, sTxt, style = label.style_none, color = color.new(color.black, 100), textcolor = sCol, size = size.small)
+        planLbT := label.new(xR, pendTp, tTxt, style = label.style_none, color = color.new(color.black, 100), textcolor = tCol, size = size.small)
+        planBxRisk := box.new(suBar, math.max(suEntry, pendStop), xR, math.min(suEntry, pendStop), border_color = color.new(sCol, 70), bgcolor = rBg, border_width = 1)
+        planBxRew := box.new(suBar, math.max(suEntry, pendTp), xR, math.min(suEntry, pendTp), border_color = color.new(tCol, 70), bgcolor = wBg, border_width = 1)
     else
         line.set_x2(planLnE, xR)
         line.set_x2(planLnS, xR)
@@ -1468,7 +1469,10 @@ if planLive
         label.set_y(planLbS, pendStop)
         label.set_x(planLbT, xR)
         label.set_y(planLbT, pendTp)
-        label.set_text(planLbE, limTxt)
+        label.set_text(planLbE, eTxt)
+        label.set_textcolor(planLbE, eCol)
+        label.set_textcolor(planLbS, sCol)
+        label.set_textcolor(planLbT, tCol)
 else if not na(planLnE) and suDir == 0
     planLnE := na
     planLnS := na
@@ -1515,10 +1519,10 @@ if i_showSig and barstate.isconfirmed and (rbBear or rbBull) and suDir != 0 and 
     color bd = rbBear ? c_rbShortBd : c_rbLongBd
     color bg = i_rbNoFill ? color.new(bd, 100) : color.new(rbBear ? c_rbShortBg : c_rbLongBg, i_rbFillTrans)
     int xR0 = bar_index + i_rbExtend
-    string rbHead0 = "RB " + structLabel + " · LTF " + str.tostring(msLtfHitsLive) + "/4"
-    bxRb := box.new(bar_index, math.max(ex, ws), xR0, math.min(ex, ws), border_color = bd, bgcolor = bg, border_width = 3)
-    // One clear header on the RB — timeframe + LTF-in-zone score
-    lblRbMark := label.new(bar_index, math.max(ex, ws), rbHead0, style = label.style_label_down, color = color.new(bd, 0), textcolor = color.white, size = size.normal)
+    string rbHead0 = structLabel + " · LTF " + str.tostring(msLtfHitsLive) + "/4"
+    bxRb := box.new(bar_index, math.max(ex, ws), xR0, math.min(ex, ws), border_color = bd, bgcolor = bg, border_width = 2)
+    // Small text on top of the armed RB (TF + LTF score)
+    lblRbMark := label.new(bar_index + 1, math.max(ex, ws), rbHead0, style = label.style_none, color = color.new(color.black, 100), textcolor = bd, size = size.small)
     lblRbMeta := na
     rbLeft := bar_index
     rbTop := math.max(ex, ws)
@@ -1526,8 +1530,8 @@ if i_showSig and barstate.isconfirmed and (rbBear or rbBull) and suDir != 0 and 
     rbCeLv := ceNow
     rbWsLv := ws
     if i_showCe
-        lnRbCe := line.new(bar_index, ceNow, xR0, ceNow, color = color.new(c_ce, 0), width = 2, style = line.style_dotted)
-        lnRbWs := line.new(bar_index, ws, xR0, ws, color = color.new(c_wickSt, 40), width = 1, style = line.style_dashed)
+        lnRbCe := line.new(bar_index, ceNow, xR0, ceNow, color = color.new(c_ce, 0), width = 1, style = line.style_dotted)
+        lnRbWs := line.new(bar_index, ws, xR0, ws, color = color.new(c_wickSt, 35), width = 1, style = line.style_dashed)
 
 if i_showSig and suDir != 0 and not na(rbLeft) and not na(suBar) and rbLeft == suBar and not na(rbTop)
     int xLive = math.max(bar_index + 2, suBar + i_rbExtend)
@@ -1538,10 +1542,10 @@ if i_showSig and suDir != 0 and not na(rbLeft) and not na(suBar) and rbLeft == s
     if not na(lblRbMark)
         label.set_x(lblRbMark, rbLeft + 1)
         label.set_y(lblRbMark, rbTop)
-        label.set_text(lblRbMark, "RB " + structLabel + " · LTF " + str.tostring(msLtfHitsLive) + "/4")
-        label.set_textcolor(lblRbMark, color.white)
-        label.set_color(lblRbMark, color.new(suDir == -1 ? c_rbShortBd : c_rbLongBd, 0))
-        label.set_size(lblRbMark, size.normal)
+        label.set_text(lblRbMark, structLabel + " · LTF " + str.tostring(msLtfHitsLive) + "/4")
+        label.set_textcolor(lblRbMark, suDir == -1 ? c_rbShortBd : c_rbLongBd)
+        label.set_color(lblRbMark, color.new(color.black, 100))
+        label.set_size(lblRbMark, size.small)
     if i_showCe and not na(lnRbCe)
         line.set_x2(lnRbCe, xLive)
         if not na(suCe)
