@@ -10,7 +10,7 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 
 ## 1. Pre-session (before 10:00, ~10 min)
 
-- [ ] **Jul/Oct stand-down (`regime-gate-v0`):** if NY calendar month is **July or October** → **no new trades** (SHADOW boxes only in Jul). Resume when month rolls. Do not stack March.
+- [ ] **Jul/Oct:** Lab used STAND_DOWN; for Manual discretion you may trade them (gate default **Skip Jul/Oct = OFF**). Log month in the journal either way.
 - [ ] **News check (Forex Factory):** red folders today? Time: ______
   - CPI/NFP with a one-sided beat → expect a trend day; **do not fade it** — skip the session or demand A+ context
   - Mixed prints → normal rules apply

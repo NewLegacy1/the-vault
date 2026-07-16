@@ -64,9 +64,10 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 1. Chart: `CME_MINI:MNQ1!` · **1m** (CISD package) or **5m** (limit/Auto leave-retest) · NY session visible.  
 2. Add **`Powell_Rejection_Block gate_v0`** (strategy, overlay).  
 3. Inputs — must match live ops:
+   - **Skip July & October = OFF** (your Manual discretion; Lab used ON)
    - **Direction filter = Both** (bias is yours — not coded on chart)
    - **Manual levels only = ON** · **Clean chart = ON**
-   - **Show trade plan on chart = ON** · PDH/PDL bands = OFF · diagnostic tables = OFF
+   - **Show trade plan** + **Show CE dotted** + **Show entry triggers** = ON
 4. Add **`PRB Gate Live Coach v0`** (optional). Profile Eval or Funded — **qty only**, move table to bottom-right if used.
 
 ### Recommended live stack (same pane or two)
@@ -195,11 +196,11 @@ Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 
 | Mode | On the candles |
 |---|---|
-| **Manual ON** (live / bar replay) | **RB** box on rejection wick · then **LIMIT** (white) · **STOP** (red) · **TP** (teal) lines from setup bar · red/teal risk boxes · Jul = orange SHADOW tint |
-| **Manual OFF** (Deep BT) | Same live plan + **frozen WIN/LOSS** lines after each fill exits |
-| **Optional** | Turn on PDH/PDL bands · Coach table bottom-right for qty |
+| **Manual ON** (live / bar replay) | Long **RB** box · dotted **CE** · dashed wick-start · **LIMIT / STOP / TP** · **LEAVE** then **GO** when leave-retest arms · RB tag shows swept level + 4H pts |
+| **Manual OFF** (Deep BT) | Same live plan + frozen **WIN/LOSS** after fills |
+| **Jul/Oct** | Default **Skip Jul/Oct = OFF** for your Manual discretion — Lab used ON; flip ON only for Lab-faithful exports |
 
-No bias labels on chart. Your checklist stays on paper — the script only draws **where** to place orders.
+Bias stays off the chart (**Direction = Both**). Paper checklist for news / SMT / EQH / gut.
 
 ### If you still see no RB / boxes
 
