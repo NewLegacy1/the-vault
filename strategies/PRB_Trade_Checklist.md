@@ -11,6 +11,8 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 - **Path A:** HTF RB (default **15m**) → leave-retest → ENTRY/STOP/TP.
 - **Path B:** 10:00 manip → leave → **15m/5m/1m RB** near KO → arms `PathB · 10:00 · …RB`. Fib OTE draws after leave (eyes); Require OTE OFF by default.
 
+**Daily bias (plain English):** [[Morningstar_Daily_Bias_Checklist]] — NWOG → day story → Path B agree/skip.
+
 Journal → **Morningstar study**. Log take **and** skip.
 
 **Letter from journal flags:** `≥6/12 → A+` · `3–5 → B` · `1–2 → C` · `0 → -` (no setup). Chart **LTF n/4** separate from HTF PDA row.
