@@ -55,7 +55,7 @@ Optional: set Coach alerts **enter STAND_DOWN** / **exit STAND_DOWN** so Aug ope
 | Script | What it draws | What it does **not** do |
 |---|---|---|
 | **`PRB_Gate_LiveCoach_v0`** | STAND_DOWN wash · corner LIVE/STAND_DOWN · risk table · optional **planned** stop/TP/BE lines from *Planned stop (pts)* | Find RBs · arm LIMIT/STOP/TP boxes · emit entry signals |
-| **`Powell_Rejection_Block_gate_v0`** | FVG-style **RB Short/Long** zones · PDH/PDL bands · Sweep PDH/PDL pills · ARMED/SHADOW risk boxes · 10:00 wash | Turtle-soup displacement · Live Coach sizing |
+| **`Powell_Rejection_Block_gate_v0`** | **RB** wick box · **LIMIT / STOP / TP** lines on chart when setup arms · optional frozen past trades (Deep BT) | Bias labels · corner tables |
 
 If the chart shows only a HUD/table: you almost certainly have **Coach only**. Add **gate_v0** on the same MNQ chart (overlay strategy). Locked `Powell_Rejection_Block_v1.pine` stays untouched.
 
@@ -64,13 +64,10 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 1. Chart: `CME_MINI:MNQ1!` · **1m** (CISD package) or **5m** (limit/Auto leave-retest) · NY session visible.  
 2. Add **`Powell_Rejection_Block gate_v0`** (strategy, overlay).  
 3. Inputs — must match live ops:
-   - **Manual levels only — NO orders = ON**
-   - **Skip July & October = ON** (leave on through Aug practice; do not flip off to “see more” in July)
-   - Visuals: **Live clean chart = ON** · **Show pre-trade checklist HUD = ON** · Extra liquidity = OFF
-   - Funnel/MISSED tables stay hidden while Live clean + Manual (turn Live clean OFF to debug)
-4. Add **`PRB Gate Live Coach v0`** (indicator, same pane). Profile Eval or Funded.  
-5. Style tab: leave gate_v0 overlays visible — TV can hide them if a previous style was saved. **Re-paste** after visual updates so defaults apply.  
-6. Confirm checklist HUD **Jul/Oct gate** = STAND_DOWN (Jul) or OK (Aug/Sep) and **Script state** updates when an RB arms.
+   - **Direction filter = Both** (bias is yours — not coded on chart)
+   - **Manual levels only = ON** · **Clean chart = ON**
+   - **Show trade plan on chart = ON** · PDH/PDL bands = OFF · diagnostic tables = OFF
+4. Add **`PRB Gate Live Coach v0`** (optional). Profile Eval or Funded — **qty only**, move table to bottom-right if used.
 
 ### Recommended live stack (same pane or two)
 
@@ -148,17 +145,16 @@ Example: stop 10 pts · $400 risk → 20 MNQ.
 
 ### Pre-open (−30 to −5 min)
 
-1. Checklist HUD top-left: if **Jul/Oct gate = STAND_DOWN** → journal SHADOW only / no live size.
-2. News (FF): red CPI/NFP → extra caution / skip (**YOU** row).
-3. Daily→4H draw noted; set **Direction filter** on gate_v0 (Both / Long / Short / Auto PDH/PDL). Confirm HUD `Auto / bias` matches your read.
-4. Confirm inputs match profile card above.
+1. Jul/Oct: SHADOW only if month blocked — orange trade plan, no live size.
+2. News / bias / draw: **your checklist** (not on chart). Set **Direction filter = Both**.
+3. Confirm Manual ON + trade plan visuals ON.
 
-### When boxes arm (HUD Script state → ARMED / SHADOW / WAIT)
+### When LIMIT / STOP / TP lines appear
 
-1. Read HUD §Setup: Direction · Swept level · vs daily draw · 4H at RB · Stop size — then checklist §2 human rows (EQH/EQL · gut). If 2+ fail → do not click.
-2. LiveCoach: confirm qty from stop distance on the red box (paste pts into Coach).
-3. Place **limit** at entry, **stop** and **target** as drawn. Do not freestyle RR.
-4. One slot/day — after fill or cancel, stop hunting.
+1. Read prices off the lines — copy limit/stop/target to broker.
+2. Run checklist §2 in your head — skip if 2+ fail.
+3. Coach (optional): paste stop pts → qty.
+4. One slot/day.
 
 ### Management
 
@@ -195,26 +191,15 @@ PRB gate_v0 ARMED — {{ticker}} {{interval}} {{time}}
 Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 ```
 
-### Chart visuals (defaults)
+### Chart — what you should see
 
-| Script | What you should see |
+| Mode | On the candles |
 |---|---|
-| LiveCoach | Soft orange wash in Jul/Oct · corner LIVE/STAND_DOWN · risk table · faint PLAN@Npt stop/TP/BE (not an RB) |
-| gate_v0 Manual ON + **Live clean ON** | Top-left **CHECKLIST** HUD (maps [[PRB_Trade_Checklist]]) · **RB Short/Long** zones · PDH/PDL bands · Sweep pills · ARMED/SHADOW risk boxes · 10:00 wash · no funnel/MISSED clutter |
-| gate_v0 Live clean OFF | Classic lines + full diagnostic tables (Lab/debug) |
-| MPSF events | Separate Track B marker — do not use as PRB entry engine |
+| **Manual ON** (live / bar replay) | **RB** box on rejection wick · then **LIMIT** (white) · **STOP** (red) · **TP** (teal) lines from setup bar · red/teal risk boxes · Jul = orange SHADOW tint |
+| **Manual OFF** (Deep BT) | Same live plan + **frozen WIN/LOSS** lines after each fill exits |
+| **Optional** | Turn on PDH/PDL bands · Coach table bottom-right for qty |
 
-### Soup vs turtle soup (read this)
-
-| Term | What PRB gate_v0 means | What it is **not** |
-|---|---|---|
-| **Liquidity sweep** (code still says `f_soup*`) | Wick through a level (PDH/PDL/PM/key open) + **close back** on the origin side | Your turtle soup: external HL/LH wick pierce **without** body close beyond + **next candle ≥10 pt displacement** |
-| **Auto bias Sweep PDH / Sweep PDL** | Same wick-through-close-back on **prior day high/low** → sets day draw (shorts after PDH sweep, longs after PDL) | A confirmed turtle-soup entry signal |
-| **Require liquidity sweep on RB** | The RB candle itself must take liquidity that way | Displacement confirmation |
-
-Lab / live PRB does **not** require 10-pt displacement. Do not retune Lab to turtle-soup rules without a new Stage-0. Chart labels now say **Sweep**, not “soup,” to avoid that mix-up.
-
-Turn **off** gate sweep triangles / ghost marks if the live chart feels busy. Keep **Live clean** ON for paper/live.
+No bias labels on chart. Your checklist stays on paper — the script only draws **where** to place orders.
 
 ### If you still see no RB / boxes
 
