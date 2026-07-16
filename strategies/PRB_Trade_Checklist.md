@@ -6,10 +6,12 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 
 **Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · window **10:00–13:00**.
 
-- **Path A:** HTF RB (default **15m**) → leave-retest → ENTRY/STOP/TP. Eyes-only: untested **WFVG / 4HFVG / 1HFVG / 15FVG** · RB/OB · 4H wick · fib OTE + PDA overlap tag — **never arms**.
-- **Path B (ON by default):** 10:00 manip (same-bar wick OK) → leave through KO → fib OTE with KO inside (**long = discount** hi−0.79…hi−0.62 · **short = premium** lo+0.62…lo+0.79) → **5m/1m RB** near KO → arms `PathB · 10:00 · 5RB`/`1RB`. Status tag shows why not armed. Path B can replace Path A still waiting leave.
+- **Lean chart ON (default):** PDH/PDL · 10:00 · **NWOG** (box + CE) · armed RB · ENTRY/STOP/TP · Path B **FIB LO/HI leg** + OTE after leave. No confluence spray.
+- **Discretionary filters ON (default):** script arms more candidates; **you** take/skip (draw POI · 4H · counter-draw · Path B OTE are not hard blocks).
+- **Path A:** HTF RB (default **15m**) → leave-retest → ENTRY/STOP/TP.
+- **Path B:** 10:00 manip → leave → **15m/5m/1m RB** near KO → arms `PathB · 10:00 · …RB`. Fib OTE draws after leave (eyes); Require OTE OFF by default.
 
-Journal → **Morningstar study**. OTE ≠ 15m-IFVG-only.
+Journal → **Morningstar study**. Log take **and** skip.
 
 **Letter from journal flags:** `≥6/12 → A+` · `3–5 → B` · `1–2 → C` · `0 → -` (no setup). Chart **LTF n/4** separate from HTF PDA row.
 

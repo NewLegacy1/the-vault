@@ -65,20 +65,18 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 
 1. Chart: `CME_MINI:MNQ1!` · **5m** · NY session.  
 2. Add **`Morningstar (PRB gate_v0)`** (strategy, overlay).  
-3. Inputs:
-   - **Manual levels only = ON** · **Last order = 1300** · **Direction = Both** · **Show trade plan = ON**
-   - **Skip July & October = OFF** (your discretion; Lab used ON)
-   - **Path B = ON** (default) — 10:00 manip→leave → fib OTE → 5m/1m RB at KO arms ENTRY/STOP/TP
-   - **RB structure TF = Auto** (→ **15m**) — Path A arming parent
-   - **Require draw POI = ON** · Morningstar LTF score + **weekly/HTF FVG (untested)** + **fib OTE + PDA overlap** = ON (eyes only for Path A)
-   - Early 10:00 RB optional; Path B is the cleaner KO+fib+LTF stack; Path A still fires on HTF RB leave-retest
-4. Journal: Vault → **Morningstar study** — path (A/B) · LTF flags + HTF PDA/OTE row · skip reasons · red-folder **time** · optional chart shot.
+3. Inputs (lean defaults):
+   - **Manual levels only = ON** · **Lean chart = ON** · **Discretionary filters = ON**
+   - **Last order = 1300** · **Direction = Both** · **Show trade plan = ON**
+   - **Skip July & October = OFF** · **Path B = ON** · **Require Path B OTE = OFF**
+   - Chart should show: PDH/PDL · 10:00 · **NWOG** · armed RB + ENTRY/STOP/TP · Path B **FIB LO (0) / FIB HI (1)** + OTE after leave — not a museum of every FVG/OB
+4. Journal: Vault → **Morningstar study** — path A/B · take or skip · why · optional chart shot.
 
-| Mode | Arms | Eyes only |
+| Mode | Arms | Chart |
 |---|---|---|
-| **Morningstar Path A** | HTF RB (15m default) leave-retest | `LTF n/4` + OTE/HTF PDA tags |
-| **Morningstar Path B** | 10:00 + fib OTE + 5m/1m RB at KO | Path B fib lines (`B OTE · 10:00`) |
-| **Lab PRB** (Manual OFF) | Chart RB (Deep BT) | Path B ignored |
+| **Morningstar Path A** | HTF RB leave-retest (looser Manual gates) | Plan + armed RB only (lean) |
+| **Morningstar Path B** | 10:00 leave + 15/5/1m RB@KO | + Path B fib after leave |
+| **Lab PRB** (Manual OFF) | Chart RB (Deep BT; hard filters) | Path B ignored |
 
 Grade slots: POI · 4H · 1m CISD · 1m IFVG · 5m IFVG. Letter suggest: 4–5→A+ · 3→B · ≤2→C. Not a Lab promote.
 
