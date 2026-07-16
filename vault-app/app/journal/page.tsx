@@ -23,18 +23,38 @@ const MORNING_BIASES: MorningBias[] = ["long", "short", "neutral", "skip"];
 const PRB_FILTERS: PrbFilter[] = ["Both", "Long only", "Short only"];
 const STRUCT_TFS: StructTf[] = ["15", "30", "60", "240", "chart"];
 
-/** Context + LTF slots — check only what lit; empty day = leave all off (0/6 is valid). */
-const MS_FLAGS: {
-  key: "msPoi" | "msH4" | "msCisd" | "msIfvg1" | "msIfvg5" | "msRb5";
-  label: string;
-  hint: string;
-}[] = [
-  { key: "msPoi", label: "Draw POI", hint: "Context — PDH / PDL / PM / key open on the RB" },
-  { key: "msH4", label: "4H wick OK", hint: "Context — 4H↑/↓ pts green (~15+) or grey (~8+)" },
-  { key: "msCisd", label: "1m CISD", hint: "LTF — only if chart marked CISD inside the HTF box" },
-  { key: "msIfvg1", label: "1m IFVG", hint: "LTF — only if 1IFVG lit inside the HTF box" },
-  { key: "msIfvg5", label: "5m IFVG", hint: "LTF — only if 5IFVG lit inside the HTF box" },
-  { key: "msRb5", label: "5m RB", hint: "LTF — only if 5RB counted inside the HTF box" },
+type MsFlagKey =
+  | "msPoi"
+  | "msH4"
+  | "msCisd"
+  | "msIfvg1"
+  | "msIfvg5"
+  | "msRb5"
+  | "msWFvg"
+  | "msHtfFvg"
+  | "msRb"
+  | "msOb"
+  | "msKeyOpen"
+  | "msOteOverlap";
+
+/** LTF + light context — chart Morningstar marks. */
+const MS_LTF_FLAGS: { key: MsFlagKey; label: string; hint: string }[] = [
+  { key: "msPoi", label: "Draw POI", hint: "PDH / PDL / PM / key open on the RB" },
+  { key: "msH4", label: "4H wick OK", hint: "4H↑/↓ pts green (~15+) or grey (~8+)" },
+  { key: "msCisd", label: "1m CISD", hint: "CISD inside the HTF box" },
+  { key: "msIfvg1", label: "1m IFVG", hint: "1IFVG inside the HTF box" },
+  { key: "msIfvg5", label: "5m IFVG", hint: "5IFVG inside the HTF box" },
+  { key: "msRb5", label: "5m RB", hint: "5RB inside the HTF box" },
+];
+
+/** HTF PDA / OTE used on the take — not 15IFVG-only. */
+const MS_HTF_FLAGS: { key: MsFlagKey; label: string; hint: string }[] = [
+  { key: "msWFvg", label: "Weekly FVG", hint: "Untested WFVG in play" },
+  { key: "msHtfFvg", label: "HTF FVG", hint: "15 / 1H / 4H FVG untested" },
+  { key: "msRb", label: "HTF RB", hint: "Rejection block in the idea" },
+  { key: "msOb", label: "Order block", hint: "15OB / 1HOB" },
+  { key: "msKeyOpen", label: "Key open", hint: "18:00 / 00:00 / 10:00 / PDH·PDL" },
+  { key: "msOteOverlap", label: "Fib OTE overlap", hint: "Chart OTE tag showed PDA stack" },
 ];
 
 const SKIP_REASONS: { id: SkipReason; label: string }[] = [
@@ -70,6 +90,12 @@ function emptyForm(mode: JournalLogMode) {
     msIfvg1: false,
     msIfvg5: false,
     msRb5: false,
+    msWFvg: false,
+    msHtfFvg: false,
+    msRb: false,
+    msOb: false,
+    msKeyOpen: false,
+    msOteOverlap: false,
     showOutcome: false,
     pnl: "",
     r: "",
@@ -88,12 +114,29 @@ function msScoreFromFlags(f: FormState): number {
     (f.msCisd ? 1 : 0) +
     (f.msIfvg1 ? 1 : 0) +
     (f.msIfvg5 ? 1 : 0) +
-    (f.msRb5 ? 1 : 0)
+    (f.msRb5 ? 1 : 0) +
+    (f.msWFvg ? 1 : 0) +
+    (f.msHtfFvg ? 1 : 0) +
+    (f.msRb ? 1 : 0) +
+    (f.msOb ? 1 : 0) +
+    (f.msKeyOpen ? 1 : 0) +
+    (f.msOteOverlap ? 1 : 0)
   );
 }
 
 function msLtfFromFlags(f: FormState): number {
   return (f.msCisd ? 1 : 0) + (f.msIfvg1 ? 1 : 0) + (f.msIfvg5 ? 1 : 0) + (f.msRb5 ? 1 : 0);
+}
+
+function msHtfFromFlags(f: FormState): number {
+  return (
+    (f.msWFvg ? 1 : 0) +
+    (f.msHtfFvg ? 1 : 0) +
+    (f.msRb ? 1 : 0) +
+    (f.msOb ? 1 : 0) +
+    (f.msKeyOpen ? 1 : 0) +
+    (f.msOteOverlap ? 1 : 0)
+  );
 }
 
 export default function JournalPage() {
@@ -109,6 +152,7 @@ export default function JournalPage() {
 
   const msScore = msScoreFromFlags(f);
   const msLtf = msLtfFromFlags(f);
+  const msHtf = msHtfFromFlags(f);
   const letter = letterFromMsScore(msScore);
   const tookTrade = f.direction === "long" || f.direction === "short";
 
@@ -182,6 +226,12 @@ export default function JournalPage() {
       msIfvg1: isStudy ? f.msIfvg1 : undefined,
       msIfvg5: isStudy ? f.msIfvg5 : undefined,
       msRb5: isStudy ? f.msRb5 : undefined,
+      msWFvg: isStudy ? f.msWFvg : undefined,
+      msHtfFvg: isStudy ? f.msHtfFvg : undefined,
+      msRb: isStudy ? f.msRb : undefined,
+      msOb: isStudy ? f.msOb : undefined,
+      msKeyOpen: isStudy ? f.msKeyOpen : undefined,
+      msOteOverlap: isStudy ? f.msOteOverlap : undefined,
       chartShot: f.chartShot || undefined,
     };
     setJournal([...journal, entry]);
@@ -430,15 +480,43 @@ export default function JournalPage() {
 
               {/* 3 · Confluence → auto grade */}
               <div className="accent small" style={{ letterSpacing: 1, marginTop: 12 }}>
-                3 · CONFLUENCE (same as Morningstar chart marks)
+                3 · LTF / CONTEXT (chart marks)
               </div>
               <p className="small dim" style={{ marginTop: 0, marginBottom: 8 }}>
-                Check only what lit. No armed setup / no LTF stack → leave LTF boxes off (0 is valid). Use
-                skip reason <b>No setup armed</b>. Context (POI / 4H) can still be checked from the session
-                even when nothing armed.
+                Check only what lit. No setup → leave off + skip <b>No setup armed</b>. OTE is not
+                15m-IFVG-only — use HTF PDA row below for weekly/HTF FVG · RB · OB · key opens · fib overlap.
               </p>
               <div className="frm-row" style={{ alignItems: "stretch", gap: 8 }}>
-                {MS_FLAGS.map((flag) => (
+                {MS_LTF_FLAGS.map((flag) => (
+                  <label
+                    key={flag.key}
+                    className={"chk" + (f[flag.key] ? " done" : "")}
+                    title={flag.hint}
+                    style={{
+                      minWidth: 120,
+                      border: "1px solid var(--border)",
+                      borderRadius: 6,
+                      padding: "8px 10px",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={f[flag.key]}
+                      onChange={(e) => setF({ ...f, [flag.key]: e.target.checked })}
+                    />
+                    <span className="chk-box" aria-hidden="true" />
+                    <span className="txt">
+                      <b>{flag.label}</b>
+                      <span className="note">{flag.hint}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <div className="accent small" style={{ letterSpacing: 1, marginTop: 14 }}>
+                3b · HTF PDA / OTE (what you used)
+              </div>
+              <div className="frm-row" style={{ alignItems: "stretch", gap: 8 }}>
+                {MS_HTF_FLAGS.map((flag) => (
                   <label
                     key={flag.key}
                     className={"chk" + (f[flag.key] ? " done" : "")}
@@ -475,12 +553,18 @@ export default function JournalPage() {
               >
                 <span className="dim small">Auto grade · </span>
                 <span className="accent" style={{ fontSize: 18, fontWeight: 600 }}>
-                  {msScore}/6 · {letter}
+                  {msScore}/12 · {letter}
                 </span>
                 <span className="dim small">
                   {" "}
-                  · chart LTF {msLtf}/4
-                  {msScore === 0 ? " · empty stack OK" : msScore >= 5 ? " · A+ band" : msScore >= 3 ? " · B band" : " · C band"}
+                  · LTF {msLtf}/4 · HTF {msHtf}/6
+                  {msScore === 0
+                    ? " · empty stack OK"
+                    : msScore >= 6
+                      ? " · A+ band"
+                      : msScore >= 3
+                        ? " · B band"
+                        : " · C band"}
                 </span>
               </div>
 
@@ -646,7 +730,7 @@ export default function JournalPage() {
                   <td>
                     {typeof j.msScore === "number" ? (
                       <>
-                        <span className="accent">{j.msScore}/6</span> {j.grade}
+                        <span className="accent">{j.msScore}/12</span> {j.grade}
                       </>
                     ) : (
                       j.grade

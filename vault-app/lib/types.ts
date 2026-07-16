@@ -80,6 +80,13 @@ export interface JournalEntry {
   msIfvg5?: boolean;
   /** 5m RB inside HTF wick (chart LTF slot). */
   msRb5?: boolean;
+  /** HTF PDA / OTE context used on the take (eyes — not chart LTF score). */
+  msWFvg?: boolean;
+  msHtfFvg?: boolean;
+  msRb?: boolean;
+  msOb?: boolean;
+  msKeyOpen?: boolean;
+  msOteOverlap?: boolean;
   /** NY news time HHMM when redFolder=yes. */
   redFolderTime?: string;
   redFolderEvent?: string;
@@ -92,8 +99,8 @@ export interface JournalEntry {
 /** Map journal confluence count → letter suggestion. 0 = empty stack (no setup) → "-". */
 export function letterFromMsScore(n: number): JournalEntry["grade"] {
   if (n <= 0) return "-";
-  if (n >= 5) return "A+";
-  if (n === 3 || n === 4) return "B";
+  if (n >= 6) return "A+";
+  if (n >= 3) return "B";
   if (n <= 2) return "C";
   return "-";
 }

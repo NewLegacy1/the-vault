@@ -1,12 +1,12 @@
 # PRB v1 — Trade Checklist (locked config)
 
-**Config:** 5m MNQ · Auto entry (CE if stop > 20 pts) · leave-then-retest 1R (strict OFF) · confirming close ON · rolling-sweep OFF · window 10:00–13:00 · $400 risk ($300 in fresh eval) · 1:5 target · BE at +1R · 1 trade/day · skip Mondays · **skip July & October** (`regime-gate-v0` · Pine `Powell_Rejection_Block_gate_v0.pine`)
+**Config:** 5m MNQ · Auto entry (CE if stop > 20 pts) · leave-then-retest 1R (strict OFF) · confirming close ON · rolling-sweep OFF · window **10:00–13:00** · $400 risk ($300 in fresh eval) · 1:5 target · BE at +1R · 1 trade/day · skip Mondays · **skip July & October** (`regime-gate-v0` · Pine `Powell_Rejection_Block_gate_v0.pine`)
 
 The script finds the setup. **You** are the bias filter. Three checkpoints.
 
-**Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · **structure TF = arming parent only** (default **15m**) · chart marks RBs as border-only boxes (`RB 5m` / `15m` / `30m` / `1H` / `4H`) · armed setup header = `RB 15m · LTF n/4` (1m CISD · 1m IFVG · 5m IFVG · **5m RB** inside that HTF wick) — **eyes only**, never arms · LIMIT/STOP/TP from the **arming** HTF wick · leave-retest on **5m**. Direction **Both**. Journal → **Morningstar study**.
+**Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · arming parent = HTF RB (default **15m**) · window **10:00–13:00** (mid-day OTE allowed) · marks untested **WFVG / 4HFVG / 1HFVG / 15FVG** · RB/OB · 4H wick · after leave draws **fib OTE 0.62–0.79** + tag of which HTF PDAs sit in the pocket (`OTE · WFVG · 15RB · …`) — **eyes only**, never arms. OTE ≠ 15m-IFVG-only. Journal → **Morningstar study**.
 
-**Letter from journal flags:** `5–6/6 → A+` · `3–4/6 → B` · `≤2/6 → C` (overridable). Chart header uses **LTF n/4** only. No setup day → leave LTF unchecked + skip **No setup armed**.
+**Letter from journal flags:** `≥6/12 → A+` · `3–5 → B` · `1–2 → C` · `0 → -` (no setup). Chart **LTF n/4** separate from HTF PDA row.
 
 **Lab (Manual OFF):** still **PRB** Chart structure (Deep BT control) — not Morningstar. Do not invent promote numbers from Manual visuals.
 

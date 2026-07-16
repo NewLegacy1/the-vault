@@ -953,6 +953,7 @@ if rbBear and canArm
             pendTp := entryPx - f_effRr() * riskPts0
             suBar := bar_index
             suLeft := i_leaveR == 0
+            suLeavePx := na
             manualReady := false
             manualState := suLeft ? "WAIT approach" : "WAIT leave"
 
@@ -986,6 +987,7 @@ if rbBull and canArm and suDir == 0
             pendTp := entryPx + f_effRr() * riskPts0
             suBar := bar_index
             suLeft := i_leaveR == 0
+            suLeavePx := na
             manualReady := false
             manualState := suLeft ? "WAIT approach" : "WAIT leave"
 
@@ -1499,30 +1501,30 @@ f_pdaKill(int ix) =>
 
 bool cW = ta.change(time("W")) != 0
 if i_manualOnly and barstate.isconfirmed
-    if i_msShowWFvg and cW and fvgWBear and (na(lastFvgW) or time("W") != lastFvgW)
+    if i_msShowWFvg and cW and (fvgWBear or fvgWBull) and (na(lastFvgW) or time("W") != lastFvgW)
         lastFvgW := time("W")
-        f_pdaPush(true, "WFVG", fvgWTop, fvgWBot)
-    if i_msShowWFvg and cW and fvgWBull and (na(lastFvgW) or time("W") != lastFvgW)
-        lastFvgW := time("W")
-        f_pdaPush(false, "WFVG", fvgWTop, fvgWBot)
-    if i_msShowFvg240 and c240 and fvg240Bear and (na(lastFvg240) or time("240") != lastFvg240)
+        if fvgWBear
+            f_pdaPush(true, "WFVG", fvgWTop, fvgWBot)
+        if fvgWBull
+            f_pdaPush(false, "WFVG", fvgWTop, fvgWBot)
+    if i_msShowFvg240 and c240 and (fvg240Bear or fvg240Bull) and (na(lastFvg240) or time("240") != lastFvg240)
         lastFvg240 := time("240")
-        f_pdaPush(true, "4HFVG", fvg240Top, fvg240Bot)
-    if i_msShowFvg240 and c240 and fvg240Bull and (na(lastFvg240) or time("240") != lastFvg240)
-        lastFvg240 := time("240")
-        f_pdaPush(false, "4HFVG", fvg240Top, fvg240Bot)
-    if i_msShowFvg60 and c60 and fvg60Bear and (na(lastFvg60) or time("60") != lastFvg60)
+        if fvg240Bear
+            f_pdaPush(true, "4HFVG", fvg240Top, fvg240Bot)
+        if fvg240Bull
+            f_pdaPush(false, "4HFVG", fvg240Top, fvg240Bot)
+    if i_msShowFvg60 and c60 and (fvg60Bear or fvg60Bull) and (na(lastFvg60) or time("60") != lastFvg60)
         lastFvg60 := time("60")
-        f_pdaPush(true, "1HFVG", fvg60Top, fvg60Bot)
-    if i_msShowFvg60 and c60 and fvg60Bull and (na(lastFvg60) or time("60") != lastFvg60)
-        lastFvg60 := time("60")
-        f_pdaPush(false, "1HFVG", fvg60Top, fvg60Bot)
-    if i_msShowFvg15 and c15 and fvg15Bear and (na(lastFvg15) or time("15") != lastFvg15)
+        if fvg60Bear
+            f_pdaPush(true, "1HFVG", fvg60Top, fvg60Bot)
+        if fvg60Bull
+            f_pdaPush(false, "1HFVG", fvg60Top, fvg60Bot)
+    if i_msShowFvg15 and c15 and (fvg15Bear or fvg15Bull) and (na(lastFvg15) or time("15") != lastFvg15)
         lastFvg15 := time("15")
-        f_pdaPush(true, "15FVG", fvg15Top, fvg15Bot)
-    if i_msShowFvg15 and c15 and fvg15Bull and (na(lastFvg15) or time("15") != lastFvg15)
-        lastFvg15 := time("15")
-        f_pdaPush(false, "15FVG", fvg15Top, fvg15Bot)
+        if fvg15Bear
+            f_pdaPush(true, "15FVG", fvg15Top, fvg15Bot)
+        if fvg15Bull
+            f_pdaPush(false, "15FVG", fvg15Top, fvg15Bot)
 
 // Extend + mitigate (full traverse clears the zone)
 if i_manualOnly and array.size(pdaBoxA) > 0
