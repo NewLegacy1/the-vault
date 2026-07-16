@@ -135,12 +135,12 @@ export default function TodayPage() {
 
       <div className="panel">
         <div className="panel-title">
-          Checklist <span className="sub">Manual HTF · tap through · {day}</span>
+          Checklist <span className="sub">Morningstar · tap through · {day}</span>
         </div>
         <div className="panel-body">
           <p className="small dim" style={{ marginTop: 0, marginBottom: 12, lineHeight: 1.5 }}>
-            Bar-replay / paper study on <b>gate_v0</b> (HTF RB). Clear between replay days. Log every arm you skip
-            in <Link href="/journal">Journal</Link> — skips are the dataset.
+            <b>Morningstar</b> bar-replay on gate_v0 (HTF RB + eyes-only MS grade). Clear between replay days. Log
+            takes/skips in <Link href="/journal">Journal → Morningstar study</Link>.
           </p>
           <div className="chk-grid">
             <ChecklistSection
@@ -168,14 +168,14 @@ export default function TodayPage() {
       <div className="grid grid-2">
         <div className="panel">
           <div className="panel-title">
-            Study config <span className="sub">gate_v0 Manual · not Lab Deep BT</span>
+            Morningstar config <span className="sub">gate_v0 Manual · not Lab PRB</span>
           </div>
           <div className="panel-body">
             <div className="kv">
-              <span className="k">Chart</span><span>MNQ 5m · Manual ON · Direction Both</span>
-              <span className="k">Structure</span><span>15 (try 30 / 60) · draw POI ON</span>
+              <span className="k">Chart</span><span>MNQ 5m · Manual ON · Direction Both · shorttitle Morningstar</span>
+              <span className="k">Structure</span><span>15 (try 30 / 60) · draw POI ON · MS grade ON</span>
               <span className="k">Window</span><span>10:00–11:30 NY · leave-retest · BE +1R</span>
-              <span className="k">Falsifier</span><span className="warn">Bar replay + journal — not Strategy Tester P&amp;L</span>
+              <span className="k">Falsifier</span><span className="warn">Bar replay + Journal — grade never arms</span>
             </div>
             <hr className="hr" />
             <div className="small">
@@ -229,8 +229,9 @@ export default function TodayPage() {
               ))}
             </ul>
             <div className="small dim mt">
-              Manual HTF study: keep TV on <b>Both</b>, log morning bias in{" "}
-              <Link href="/journal">Journal</Link>. Direction filter matching is for live locked v1 later.
+              Morningstar: keep TV on <b>Both</b>, log in{" "}
+              <Link href="/journal">Journal → Morningstar study</Link>. PRB Direction matching is for live locked
+              v1 only.
             </div>
           </div>
         </div>

@@ -41,6 +41,12 @@ export function analyzeBiasJournal(entries: JournalEntry[]): BiasJournalStats {
   const skips = entries.length - trades.length;
 
   for (const e of entries) {
+    // Morningstar study logs stay on Direction=Both — skip PRB filter-mismatch math
+    if (e.accountId.startsWith("study:") || e.strategy === "Morningstar") {
+      if (e.morningBias) withBias += 1;
+      continue;
+    }
+
     if (e.morningBias) withBias += 1;
 
     if (e.morningBias && e.prbFilter === "Both" && biasFavorsShort(e.morningBias)) {

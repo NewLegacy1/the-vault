@@ -33,6 +33,20 @@ export interface LedgerEntry {
 export type MorningBias = "long" | "short" | "neutral" | "skip";
 export type PrbFilter = "Both" | "Long only" | "Short only";
 export type RedFolderTag = "yes" | "no" | "unknown";
+export type JournalLogMode = "morningstar" | "live";
+export type StructTf = "15" | "30" | "60" | "240" | "chart";
+export type SkipReason =
+  | "no_poi"
+  | "counter_draw"
+  | "eqhl"
+  | "ndog"
+  | "news"
+  | "gut"
+  | "low_grade"
+  | "other";
+
+/** Fixed journal bucket for Morningstar Manual study (no prop account). */
+export const MORNINGSTAR_STUDY_ID = "study:morningstar";
 
 export interface JournalEntry {
   id: string;
@@ -42,15 +56,42 @@ export interface JournalEntry {
   grade: "A+" | "B" | "C" | "-";
   pnl: number;
   rMultiple: number;
+  /** Peaked ≥2R then exited &lt;1R (trail-toggle signal). */
   giveBack: boolean;
   checklistFails: string;
   notes: string;
   /** D→4H morning read before session (discretion dataset). */
   morningBias?: MorningBias;
-  /** PRB Pine direction filter actually used that day. */
+  /** PRB Pine direction filter — live logs only; unused for Morningstar study. */
   prbFilter?: PrbFilter;
   /** Red-folder / CPI·NFP day — from FF or F7. */
   redFolder?: RedFolderTag;
+  /** Morningstar study vs live prop account log. */
+  strategy?: "Morningstar" | "PRB";
+  structureTf?: StructTf;
+  structureTag?: string;
+  /** Chart Morningstar grade 0–5. */
+  msScore?: number;
+  msPoi?: boolean;
+  msH4?: boolean;
+  msCisd?: boolean;
+  msIfvg1?: boolean;
+  msIfvg5?: boolean;
+  /** NY news time HHMM when redFolder=yes. */
+  redFolderTime?: string;
+  redFolderEvent?: string;
+  mfeR?: number;
+  skipReasons?: SkipReason[];
+  /** Compressed JPEG data URL (chart snapshot). */
+  chartShot?: string;
+}
+
+/** Map chart Morningstar n/5 → letter grade suggestion. */
+export function letterFromMsScore(n: number): JournalEntry["grade"] {
+  if (n >= 4) return "A+";
+  if (n === 3) return "B";
+  if (n >= 0 && n <= 2) return "C";
+  return "-";
 }
 
 import { PropPhaseRuleSet } from "./prop-phase-types";

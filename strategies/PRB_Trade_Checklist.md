@@ -4,9 +4,11 @@
 
 The script finds the setup. **You** are the bias filter. Three checkpoints.
 
-**On chart (gate_v0 Manual):** RB detected on **structure TF** (default **15m**; options **30** / **60** / **240**) · LIMIT/STOP/TP from the **HTF wick** · leave-retest timing on **5m** · tag like `15m · PDH` / `30m · PDH`. Require draw POI ON. No corner tables. Bias stays in your head + paper checklist. **Direction filter = Both**.
+**Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · **structure TF = arming parent only** (default **15m**) · chart also marks **all** HTF RBs (`RB 15m` / `30m` / `1H` / `4H`) when Show all HTF RB markers is ON · LIMIT/STOP/TP from the **arming** HTF wick · leave-retest on **5m** · **Morningstar grade `n/5 · %`** is **eyes only** — never arms. Direction **Both**. Journal → **Morningstar study**.
 
-**Lab (Manual OFF):** structure TF stays **Chart** (today’s Deep BT control) until a dedicated HTF Stage-0 — do not invent promote numbers from Manual visuals.
+**Letter from chart grade:** `4–5/5 → A+` · `3/5 → B` · `≤2/5 → C` (overridable).
+
+**Lab (Manual OFF):** still **PRB** Chart structure (Deep BT control) — not Morningstar. Do not invent promote numbers from Manual visuals.
 
 ---
 
@@ -23,9 +25,10 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 - [ ] **Levels sane:** PDH/PDL and premarket H/L lines on chart make sense vs the story
 - [ ] Draw already satisfied overnight? If yes → today's signal is suspect
 
-## 2. When the script arms a setup (LIMIT / STOP / TP lines on chart)
+## 2. When Morningstar arms a setup (LIMIT / STOP / TP · MS grade on chart)
 
 - [ ] **Structure tag makes sense** (`15m · PDH` / `1H · 10:00` / …) — not a naked mid-trend micro wick
+- [ ] **Morningstar grade** noted (`n/5`) — high grade ≠ auto-take; low grade ≠ auto-skip; **you** decide
 - [ ] **Direction agrees with the daily/4H draw** (don't short into a clean bullish draw below)
 - [ ] The tagged POI is **real unfinished liquidity** (PDH/PDL, premarket, key open — your read)
 - [ ] **4H wick read:** clear wick (~15 pts) = good · ~8 = grey, size down or demand more confluence · speck = skip
@@ -34,13 +37,13 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 - [ ] Gut check: can you instantly list 2–3 reasons it fails? → **not an A setup, skip**
 - [ ] Scary-but-clean is good; easy-looking is the trap
 
-**Skip the trade** (remove strategy or flatten manually) when 2+ of these fail. Log every skip and its reason — that's the discretion dataset. Skips that cluster on “no HTF draw POI” are expected with Require draw POI ON.
+**Skip the trade** when 2+ of these fail. Log every skip in **Journal → Morningstar study** (MS score · skip reasons · optional chart shot). Skips on “no HTF draw POI” are expected with Require draw POI ON.
 
 ## 3. In-trade / post-trade
 
 - [ ] BE moved at +1R automatically (yellow stop line) — don't override it in a fresh eval
 - [ ] Flat by 15:55 always; no adds, no re-entries after the daily lock
-- [ ] Log: date · grade (A+/B/C) · checklist items failed · outcome · MFE
+- [ ] Log Morningstar: date · MS n/5 · letter · structure tag · MFE · skip reasons · snapshot if useful
 - [ ] Loss you can't explain in real time = good setup, variance — move on
 - [ ] Loss with instant excuses = you took a C; tighten checkpoint 2
 

@@ -59,27 +59,28 @@ Optional: set Coach alerts **enter STAND_DOWN** / **exit STAND_DOWN** so Aug ope
 
 If the chart shows only a HUD/table: you almost certainly have **Coach only**. Add **gate_v0** on the same MNQ chart (overlay strategy). Locked `Powell_Rejection_Block_v1.pine` stays untouched.
 
-### Minimal MNQ setup (copy into TV)
+### Morningstar study (Manual HTF + confluence grade)
 
-1. Chart: `CME_MINI:MNQ1!` · **5m** (Manual leave-retest; CISD package can use 1m) · NY session visible.  
-2. Add **`Powell_Rejection_Block gate_v0`** (strategy, overlay).  
-3. Inputs — must match live ops:
-   - **Skip July & October = OFF** (your Manual discretion; Lab used ON)
-   - **Direction filter = Both** (bias is yours — not coded on chart)
-   - **Manual levels only = ON** · **Clean chart = ON**
-   - **RB structure TF = Auto** (Manual → **15m**; or force **15** / **30** / try **60** if busy)
-   - **Require draw POI at HTF RB = ON** · **Block RB against unfinished PD draw = ON**
-   - **Show trade plan** + **Show CE dotted** + **Show entry triggers** = ON
-4. Add **`PRB Gate Live Coach v0`** (optional). Profile Eval or Funded — **qty only**, move table to bottom-right if used.
+**Name:** Morningstar — Manual study path on `gate_v0` (TV shorttitle **Morningstar**). Locked PRB v1 / Lab Chart control stay **PRB**.
 
-### HTF Manual vs Lab Chart
+1. Chart: `CME_MINI:MNQ1!` · **5m** · NY session.  
+2. Add **`Morningstar (PRB gate_v0)`** (strategy, overlay).  
+3. Inputs:
+   - **Manual levels only = ON** · **Direction = Both** · **Clean chart = ON**
+   - **Skip July & October = OFF** (your discretion; Lab used ON)
+   - **RB structure TF = Auto** (→ **15m**) or **15** / **30** / **60**
+   - **Require draw POI = ON** · **Block against unfinished PD draw = ON**
+   - **Show Morningstar confluence grade = ON** (eyes only — never arms)
+   - **Show all HTF RB markers = ON** — see **15m / 30m / 1H / 4H** RBs together; arming parent (structure TF) still picks which one arms LIMIT
+   - **Show trade plan** + **CE dotted** + **entry triggers** = ON
+4. Journal: Vault → **Morningstar study** (no account) — log MS n/5, skip reasons, red-folder **time**, optional chart shot.
 
-| Mode | Structure TF | Draw POI gate | Geometry |
+| Mode | Structure TF | Draw POI | Morningstar grade |
 |---|---|---|---|
-| **Manual ON** (live / bar replay) | Auto → **15m** (or 30 / 60 / 240) | **ON** — RB extreme must tag PDH/PDL · PM H/L · key open | LIMIT / STOP / CE from **HTF wick**; leave-retest on chart bars |
-| **Manual OFF** (Lab Deep BT) | Auto → **Chart** | Ignored | Preserves today’s chart-TF Lab control until a dedicated HTF Stage-0 |
+| **Morningstar** (Manual ON) | Auto → **15m** (or 30 / 60 / 240) | ON | `n/5 · %` labels — **does not arm** |
+| **Lab PRB** (Manual OFF) | Auto → **Chart** | Ignored | Off / ignored |
 
-This is a **geometry + context fix**, not a Lab promote. Schedule HTF Stage-0 Deep BT only after Lane S S3 closes.
+Grade slots: POI · 4H · 1m CISD · 1m IFVG · 5m IFVG. Letter suggest: 4–5→A+ · 3→B · ≤2→C. Not a Lab promote.
 
 ### Recommended live stack (same pane or two)
 
@@ -207,11 +208,11 @@ Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 
 | Mode | On the candles |
 |---|---|
-| **Manual ON** (live / bar replay) | **HTF** RB box (15m/30m/1H/4H wick) · dotted **CE** · dashed wick-start · tag `15m · PDH` / `30m · PDH` (etc.) · **LIMIT / STOP / TP** from HTF geometry · **LEAVE** then **GO** on 5m leave-retest |
-| **Manual OFF** (Deep BT) | Chart-TF structure (Lab control) + frozen **WIN/LOSS** after fills |
-| **Jul/Oct** | Default **Skip Jul/Oct = OFF** for your Manual discretion — Lab used ON; flip ON only for Lab-faithful exports |
+| **Morningstar** (Manual ON) | **MS** watermark · HTF RB box · dotted **CE** · tag `15m · PDH` · **Morningstar n/5 · %** + CISD/IFVG marks · **LIMIT / STOP / TP** · **LEAVE** / **GO** — grade never arms |
+| **Lab PRB** (Manual OFF) | Chart-TF structure + frozen **WIN/LOSS** after fills |
+| **Jul/Oct** | Skip default **OFF** for Manual discretion — Lab used ON |
 
-Bias stays off the chart (**Direction = Both**). Paper checklist for news / SMT / EQH / gut. Micro mid-trend 5m RBs should mostly disappear when structure = 15 and draw POI is ON.
+Bias stays off the chart (**Direction = Both**). Micro mid-trend 5m RBs should mostly disappear when structure = 15 and draw POI is ON.
 
 ### If you still see no RB / boxes
 
