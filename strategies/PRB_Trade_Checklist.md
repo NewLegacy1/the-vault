@@ -2,13 +2,25 @@
 
 **Config:** 5m MNQ · Auto entry (CE if stop > 20 pts) · leave-then-retest 1R (strict OFF) · confirming close ON · rolling-sweep OFF · window 10:00–13:00 · $400 risk ($300 in fresh eval) · 1:5 target · BE at +1R · 1 trade/day · skip Mondays · **skip July & October** (`regime-gate-v0` · Pine `Powell_Rejection_Block_gate_v0.pine`)
 
-The script finds the setup. **You** are the bias filter. Three checkpoints:
+The script finds the setup. **You** are the bias filter. Three checkpoints.
+
+**On chart:** gate_v0 → **Show pre-trade checklist HUD = ON** (top-left). Green = code PASS · amber = WAIT/GREY · red = FAIL/STAND_DOWN · grey **YOU** = human-only (news, SMT, EQH/EQL, gut). When a setup arms, read **Swept level · vs daily draw · 4H at RB · Stop size** before you click.
 
 ---
 
 ## 1. Pre-session (before 10:00, ~10 min)
 
-- [ ] **Jul/Oct stand-down (`regime-gate-v0`):** if NY calendar month is **July or October** → **no new trades** (funnel = STAND_DOWN). Resume when month rolls. Do not stack March.
+| Checklist | Chart HUD row |
+|---|---|
+| Jul/Oct stand-down | `Jul/Oct gate` |
+| Monday skip | `Monday` |
+| Entry window | `Entry window` |
+| Daily → 4H bias | `Auto / bias` (+ your read) |
+| 4H wick context | `4H wick now` (GOOD≥15 / GREY≥8 / SPECK) |
+| Key opens marked | `Key opens` + chart levels |
+| News · Daily SMT · draw already done | **YOU** (not coded) |
+
+- [ ] **Jul/Oct stand-down (`regime-gate-v0`):** if NY calendar month is **July or October** → **no new trades** (HUD = STAND_DOWN; SHADOW boxes only). Resume when month rolls. Do not stack March.
 - [ ] **News check (Forex Factory):** red folders today? Time: ______
   - CPI/NFP with a one-sided beat → expect a trend day; **do not fade it** — skip the session or demand A+ context
   - Mixed prints → normal rules apply
@@ -19,11 +31,19 @@ The script finds the setup. **You** are the bias filter. Three checkpoints:
 - [ ] **Levels sane:** PDH/PDL and premarket H/L lines on chart make sense vs the story
 - [ ] Draw already satisfied overnight? If yes → today's signal is suspect
 
-## 2. When the script arms a setup (pending lines appear)
+## 2. When the script arms a setup (RB zone + pending boxes appear)
+
+| Checklist | Chart HUD row |
+|---|---|
+| Direction vs draw | `Direction` + `vs daily draw` (AGREES / FIGHTS / CHECK) |
+| Swept liquidity real | `Swept level` (PDH/PDL/PMH/10:00/…) |
+| 4H wick read | `4H at RB` |
+| Stop in bounds | `Stop size` (FAIL if > max) |
+| EQH/EQL · NDOG/NWOG · gut | **YOU** |
 
 - [ ] **Direction agrees with the daily/4H draw** (don't short into a clean bullish draw below)
-- [ ] The swept level is **real liquidity** (PDH/PDL, premarket, key open — check which line was souped)
-- [ ] **4H wick read:** clear wick (~15 pts) = good · ~8 = grey, size down or demand more confluence · speck = the script shouldn't have fired, skip
+- [ ] The swept level is **real liquidity** (PDH/PDL, premarket, key open — HUD shows which tag)
+- [ ] **4H wick read:** clear wick (~15 pts) = good · ~8 = grey, size down or demand more confluence · speck = skip
 - [ ] Not fighting **equal highs/lows** that haven't been swept yet (SOP hard filter)
 - [ ] No **NDOG/NWOG magnet** sitting right where the trade needs to travel
 - [ ] Gut check: can you instantly list 2–3 reasons it fails? → **not an A setup, skip**

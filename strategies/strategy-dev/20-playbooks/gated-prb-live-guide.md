@@ -66,11 +66,11 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 3. Inputs — must match live ops:
    - **Manual levels only — NO orders = ON**
    - **Skip July & October = ON** (leave on through Aug practice; do not flip off to “see more” in July)
-   - Visuals: **Live clean chart = ON** · Show RB zone + labels / liquidity / position boxes = ON · Extra liquidity = OFF
+   - Visuals: **Live clean chart = ON** · **Show pre-trade checklist HUD = ON** · Extra liquidity = OFF
    - Funnel/MISSED tables stay hidden while Live clean + Manual (turn Live clean OFF to debug)
 4. Add **`PRB Gate Live Coach v0`** (indicator, same pane). Profile Eval or Funded.  
 5. Style tab: leave gate_v0 overlays visible — TV can hide them if a previous style was saved. **Re-paste** after visual updates so defaults apply.  
-6. Confirm funnel row **Mode = MANUAL (no orders)** and **Jul/Oct gate** shows `STAND_DOWN` (Jul) or `ON · month ok` (Aug/Sep).
+6. Confirm checklist HUD **Jul/Oct gate** = STAND_DOWN (Jul) or OK (Aug/Sep) and **Script state** updates when an RB arms.
 
 ### Recommended live stack (same pane or two)
 
@@ -148,15 +148,15 @@ Example: stop 10 pts · $400 risk → 20 MNQ.
 
 ### Pre-open (−30 to −5 min)
 
-1. LiveCoach: if **STAND_DOWN Jul/Oct** → close the DOM. Done for the month’s RTH entries.
-2. News (FF): red CPI/NFP → extra caution / skip (checklist).
-3. Daily→4H draw noted; set **Direction filter** on gate_v0 (Both / Long / Short / Auto PDH/PDL).
+1. Checklist HUD top-left: if **Jul/Oct gate = STAND_DOWN** → journal SHADOW only / no live size.
+2. News (FF): red CPI/NFP → extra caution / skip (**YOU** row).
+3. Daily→4H draw noted; set **Direction filter** on gate_v0 (Both / Long / Short / Auto PDH/PDL). Confirm HUD `Auto / bias` matches your read.
 4. Confirm inputs match profile card above.
 
-### When boxes arm (funnel ARMED)
+### When boxes arm (HUD Script state → ARMED / SHADOW / WAIT)
 
-1. Checklist §2 — if 2+ fails → remove pending / do not click.
-2. LiveCoach: confirm qty from stop distance on the red box.
+1. Read HUD §Setup: Direction · Swept level · vs daily draw · 4H at RB · Stop size — then checklist §2 human rows (EQH/EQL · gut). If 2+ fail → do not click.
+2. LiveCoach: confirm qty from stop distance on the red box (paste pts into Coach).
 3. Place **limit** at entry, **stop** and **target** as drawn. Do not freestyle RR.
 4. One slot/day — after fill or cancel, stop hunting.
 
@@ -200,7 +200,7 @@ Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 | Script | What you should see |
 |---|---|
 | LiveCoach | Soft orange wash in Jul/Oct · corner LIVE/STAND_DOWN · risk table · faint PLAN@Npt stop/TP/BE (not an RB) |
-| gate_v0 Manual ON + **Live clean ON** | **RB Short / RB Long** filled wick zones (FVG-style) · PDH/PDL labeled bands · `Sweep PDH` / `Sweep PDL` pills · `Bias → longs/shorts` · 10:00 wash · teal/red ARMED (or orange SHADOW) risk boxes · **no** funnel/MISSED tables · no KO line spaghetti |
+| gate_v0 Manual ON + **Live clean ON** | Top-left **CHECKLIST** HUD (maps [[PRB_Trade_Checklist]]) · **RB Short/Long** zones · PDH/PDL bands · Sweep pills · ARMED/SHADOW risk boxes · 10:00 wash · no funnel/MISSED clutter |
 | gate_v0 Live clean OFF | Classic lines + full diagnostic tables (Lab/debug) |
 | MPSF events | Separate Track B marker — do not use as PRB entry engine |
 

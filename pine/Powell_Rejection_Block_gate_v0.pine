@@ -341,6 +341,8 @@ var float pendStop = na
 var float pendTp = na
 var bool  manualReady = false
 var string manualState = "—"
+var string suSweepTag = "—"
+var float suH4Pts = na
 
 bool isTrigger = i_entryMode == "CISD trigger (for 1m)"
 
@@ -349,6 +351,8 @@ if newDay
     suOrd := false
     manualReady := false
     manualState := "—"
+    suSweepTag := "—"
+    suH4Pts := na
     if not i_manualOnly
         strategy.cancel_all()
 
@@ -669,6 +673,8 @@ if array.size(beaCfDir) > 0
 if rbBear and canArm
     float wickStart = math.max(open, close)
     float ce = (high + wickStart) / 2.0
+    suSweepTag := f_sweepAboveTag()
+    suH4Pts := h4UpperWick
     if isTrigger
         suDir := -1
         suWickStart := wickStart
@@ -699,6 +705,8 @@ if rbBear and canArm
 if rbBull and canArm and suDir == 0
     float wickStart = math.min(open, close)
     float ce = (low + wickStart) / 2.0
+    suSweepTag := f_sweepBelowTag()
+    suH4Pts := h4LowerWick
     if isTrigger
         suDir := 1
         suWickStart := wickStart
@@ -1168,6 +1176,75 @@ plot(showGeomPlots and not na(suCe) ? suCe : na, "RB zone CE", color.new(color.w
 plot(showGeomPlots and not na(suWickStart) ? suWickStart : na, "RB wick start", color.new(color.aqua, 45), style = plot.style_linebr)
 plot(showPendPlots and not na(suEntry) ? suEntry : na, "RB limit entry", color.new(color.white, 20), style = plot.style_linebr)
 plot(showPendPlots and not na(suStop) ? suStop : na, "RB stop", color.new(color.red, 35), style = plot.style_linebr)
+
+// ─── Pre-trade checklist HUD ([[PRB_Trade_Checklist]]) ───────────────────────
+// Codeable rows = PASS/FAIL/WAIT. Narrative rows = YOU (human gate).
+f_ck(table t, int r, string k, string v, color vc) =>
+    table.cell(t, 0, r, k, text_color = color.new(#94a3b8, 0), text_size = size.tiny, text_halign = text.align_left)
+    table.cell(t, 1, r, v, text_color = vc, text_size = size.small, text_halign = text.align_right)
+
+color cPass = color.new(#4ade80, 0)
+color cFail = color.new(#f87171, 0)
+color cWait = color.new(#fbbf24, 0)
+color cYou  = color.new(#94a3b8, 0)
+color cHead = color.new(#e2e8f0, 0)
+
+string ckMonth = not i_skipJulOct ? "OFF" : not monthOk ? "STAND_DOWN" : "OK"
+color ckMonthC = not i_skipJulOct ? cYou : not monthOk ? cFail : cPass
+string ckMon = mondayOk ? "OK" : "SKIP Mon"
+color ckMonC = mondayOk ? cPass : cFail
+string ckWin = inWindow ? "IN WINDOW" : nyHhmm < i_winStart ? "WAIT open" : "OUT"
+color ckWinC = inWindow ? cPass : nyHhmm < i_winStart ? cWait : cYou
+string ckBias = autoBiasOn ? (dayDraw == -1 ? "→ SHORTS" : dayDraw == 1 ? "→ LONGS" : "NEUTRAL") : i_biasMode
+color ckBiasC = autoBiasOn ? (dayDraw == 0 ? cWait : cPass) : cYou
+float liveH4 = math.max(h4UpperWick, h4LowerWick)
+string ckH4 = str.tostring(liveH4, "#.#") + " " + f_h4Grade(liveH4)
+color ckH4C = liveH4 >= 15.0 ? cPass : liveH4 >= 8.0 ? cWait : cFail
+string ckKo = (not na(ko1800) ? "18 " : "") + (not na(ko0000) ? "00 " : "") + (not na(ko1000) ? "10" : "")
+ckKo := str.length(ckKo) > 0 ? ckKo : "none yet"
+string ckSetup = suDir == 0 ? "IDLE" : manualState
+color ckSetupC = suDir == 0 ? cYou : manualReady ? cPass : str.contains(manualState, "SHADOW") ? cWait : cWait
+string ckDir = suDir == -1 ? "SHORT" : suDir == 1 ? "LONG" : "—"
+color ckDirC = suDir == 0 ? cYou : cPass
+string ckSweep = suDir != 0 ? suSweepTag : "—"
+color ckSweepC = suDir != 0 and suSweepTag != "—" ? cPass : cYou
+string ckBiasAgree = "—"
+color ckAgreeC = cYou
+if suDir != 0 and autoBiasOn
+    bool agree = dayDraw == 0 or (suDir == -1 and dayDraw == -1) or (suDir == 1 and dayDraw == 1)
+    bool fight = (suDir == -1 and dayDraw == 1) or (suDir == 1 and dayDraw == -1)
+    ckBiasAgree := fight ? "FIGHTS draw" : agree and dayDraw != 0 ? "AGREES" : "CHECK"
+    ckAgreeC := fight ? cFail : agree and dayDraw != 0 ? cPass : cWait
+else if suDir != 0
+    ckBiasAgree := "YOU decide"
+    ckAgreeC := cYou
+string ckStop = suDir != 0 and not na(suEntry) and not na(suStop) ? str.tostring(math.abs(suEntry - suStop), "#.##") + " pt" : "—"
+color ckStopC = suDir != 0 and not na(suEntry) and not na(suStop) ? (math.abs(suEntry - suStop) > i_maxStopPts ? cFail : cPass) : cYou
+string ckArmH4 = suDir != 0 and not na(suH4Pts) ? str.tostring(suH4Pts, "#.#") + " " + f_h4Grade(suH4Pts) : "—"
+color ckArmH4C = suDir != 0 and not na(suH4Pts) ? (suH4Pts >= 15.0 ? cPass : suH4Pts >= 8.0 ? cWait : cFail) : cYou
+
+var table ckT = table.new(position.top_left, 2, 18, bgcolor = color.new(#0a0a0a, 8), border_width = 1, border_color = color.new(#333333, 0))
+if i_showCheck and barstate.islast
+    f_ck(ckT, 0, "CHECKLIST", "PRB pre-trade", cHead)
+    f_ck(ckT, 1, "— Session —", "", cYou)
+    f_ck(ckT, 2, "Jul/Oct gate", ckMonth, ckMonthC)
+    f_ck(ckT, 3, "Monday", ckMon, ckMonC)
+    f_ck(ckT, 4, "Entry window", ckWin, ckWinC)
+    f_ck(ckT, 5, "Auto / bias", ckBias, ckBiasC)
+    f_ck(ckT, 6, "4H wick now", ckH4, ckH4C)
+    f_ck(ckT, 7, "Key opens", ckKo, cYou)
+    f_ck(ckT, 8, "News / SMT", "YOU", cYou)
+    f_ck(ckT, 9, "— Setup —", "", cYou)
+    f_ck(ckT, 10, "Script state", ckSetup, ckSetupC)
+    f_ck(ckT, 11, "Direction", ckDir, ckDirC)
+    f_ck(ckT, 12, "Swept level", ckSweep, ckSweepC)
+    f_ck(ckT, 13, "vs daily draw", ckBiasAgree, ckAgreeC)
+    f_ck(ckT, 14, "4H at RB", ckArmH4, ckArmH4C)
+    f_ck(ckT, 15, "Stop size", ckStop, ckStopC)
+    f_ck(ckT, 16, "EQH/EQL · gap", "YOU", cYou)
+    f_ck(ckT, 17, "Gut / grade", "YOU · skip if 2+ fail", cYou)
+else if barstate.islast
+    table.clear(ckT, 0, 0, 1, 17)
 
 // ─── Diagnostic funnel table ─────────────────────────────────────────────────
 f_row(table t, int r, string k, string v) =>
