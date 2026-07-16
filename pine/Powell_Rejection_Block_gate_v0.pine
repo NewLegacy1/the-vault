@@ -153,6 +153,14 @@ i_manualOnly = input.bool(true, "Manual levels only — NO orders (you click)", 
 i_showBlockedBias = input.bool(false, "Mark bias-blocked RBs (journal)", group = "Manual / discretionary replay", tooltip = "Off by default — bias is your discretion, not chart clutter.")
 i_manualAlerts = input.bool(false, "Alert when limit level arms", group = "Manual / discretionary replay", tooltip = "Fires only on live ARMED (not Jul/Oct or Monday SHADOW).")
 
+grpPb = "Morningstar Path B (KO + fib + LTF RB)"
+i_pathB = input.bool(true, "Enable Path B arming (Manual)", group = grpPb, tooltip = "Powell stack: 10:00 manip→leave → fib OTE → 5m/1m RB trigger at KO. Draws ENTRY/STOP/TP. Manual only — you click. Path A (HTF RB) still runs first if both fire.")
+i_pathBAlign = input.float(10.0, "10:00 must sit in fib OTE ± pts", minval = 2.0, step = 1.0, group = grpPb)
+i_pathBUse5 = input.bool(true, "Allow 5m RB trigger", group = grpPb)
+i_pathBUse1 = input.bool(true, "Allow 1m RB trigger", group = grpPb)
+i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
+i_pathBShowFib = input.bool(true, "Show Path B fib OTE lines", group = grpPb)
+
 grpMs = "Morningstar grade (Manual · eyes only)"
 i_msGrade = input.bool(true, "Show Morningstar LTF-in-RB score", group = grpMs, tooltip = "Needs Manual ON. Counts 1m CISD · 1m IFVG · 5m IFVG · 5m RB inside the armed HTF wick — NEVER arms.")
 i_msShowRb5 = input.bool(true, "Mark 5m RBs + CE (LTF)", group = grpMs, tooltip = "Eyes only. Counts toward LTF n/4 when the 5m RB sits inside the armed HTF box.")
@@ -332,7 +340,8 @@ f_htfPack(float minW) =>
     bool bull = locL and lw >= minW and (not i_confClose or c1 > o1)
     [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1), uw, lw]
 
-// 5m RB = LTF confluence only (never structure/arming parent)
+// 1m/5m RB — Path B trigger + LTF confluence (never HTF arming parent)
+[b1, u1, h1, l1, wsB1, wsU1, uw1, lw1] = request.security(syminfo.tickerid, "1", f_htfPack(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
 [b5, u5, h5, l5, wsB5, wsU5, uw5, lw5] = request.security(syminfo.tickerid, "5", f_htfPack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
 [b15, u15, h15, l15, wsB15, wsU15, uw15, lw15] = request.security(syminfo.tickerid, "15", f_htfPack(i_minWick15), barmerge.gaps_off, barmerge.lookahead_off)
 [b30, u30, h30, l30, wsB30, wsU30, uw30, lw30] = request.security(syminfo.tickerid, "30", f_htfPack(i_minWick30), barmerge.gaps_off, barmerge.lookahead_off)
@@ -568,6 +577,18 @@ var bool  manualReady = false
 var string manualState = "—"
 var string suSweepTag = "—"
 var float suH4Pts = na
+var bool suPathB = false
+
+// Path B: 10:00 manip → leave → fib OTE → LTF RB at KO (Manual arm)
+var int pbDir = 0
+var bool pbManip = false
+var bool pbLeft = false
+var float pbHi = na
+var float pbLo = na
+var line pbLn62 = na
+var line pbLn705 = na
+var line pbLn79 = na
+var label pbLbl = na
 
 // Morningstar confluence latches (Manual grade only — never used in canArm / rb*)
 var bool msPoi = false
@@ -594,6 +615,24 @@ if newDay
     suH4Pts := na
     suLeavePx := na
     suLeft := false
+    suPathB := false
+    pbDir := 0
+    pbManip := false
+    pbLeft := false
+    pbHi := na
+    pbLo := na
+    if not na(pbLn62)
+        line.delete(pbLn62)
+    if not na(pbLn705)
+        line.delete(pbLn705)
+    if not na(pbLn79)
+        line.delete(pbLn79)
+    if not na(pbLbl)
+        label.delete(pbLbl)
+    pbLn62 := na
+    pbLn705 := na
+    pbLn79 := na
+    pbLbl := na
     msPoi := false
     msH4 := false
     msCisd := false
@@ -954,6 +993,7 @@ if rbBear and canArm
             suBar := bar_index
             suLeft := i_leaveR == 0
             suLeavePx := na
+            suPathB := false
             manualReady := false
             manualState := suLeft ? "WAIT approach" : "WAIT leave"
 
@@ -970,6 +1010,7 @@ if rbBull and canArm and suDir == 0
         suExtreme := extreme
         suBar := bar_index
         suTapped := false
+        suPathB := false
         manualState := "CISD tap CE"
     else
         [entryPx, stopPx] = f_plan(wickStart, ce, extreme, false)
@@ -988,8 +1029,144 @@ if rbBull and canArm and suDir == 0
             suBar := bar_index
             suLeft := i_leaveR == 0
             suLeavePx := na
+            suPathB := false
             manualReady := false
             manualState := suLeft ? "WAIT approach" : "WAIT leave"
+
+// ── Path B: 10:00 manip → leave → fib OTE → 5m/1m RB at KO (Manual only) ─────
+// Powell: key open + fib-validated PDA + LTF RB trigger (limit at RB start).
+bool c1 = ta.change(time("1", "America/New_York")) != 0
+bool c5 = ta.change(time("5", "America/New_York")) != 0
+bool pbOn = i_manualOnly and i_pathB and not na(ko1000) and nyHhmm >= 1000 and nyHhmm < i_winEnd
+
+if pbOn and suDir == 0
+    // Track swing of the 10:00 leg
+    pbHi := na(pbHi) ? high : math.max(pbHi, high)
+    pbLo := na(pbLo) ? low : math.min(pbLo, low)
+
+    // Manip: pierce KO one side
+    if not pbManip and high > ko1000
+        pbManip := true
+    if not pbManip and low < ko1000
+        pbManip := true
+
+    // Leave / distribute: close back through KO → set bias
+    if pbManip and not pbLeft and barstate.isconfirmed
+        if close < ko1000 and high[1] > ko1000
+            pbLeft := true
+            pbDir := -1
+        if close > ko1000 and low[1] < ko1000
+            pbLeft := true
+            pbDir := 1
+
+    // Fib OTE band of active swing (0 = lo, 1 = hi): 0.62–0.79
+    float pbOteLo = not na(pbHi) and not na(pbLo) ? pbLo + (pbHi - pbLo) * 0.62 : na
+    float pbOteHi = not na(pbHi) and not na(pbLo) ? pbLo + (pbHi - pbLo) * 0.79 : na
+    float pbOteMid = not na(pbHi) and not na(pbLo) ? pbLo + (pbHi - pbLo) * 0.705 : na
+    bool koInOte = pbLeft and not na(pbOteLo) and ko1000 >= pbOteLo - i_pathBAlign and ko1000 <= pbOteHi + i_pathBAlign
+
+    if i_pathBShowFib and pbLeft and not na(pbOteLo)
+        if na(pbLn62)
+            pbLn62 := line.new(bar_index, pbOteLo, bar_index + 8, pbOteLo, color = color.new(#e2e8f0, 0), width = 1, style = line.style_dotted)
+            pbLn705 := line.new(bar_index, pbOteMid, bar_index + 8, pbOteMid, color = color.new(#facc15, 0), width = 1, style = line.style_dotted)
+            pbLn79 := line.new(bar_index, pbOteHi, bar_index + 8, pbOteHi, color = color.new(#e2e8f0, 0), width = 1, style = line.style_dotted)
+            pbLbl := label.new(bar_index, pbOteHi, "B OTE · 10:00", style = label.style_none, color = color.new(color.black, 100), textcolor = pbDir == -1 ? c_bear : c_bull, size = size.small)
+        else
+            line.set_xy1(pbLn62, bar_index - 20, pbOteLo)
+            line.set_xy2(pbLn62, bar_index + 4, pbOteLo)
+            line.set_xy1(pbLn705, bar_index - 20, pbOteMid)
+            line.set_xy2(pbLn705, bar_index + 4, pbOteMid)
+            line.set_xy1(pbLn79, bar_index - 20, pbOteHi)
+            line.set_xy2(pbLn79, bar_index + 4, pbOteHi)
+            label.set_xy(pbLbl, bar_index, pbOteHi)
+            label.set_text(pbLbl, (pbDir == -1 ? "B SHORT" : "B LONG") + " · OTE · 10:00")
+            label.set_textcolor(pbLbl, pbDir == -1 ? c_bear : c_bull)
+
+    // LTF RB trigger near 10:00 while KO sits in OTE
+    bool trig5Bear = i_pathBUse5 and c5 and b5
+    bool trig5Bull = i_pathBUse5 and c5 and u5
+    bool trig1Bear = i_pathBUse1 and c1 and b1
+    bool trig1Bull = i_pathBUse1 and c1 and u1
+    bool nearKo5B = not na(h5) and (math.abs(h5 - ko1000) <= i_pathBAlign or math.abs(wsB5 - ko1000) <= i_pathBAlign)
+    bool nearKo5U = not na(l5) and (math.abs(l5 - ko1000) <= i_pathBAlign or math.abs(wsU5 - ko1000) <= i_pathBAlign)
+    bool nearKo1B = not na(h1) and (math.abs(h1 - ko1000) <= i_pathBAlign or math.abs(wsB1 - ko1000) <= i_pathBAlign)
+    bool nearKo1U = not na(l1) and (math.abs(l1 - ko1000) <= i_pathBAlign or math.abs(wsU1 - ko1000) <= i_pathBAlign)
+
+    if canArm and koInOte and pbDir == -1 and barstate.isconfirmed
+        float tws = na
+        float tce = na
+        float tex = na
+        string ttag = "—"
+        if trig5Bear and nearKo5B
+            tws := wsB5
+            tex := h5
+            tce := (h5 + wsB5) * 0.5
+            ttag := "PathB · 10:00 · 5RB"
+        else if trig1Bear and nearKo1B
+            tws := wsB1
+            tex := h1
+            tce := (h1 + wsB1) * 0.5
+            ttag := "PathB · 10:00 · 1RB"
+        if not na(tws)
+            [entryPx, stopPx] = f_plan(tws, tce, tex, true)
+            if na(entryPx)
+                cntSkipStop += 1
+            else
+                float riskPts0 = math.abs(stopPx - entryPx)
+                suDir := -1
+                suWickStart := tws
+                suCe := tce
+                suExtreme := tex
+                suEntry := entryPx
+                suStop := stopPx
+                pendStop := stopPx
+                pendTp := entryPx - f_effRr() * riskPts0
+                suBar := bar_index
+                suLeft := true
+                suLeavePx := pbLo
+                suPathB := true
+                suSweepTag := ttag
+                suH4Pts := h4UpperWick
+                manualReady := true
+                manualState := f_shadowArmLabel()
+
+    if canArm and koInOte and pbDir == 1 and suDir == 0 and barstate.isconfirmed
+        float tws = na
+        float tce = na
+        float tex = na
+        string ttag = "—"
+        if trig5Bull and nearKo5U
+            tws := wsU5
+            tex := l5
+            tce := (l5 + wsU5) * 0.5
+            ttag := "PathB · 10:00 · 5RB"
+        else if trig1Bull and nearKo1U
+            tws := wsU1
+            tex := l1
+            tce := (l1 + wsU1) * 0.5
+            ttag := "PathB · 10:00 · 1RB"
+        if not na(tws)
+            [entryPx, stopPx] = f_plan(tws, tce, tex, false)
+            if na(entryPx)
+                cntSkipStop += 1
+            else
+                float riskPts0 = math.abs(stopPx - entryPx)
+                suDir := 1
+                suWickStart := tws
+                suCe := tce
+                suExtreme := tex
+                suEntry := entryPx
+                suStop := stopPx
+                pendStop := stopPx
+                pendTp := entryPx + f_effRr() * riskPts0
+                suBar := bar_index
+                suLeft := true
+                suLeavePx := pbHi
+                suPathB := true
+                suSweepTag := ttag
+                suH4Pts := h4LowerWick
+                manualReady := true
+                manualState := f_shadowArmLabel()
 
 // ── Leave-then-retest arming (SOP T03: wait for price to LEAVE, then retest) ──
 // The order is re-evaluated every bar while the setup is live: it only stays
@@ -1401,7 +1578,6 @@ else if suDir == 0
 // HTF/LTF RB markers + CE (capped) · OB markers + CE
 // Needs Manual ON (Morningstar study) — defaults ON on this script
 bool msViz = i_manualOnly
-bool c5 = ta.change(time("5", "America/New_York")) != 0
 bool c15 = ta.change(time("15", "America/New_York")) != 0
 bool c30 = ta.change(time("30", "America/New_York")) != 0
 bool c60 = ta.change(time("60", "America/New_York")) != 0
@@ -1677,7 +1853,7 @@ if planLive
     color rBg = color.new(sCol, 92)
     color wBg = color.new(tCol, 94)
     string trig = f_trigState()
-    string eTxt = "ENTRY · " + trig
+    string eTxt = suPathB ? ("ENTRY · " + suSweepTag) : ("ENTRY · " + trig)
     string sTxt = "STOP"
     string tTxt = "TP"
     if newPlan

@@ -68,15 +68,17 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 3. Inputs:
    - **Manual levels only = ON** · **Last order = 1300** · **Direction = Both** · **Show trade plan = ON**
    - **Skip July & October = OFF** (your discretion; Lab used ON)
-   - **RB structure TF = Auto** (→ **15m**) — still the only arming parent
-   - **Require draw POI = ON** · Morningstar LTF score + **weekly/HTF FVG (untested)** + **fib OTE + PDA overlap** = ON (eyes only)
-   - Early 10:00 RB optional; waiting for mid-day **OTE into unfinished HTF stack** (WFVG · HTF FVG · RB · OB · key opens · 4H) is intentional
-4. Journal: Vault → **Morningstar study** — LTF flags + HTF PDA/OTE row (not 15IFVG-only), skip reasons, red-folder **time**, optional chart shot.
+   - **Path B = ON** (default) — 10:00 manip→leave → fib OTE → 5m/1m RB at KO arms ENTRY/STOP/TP
+   - **RB structure TF = Auto** (→ **15m**) — Path A arming parent
+   - **Require draw POI = ON** · Morningstar LTF score + **weekly/HTF FVG (untested)** + **fib OTE + PDA overlap** = ON (eyes only for Path A)
+   - Early 10:00 RB optional; Path B is the cleaner KO+fib+LTF stack; Path A still fires on HTF RB leave-retest
+4. Journal: Vault → **Morningstar study** — path (A/B) · LTF flags + HTF PDA/OTE row · skip reasons · red-folder **time** · optional chart shot.
 
-| Mode | Structure TF | Draw POI | Morningstar grade |
-|---|---|---|---|
-| **Morningstar** (Manual ON) | Auto → **15m** (or 30 / 60 / 240) | ON | `LTF n/4` + OTE/HTF PDA tags — **does not arm** |
-| **Lab PRB** (Manual OFF) | Auto → **Chart** | Ignored | Off / ignored |
+| Mode | Arms | Eyes only |
+|---|---|---|
+| **Morningstar Path A** | HTF RB (15m default) leave-retest | `LTF n/4` + OTE/HTF PDA tags |
+| **Morningstar Path B** | 10:00 + fib OTE + 5m/1m RB at KO | Path B fib lines (`B OTE · 10:00`) |
+| **Lab PRB** (Manual OFF) | Chart RB (Deep BT) | Path B ignored |
 
 Grade slots: POI · 4H · 1m CISD · 1m IFVG · 5m IFVG. Letter suggest: 4–5→A+ · 3→B · ≤2→C. Not a Lab promote.
 
@@ -206,7 +208,7 @@ Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 
 | Mode | On the candles |
 |---|---|
-| **Morningstar** (Manual ON) | **MS** watermark · HTF RB box · dotted **CE** · tag `15m · PDH` · **Morningstar n/5 · %** + CISD/IFVG marks · **LIMIT / STOP / TP** · **LEAVE** / **GO** — grade never arms |
+| **Morningstar** (Manual ON) | HTF RB (Path A) and/or **Path B** (`PathB · 10:00 · 5RB`) · fib `B OTE` lines · LTF marks · **LIMIT / STOP / TP** — LTF grade never arms; Path B does |
 | **Lab PRB** (Manual OFF) | Chart-TF structure + frozen **WIN/LOSS** after fills |
 | **Jul/Oct** | Skip default **OFF** for Manual discretion — Lab used ON |
 

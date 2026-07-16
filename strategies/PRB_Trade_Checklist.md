@@ -4,7 +4,12 @@
 
 The script finds the setup. **You** are the bias filter. Three checkpoints.
 
-**Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · arming parent = HTF RB (default **15m**) · window **10:00–13:00** (mid-day OTE allowed) · marks untested **WFVG / 4HFVG / 1HFVG / 15FVG** · RB/OB · 4H wick · after leave draws **fib OTE 0.62–0.79** + tag of which HTF PDAs sit in the pocket (`OTE · WFVG · 15RB · …`) — **eyes only**, never arms. OTE ≠ 15m-IFVG-only. Journal → **Morningstar study**.
+**Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · window **10:00–13:00**.
+
+- **Path A:** HTF RB (default **15m**) → leave-retest → ENTRY/STOP/TP. Eyes-only: untested **WFVG / 4HFVG / 1HFVG / 15FVG** · RB/OB · 4H wick · fib OTE + PDA overlap tag — **never arms**.
+- **Path B (ON by default):** 10:00 manip → leave through KO → fib OTE (0.62–0.79) with KO inside ± align → **5m/1m RB** near KO → arms ENTRY/STOP/TP tagged `PathB · 10:00 · 5RB` (or `1RB`). Manual only — you click. Path A still wins if both fire same bar.
+
+Journal → **Morningstar study**. OTE ≠ 15m-IFVG-only.
 
 **Letter from journal flags:** `≥6/12 → A+` · `3–5 → B` · `1–2 → C` · `0 → -` (no setup). Chart **LTF n/4** separate from HTF PDA row.
 
@@ -27,17 +32,18 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 
 ## 2. When Morningstar arms a setup (LIMIT / STOP / TP · MS grade on chart)
 
-- [ ] **Structure tag makes sense** (`15m · PDH` / `1H · 10:00` / …) — not a naked mid-trend micro wick
-- [ ] **LTF-in-RB score** noted (`LTF n/4` on the RB header) — high ≠ auto-take; low ≠ auto-skip; **you** decide
+- [ ] **Which path?** Path A tag (`15m · PDH` / …) vs Path B (`PathB · 10:00 · 5RB` / `1RB`) — both need your bias filter
+- [ ] **Path A:** structure tag makes sense — not a naked mid-trend micro wick · note `LTF n/4` (eyes only)
+- [ ] **Path B:** saw manip above/below 10:00 → leave · `B OTE · 10:00` lines printed · KO in pocket · LTF RB at KO before you click
 - [ ] **Direction agrees with the daily/4H draw** (don't short into a clean bullish draw below)
-- [ ] The tagged POI is **real unfinished liquidity** (PDH/PDL, premarket, key open — your read)
+- [ ] The tagged POI / KO story is **real unfinished liquidity** (your read)
 - [ ] **4H wick read:** clear wick (~15 pts) = good · ~8 = grey, size down or demand more confluence · speck = skip
 - [ ] Not fighting **equal highs/lows** that haven't been swept yet (SOP hard filter)
 - [ ] No **NDOG/NWOG magnet** sitting right where the trade needs to travel
 - [ ] Gut check: can you instantly list 2–3 reasons it fails? → **not an A setup, skip**
 - [ ] Scary-but-clean is good; easy-looking is the trap
 
-**Skip the trade** when 2+ of these fail. Log every skip in **Journal → Morningstar study** (MS score · skip reasons · optional chart shot). Skips on “no HTF draw POI” are expected with Require draw POI ON.
+**Skip the trade** when 2+ of these fail. Log every skip in **Journal → Morningstar study** (path · MS score · skip reasons · optional chart shot). Skips on “no HTF draw POI” are expected for Path A with Require draw POI ON.
 
 ## 3. In-trade / post-trade
 
