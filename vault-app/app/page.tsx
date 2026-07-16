@@ -13,20 +13,22 @@ interface ChkItem {
 
 const BEFORE_10: ChkItem[] = [
   { id: "news", text: "News checked — red folder = skip or A+ only" },
-  { id: "bias", text: "Bias + TV Direction match — set Long only / Short only / Both" },
-  { id: "levels", text: "PDH · PDL · PM H/L on chart" },
+  { id: "bias", text: "D→4H draw written — TV Direction stays Both (Manual)" },
+  { id: "levels", text: "PDH · PDL · PM H/L · key opens on chart" },
+  { id: "struct", text: "gate_v0 Manual ON · structure 15 (or 30/60) · draw POI ON" },
 ];
 
 const TAKE_IT: ChkItem[] = [
-  { id: "draw", text: "Trade matches the draw" },
-  { id: "liq", text: "Real sweep (PDH/PDL, PM, or key open)" },
-  { id: "eqhl", text: "No unswept equal H/L in the way" },
-  { id: "take", text: "I'd take it — if not, skip and log" },
+  { id: "tag", text: "Structure tag makes sense (e.g. 15m · PDH) — not a naked mid-trend wick" },
+  { id: "draw", text: "Trade matches the unfinished draw" },
+  { id: "liq", text: "POI is real liquidity (PDH/PDL, PM, or key open)" },
+  { id: "eqhl", text: "No unswept equal H/L / NDOG magnet in the path" },
+  { id: "take", text: "I'd take it — if not, skip and log why" },
 ];
 
 const DONE: ChkItem[] = [
-  { id: "be", text: "BE at +1R — don't move stop" },
-  { id: "log", text: "Logged in Journal" },
+  { id: "be", text: "BE at +1R — don't move stop (or note if scratched)" },
+  { id: "log", text: "Logged in Journal (take or skip · grade · notes)" },
 ];
 
 function ChecklistSection({
@@ -133,39 +135,47 @@ export default function TodayPage() {
 
       <div className="panel">
         <div className="panel-title">
-          Checklist <span className="sub">tap through · {day}</span>
+          Checklist <span className="sub">Manual HTF · tap through · {day}</span>
         </div>
-        <div className="panel-body chk-grid">
-          <ChecklistSection
-            title="Before 10:00"
-            hint="~2 min"
-            items={BEFORE_10}
-            storageKey={`vault.chk.pre.${day}`}
-          />
-          <ChecklistSection
-            title="Take it?"
-            hint="when boxes arm · 2+ no = skip"
-            items={TAKE_IT}
-            storageKey={`vault.chk.setup.${day}`}
-          />
-          <ChecklistSection
-            title="After"
-            hint="in trade or flat"
-            items={DONE}
-            storageKey={`vault.chk.post.${day}`}
-          />
+        <div className="panel-body">
+          <p className="small dim" style={{ marginTop: 0, marginBottom: 12, lineHeight: 1.5 }}>
+            Bar-replay / paper study on <b>gate_v0</b> (HTF RB). Clear between replay days. Log every arm you skip
+            in <Link href="/journal">Journal</Link> — skips are the dataset.
+          </p>
+          <div className="chk-grid">
+            <ChecklistSection
+              title="Before 10:00"
+              hint="~2 min · or session open in replay"
+              items={BEFORE_10}
+              storageKey={`vault.chk.pre.${day}`}
+            />
+            <ChecklistSection
+              title="Take it?"
+              hint="when LIMIT/GO arms · 2+ no = skip"
+              items={TAKE_IT}
+              storageKey={`vault.chk.setup.${day}`}
+            />
+            <ChecklistSection
+              title="After"
+              hint="in trade or flat"
+              items={DONE}
+              storageKey={`vault.chk.post.${day}`}
+            />
+          </div>
         </div>
       </div>
 
       <div className="grid grid-2">
         <div className="panel">
-          <div className="panel-title">Live config <span className="sub">PRB v1 · locked</span></div>
+          <div className="panel-title">
+            Study config <span className="sub">gate_v0 Manual · not Lab Deep BT</span>
+          </div>
           <div className="panel-body">
             <div className="kv">
-              <span className="k">Window</span><span>10:00–13:00 NY · 1 trade/day · skip Mon</span>
-              <span className="k">Sizing</span><span>MNQ · $400 risk · 5R target · BE +1R</span>
-              <span className="k">Daily</span><span>loss $800 · lock $1,400 · flat 15:55</span>
-              <span className="k">Regime</span><span className="warn">Give-backs ≥2/10 → trail ON in TV</span>
+              <span className="k">Chart</span><span>MNQ 5m · Manual ON · Direction Both</span>
+              <span className="k">Structure</span><span>15 (try 30 / 60) · draw POI ON</span>
+              <span className="k">Window</span><span>10:00–11:30 NY · leave-retest · BE +1R</span>
+              <span className="k">Falsifier</span><span className="warn">Bar replay + journal — not Strategy Tester P&amp;L</span>
             </div>
             <hr className="hr" />
             <div className="small">
@@ -219,7 +229,8 @@ export default function TodayPage() {
               ))}
             </ul>
             <div className="small dim mt">
-              Log bias + filter in <Link href="/journal">Journal</Link> — must match.
+              Manual HTF study: keep TV on <b>Both</b>, log morning bias in{" "}
+              <Link href="/journal">Journal</Link>. Direction filter matching is for live locked v1 later.
             </div>
           </div>
         </div>

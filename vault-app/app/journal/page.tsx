@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useLocal, fmtUsd, todayStr } from "@/lib/store";
 import { Account, JournalEntry, MorningBias, PrbFilter, RedFolderTag, uid } from "@/lib/types";
@@ -29,10 +30,15 @@ export default function JournalPage() {
     fails: "",
     notes: "",
   });
+  const [logErr, setLogErr] = useState("");
 
   const add = () => {
     const acct = f.accountId || activeId;
-    if (!acct) return;
+    if (!acct) {
+      setLogErr("Pick an account (Accounts → add one labeled e.g. Manual replay HTF).");
+      return;
+    }
+    setLogErr("");
     const entry: JournalEntry = {
       id: uid(),
       date: f.date,
@@ -125,8 +131,25 @@ export default function JournalPage() {
       </div>
 
       <div className="panel">
-        <div className="panel-title">Log entry <span className="sub">trades AND skips</span></div>
+        <div className="panel-title">
+          Log entry <span className="sub">trades AND skips · Manual HTF replay OK</span>
+        </div>
         <div className="panel-body">
+          <p className="small dim" style={{ marginTop: 0, marginBottom: 10, lineHeight: 1.5 }}>
+            Notes tip: <code>mode=replay · 15m·PDH · MFE=2.1R · skip:no POI</code> — structure tag + why you
+            took or skipped. PRB filter stays <b>Both</b> for Manual study.
+          </p>
+          {accounts.length === 0 && (
+            <p className="warn small" style={{ marginTop: 0 }}>
+              No accounts yet — add one in <Link href="/accounts">Accounts</Link> before logging (e.g.
+              &quot;Manual replay HTF&quot;).
+            </p>
+          )}
+          {logErr && (
+            <p className="warn small" style={{ marginTop: 0 }}>
+              {logErr}
+            </p>
+          )}
           <div className="frm-row">
             <label className="fld">
               Date
@@ -245,7 +268,12 @@ export default function JournalPage() {
             </label>
             <label className="fld">
               Notes
-              <input value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} style={{ width: 220 }} />
+              <input
+                value={f.notes}
+                onChange={(e) => setF({ ...f, notes: e.target.value })}
+                placeholder="mode=replay · tag · MFE · skip reason"
+                style={{ width: 260 }}
+              />
             </label>
             <button type="button" className="btn" onClick={add}>
               Log
