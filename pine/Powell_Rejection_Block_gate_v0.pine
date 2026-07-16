@@ -10,7 +10,7 @@
 //     Pair with PRB_Gate_LiveCoach_v0 for risk HUD (Coach does not find RBs).
 //   · HTF structure TF (15/30/60/240) via request.security — Manual Auto = 15m;
 //     Lab Auto = Chart (preserves Deep BT control). Draw-POI gate on Manual.
-//   · Morningstar: Manual-only confluence grade (POI·4H·1m CISD·1m/5m IFVG) —
+//   · Morningstar: Manual-only LTF-in-RB score (1m CISD·1m/5m IFVG·5m RB) —
 //     eyes only; never arms / blocks / sizes.
 //
 // CODED FROM THE SOP:
@@ -67,6 +67,7 @@ i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Lon
 grpRb = "Rejection block (formal, T03)"
 i_structTf = input.string("Auto (Manual→15 · Lab→chart)", "RB structure TF (arming parent)", options = ["Auto (Manual→15 · Lab→chart)", "Chart", "15", "30", "60", "240"], group = grpRb, tooltip = "Which TF ARMS LIMIT/STOP/TP. Does NOT hide other TFs — turn on Morningstar → Show all HTF RB markers to see 15/30/1H/4H prints together.")
 i_minWickPts = input.float(5.0, "Min chart-TF wick (pts) — Lab/Chart mode", minval = 0.0, step = 0.5, group = grpRb)
+i_minWick5 = input.float(6.0, "Min 5m RB wick (pts) — eyes only", minval = 2.0, step = 0.5, group = grpRb, tooltip = "Morningstar LTF confluence only — never arms. Smaller than 15m structure wick.")
 i_minWick15 = input.float(12.0, "Min 15m structure wick (pts)", minval = 4.0, step = 1.0, group = grpRb)
 i_minWick30 = input.float(15.0, "Min 30m structure wick (pts)", minval = 6.0, step = 1.0, group = grpRb)
 i_minWick60 = input.float(20.0, "Min 1H structure wick (pts)", minval = 8.0, step = 1.0, group = grpRb)
@@ -121,7 +122,8 @@ i_rbExtend  = input.int(24, "RB zone extend (bars)", minval = 4, maxval = 80, gr
 i_showCe    = input.bool(true, "Show CE dotted line in RB", group = "Visuals")
 i_showTriggers = input.bool(true, "Show entry triggers (leave / retest / sweep / 4H)", group = "Visuals", tooltip = "Non-bias cues: which level was swept · 4H wick pts · LEAVE done · GO when leave-retest arms. Bias stays yours.")
 i_showSoup  = input.bool(false, "Show sweep triangles", group = "Visuals")
-i_showPdhPdl = input.bool(true, "Show PDH / PDL from wick origin", group = "Visuals", tooltip = "Line starts at the candle that printed prior-day high/low, then extends right. Green = PDH · Red = PDL.")
+i_showPdhPdl = input.bool(true, "Show PDH / PDL (this session only)", group = "Visuals", tooltip = "Prior-day H/L from the wick that made it — extends only through the current session, then deletes. No multi-day spaghetti.")
+i_rbNoFill = input.bool(true, "RB box: border only (no fill)", group = "Visuals")
 i_showLvls  = input.bool(false, "Show classic full-width PDH/PDL plots", group = "Visuals")
 i_liveClean = input.bool(true, "Clean chart (no tables / bias marks)", group = "Visuals", tooltip = "ON: on-chart RB + ENTRY/STOP/TP · no funnel/MISSED tables · no bias labels.")
 i_extraLvls = input.bool(false, "Show extra liquidity lines", group = "Visuals")
@@ -154,7 +156,8 @@ i_showBlockedBias = input.bool(false, "Mark bias-blocked RBs (journal)", group =
 i_manualAlerts = input.bool(false, "Alert when limit level arms", group = "Manual / discretionary replay", tooltip = "Fires only on live ARMED (not Jul/Oct or Monday SHADOW).")
 
 grpMs = "Morningstar grade (Manual · eyes only)"
-i_msGrade = input.bool(true, "Show Morningstar confluence grade", group = grpMs, tooltip = "Manual ON only. Score n/5 — NEVER arms. Zones + CE for RB/IFVG/OB.")
+i_msGrade = input.bool(true, "Show Morningstar LTF-in-RB score", group = grpMs, tooltip = "Manual ON only. Counts 1m CISD · 1m IFVG · 5m IFVG · 5m RB inside the armed HTF wick — NEVER arms.")
+i_msShowRb5 = input.bool(true, "Mark 5m RBs + CE (LTF)", group = grpMs, tooltip = "Eyes only. Counts toward LTF n/4 when the 5m RB sits inside the armed HTF box.")
 i_msShowRb15 = input.bool(true, "Mark 15m RBs + CE", group = grpMs)
 i_msShowRb30 = input.bool(false, "Mark 30m RBs + CE", group = grpMs, tooltip = "OFF by default — enable if you need it; extra drawings cost CPU.")
 i_msShowRb60 = input.bool(true, "Mark 1H RBs + CE", group = grpMs)
@@ -163,6 +166,7 @@ i_msShowIfvg = input.bool(true, "Mark 1m/5m IFVG zones + CE", group = grpMs)
 i_msShowOb = input.bool(true, "Mark 15m/1H order blocks + CE", group = grpMs)
 i_msMaxDraw = input.int(8, "Max drawings per type (lag guard)", minval = 3, maxval = 14, group = grpMs, tooltip = "Old boxes/labels delete when over limit — stops TV freeze from unbounded drawings. Lower if still laggy.")
 i_msBuf = input.float(12.0, "Confluence near RB zone (pts)", minval = 2.0, step = 1.0, group = grpMs)
+c_ms5 = input.color(#a78bfa, "5m RB mark", group = grpMs)
 c_ms15 = input.color(#22d3ee, "15m mark", group = grpMs)
 c_ms30 = input.color(#facc15, "30m mark", group = grpMs)
 c_ms60 = input.color(#fb923c, "1H mark", group = grpMs)
@@ -322,6 +326,8 @@ f_htfPack(float minW) =>
     bool bull = locL and lw >= minW and (not i_confClose or c1 > o1)
     [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1), uw, lw]
 
+// 5m RB = LTF confluence only (never structure/arming parent)
+[b5, u5, h5, l5, wsB5, wsU5, uw5, lw5] = request.security(syminfo.tickerid, "5", f_htfPack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
 [b15, u15, h15, l15, wsB15, wsU15, uw15, lw15] = request.security(syminfo.tickerid, "15", f_htfPack(i_minWick15), barmerge.gaps_off, barmerge.lookahead_off)
 [b30, u30, h30, l30, wsB30, wsU30, uw30, lw30] = request.security(syminfo.tickerid, "30", f_htfPack(i_minWick30), barmerge.gaps_off, barmerge.lookahead_off)
 [b60, u60, h60, l60, wsB60, wsU60, uw60, lw60] = request.security(syminfo.tickerid, "60", f_htfPack(i_minWick60), barmerge.gaps_off, barmerge.lookahead_off)
@@ -545,10 +551,13 @@ var bool msH4 = false
 var bool msCisd = false
 var bool msIfvg1 = false
 var bool msIfvg5 = false
+var bool msRb5 = false
 var bool msMarkedCisd = false
 var bool msMarkedIfvg1 = false
 var bool msMarkedIfvg5 = false
+var bool msMarkedRb5 = false
 var label lblMsGrade = na
+var int msLtfHitsLive = 0
 
 bool isTrigger = i_entryMode == "CISD trigger (for 1m)"
 
@@ -564,9 +573,12 @@ if newDay
     msCisd := false
     msIfvg1 := false
     msIfvg5 := false
+    msRb5 := false
     msMarkedCisd := false
     msMarkedIfvg1 := false
     msMarkedIfvg5 := false
+    msMarkedRb5 := false
+    msLtfHitsLive := 0
     lblMsGrade := na
     if not i_manualOnly
         strategy.cancel_all()
@@ -1270,13 +1282,15 @@ f_msPaintRb(bool isShort, string tfLbl, float ex, float ws, color col) =>
         float ce = (hi + lo) * 0.5
         int xR = bar_index + 16
         string arrow = isShort ? "↓" : "↑"
-        f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = color.new(col, 85), border_width = 2))
+        color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, 88)
+        f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = fillC, border_width = 3))
         f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 2, style = line.style_dotted))
-        f_msCapLabel(label.new(bar_index, isShort ? hi : lo, "RB " + tfLbl + " " + arrow, style = isShort ? label.style_label_down : label.style_label_up, color = color.new(col, 5), textcolor = color.black, size = size.normal))
+        f_msCapLabel(label.new(bar_index, hi, "RB " + tfLbl + " " + arrow, style = label.style_label_down, color = color.new(col, 0), textcolor = color.white, size = size.normal))
 
-// ─── Morningstar confluence grade (Manual · eyes only — never arms) ──────────
-f_msNear(float px) =>
-    not na(px) and not na(suCe) and (math.abs(px - suCe) <= i_msBuf or math.abs(px - nz(suExtreme, suCe)) <= i_msBuf or math.abs(px - nz(suWickStart, suCe)) <= i_msBuf)
+// ─── Morningstar LTF-in-RB score (eyes only — never arms) ────────────────────
+// Count only LTF tells that print *inside* the armed HTF RB wick zone.
+f_msInRb(float px) =>
+    not na(px) and not na(suExtreme) and not na(suWickStart) and px <= math.max(suExtreme, suWickStart) + i_msBuf and px >= math.min(suExtreme, suWickStart) - i_msBuf
 
 bool msShow = i_manualOnly and i_msGrade
 if msShow and suDir != 0 and not na(suBar) and suBar == bar_index
@@ -1285,69 +1299,79 @@ if msShow and suDir != 0 and not na(suBar) and suBar == bar_index
     msCisd := false
     msIfvg1 := false
     msIfvg5 := false
+    msRb5 := false
     msMarkedCisd := false
     msMarkedIfvg1 := false
     msMarkedIfvg5 := false
+    msMarkedRb5 := false
     lblMsGrade := na
 
 if msShow and suDir != 0 and not na(suBar) and bar_index >= suBar
+    float ce5Bear = (h5 + wsB5) * 0.5
+    float ce5Bull = (l5 + wsU5) * 0.5
     if suDir == -1
         if poiShort != "—"
             msPoi := true
         if h4OkBear
             msH4 := true
-        if ms1CisdBear and f_msNear(ms1Close)
+        if ms1CisdBear and f_msInRb(ms1Close)
             msCisd := true
-        if ms1IfvgBear and f_msNear(ms1Close)
+        if ms1IfvgBear and (f_msInRb(ms1Close) or f_msInRb(ms1IfvgCe))
             msIfvg1 := true
-        if ms5IfvgBear and f_msNear(ms5Close)
+        if ms5IfvgBear and (f_msInRb(ms5Close) or f_msInRb(ms5IfvgCe))
             msIfvg5 := true
+        if b5 and (f_msInRb(h5) or f_msInRb(wsB5) or f_msInRb(ce5Bear))
+            msRb5 := true
     else
         if poiLong != "—"
             msPoi := true
         if h4OkBull
             msH4 := true
-        if ms1CisdBull and f_msNear(ms1Close)
+        if ms1CisdBull and f_msInRb(ms1Close)
             msCisd := true
-        if ms1IfvgBull and f_msNear(ms1Close)
+        if ms1IfvgBull and (f_msInRb(ms1Close) or f_msInRb(ms1IfvgCe))
             msIfvg1 := true
-        if ms5IfvgBull and f_msNear(ms5Close)
+        if ms5IfvgBull and (f_msInRb(ms5Close) or f_msInRb(ms5IfvgCe))
             msIfvg5 := true
+        if u5 and (f_msInRb(l5) or f_msInRb(wsU5) or f_msInRb(ce5Bull))
+            msRb5 := true
 
-    // One compact grade only (not duplicated on LIMIT label)
-    int msHits = (msPoi ? 1 : 0) + (msH4 ? 1 : 0) + (msCisd ? 1 : 0) + (msIfvg1 ? 1 : 0) + (msIfvg5 ? 1 : 0)
-    string msTxt = "MS " + str.tostring(msHits) + "/5"
-    float msY = suDir == -1 ? nz(suExtreme, high) + i_msBuf : nz(suExtreme, low) - i_msBuf
-    color msCol = msHits >= 4 ? #a3e635 : msHits == 3 ? #facc15 : #e2e8f0
-    if na(lblMsGrade)
-        lblMsGrade := label.new(bar_index, msY, msTxt, style = suDir == -1 ? label.style_label_down : label.style_label_up, color = color.new(#0f172a, 0), textcolor = msCol, size = size.normal)
-    else
-        label.set_x(lblMsGrade, bar_index)
-        label.set_y(lblMsGrade, msY)
-        label.set_text(lblMsGrade, msTxt)
-        label.set_textcolor(lblMsGrade, msCol)
+    // LTF stack inside HTF RB (CISD · 1m IFVG · 5m IFVG · 5m RB)
+    msLtfHitsLive := (msCisd ? 1 : 0) + (msIfvg1 ? 1 : 0) + (msIfvg5 ? 1 : 0) + (msRb5 ? 1 : 0)
 
-    // Paint IFVG zones once when they latch (readable + CE)
     if barstate.isconfirmed
         if msIfvg1 and not msMarkedIfvg1 and i_msShowIfvg and not na(ms1IfvgTop)
             f_msZone("1m IFVG", ms1IfvgTop, ms1IfvgBot, c_msIfvg, 20)
             msMarkedIfvg1 := true
         if msIfvg5 and not msMarkedIfvg5 and i_msShowIfvg and not na(ms5IfvgTop)
-            f_msZone("5m IFVG", ms5IfvgTop, ms5IfvgBot, color.new(c_msIfvg, 0), 20)
+            f_msZone("5m IFVG", ms5IfvgTop, ms5IfvgBot, c_msIfvg, 20)
             msMarkedIfvg5 := true
         if msCisd and not msMarkedCisd
             f_msCapLabel(label.new(bar_index, close, "1m CISD", style = label.style_label_left, color = color.new(#0f172a, 0), textcolor = #22d3ee, size = size.normal))
             msMarkedCisd := true
-else if suDir == 0 and not na(lblMsGrade)
-    lblMsGrade := na
+        if msRb5 and not msMarkedRb5 and i_msShowRb5
+            if suDir == -1
+                f_msPaintRb(true, "5m", h5, wsB5, c_ms5)
+            else
+                f_msPaintRb(false, "5m", l5, wsU5, c_ms5)
+            msMarkedRb5 := true
+else if suDir == 0
+    msLtfHitsLive := 0
+    if not na(lblMsGrade)
+        lblMsGrade := na
 
-// HTF RB markers + CE (capped) · OB markers + CE
+// HTF/LTF RB markers + CE (capped) · OB markers + CE
 bool msViz = i_manualOnly
+bool c5 = ta.change(time("5", "America/New_York")) != 0
 bool c15 = ta.change(time("15", "America/New_York")) != 0
 bool c30 = ta.change(time("30", "America/New_York")) != 0
 bool c60 = ta.change(time("60", "America/New_York")) != 0
 bool c240 = ta.change(time("240", "America/New_York")) != 0
 if msViz and inWindow and barstate.isconfirmed
+    if i_msShowRb5 and c5 and b5
+        f_msPaintRb(true, "5m", h5, wsB5, c_ms5)
+    if i_msShowRb5 and c5 and u5
+        f_msPaintRb(false, "5m", l5, wsU5, c_ms5)
     if i_msShowRb15 and c15 and b15
         f_msPaintRb(true, "15m", h15, wsB15, c_ms15)
     if i_msShowRb15 and c15 and u15
@@ -1484,34 +1508,35 @@ if i_showSig and barstate.isconfirmed and (rbBear or rbBull) and suDir != 0 and 
     float ex = nz(suExtreme, rbBear ? rbExtBear : rbExtBull)
     float ceNow = nz(suCe, (ex + ws) * 0.5)
     color bd = rbBear ? c_rbShortBd : c_rbLongBd
-    color bg = color.new(rbBear ? c_rbShortBg : c_rbLongBg, i_rbFillTrans)
-    color markC = color.new(bd, i_rbMarkTrans)
+    color bg = i_rbNoFill ? color.new(bd, 100) : color.new(rbBear ? c_rbShortBg : c_rbLongBg, i_rbFillTrans)
     int xR0 = bar_index + i_rbExtend
-    float midY = (ex + ws) * 0.5
-    bxRb := box.new(bar_index, math.max(ex, ws), xR0, math.min(ex, ws), border_color = bd, bgcolor = bg, border_width = 2)
-    // Watermark in the box (transparent bg · translucent text · no solid pill)
-    lblRbMark := label.new(bar_index + int(i_rbExtend * 0.35), midY, i_manualOnly ? "MS" : "RB", style = label.style_label_center, color = color.new(color.black, 100), textcolor = markC, size = size.large)
-    if i_showTriggers
-        string sw = suSweepTag
-        float h4p = nz(suH4Pts, rbBear ? h4UpperWick : h4LowerWick)
-        string meta = (sw != "—" ? sw + " · " : "") + "4H " + str.tostring(h4p, "#.#")
-        lblRbMeta := label.new(bar_index, midY, meta, style = label.style_label_left, color = color.new(color.black, 100), textcolor = color.new(bd, 25), size = size.tiny)
+    string rbHead0 = "RB " + structLabel + " · LTF " + str.tostring(msLtfHitsLive) + "/4"
+    bxRb := box.new(bar_index, math.max(ex, ws), xR0, math.min(ex, ws), border_color = bd, bgcolor = bg, border_width = 3)
+    // One clear header on the RB — timeframe + LTF-in-zone score
+    lblRbMark := label.new(bar_index, math.max(ex, ws), rbHead0, style = label.style_label_down, color = color.new(bd, 0), textcolor = color.white, size = size.normal)
+    lblRbMeta := na
     rbLeft := bar_index
     rbTop := math.max(ex, ws)
     rbBot := math.min(ex, ws)
     rbCeLv := ceNow
     rbWsLv := ws
     if i_showCe
-        lnRbCe := line.new(bar_index, ceNow, xR0, ceNow, color = color.new(c_ce, 20), width = 1, style = line.style_dotted)
-        lnRbWs := line.new(bar_index, ws, xR0, ws, color = color.new(c_wickSt, 35), width = 1, style = line.style_dashed)
+        lnRbCe := line.new(bar_index, ceNow, xR0, ceNow, color = color.new(c_ce, 0), width = 2, style = line.style_dotted)
+        lnRbWs := line.new(bar_index, ws, xR0, ws, color = color.new(c_wickSt, 40), width = 1, style = line.style_dashed)
 
 if i_showSig and suDir != 0 and not na(rbLeft) and not na(suBar) and rbLeft == suBar and not na(rbTop)
     int xLive = math.max(bar_index + 2, suBar + i_rbExtend)
     if not na(bxRb)
         box.set_right(bxRb, xLive)
+        if i_rbNoFill
+            box.set_bgcolor(bxRb, color.new(suDir == -1 ? c_rbShortBd : c_rbLongBd, 100))
     if not na(lblRbMark)
-        label.set_x(lblRbMark, rbLeft + int(math.max(2, (xLive - rbLeft) * 0.35)))
-        label.set_y(lblRbMark, (rbTop + rbBot) * 0.5)
+        label.set_x(lblRbMark, rbLeft + 1)
+        label.set_y(lblRbMark, rbTop)
+        label.set_text(lblRbMark, "RB " + structLabel + " · LTF " + str.tostring(msLtfHitsLive) + "/4")
+        label.set_textcolor(lblRbMark, color.white)
+        label.set_color(lblRbMark, color.new(suDir == -1 ? c_rbShortBd : c_rbLongBd, 0))
+        label.set_size(lblRbMark, size.normal)
     if i_showCe and not na(lnRbCe)
         line.set_x2(lnRbCe, xLive)
         if not na(suCe)
@@ -1539,7 +1564,7 @@ if barstate.isconfirmed and biasBlkBull
 plotshape(i_showSoup and sweptAbove and inWindow, "Sweep above", shape.triangledown, location.abovebar, color.orange, size = size.tiny)
 plotshape(i_showSoup and sweptBelow and inWindow, "Sweep below", shape.triangleup, location.belowbar, color.aqua, size = size.tiny)
 
-// PDH / PDL — line from the wick of the candle that made prior day H/L
+// PDH / PDL — one session only (delete prior day lines so old PDHs don't stack)
 var line lnPdh = na
 var line lnPdl = na
 var label lblPdh = na
@@ -1548,32 +1573,46 @@ var label lblPdl = na
 float usePdh = not na(pdhLvl) ? pdhLvl : prevDayHigh
 float usePdl = not na(pdlLvl) ? pdlLvl : prevDayLow
 
-if i_showPdhPdl and newDay and not na(pdhOriginBar) and not na(usePdh)
-    lnPdh := line.new(pdhOriginBar, usePdh, bar_index, usePdh, color = c_pdh, width = 2, style = line.style_solid, extend = extend.none)
-    lblPdh := label.new(bar_index, usePdh, "PDH", style = label.style_label_left, color = color.new(color.black, 100), textcolor = color.new(c_pdh, 10), size = size.tiny)
-if i_showPdhPdl and newDay and not na(pdlOriginBar) and not na(usePdl)
-    lnPdl := line.new(pdlOriginBar, usePdl, bar_index, usePdl, color = c_pdl, width = 2, style = line.style_solid, extend = extend.none)
-    lblPdl := label.new(bar_index, usePdl, "PDL", style = label.style_label_left, color = color.new(color.black, 100), textcolor = color.new(c_pdl, 10), size = size.tiny)
+if i_showPdhPdl and newDay
+    if not na(lnPdh)
+        line.delete(lnPdh)
+        lnPdh := na
+    if not na(lnPdl)
+        line.delete(lnPdl)
+        lnPdl := na
+    if not na(lblPdh)
+        label.delete(lblPdh)
+        lblPdh := na
+    if not na(lblPdl)
+        label.delete(lblPdl)
+        lblPdl := na
+    if not na(pdhOriginBar) and not na(usePdh)
+        lnPdh := line.new(pdhOriginBar, usePdh, bar_index, usePdh, color = c_pdh, width = 2, style = line.style_solid, extend = extend.none)
+        lblPdh := label.new(bar_index, usePdh, "PDH", style = label.style_label_left, color = color.new(c_pdh, 0), textcolor = color.white, size = size.small)
+    if not na(pdlOriginBar) and not na(usePdl)
+        lnPdl := line.new(pdlOriginBar, usePdl, bar_index, usePdl, color = c_pdl, width = 2, style = line.style_solid, extend = extend.none)
+        lblPdl := label.new(bar_index, usePdl, "PDL", style = label.style_label_left, color = color.new(c_pdl, 0), textcolor = color.white, size = size.small)
 
-if i_showPdhPdl and not na(lnPdh) and not na(usePdh)
+// Extend only through the current session (stop growing after flat time)
+bool pdhLive = i_showPdhPdl and nyHhmm < i_flatTime
+if pdhLive and not na(lnPdh) and not na(usePdh)
     line.set_x2(lnPdh, bar_index)
     line.set_y1(lnPdh, usePdh)
     line.set_y2(lnPdh, usePdh)
-    line.set_color(lnPdh, c_pdh)
     if not na(lblPdh)
         label.set_x(lblPdh, bar_index)
         label.set_y(lblPdh, usePdh)
-if i_showPdhPdl and not na(lnPdl) and not na(usePdl)
+if pdhLive and not na(lnPdl) and not na(usePdl)
     line.set_x2(lnPdl, bar_index)
     line.set_y1(lnPdl, usePdl)
     line.set_y2(lnPdl, usePdl)
-    line.set_color(lnPdl, c_pdl)
     if not na(lblPdl)
         label.set_x(lblPdl, bar_index)
         label.set_y(lblPdl, usePdl)
 
-plot(showClassicLvls ? prevDayHigh : na, "PDH", color.new(c_pdh, 60), style = plot.style_linebr)
-plot(showClassicLvls ? prevDayLow : na, "PDL", color.new(c_pdl, 60), style = plot.style_linebr)
+// Classic PDH/PDL plots off when wick-origin session lines are on (avoids multi-day spaghetti)
+plot(showClassicLvls and not i_showPdhPdl ? prevDayHigh : na, "PDH", color.new(c_pdh, 60), style = plot.style_linebr)
+plot(showClassicLvls and not i_showPdhPdl ? prevDayLow : na, "PDL", color.new(c_pdl, 60), style = plot.style_linebr)
 plot(showExtraLines and nyHhmm >= 930 ? pmHigh : na, "PM High", color.new(color.orange, 60), style = plot.style_linebr)
 plot(showExtraLines and nyHhmm >= 930 ? pmLow : na, "PM Low", color.new(color.aqua, 60), style = plot.style_linebr)
 plot(showExtraLines ? ko1800 : na, "18:00 open", color.new(color.green, 45), style = plot.style_linebr)

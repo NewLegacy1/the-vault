@@ -4,7 +4,7 @@
 
 The script finds the setup. **You** are the bias filter. Three checkpoints.
 
-**Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · **structure TF = arming parent only** (default **15m**) · chart also marks **all** HTF RBs (`RB 15m` / `30m` / `1H` / `4H`) when Show all HTF RB markers is ON · LIMIT/STOP/TP from the **arming** HTF wick · leave-retest on **5m** · **Morningstar grade `n/5 · %`** is **eyes only** — never arms. Direction **Both**. Journal → **Morningstar study**.
+**Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · **structure TF = arming parent only** (default **15m**) · chart marks RBs as border-only boxes (`RB 5m` / `15m` / `30m` / `1H` / `4H`) · armed setup header = `RB 15m · LTF n/4` (1m CISD · 1m IFVG · 5m IFVG · **5m RB** inside that HTF wick) — **eyes only**, never arms · LIMIT/STOP/TP from the **arming** HTF wick · leave-retest on **5m**. Direction **Both**. Journal → **Morningstar study**.
 
 **Letter from chart grade:** `4–5/5 → A+` · `3/5 → B` · `≤2/5 → C` (overridable).
 
@@ -28,7 +28,7 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 ## 2. When Morningstar arms a setup (LIMIT / STOP / TP · MS grade on chart)
 
 - [ ] **Structure tag makes sense** (`15m · PDH` / `1H · 10:00` / …) — not a naked mid-trend micro wick
-- [ ] **Morningstar grade** noted (`n/5`) — high grade ≠ auto-take; low grade ≠ auto-skip; **you** decide
+- [ ] **LTF-in-RB score** noted (`LTF n/4` on the RB header) — high ≠ auto-take; low ≠ auto-skip; **you** decide
 - [ ] **Direction agrees with the daily/4H draw** (don't short into a clean bullish draw below)
 - [ ] The tagged POI is **real unfinished liquidity** (PDH/PDL, premarket, key open — your read)
 - [ ] **4H wick read:** clear wick (~15 pts) = good · ~8 = grey, size down or demand more confluence · speck = skip
@@ -43,7 +43,7 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 
 - [ ] BE moved at +1R automatically (yellow stop line) — don't override it in a fresh eval
 - [ ] Flat by 15:55 always; no adds, no re-entries after the daily lock
-- [ ] Log Morningstar: date · MS n/5 · letter · structure tag · MFE · skip reasons · snapshot if useful
+- [ ] Log Morningstar: date · LTF n/4 (or journal flags) · structure tag · MFE · skip reasons · snapshot if useful
 - [ ] Loss you can't explain in real time = good setup, variance — move on
 - [ ] Loss with instant excuses = you took a C; tighten checkpoint 2
 
