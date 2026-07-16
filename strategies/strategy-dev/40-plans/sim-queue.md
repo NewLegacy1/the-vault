@@ -4,16 +4,16 @@ tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
 
-> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — **Track A ops primary.** Lane F paused. S2 Reaper v0 closed desert.  
+> **ACTIVE BRIEF:** [[execution-plan-post-3y]] — Track A ops + **Lane S S3 Stage-0**. Lane F paused.  
 
 ## NEXT
 
-**S2 Reaper v0 = AWAY / DESERT** (n=7 · EV +$55 CI covers 0 · OOS n=0 · RR~2 · [[event-study-lane-s-reaper-mnq-1h]]). Not a Lane-F drain kill — **underpowered**.
+**S2 Reaper v0 = AWAY / DESERT** (n=7). Do not salvage that CSV.
 
 **Now:**
 
-1. **Ops:** Jul STAND_DOWN / Aug–Sep gated PRB — [[gated-prb-live-guide]].  
-2. Optional later: **S2b** new Stage-0 (looser arm / LTF CE) only with fresh pre-register — do not salvage v0 CSV.
+1. **Ops:** Jul STAND_DOWN / Aug–Sep gated PRB — visuals = [[Powell_Rejection_Block_gate_v0]] Manual ON — [[gated-prb-live-guide]].  
+2. **Stage-0 S3:** Reaper × Macro A → Deep BT → `matrix/lane-s-reaper-macroa-mnq-5m.csv` — [[lane-s-s3-reaper-macroa-v0]].
 
 ---
 

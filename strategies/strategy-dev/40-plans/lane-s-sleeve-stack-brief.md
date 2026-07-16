@@ -22,7 +22,8 @@ Build a **portfolio of selective sleeves** with explicit correlation gates — n
 |---|---|---|
 | **S0 gated PRB** | Primary selective book | `regime-gate-v0` PASS · live ops [[gated-prb-live-guide]] |
 | **S1 Macro A-tier** | Optional cadence | B1a **sleeve-only** · not standalone income |
-| **S2 Reaper IFVG (1H)** | Optional entry *trigger* / selective Stage-0 | **Active measure** [[lane-s-s2-reaper-ifvg-v0]] · **not** Track B “new ICT alpha” |
+| **S2 Reaper IFVG (1H)** | Optional entry *trigger* | **Away/desert** n=7 · [[lane-s-s2-reaper-ifvg-v0]] |
+| **S3 Reaper × Macro A** | Cadence union Stage-0 | **Active** [[lane-s-s3-reaper-macroa-v0]] · no PRB legs · **not** Track B “new ICT alpha” |
 
 ## Loss-gap mitigation (prop lifecycle) — hierarchy
 
@@ -54,8 +55,9 @@ So: Hybrid was “best” on **funded EV/wk speed**, not on **trail-safe eval**.
 - Claiming Reaper Stage-0 toward without freezes (swing def, FVG pick, invert rule, bias source).  
 - Reopening Macro full book / H2a / Lane F TA retunes.
 
-## Next when user greenlights
+## Next
 
-1. Freeze Reaper measure v0 (1H structure · LTF optional later).  
-2. Define sleeve conflict rules (max 1 risk unit / day · no Macro same day as PRB loss, etc.).  
-3. Lab portfolio MC on existing ledgers **before** new live Pine soup.
+1. **S3** Stage-0 export/analyze — [[lane-s-s3-reaper-macroa-v0]].  
+2. Live gated PRB ops stay separate — gate_v0 Manual ON.  
+3. Lab portfolio MC only after SCORECARD toward.  
+4. Bar Replay discretionary study after S3 closeout (user-led).

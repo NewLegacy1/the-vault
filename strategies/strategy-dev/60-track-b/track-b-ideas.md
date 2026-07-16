@@ -1,5 +1,5 @@
 ---
-updated: 2026-07-15
+updated: 2026-07-16
 status: active
 tags: [track-b, ideas]
 ---
@@ -11,20 +11,20 @@ tags: [track-b, ideas]
 
 | ID | Name | Status |
 |---|---|---|
-| — | — | **None** — S2 Reaper v0 away/desert (n=7 · no OOS) |
+| **S3** | Reaper × Macro A union (5m · 1/day) | Stage-0 · waiting CSV `lane-s-reaper-macroa-mnq-5m.csv` · [[lane-s-s3-reaper-macroa-v0]] |
 
 ## Deferred
 
 | ID | Notes |
 |---|---|
-| **S2b Reaper** | Optional new Stage-0: looser 1H arm or 1H structure → LTF CE — only with fresh note |
+| S2b Reaper-only | Superseded by S3 widen+Macro for this cycle |
 | Lane F HF TA | **Paused** |
-| S1 Macro A sleeve rules | Conflict rules after a powered selective Stage-0 |
+| Bar Replay discretionary | After S3 scorecard — user-led |
 
 ## Killed / closed
 
-B0–B12 · S2 Reaper v0 **away-desert** ([[event-study-lane-s-reaper-mnq-1h]]) — not a soft-drain costume kill
+B0–B12 · S2 Reaper v0 **away-desert** ([[event-study-lane-s-reaper-mnq-1h]])
 
 ## Ops (primary)
 
-[[gated-prb-live-guide]] — Jul STAND_DOWN / Aug–Sep gated PRB live.
+[[gated-prb-live-guide]] — visuals: **`Powell_Rejection_Block_gate_v0`** Manual ON (+ optional LiveCoach HUD). Jul STAND_DOWN / Aug–Sep live.
