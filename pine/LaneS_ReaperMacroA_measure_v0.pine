@@ -1,0 +1,427 @@
+//@version=6
+// Lane S · S3 Reaper × Macro A MEASURE — Deep BT only.
+// Spec: strategies/strategy-dev/60-track-b/lane-s-s3-reaper-macroa-v0.md
+// Chart: MNQ 5m · CSV: vault-app/data/tv-exports/matrix/lane-s-reaper-macroa-mnq-5m.csv
+// Macro A 9:50 only (from Hybrid_Sleeve) ∪ widened Reaper (1H zone → 5m full-IFVG tap).
+// NO PRB legs · max 1/day · NOT locked PRB edit · Stage-0 falsify only.
+
+strategy(
+     title                   = "LaneS ReaperMacroA measure v0",
+     shorttitle              = "ReaperMacroA",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 100)
+
+grpEng = "Engines (locked mix)"
+i_useMacro = input.bool(true, "Enable Macro A 9:50", group = grpEng)
+i_useReaper = input.bool(true, "Enable Reaper (1H→5m)", group = grpEng)
+
+grpSess = "Session (NY ET)"
+i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpSess)
+i_oneTrade = input.bool(true, "Max 1 trade / day", group = grpSess)
+i_skipMonday = input.bool(false, "Skip Mondays", group = grpSess)
+
+grpMac = "Macro A-tier (Hybrid defaults)"
+i_macRisk = input.float(800.0, "Macro A risk USD", minval = 50.0, step = 50.0, group = grpMac)
+i_macTp = input.float(40.0, "Macro A TP (pts)", group = grpMac)
+i_macMaxStop = input.float(80.0, "Macro max stop (pts)", group = grpMac)
+i_macStopBuf = input.float(1.0, "Macro stop buffer (pts)", group = grpMac)
+i_macWickFull = input.float(55.0, "Skip if signal wick > (pts)", group = grpMac)
+i_tsPivot = input.int(5, "TS pivot strength", group = grpMac)
+i_tsSweep = input.float(1.0, "Min sweep (pts)", group = grpMac)
+i_tsDisp = input.float(10.0, "Min displacement (pts)", group = grpMac)
+i_ceTol = input.float(2.0, "CE tap tolerance (pts)", group = grpMac)
+i_ceLift = input.float(2.0, "CE lift for market (pts)", group = grpMac)
+i_macTimeout = input.int(24, "Macro setup timeout (bars)", group = grpMac)
+i_requirePrem = input.bool(true, "Macro require prem/disc align", group = grpMac)
+
+grpRpr = "Reaper widen (locked)"
+i_pivL = input.int(2, "1H pivot left", minval = 1, group = grpRpr)
+i_pivR = input.int(2, "1H pivot right", minval = 1, group = grpRpr)
+i_discPct = input.float(0.60, "Discount/premium band (0.5=mid · 0.6=wider)", minval = 0.5, maxval = 0.75, step = 0.05, group = grpRpr)
+i_rprRisk = input.float(200.0, "Reaper risk USD", group = grpRpr)
+i_rprRr = input.float(2.0, "Reaper target R", group = grpRpr)
+i_rprMaxStop = input.float(80.0, "Reaper max stop (pts)", group = grpRpr)
+i_rprMinStop = input.float(4.0, "Reaper min stop (pts)", group = grpRpr)
+i_maxCtr = input.int(60, "Max contracts", group = grpRpr)
+
+grpVis = "Visuals"
+i_showLbl = input.bool(true, "Engine labels", group = grpVis)
+i_showZones = input.bool(true, "Reaper FVG zone", group = grpVis)
+i_showTable = input.bool(true, "Status table", group = grpVis)
+
+f_pointVal() =>
+    string t = str.upper(syminfo.ticker)
+    string r = str.upper(syminfo.root)
+    str.contains(t, "MNQ") or str.contains(r, "MNQ") ? 2.0 : (str.contains(t, "NQ") or str.contains(r, "NQ") ? 20.0 : (syminfo.pointvalue > 0 ? syminfo.pointvalue : 2.0))
+
+f_qty(float stopPts, float riskUsd, float minStop, float maxStop) =>
+    if stopPts < minStop or stopPts > maxStop or stopPts <= 0
+        0
+    else
+        int q = int(math.floor(riskUsd / (stopPts * f_pointVal())))
+        math.min(math.max(q, 0), i_maxCtr)
+
+f_inWin(int t, int a, int b) => t >= a and t < b
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool dayAllowed = not i_skipMonday or dayofweek(time, "America/New_York") != dayofweek.monday
+bool inMacro = nyHhmm >= 950 and nyHhmm < 1010
+bool canPlace = nyHhmm < i_flatTime
+bool flatNow = nyHhmm >= i_flatTime
+bool newH1 = ta.change(time("60", "America/New_York")) != 0
+
+int totalTrades = strategy.opentrades + strategy.closedtrades
+var int tradesAtDayStart = 0
+var int cntDays = 0
+var int cntMac = 0
+var int cntRpr = 0
+var string lastEngine = "—"
+
+if newDay
+    tradesAtDayStart := totalTrades
+    cntDays += 1
+    lastEngine := "—"
+
+bool roomToday = not i_oneTrade or totalTrades == tradesAtDayStart
+bool flat = strategy.position_size == 0
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+// ─── Shared PDH/PDL / session for Macro prem-disc ───────────────────────────
+float pdh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_off)
+float pdl = request.security(syminfo.tickerid, "D", low[1], lookahead = barmerge.lookahead_off)
+
+var float pmHigh = na
+var float pmLow = na
+var float sessHigh = na
+var float sessLow = na
+if newDay
+    pmHigh := na
+    pmLow := na
+    sessHigh := high
+    sessLow := low
+else
+    sessHigh := math.max(sessHigh, high)
+    sessLow := math.min(sessLow, low)
+if nyHhmm < 930
+    pmHigh := na(pmHigh) ? high : math.max(pmHigh, high)
+    pmLow := na(pmLow) ? low : math.min(pmLow, low)
+
+float eq = (sessHigh + pdl) / 2.0
+bool inDiscount = close < eq
+bool inPremium = close > eq
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MACRO A — 9:50–10:10 only (Hybrid_Sleeve A-tier)
+// ═══════════════════════════════════════════════════════════════════════════════
+var array<float> lowLvl = array.new_float()
+var array<bool> lowSwept = array.new_bool()
+var array<float> highLvl = array.new_float()
+var array<bool> highSwept = array.new_bool()
+var bool sessionLevelsAdded = false
+
+float nqPivLow = ta.pivotlow(low, i_tsPivot, i_tsPivot)
+float nqPivHigh = ta.pivothigh(high, i_tsPivot, i_tsPivot)
+
+if newDay
+    array.clear(lowLvl)
+    array.clear(lowSwept)
+    array.clear(highLvl)
+    array.clear(highSwept)
+    sessionLevelsAdded := false
+
+if not sessionLevelsAdded and nyHhmm >= 930
+    sessionLevelsAdded := true
+    if not na(pdl)
+        array.push(lowLvl, pdl)
+        array.push(lowSwept, false)
+        array.push(highLvl, pdh)
+        array.push(highSwept, false)
+    if not na(pmLow)
+        array.push(lowLvl, pmLow)
+        array.push(lowSwept, false)
+        array.push(highLvl, pmHigh)
+        array.push(highSwept, false)
+
+if not na(nqPivLow)
+    array.push(lowLvl, nqPivLow)
+    array.push(lowSwept, false)
+    if array.size(lowLvl) > 12
+        array.shift(lowLvl)
+        array.shift(lowSwept)
+if not na(nqPivHigh)
+    array.push(highLvl, nqPivHigh)
+    array.push(highSwept, false)
+    if array.size(highLvl) > 12
+        array.shift(highLvl)
+        array.shift(highSwept)
+
+bool tsBull = false
+bool tsBear = false
+var float tsBullPx = na
+var float tsBearPx = na
+bool inTsWin = f_inWin(nyHhmm, 900, 1100)
+
+if inTsWin and array.size(lowLvl) > 0
+    for i = 0 to array.size(lowLvl) - 1
+        float px = array.get(lowLvl, i)
+        if not array.get(lowSwept, i)
+            if low <= px - i_tsSweep and close > px
+                tsBull := true
+                tsBullPx := px
+                array.set(lowSwept, i, true)
+            else if close < px - i_tsSweep
+                array.set(lowSwept, i, true)
+
+if inTsWin and array.size(highLvl) > 0
+    for i = 0 to array.size(highLvl) - 1
+        float px = array.get(highLvl, i)
+        if not array.get(highSwept, i)
+            if high >= px + i_tsSweep and close < px
+                tsBear := true
+                tsBearPx := px
+                array.set(highSwept, i, true)
+            else if close > px + i_tsSweep
+                array.set(highSwept, i, true)
+
+bool tsBullOk = tsBull and (close - low) >= i_tsDisp
+bool tsBearOk = tsBear and (high - close) >= i_tsDisp
+float sigWick = high - low
+bool macWickOk = sigWick <= i_macWickFull
+bool macLongCore = inMacro and tsBullOk and macWickOk and (not i_requirePrem or inDiscount)
+bool macShortCore = inMacro and tsBearOk and macWickOk and (not i_requirePrem or inPremium)
+bool macAllow = i_useMacro and flat and roomToday and canPlace and dayAllowed
+
+var int macDir = 0
+var float macEntry = na
+var float macStop = na
+var int macBar = 0
+var bool macTapped = false
+
+if newDay
+    macDir := 0
+    macTapped := false
+
+if macDir == 0 and macAllow
+    if macLongCore
+        float sl = low - i_macStopBuf
+        float ent = not na(tsBullPx) ? tsBullPx : (high + low) / 2.0
+        float risk = ent - sl
+        if risk > 0 and risk <= i_macMaxStop
+            macDir := 1
+            macEntry := ent
+            macStop := sl
+            macBar := bar_index
+            macTapped := false
+    else if macShortCore
+        float slS = high + i_macStopBuf
+        float entS = not na(tsBearPx) ? tsBearPx : (high + low) / 2.0
+        float riskS = slS - entS
+        if riskS > 0 and riskS <= i_macMaxStop
+            macDir := -1
+            macEntry := entS
+            macStop := slS
+            macBar := bar_index
+            macTapped := false
+
+bool macFilled = false
+if macDir != 0 and flat and macAllow
+    bool inval = macDir == 1 ? close < macStop : close > macStop
+    if bar_index - macBar > i_macTimeout or not canPlace or inval
+        macDir := 0
+        macTapped := false
+    else
+        if not macTapped
+            if macDir == 1 and low <= macEntry + i_ceTol
+                macTapped := true
+            if macDir == -1 and high >= macEntry - i_ceTol
+                macTapped := true
+        bool goLong = macTapped and macDir == 1 and close >= macEntry + i_ceLift and close > open
+        bool goShort = macTapped and macDir == -1 and close <= macEntry - i_ceLift and close < open
+        if goLong or goShort
+            float fill = close
+            float riskPts = macDir == 1 ? fill - macStop : macStop - fill
+            int q = f_qty(riskPts, i_macRisk, 1.0, i_macMaxStop)
+            if q > 0
+                float tp = macDir == 1 ? fill + i_macTp : fill - i_macTp
+                if macDir == 1
+                    strategy.entry("Long_A", strategy.long, qty = q)
+                    strategy.exit("LX_A", "Long_A", stop = macStop, limit = tp)
+                else
+                    strategy.entry("Short_A", strategy.short, qty = q)
+                    strategy.exit("SX_A", "Short_A", stop = macStop, limit = tp)
+                lastEngine := "MAC"
+                cntMac += 1
+                macFilled := true
+            macDir := 0
+            macTapped := false
+
+if i_showLbl and barstate.isconfirmed and macAllow and (macLongCore or macShortCore)
+    label.new(bar_index, macLongCore ? low : high, "MAC A", style = macLongCore ? label.style_label_up : label.style_label_down, color = color.new(color.teal, 20), textcolor = color.white, size = size.tiny)
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAPER — 1H structure via security · 5m full-IFVG tap (widened vs S2)
+// ═══════════════════════════════════════════════════════════════════════════════
+float hPh = request.security(syminfo.tickerid, "60", ta.pivothigh(high, i_pivL, i_pivR), barmerge.gaps_off, barmerge.lookahead_off)
+float hPl = request.security(syminfo.tickerid, "60", ta.pivotlow(low, i_pivL, i_pivR), barmerge.gaps_off, barmerge.lookahead_off)
+float hHigh = request.security(syminfo.tickerid, "60", high, barmerge.gaps_off, barmerge.lookahead_off)
+float hLow = request.security(syminfo.tickerid, "60", low, barmerge.gaps_off, barmerge.lookahead_off)
+float hClose = request.security(syminfo.tickerid, "60", close, barmerge.gaps_off, barmerge.lookahead_off)
+float hHigh2 = request.security(syminfo.tickerid, "60", high[2], barmerge.gaps_off, barmerge.lookahead_off)
+float hLow2 = request.security(syminfo.tickerid, "60", low[2], barmerge.gaps_off, barmerge.lookahead_off)
+
+bool hBullFvg = not na(hLow) and not na(hHigh2) and hLow > hHigh2
+bool hBearFvg = not na(hHigh) and not na(hLow2) and hHigh < hLow2
+
+// phase: 0 idle · 1 L0 · 2 H0 · 3 through · 4 take H0 · 5 zone entry
+//        11 H0 · 12 L0 · 13 through · 14 take L0 · 15 zone entry
+var int rPhase = 0
+var float rL0 = na
+var float rH0 = na
+var float rFvgBot = na
+var float rFvgTop = na
+var float rFvgCE = na
+
+bool rprAllow = i_useReaper and flat and roomToday and canPlace and dayAllowed and not macFilled
+
+// Update breaker on new 1H pivot prints
+if rprAllow and newH1 and not na(hPl)
+    if rPhase == 0
+        rL0 := hPl
+        rH0 := na
+        rFvgBot := na
+        rFvgTop := na
+        rFvgCE := na
+        rPhase := 1
+    else if rPhase == 2 and hPl < rL0
+        // Breaker LL — seek largest discount FVG on this 1H bar or keep scanning later
+        rPhase := 3
+    else if rPhase == 11 and hPl < rH0
+        rL0 := hPl
+        rPhase := 12
+
+if rprAllow and newH1 and not na(hPh)
+    if rPhase == 1 and hPh > rL0
+        rH0 := hPh
+        rPhase := 2
+    else if rPhase == 0
+        rH0 := hPh
+        rL0 := na
+        rFvgBot := na
+        rFvgTop := na
+        rFvgCE := na
+        rPhase := 11
+    else if rPhase == 12 and hPh > rH0
+        rPhase := 13
+
+// Capture discount/premium FVG during impulse (phase 2/12) or after LL (3–4 / 13–14)
+bool bullArmPhase = rPhase == 2 or rPhase == 3 or rPhase == 4
+bool bearArmPhase = rPhase == 12 or rPhase == 13 or rPhase == 14
+if rprAllow and newH1 and bullArmPhase and hBullFvg and not na(rL0) and not na(rH0)
+    float mid = rL0 + i_discPct * (rH0 - rL0)
+    float bot = hHigh2
+    float top = hLow
+    float ce = (bot + top) * 0.5
+    float gh = top - bot
+    bool better = na(rFvgCE) or gh > (rFvgTop - rFvgBot)
+    if ce < mid and better
+        rFvgBot := bot
+        rFvgTop := top
+        rFvgCE := ce
+
+if rprAllow and newH1 and bearArmPhase and hBearFvg and not na(rL0) and not na(rH0)
+    float midB = rH0 - i_discPct * (rH0 - rL0)
+    float topB = hLow2
+    float botB = hHigh
+    float ceB = (botB + topB) * 0.5
+    float ghB = topB - botB
+    bool betterB = na(rFvgCE) or ghB > (rFvgTop - rFvgBot)
+    if ceB > midB and betterB
+        rFvgBot := botB
+        rFvgTop := topB
+        rFvgCE := ceB
+
+// Progress invert / take extreme on 5m vs stored 1H levels
+if rPhase == 3 and not na(rFvgBot) and low < rFvgBot
+    rPhase := 4
+if rPhase == 4 and not na(rH0) and high > rH0
+    rPhase := 5
+
+if rPhase == 13 and not na(rFvgTop) and high > rFvgTop
+    rPhase := 14
+if rPhase == 14 and not na(rL0) and low < rL0
+    rPhase := 15
+
+// Entry: 5m tap of FULL inverted FVG (widen vs CE-only)
+bool zoneLong = rPhase == 5 and not na(rFvgBot) and not na(rFvgTop) and low <= rFvgTop and high >= rFvgBot and close >= rFvgBot
+bool zoneShort = rPhase == 15 and not na(rFvgBot) and not na(rFvgTop) and high >= rFvgBot and low <= rFvgTop and close <= rFvgTop
+
+if zoneLong and rprAllow
+    float stopPts = close - rFvgBot
+    int q = f_qty(stopPts, i_rprRisk, i_rprMinStop, i_rprMaxStop)
+    if q > 0
+        strategy.entry("RPR_L", strategy.long, qty = q)
+        strategy.exit("RPR_LX", "RPR_L", stop = rFvgBot, limit = close + i_rprRr * stopPts)
+        lastEngine := "RPR"
+        cntRpr += 1
+        if i_showLbl
+            label.new(bar_index, low, "RPR L", style = label.style_label_up, color = color.new(color.green, 0), textcolor = color.black, size = size.small)
+        rPhase := 0
+        rL0 := na
+        rH0 := na
+        rFvgBot := na
+        rFvgTop := na
+        rFvgCE := na
+
+if zoneShort and rprAllow and strategy.position_size == 0 and roomToday
+    float stopPtsS = rFvgTop - close
+    int qS = f_qty(stopPtsS, i_rprRisk, i_rprMinStop, i_rprMaxStop)
+    if qS > 0
+        strategy.entry("RPR_S", strategy.short, qty = qS)
+        strategy.exit("RPR_SX", "RPR_S", stop = rFvgTop, limit = close - i_rprRr * stopPtsS)
+        lastEngine := "RPR"
+        cntRpr += 1
+        if i_showLbl
+            label.new(bar_index, high, "RPR S", style = label.style_label_down, color = color.new(color.red, 0), textcolor = color.black, size = size.small)
+        rPhase := 0
+        rL0 := na
+        rH0 := na
+        rFvgBot := na
+        rFvgTop := na
+        rFvgCE := na
+
+plot(i_showZones and not na(rFvgCE) and rPhase >= 3 and rPhase <= 5 ? rFvgBot : na, "Bull FVG bot", color = color.new(color.aqua, 40), style = plot.style_linebr)
+plot(i_showZones and not na(rFvgCE) and rPhase >= 3 and rPhase <= 5 ? rFvgTop : na, "Bull FVG top", color = color.new(color.aqua, 40), style = plot.style_linebr)
+plot(i_showZones and not na(rFvgCE) and rPhase >= 13 and rPhase <= 15 ? rFvgBot : na, "Bear FVG bot", color = color.new(color.orange, 40), style = plot.style_linebr)
+plot(i_showZones and not na(rFvgCE) and rPhase >= 13 and rPhase <= 15 ? rFvgTop : na, "Bear FVG top", color = color.new(color.orange, 40), style = plot.style_linebr)
+
+var table t = table.new(position.top_right, 2, 6, bgcolor = color.new(color.black, 20))
+if i_showTable and barstate.islast
+    table.cell(t, 0, 0, "S3 ReaperMacroA", text_color = color.white, text_size = size.small)
+    table.cell(t, 1, 0, "Lane S measure", text_color = color.gray, text_size = size.small)
+    table.cell(t, 0, 1, "Days", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 1, str.tostring(cntDays), text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 2, "Macro fills", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 2, str.tostring(cntMac), text_color = color.teal, text_size = size.tiny)
+    table.cell(t, 0, 3, "Reaper fills", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 3, str.tostring(cntRpr), text_color = color.lime, text_size = size.tiny)
+    table.cell(t, 0, 4, "Last", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 4, lastEngine, text_color = color.white, text_size = size.tiny)
+    table.cell(t, 0, 5, "R phase", text_color = color.gray, text_size = size.tiny)
+    table.cell(t, 1, 5, str.tostring(rPhase), text_color = color.white, text_size = size.tiny)
+
+alertcondition(macFilled or lastEngine == "RPR", title = "S3 measure entry", message = "ReaperMacroA MEASURE — Lane S Stage-0 only · not promote.")
