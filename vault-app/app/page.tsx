@@ -182,6 +182,8 @@ export default function TodayPage() {
               <Link href="/strategies">Full config →</Link>
               {" · "}
               <Link href="/journal">Journal →</Link>
+              {" · "}
+              <Link href="/news">News calendar →</Link>
             </div>
           </div>
         </div>

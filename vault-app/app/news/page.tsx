@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocal, fmtUsd } from "@/lib/store";
-import { parseCalendarCsv, CalendarEvent, SopDayTag } from "@/lib/economic-calendar";
+import { parseCalendarCsv, CalendarEvent, SopDayTag, profileDay } from "@/lib/economic-calendar";
 import { joinTradesWithNews, newsSummaryStats, analyzePrbRedFolderDays, SOP_TAG_LABELS } from "@/lib/trade-news-join";
 import { ALL_SEED_TRADES } from "@/lib/prb-data";
 import { normalizeTradeDate } from "@/lib/normalize-date";
@@ -150,8 +150,17 @@ export default function NewsPage() {
     if (!selectedDate) return null;
     const dayEvents = events.filter((e) => e.date === selectedDate);
     const j = joined.find((x) => x.date === selectedDate);
-    return { date: selectedDate, events: dayEvents, trade: j ?? null };
+    const sop = profileDay(selectedDate, dayEvents);
+    return { date: selectedDate, events: dayEvents, trade: j ?? null, sop };
   }, [selectedDate, events, joined]);
+
+  const jumpToDate = (date: string) => {
+    if (!date) return;
+    setSelectedDate(date);
+    const mk = date.slice(0, 7);
+    const idx = months.indexOf(mk);
+    if (idx >= 0) setMonthIdx(idx);
+  };
 
   const loadFromServer = () => {
     setLoading(true);
@@ -200,17 +209,153 @@ export default function NewsPage() {
     reader.readAsText(files[0]);
   };
 
+  const redEvents = selectedProfile?.events.filter((e) => e.impact === "high") ?? [];
+
   return (
     <>
       <div className="panel">
         <div className="panel-title">
-          Economic calendar
+          Look up a day
+          <span className="sub">
+            Morningstar replay · red folder without Forex Factory ·{" "}
+            {loading ? "loading…" : meta ? `${meta.span.start} → ${meta.span.end}` : "no calendar"}
+          </span>
+        </div>
+        <div className="panel-body">
+          <div className="frm-row" style={{ marginBottom: 12 }}>
+            <label className="fld">
+              Date
+              <input
+                type="date"
+                value={selectedDate ?? ""}
+                min={meta?.span.start}
+                max={meta?.span.end}
+                onChange={(e) => jumpToDate(e.target.value)}
+              />
+            </label>
+            <button
+              type="button"
+              className="btn"
+              onClick={() => jumpToDate(selectedDate ?? meta?.span.end ?? "")}
+              disabled={!selectedDate && !meta?.span.end}
+            >
+              Show day
+            </button>
+            <button type="button" className="btn-ghost" onClick={loadFromServer}>
+              Reload calendar
+            </button>
+          </div>
+
+          {err && <p className="small neg" style={{ marginTop: 0 }}>{err}</p>}
+          {events.length === 0 && !loading && (
+            <p className="small warn" style={{ marginTop: 0 }}>
+              No calendar on disk — upload a Forex Factory CSV below (USD high-impact). Bundle on this machine
+              spans ~2023-07 → 2026-07.
+            </p>
+          )}
+
+          {selectedProfile && (
+            <div
+              style={{
+                border: "1px solid var(--border)",
+                borderRadius: 6,
+                padding: 12,
+                marginBottom: 8,
+              }}
+            >
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "baseline" }}>
+                <span className="accent" style={{ fontSize: 18 }}>
+                  {selectedProfile.date}
+                </span>
+                <span className={selectedProfile.sop.redCount > 0 ? "neg" : "pos"} style={{ fontWeight: 600 }}>
+                  {selectedProfile.sop.redCount > 0
+                    ? `RED FOLDER · ${selectedProfile.sop.redCount} high-impact`
+                    : "Quiet · no USD red folder"}
+                </span>
+                {selectedProfile.sop.tags.map((t) => (
+                  <span key={t} className={"chip " + tagClass(t)}>
+                    {SOP_TAG_LABELS[t]}
+                  </span>
+                ))}
+              </div>
+              <p className="small" style={{ lineHeight: 1.55, margin: "8px 0 0" }}>
+                {selectedProfile.sop.guidance}
+              </p>
+              {redEvents.length > 0 ? (
+                <>
+                  <div className="small dim mt" style={{ letterSpacing: 1 }}>
+                    JOURNAL TIP — copy time(s) into Morningstar red-folder fields
+                  </div>
+                  <table className="mt">
+                    <thead>
+                      <tr>
+                        <th>Time (NY)</th>
+                        <th>Event</th>
+                        <th>Actual</th>
+                        <th>Forecast</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {redEvents.map((e, i) => (
+                        <tr key={`red-${e.time}-${e.title}-${i}`}>
+                          <td className="accent">{(e.time || "—").replace(":", "")}</td>
+                          <td>{e.title}</td>
+                          <td>{e.actual || "—"}</td>
+                          <td className="dim">{e.forecast || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </>
+              ) : (
+                <p className="small dim mt" style={{ marginBottom: 0 }}>
+                  No high-impact USD prints — Journal red folder = <b>no</b>.
+                </p>
+              )}
+              {selectedProfile.events.filter((e) => e.impact !== "high").length > 0 && (
+                <details className="mt">
+                  <summary className="small dim" style={{ cursor: "pointer" }}>
+                    All events this day ({selectedProfile.events.length})
+                  </summary>
+                  <table className="mt">
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Impact</th>
+                        <th>Event</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedProfile.events.map((e, i) => (
+                        <tr key={`all-${e.time}-${e.title}-${i}`}>
+                          <td>{e.time || "—"}</td>
+                          <td className={e.impact === "high" ? "neg" : "dim"}>{e.impact}</td>
+                          <td>{e.title}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </details>
+              )}
+            </div>
+          )}
+          {!selectedProfile && !loading && events.length > 0 && (
+            <p className="small dim" style={{ marginBottom: 0 }}>
+              Pick a date above (or click a cell in the month calendar) for red-folder status + times.
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-title">
+          Economic calendar data
           <span className="sub">
             {loading ? "loading…" : meta ? `${meta.eventCount} events · ${meta.span.start} → ${meta.span.end}` : "no data"}
           </span>
         </div>
         <div className="panel-body">
-          <div className="mt" style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
             <label className="btn ghost" style={{ cursor: "pointer" }}>
               Upload calendar CSV
               <input
@@ -229,38 +374,6 @@ export default function NewsPage() {
             </span>
           </div>
           {info && <p className="small cyan mt">{info}</p>}
-          {err && <p className="small neg mt">{err}</p>}
-
-          <table className="mt kv-table">
-            <tbody>
-              <tr>
-                <td className="dim">Calendar events</td>
-                <td>{diagnostics.eventCount || "—"}</td>
-              </tr>
-              <tr>
-                <td className="dim">Calendar span</td>
-                <td>
-                  {diagnostics.calSpan
-                    ? `${diagnostics.calSpan.start} → ${diagnostics.calSpan.end}`
-                    : "—"}
-                </td>
-              </tr>
-              <tr>
-                <td className="dim">Trade span</td>
-                <td>
-                  {diagnostics.tradeSpan
-                    ? `${diagnostics.tradeSpan.start} → ${diagnostics.tradeSpan.end}`
-                    : "—"}
-                </td>
-              </tr>
-              <tr>
-                <td className="dim">Matching days</td>
-                <td className={diagnostics.overlap > 0 ? "pos" : "neg"}>
-                  {diagnostics.overlap} / {trades.length} trades
-                </td>
-              </tr>
-            </tbody>
-          </table>
           {diagnostics.gapNote && (
             <p className="small warn mt" style={{ lineHeight: 1.6 }}>
               {diagnostics.gapNote}
@@ -454,53 +567,9 @@ export default function NewsPage() {
               </button>
             ))}
           </div>
-          {selectedProfile && (
-            <div className="cal-detail mt">
-              <div className="accent small">{selectedProfile.date}</div>
-              {selectedProfile.trade && (
-                <div className="small">
-                  Trade P&L:{" "}
-                  <span className={selectedProfile.trade.pnl >= 0 ? "pos" : "neg"}>
-                    {fmtUsd(selectedProfile.trade.pnl, true)}
-                  </span>
-                  {selectedProfile.trade.profile?.tags.map((t) => (
-                    <span key={t} className={"chip " + tagClass(t)} style={{ marginLeft: 6 }}>
-                      {SOP_TAG_LABELS[t]}
-                    </span>
-                  ))}
-                </div>
-              )}
-              {!selectedProfile.trade && diagnostics.tradeSpan && selectedProfile.date > diagnostics.tradeSpan.end && (
-                <div className="small dim">No trade this day (trade record ends {diagnostics.tradeSpan.end})</div>
-              )}
-              {selectedProfile.events.length === 0 ? (
-                <p className="small dim">No calendar events this day.</p>
-              ) : (
-                <table className="mt">
-                  <thead>
-                    <tr>
-                      <th>Time</th>
-                      <th>Impact</th>
-                      <th>Event</th>
-                      <th>Actual</th>
-                      <th>Forecast</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedProfile.events.map((e, i) => (
-                      <tr key={`${e.time}-${e.title}-${i}`}>
-                        <td>{e.time || "—"}</td>
-                        <td className={e.impact === "high" ? "neg" : "dim"}>{e.impact}</td>
-                        <td>{e.title}</td>
-                        <td>{e.actual || "—"}</td>
-                        <td>{e.forecast || "—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
+          <p className="small dim mt" style={{ marginBottom: 0 }}>
+            Day detail is in <b>Look up a day</b> at the top — calendar click jumps there.
+          </p>
         </div>
       </div>
 
