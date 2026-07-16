@@ -67,7 +67,7 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
    - **Skip July & October = OFF** (your Manual discretion; Lab used ON)
    - **Direction filter = Both** (bias is yours — not coded on chart)
    - **Manual levels only = ON** · **Clean chart = ON**
-   - **RB structure TF = Auto** (Manual → **15m**; or force **15** / try **60** if busy)
+   - **RB structure TF = Auto** (Manual → **15m**; or force **15** / **30** / try **60** if busy)
    - **Require draw POI at HTF RB = ON** · **Block RB against unfinished PD draw = ON**
    - **Show trade plan** + **Show CE dotted** + **Show entry triggers** = ON
 4. Add **`PRB Gate Live Coach v0`** (optional). Profile Eval or Funded — **qty only**, move table to bottom-right if used.
@@ -76,7 +76,7 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 
 | Mode | Structure TF | Draw POI gate | Geometry |
 |---|---|---|---|
-| **Manual ON** (live / bar replay) | Auto → **15m** (or 60 / 240) | **ON** — RB extreme must tag PDH/PDL · PM H/L · key open | LIMIT / STOP / CE from **HTF wick**; leave-retest on chart bars |
+| **Manual ON** (live / bar replay) | Auto → **15m** (or 30 / 60 / 240) | **ON** — RB extreme must tag PDH/PDL · PM H/L · key open | LIMIT / STOP / CE from **HTF wick**; leave-retest on chart bars |
 | **Manual OFF** (Lab Deep BT) | Auto → **Chart** | Ignored | Preserves today’s chart-TF Lab control until a dedicated HTF Stage-0 |
 
 This is a **geometry + context fix**, not a Lab promote. Schedule HTF Stage-0 Deep BT only after Lane S S3 closes.
@@ -207,7 +207,7 @@ Manual ON — you click. Jul/Oct STAND_DOWN blocks new arms.
 
 | Mode | On the candles |
 |---|---|
-| **Manual ON** (live / bar replay) | **HTF** RB box (15m/1H/4H wick) · dotted **CE** · dashed wick-start · tag `15m · PDH` (etc.) · **LIMIT / STOP / TP** from HTF geometry · **LEAVE** then **GO** on 5m leave-retest |
+| **Manual ON** (live / bar replay) | **HTF** RB box (15m/30m/1H/4H wick) · dotted **CE** · dashed wick-start · tag `15m · PDH` / `30m · PDH` (etc.) · **LIMIT / STOP / TP** from HTF geometry · **LEAVE** then **GO** on 5m leave-retest |
 | **Manual OFF** (Deep BT) | Chart-TF structure (Lab control) + frozen **WIN/LOSS** after fills |
 | **Jul/Oct** | Default **Skip Jul/Oct = OFF** for your Manual discretion — Lab used ON; flip ON only for Lab-faithful exports |
 

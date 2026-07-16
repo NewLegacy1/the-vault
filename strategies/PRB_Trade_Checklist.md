@@ -4,7 +4,7 @@
 
 The script finds the setup. **You** are the bias filter. Three checkpoints.
 
-**On chart (gate_v0 Manual):** RB detected on **structure TF** (default **15m**; try **60** if still busy) · LIMIT/STOP/TP from the **HTF wick** · leave-retest timing on **5m** · tag like `15m · PDH`. Require draw POI ON. No corner tables. Bias stays in your head + paper checklist. **Direction filter = Both**.
+**On chart (gate_v0 Manual):** RB detected on **structure TF** (default **15m**; options **30** / **60** / **240**) · LIMIT/STOP/TP from the **HTF wick** · leave-retest timing on **5m** · tag like `15m · PDH` / `30m · PDH`. Require draw POI ON. No corner tables. Bias stays in your head + paper checklist. **Direction filter = Both**.
 
 **Lab (Manual OFF):** structure TF stays **Chart** (today’s Deep BT control) until a dedicated HTF Stage-0 — do not invent promote numbers from Manual visuals.
 
