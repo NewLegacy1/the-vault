@@ -133,12 +133,10 @@ i_freezeTrades = input.bool(true, "Freeze closed trades on chart", group = "Visu
 i_showTable = input.bool(false, "Show diagnostic tables (Lab)", group = "Visuals")
 
 grpCol = "Colors"
-c_rbShortBd = input.color(#fb7185, "RB short border", group = grpCol)
-c_rbShortBg = input.color(#fb7185, "RB short fill", group = grpCol)
-c_rbLongBd  = input.color(#5eead4, "RB long border", group = grpCol)
-c_rbLongBg  = input.color(#5eead4, "RB long fill", group = grpCol)
-i_rbFillTrans = input.int(90, "RB fill transparency", minval = 50, maxval = 95, group = grpCol)
-i_rbMarkTrans = input.int(60, "RB watermark text transparency", minval = 40, maxval = 90, group = grpCol)
+// One pair for all RB + OB boxes — TF is the tag only (5RB / 15RB / 1HRB / 15OB)
+c_bear = input.color(#ef4444, "Bearish RB / OB", group = grpCol, tooltip = "All short rejection blocks + bearish order blocks.")
+c_bull = input.color(#7dd3fc, "Bullish RB / OB", group = grpCol, tooltip = "All long rejection blocks + bullish order blocks.")
+i_rbFillTrans = input.int(90, "Zone fill transparency (if fill on)", minval = 50, maxval = 95, group = grpCol)
 c_ce     = input.color(#e2e8f0, "CE dotted", group = grpCol)
 c_wickSt = input.color(#94a3b8, "Wick-start dashed", group = grpCol)
 c_limit  = input.color(#f8fafc, "ENTRY / LIMIT", group = grpCol)
@@ -166,14 +164,6 @@ i_msShowIfvg = input.bool(true, "Mark 1m/5m IFVG zones + CE", group = grpMs)
 i_msShowOb = input.bool(true, "Mark 15m/1H order blocks + CE", group = grpMs)
 i_msMaxDraw = input.int(8, "Max drawings per type (lag guard)", minval = 3, maxval = 14, group = grpMs, tooltip = "Old boxes/labels delete when over limit — stops TV freeze from unbounded drawings. Lower if still laggy.")
 i_msBuf = input.float(12.0, "Confluence near RB zone (pts)", minval = 2.0, step = 1.0, group = grpMs)
-c_ms5 = input.color(#c4b5fd, "5m RB mark", group = grpMs)
-c_ms15 = input.color(#7dd3fc, "15m mark", group = grpMs)
-c_ms30 = input.color(#fde68a, "30m mark", group = grpMs)
-c_ms60 = input.color(#fdba74, "1H mark", group = grpMs)
-c_ms240 = input.color(#f9a8d4, "4H mark", group = grpMs)
-c_msIfvg = input.color(#d8b4fe, "IFVG zone", group = grpMs)
-c_msOb = input.color(#93c5fd, "Order block", group = grpMs)
-c_msCe = input.color(#e2e8f0, "CE dotted", group = grpMs)
 
 float effTrailStartR = i_trailRegime ? 2.0 : i_trailStartR
 float effTrailGapR = i_trailRegime ? 1.5 : i_trailGapR
@@ -1268,29 +1258,31 @@ f_msCapLabel(label lb) =>
 f_msTag(int x, float y, string txt, color col) =>
     f_msCapLabel(label.new(x, y, txt, style = label.style_none, color = color.new(color.black, 100), textcolor = col, size = size.small))
 
-// Zone + CE dotted + small tag (eyes only)
-f_msZone(string name, float top, float bot, color col, int xSpan) =>
+// Zone + CE + tag — color from bear/bull only (TF is in the tag text)
+f_msZone(bool isShort, string tag, float top, float bot, int xSpan) =>
     if barstate.isconfirmed and not na(top) and not na(bot)
+        color col = isShort ? c_bear : c_bull
         float hi = math.max(top, bot)
         float lo = math.min(top, bot)
         float ce = (hi + lo) * 0.5
         int xR = bar_index + xSpan
-        color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, 90)
+        color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, i_rbFillTrans)
         f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = fillC, border_width = 2))
-        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 1, style = line.style_dotted))
-        f_msTag(bar_index + 1, hi, name, col)
+        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_ce, width = 1, style = line.style_dotted))
+        f_msTag(bar_index + 1, hi, tag, col)
 
-f_msPaintRb(bool isShort, string tfLbl, float ex, float ws, color col) =>
+// Rejection block — same bear/bull colors; tag = "5RB" / "15RB" / "1HRB"
+f_msPaintRb(bool isShort, string tag, float ex, float ws) =>
     if barstate.isconfirmed and not na(ex) and not na(ws)
+        color col = isShort ? c_bear : c_bull
         float hi = math.max(ex, ws)
         float lo = math.min(ex, ws)
         float ce = (hi + lo) * 0.5
         int xR = bar_index + 16
-        string arrow = isShort ? "↓" : "↑"
-        color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, 90)
+        color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, i_rbFillTrans)
         f_msCapBox(box.new(bar_index, hi, xR, lo, border_color = col, bgcolor = fillC, border_width = 2))
-        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_msCe, width = 1, style = line.style_dotted))
-        f_msTag(bar_index + 1, hi, tfLbl + arrow, col)
+        f_msCapLine(line.new(bar_index, ce, xR, ce, color = c_ce, width = 1, style = line.style_dotted))
+        f_msTag(bar_index + 1, hi, tag, col)
 
 // ─── Morningstar LTF-in-RB score (eyes only — never arms) ────────────────────
 // Count only LTF tells that print *inside* the armed HTF RB wick zone.
@@ -1344,21 +1336,22 @@ if msShow and suDir != 0 and not na(suBar) and bar_index >= suBar
     // LTF stack inside HTF RB (CISD · 1m IFVG · 5m IFVG · 5m RB)
     msLtfHitsLive := (msCisd ? 1 : 0) + (msIfvg1 ? 1 : 0) + (msIfvg5 ? 1 : 0) + (msRb5 ? 1 : 0)
 
+    color confCol = suDir == -1 ? c_bear : c_bull
     if barstate.isconfirmed
         if msIfvg1 and not msMarkedIfvg1 and i_msShowIfvg and not na(ms1IfvgTop)
-            f_msZone("1IFVG", ms1IfvgTop, ms1IfvgBot, c_msIfvg, 20)
+            f_msZone(suDir == -1, "1IFVG", ms1IfvgTop, ms1IfvgBot, 20)
             msMarkedIfvg1 := true
         if msIfvg5 and not msMarkedIfvg5 and i_msShowIfvg and not na(ms5IfvgTop)
-            f_msZone("5IFVG", ms5IfvgTop, ms5IfvgBot, c_msIfvg, 20)
+            f_msZone(suDir == -1, "5IFVG", ms5IfvgTop, ms5IfvgBot, 20)
             msMarkedIfvg5 := true
         if msCisd and not msMarkedCisd
-            f_msTag(bar_index, close, "CISD", #7dd3fc)
+            f_msTag(bar_index, close, "CISD", confCol)
             msMarkedCisd := true
         if msRb5 and not msMarkedRb5 and i_msShowRb5
             if suDir == -1
-                f_msPaintRb(true, "5m", h5, wsB5, c_ms5)
+                f_msPaintRb(true, "5RB", h5, wsB5)
             else
-                f_msPaintRb(false, "5m", l5, wsU5, c_ms5)
+                f_msPaintRb(false, "5RB", l5, wsU5)
             msMarkedRb5 := true
 else if suDir == 0
     msLtfHitsLive := 0
@@ -1375,34 +1368,34 @@ bool c60 = ta.change(time("60", "America/New_York")) != 0
 bool c240 = ta.change(time("240", "America/New_York")) != 0
 if msViz and inWindow and barstate.isconfirmed
     if i_msShowRb5 and c5 and b5
-        f_msPaintRb(true, "5m", h5, wsB5, c_ms5)
+        f_msPaintRb(true, "5RB", h5, wsB5)
     if i_msShowRb5 and c5 and u5
-        f_msPaintRb(false, "5m", l5, wsU5, c_ms5)
+        f_msPaintRb(false, "5RB", l5, wsU5)
     if i_msShowRb15 and c15 and b15
-        f_msPaintRb(true, "15m", h15, wsB15, c_ms15)
+        f_msPaintRb(true, "15RB", h15, wsB15)
     if i_msShowRb15 and c15 and u15
-        f_msPaintRb(false, "15m", l15, wsU15, c_ms15)
+        f_msPaintRb(false, "15RB", l15, wsU15)
     if i_msShowRb30 and c30 and b30
-        f_msPaintRb(true, "30m", h30, wsB30, c_ms30)
+        f_msPaintRb(true, "30RB", h30, wsB30)
     if i_msShowRb30 and c30 and u30
-        f_msPaintRb(false, "30m", l30, wsU30, c_ms30)
+        f_msPaintRb(false, "30RB", l30, wsU30)
     if i_msShowRb60 and c60 and b60
-        f_msPaintRb(true, "1H", h60, wsB60, c_ms60)
+        f_msPaintRb(true, "1HRB", h60, wsB60)
     if i_msShowRb60 and c60 and u60
-        f_msPaintRb(false, "1H", l60, wsU60, c_ms60)
+        f_msPaintRb(false, "1HRB", l60, wsU60)
     if i_msShowRb240 and c240 and b240
-        f_msPaintRb(true, "4H", h240, wsB240, c_ms240)
+        f_msPaintRb(true, "4HRB", h240, wsB240)
     if i_msShowRb240 and c240 and u240
-        f_msPaintRb(false, "4H", l240, wsU240, c_ms240)
-    // Order blocks — short tags (15OB / 1HOB)
+        f_msPaintRb(false, "4HRB", l240, wsU240)
+    // Order blocks — same bear/bull colors; TF in tag only
     if i_msShowOb and c15 and ob15Bear
-        f_msZone("15OB↓", ob15Top, ob15Bot, c_msOb, 18)
+        f_msZone(true, "15OB", ob15Top, ob15Bot, 18)
     if i_msShowOb and c15 and ob15Bull
-        f_msZone("15OB↑", ob15Top, ob15Bot, c_msOb, 18)
+        f_msZone(false, "15OB", ob15Top, ob15Bot, 18)
     if i_msShowOb and c60 and ob60Bear
-        f_msZone("1HOB↓", ob60Top, ob60Bot, c_msOb, 22)
+        f_msZone(true, "1HOB", ob60Top, ob60Bot, 22)
     if i_msShowOb and c60 and ob60Bull
-        f_msZone("1HOB↑", ob60Top, ob60Bot, c_msOb, 22)
+        f_msZone(false, "1HOB", ob60Top, ob60Bot, 22)
 
 // ─── On-chart trade plan (LIMIT · STOP · TP) ─────────────────────────────────
 // Anchored on setup bar — not a corner HUD. Bias is yours; chart = geometry only.
@@ -1516,10 +1509,11 @@ if i_showSig and barstate.isconfirmed and (rbBear or rbBull) and suDir != 0 and 
     float ws = nz(suWickStart, rbBear ? rbWsBear : rbWsBull)
     float ex = nz(suExtreme, rbBear ? rbExtBear : rbExtBull)
     float ceNow = nz(suCe, (ex + ws) * 0.5)
-    color bd = rbBear ? c_rbShortBd : c_rbLongBd
-    color bg = i_rbNoFill ? color.new(bd, 100) : color.new(rbBear ? c_rbShortBg : c_rbLongBg, i_rbFillTrans)
+    color bd = rbBear ? c_bear : c_bull
+    color bg = i_rbNoFill ? color.new(bd, 100) : color.new(bd, i_rbFillTrans)
     int xR0 = bar_index + i_rbExtend
-    string rbHead0 = structLabel + " · LTF " + str.tostring(msLtfHitsLive) + "/4"
+    string armTag = structTf == "15" ? "15RB" : structTf == "30" ? "30RB" : structTf == "60" ? "1HRB" : structTf == "240" ? "4HRB" : "RB"
+    string rbHead0 = armTag + " · LTF " + str.tostring(msLtfHitsLive) + "/4"
     bxRb := box.new(bar_index, math.max(ex, ws), xR0, math.min(ex, ws), border_color = bd, bgcolor = bg, border_width = 2)
     // Small text on top of the armed RB (TF + LTF score)
     lblRbMark := label.new(bar_index + 1, math.max(ex, ws), rbHead0, style = label.style_none, color = color.new(color.black, 100), textcolor = bd, size = size.small)
@@ -1538,12 +1532,13 @@ if i_showSig and suDir != 0 and not na(rbLeft) and not na(suBar) and rbLeft == s
     if not na(bxRb)
         box.set_right(bxRb, xLive)
         if i_rbNoFill
-            box.set_bgcolor(bxRb, color.new(suDir == -1 ? c_rbShortBd : c_rbLongBd, 100))
+            box.set_bgcolor(bxRb, color.new(suDir == -1 ? c_bear : c_bull, 100))
     if not na(lblRbMark)
+        string armLive = structTf == "15" ? "15RB" : structTf == "30" ? "30RB" : structTf == "60" ? "1HRB" : structTf == "240" ? "4HRB" : "RB"
         label.set_x(lblRbMark, rbLeft + 1)
         label.set_y(lblRbMark, rbTop)
-        label.set_text(lblRbMark, structLabel + " · LTF " + str.tostring(msLtfHitsLive) + "/4")
-        label.set_textcolor(lblRbMark, suDir == -1 ? c_rbShortBd : c_rbLongBd)
+        label.set_text(lblRbMark, armLive + " · LTF " + str.tostring(msLtfHitsLive) + "/4")
+        label.set_textcolor(lblRbMark, suDir == -1 ? c_bear : c_bull)
         label.set_color(lblRbMark, color.new(color.black, 100))
         label.set_size(lblRbMark, size.small)
     if i_showCe and not na(lnRbCe)
