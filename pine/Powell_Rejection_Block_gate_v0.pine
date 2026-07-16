@@ -10,6 +10,8 @@
 //     Pair with PRB_Gate_LiveCoach_v0 for risk HUD (Coach does not find RBs).
 //   · HTF structure TF (15/30/60/240) via request.security — Manual Auto = 15m;
 //     Lab Auto = Chart (preserves Deep BT control). Draw-POI gate on Manual.
+//   · Morningstar: Manual-only confluence grade (POI·4H·1m CISD·1m/5m IFVG) —
+//     eyes only; never arms / blocks / sizes.
 //
 // CODED FROM THE SOP:
 //   · Formal RB (T03): HTF candle sweeps / tags draw POI + rejection wick;
@@ -34,8 +36,8 @@
 //   data H/L quality · equal highs/lows · NDOG/NWOG · MM model · daily SMT ·
 //   fib anchoring · A+/B/C grading (Auto PDH/PDL covers §3 mechanical draw only)
 strategy(
-     title                   = "Powell Rejection Block gate_v0",
-     shorttitle              = "PRB gate_v0",
+     title                   = "Morningstar (PRB gate_v0)",
+     shorttitle              = "Morningstar",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -51,7 +53,7 @@ strategy(
      margin_short            = 0,
      max_lines_count         = 300,
      max_boxes_count         = 300,
-     max_labels_count        = 300)
+     max_labels_count        = 500)
 
 // ─── Inputs ──────────────────────────────────────────────────────────────────
 i_winStart  = input.int(1000, "Entries from (HHMM) — SOP: wait for 10:00", minval = 0, maxval = 2359, group = "Session (NY time)")
@@ -150,6 +152,11 @@ c_winSess = input.color(#64748b, "Entry window wash", group = grpCol)
 i_manualOnly = input.bool(false, "Manual levels only — NO orders (you click)", group = "Manual / discretionary replay", tooltip = "LIVE / bar replay: ON. Draws LIMIT/STOP/TP on chart — you decide bias and click. OFF = Deep BT CSV only.")
 i_showBlockedBias = input.bool(false, "Mark bias-blocked RBs (journal)", group = "Manual / discretionary replay", tooltip = "Off by default — bias is your discretion, not chart clutter.")
 i_manualAlerts = input.bool(false, "Alert when limit level arms", group = "Manual / discretionary replay", tooltip = "Fires only on live ARMED (not Jul/Oct or Monday SHADOW).")
+
+grpMs = "Morningstar grade (Manual · eyes only)"
+i_msGrade = input.bool(true, "Show Morningstar confluence grade", group = grpMs, tooltip = "Manual ON only. Labels POI · 4H · 1m CISD · 1m/5m IFVG and score n/5. NEVER arms, cancels, or blocks LIMIT/GO — you decide.")
+i_msMarks = input.bool(true, "Mark each confluence when it hits", group = grpMs)
+i_msBuf = input.float(8.0, "Confluence near RB zone (pts)", minval = 2.0, step = 1.0, group = grpMs)
 
 float effTrailStartR = i_trailRegime ? 2.0 : i_trailStartR
 float effTrailGapR = i_trailRegime ? 1.5 : i_trailGapR
@@ -306,6 +313,25 @@ f_htfPack(float minW) =>
 [b30, u30, h30, l30, wsB30, wsU30, uw30, lw30] = request.security(syminfo.tickerid, "30", f_htfPack(i_minWick30), barmerge.gaps_off, barmerge.lookahead_off)
 [b60, u60, h60, l60, wsB60, wsU60, uw60, lw60] = request.security(syminfo.tickerid, "60", f_htfPack(i_minWick60), barmerge.gaps_off, barmerge.lookahead_off)
 [b240, u240, h240, l240, wsB240, wsU240, uw240, lw240] = request.security(syminfo.tickerid, "240", f_htfPack(i_minWick240), barmerge.gaps_off, barmerge.lookahead_off)
+
+// Morningstar LTF tells (eyes only — never gate arming)
+f_msLtfPack() =>
+    bool prevBull = close[1] > open[1]
+    bool prevBear = close[1] < open[1]
+    bool cisdBear = prevBull and close < open[1]
+    bool cisdBull = prevBear and close > open[1]
+    // IFVG: close through a fresh 3-candle FVG (bullish FVG inverted → bearish IFVG)
+    bool ifvgBear = low[1] > high[3] and close < high[3]
+    bool ifvgBull = high[1] < low[3] and close > low[3]
+    [cisdBear, cisdBull, ifvgBear, ifvgBull, close]
+
+f_msIfvgOnly() =>
+    bool ifvgBear = low[1] > high[3] and close < high[3]
+    bool ifvgBull = high[1] < low[3] and close > low[3]
+    [ifvgBear, ifvgBull, close]
+
+[ms1CisdBear, ms1CisdBull, ms1IfvgBear, ms1IfvgBull, ms1Close] = request.security(syminfo.tickerid, "1", f_msLtfPack(), barmerge.gaps_off, barmerge.lookahead_off)
+[ms5IfvgBear, ms5IfvgBull, ms5Close] = request.security(syminfo.tickerid, "5", f_msIfvgOnly(), barmerge.gaps_off, barmerge.lookahead_off)
 
 float cUpperWick = high - math.max(open, close)
 float cLowerWick = math.min(open, close) - low
@@ -491,6 +517,17 @@ var string manualState = "—"
 var string suSweepTag = "—"
 var float suH4Pts = na
 
+// Morningstar confluence latches (Manual grade only — never used in canArm / rb*)
+var bool msPoi = false
+var bool msH4 = false
+var bool msCisd = false
+var bool msIfvg1 = false
+var bool msIfvg5 = false
+var bool msMarkedCisd = false
+var bool msMarkedIfvg1 = false
+var bool msMarkedIfvg5 = false
+var label lblMsGrade = na
+
 bool isTrigger = i_entryMode == "CISD trigger (for 1m)"
 
 if newDay
@@ -500,6 +537,15 @@ if newDay
     manualState := "—"
     suSweepTag := "—"
     suH4Pts := na
+    msPoi := false
+    msH4 := false
+    msCisd := false
+    msIfvg1 := false
+    msIfvg5 := false
+    msMarkedCisd := false
+    msMarkedIfvg1 := false
+    msMarkedIfvg5 := false
+    lblMsGrade := na
     if not i_manualOnly
         strategy.cancel_all()
 
@@ -1194,6 +1240,9 @@ if planLive
     string limTxt = side + " · " + trig + "\nLIMIT " + str.tostring(suEntry, format.mintick)
     if i_showTriggers and suSweepTag != "—"
         limTxt += "\n" + suSweepTag
+    if i_manualOnly and i_msGrade
+        int msN = (msPoi ? 1 : 0) + (msH4 ? 1 : 0) + (msCisd ? 1 : 0) + (msIfvg1 ? 1 : 0) + (msIfvg5 ? 1 : 0)
+        limTxt += "\nMS " + str.tostring(msN) + "/5"
     if newPlan
         planLeft := suBar
         planLnE := line.new(suBar, suEntry, xR, suEntry, color = eCol, width = 2, style = line.style_solid)
@@ -1277,7 +1326,7 @@ if i_showSig and barstate.isconfirmed and (rbBear or rbBull) and suDir != 0 and 
     float midY = (ex + ws) * 0.5
     bxRb := box.new(bar_index, math.max(ex, ws), xR0, math.min(ex, ws), border_color = bd, bgcolor = bg, border_width = 2)
     // Watermark in the box (transparent bg · translucent text · no solid pill)
-    lblRbMark := label.new(bar_index + int(i_rbExtend * 0.35), midY, "RB", style = label.style_label_center, color = color.new(color.black, 100), textcolor = markC, size = size.large)
+    lblRbMark := label.new(bar_index + int(i_rbExtend * 0.35), midY, i_manualOnly ? "MS" : "RB", style = label.style_label_center, color = color.new(color.black, 100), textcolor = markC, size = size.large)
     if i_showTriggers
         string sw = suSweepTag
         float h4p = nz(suH4Pts, rbBear ? h4UpperWick : h4LowerWick)
@@ -1314,6 +1363,74 @@ else if suDir == 0 and not na(bxRb) and not na(rbLeft) and bar_index > rbLeft + 
     lnRbWs := na
     lblRbMark := na
     lblRbMeta := na
+
+// ─── Morningstar confluence grade (Manual · eyes only — never arms) ──────────
+f_msNear(float px) =>
+    not na(px) and not na(suCe) and (math.abs(px - suCe) <= i_msBuf or math.abs(px - nz(suExtreme, suCe)) <= i_msBuf or math.abs(px - nz(suWickStart, suCe)) <= i_msBuf)
+
+bool msShow = i_manualOnly and i_msGrade
+if msShow and suDir != 0 and not na(suBar) and suBar == bar_index
+    msPoi := suDir == -1 ? poiShort != "—" : poiLong != "—"
+    msH4 := suDir == -1 ? h4OkBear : h4OkBull
+    msCisd := false
+    msIfvg1 := false
+    msIfvg5 := false
+    msMarkedCisd := false
+    msMarkedIfvg1 := false
+    msMarkedIfvg5 := false
+    lblMsGrade := na
+
+if msShow and suDir != 0 and not na(suBar) and bar_index >= suBar
+    // Refresh POI / 4H if they improve (usually set on arm)
+    if suDir == -1
+        if poiShort != "—"
+            msPoi := true
+        if h4OkBear
+            msH4 := true
+        if ms1CisdBear and f_msNear(ms1Close)
+            msCisd := true
+        if ms1IfvgBear and f_msNear(ms1Close)
+            msIfvg1 := true
+        if ms5IfvgBear and f_msNear(ms5Close)
+            msIfvg5 := true
+    else
+        if poiLong != "—"
+            msPoi := true
+        if h4OkBull
+            msH4 := true
+        if ms1CisdBull and f_msNear(ms1Close)
+            msCisd := true
+        if ms1IfvgBull and f_msNear(ms1Close)
+            msIfvg1 := true
+        if ms5IfvgBull and f_msNear(ms5Close)
+            msIfvg5 := true
+
+    int msHits = (msPoi ? 1 : 0) + (msH4 ? 1 : 0) + (msCisd ? 1 : 0) + (msIfvg1 ? 1 : 0) + (msIfvg5 ? 1 : 0)
+    int msPct = msHits * 20
+    string msBits = (msPoi ? "POI" : "poi") + " · " + (msH4 ? "4H" : "4h") + " · " + (msCisd ? "CISD" : "cisd") + " · " + (msIfvg1 ? "iFVG1" : "ifvg1") + " · " + (msIfvg5 ? "iFVG5" : "ifvg5")
+    string msTxt = "Morningstar " + str.tostring(msHits) + "/5 · " + str.tostring(msPct) + "%\n" + msBits
+    float msY = suDir == -1 ? nz(suExtreme, high) + i_msBuf : nz(suExtreme, low) - i_msBuf
+    color msCol = msHits >= 4 ? color.new(#a3e635, 0) : msHits == 3 ? color.new(#facc15, 0) : color.new(#94a3b8, 0)
+    if na(lblMsGrade)
+        lblMsGrade := label.new(bar_index, msY, msTxt, style = suDir == -1 ? label.style_label_down : label.style_label_up, color = color.new(color.black, 20), textcolor = msCol, size = size.small)
+    else
+        label.set_x(lblMsGrade, bar_index)
+        label.set_y(lblMsGrade, msY)
+        label.set_text(lblMsGrade, msTxt)
+        label.set_textcolor(lblMsGrade, msCol)
+
+    if i_msMarks and barstate.isconfirmed
+        if msCisd and not msMarkedCisd
+            label.new(bar_index, close, "1m CISD", style = label.style_label_left, color = color.new(color.black, 70), textcolor = color.new(#22d3ee, 0), size = size.tiny)
+            msMarkedCisd := true
+        if msIfvg1 and not msMarkedIfvg1
+            label.new(bar_index, close, "1m IFVG", style = label.style_label_left, color = color.new(color.black, 70), textcolor = color.new(#c084fc, 0), size = size.tiny)
+            msMarkedIfvg1 := true
+        if msIfvg5 and not msMarkedIfvg5
+            label.new(bar_index, close, "5m IFVG", style = label.style_label_left, color = color.new(color.black, 70), textcolor = color.new(#f472b6, 0), size = size.tiny)
+            msMarkedIfvg5 := true
+else if suDir == 0 and not na(lblMsGrade)
+    lblMsGrade := na
 
 // Optional journal: bias-blocked raw RB (off by default)
 bool biasBlkBear = i_showBlockedBias and rbBearRaw and h4OkBear and sweepOkShort and (not i_koConfl or f_nearKo(rbExtBear)) and not biasOkShort
