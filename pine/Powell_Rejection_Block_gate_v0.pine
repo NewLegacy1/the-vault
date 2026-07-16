@@ -10,8 +10,8 @@
 //     Pair with PRB_Gate_LiveCoach_v0 for risk HUD (Coach does not find RBs).
 //   · HTF structure TF (15/30/60/240) via request.security — Manual Auto = 15m;
 //     Lab Auto = Chart (preserves Deep BT control). Draw-POI gate on Manual.
-//   · Morningstar: Manual-only LTF-in-RB score (1m CISD·1m/5m IFVG·5m RB) —
-//     eyes only; never arms / blocks / sizes.
+//   · Morningstar: LTF-in-RB score · untested WFVG/HTF FVG · fib OTE + PDA
+//     overlap tags — eyes only; never arms / blocks / sizes. Window → 13:00.
 //
 // CODED FROM THE SOP:
 //   · Formal RB (T03): HTF candle sweeps / tags draw POI + rejection wick;
@@ -56,8 +56,8 @@ strategy(
      max_labels_count        = 500)
 
 // ─── Inputs ──────────────────────────────────────────────────────────────────
-i_winStart  = input.int(1000, "Entries from (HHMM) — SOP: wait for 10:00", minval = 0, maxval = 2359, group = "Session (NY time)")
-i_winEnd    = input.int(1130, "Last order (HHMM)", minval = 0, maxval = 2359, group = "Session (NY time)")
+i_winStart  = input.int(1000, "Entries from (HHMM) — SOP: wait for 10:00", minval = 0, maxval = 2359, group = "Session (NY time)", tooltip = "Framework start. Early HTF RB OK; you may still wait for later OTE into HTF PDAs.")
+i_winEnd    = input.int(1300, "Last order (HHMM) — OTE until 13:00", minval = 0, maxval = 2359, group = "Session (NY time)", tooltip = "Checklist 10:00–13:00. Mid-day OTE into unfinished weekly/HTF FVG · RB · OB · key opens · 4H wick still allowed. Flat remains 15:55.")
 i_flatTime  = input.int(1555, "Flat by (HHMM)", minval = 0, maxval = 2359, group = "Session (NY time)")
 i_oneTradeDay = input.bool(true, "Max 1 trade per day", group = "Session (NY time)")
 i_skipMonday  = input.bool(true, "Skip Mondays (SOP: lower expectancy)", group = "Session (NY time)")
@@ -81,7 +81,7 @@ i_confClose  = input.bool(true, "Require confirming close (bear RB closes down)"
 i_leaveR     = input.float(1.0, "Price must leave by N×risk before limit arms (0 = arm at once)", minval = 0.0, step = 0.25, group = grpRb, tooltip = "SOP: 'wait for price to leave, then retest the RB'. Kills same-bar blow-through fills.")
 i_strictLeave = input.bool(false, "Strict retest: leave must happen AFTER the RB candle", group = grpRb, tooltip = "Big-bodied RB candles satisfy the leave distance by themselves, arming the limit instantly. Strict mode requires the departure on a later bar.")
 i_maxApproachR = input.float(0.0, "Approach guard: pause limit unless close is within N×risk (0 = off)", minval = 0.0, step = 0.5, group = grpRb)
-i_tapTimeout = input.int(24, "Setup expires after N chart bars", minval = 4, maxval = 120, group = grpRb)
+i_tapTimeout = input.int(36, "Setup expires after N chart bars", minval = 4, maxval = 120, group = grpRb, tooltip = "Default 36 on 5m ≈ 3h so a morning RB can still matter for a later OTE retest. Lab Deep BT may tighten.")
 
 i_useRollSweep = input.bool(false, "Rolling 20-bar swing counts as sweep liquidity (noisy)", group = "Key opens (T02)")
 i_useKoSweep = input.bool(true, "Key opens count as sweep liquidity", group = "Key opens (T02)")
@@ -163,6 +163,11 @@ i_msShowRb240 = input.bool(false, "Mark 4H RBs + CE", group = grpMs)
 i_msShowIfvg = input.bool(true, "Mark 1m/5m IFVG zones + CE", group = grpMs)
 i_msShowOb = input.bool(true, "Mark 15m/1H order blocks + CE", group = grpMs)
 i_showH4Wick = input.bool(true, "Show developing 4H wick (pts on 5m)", group = grpMs, tooltip = "Live 4H upper/lower wick length on the 5m chart — no need to flip to 4H. ≥15 good · ≥8 grey · else weak.")
+i_msShowWFvg = input.bool(true, "Mark weekly FVG (first presented / untested)", group = grpMs, tooltip = "Eyes only. Cleared when the gap is fully mitigated.")
+i_msShowFvg240 = input.bool(true, "Mark 4H FVG (untested)", group = grpMs)
+i_msShowFvg60 = input.bool(true, "Mark 1H FVG (untested)", group = grpMs)
+i_msShowFvg15 = input.bool(true, "Mark 15m FVG (untested)", group = grpMs)
+i_msShowOte = input.bool(true, "Show fib OTE pocket + PDA overlap (eyes only)", group = grpMs, tooltip = "After leave from armed HTF RB: 0.62 / 0.705 / 0.79 + tag which unfinished HTF PDAs sit in the pocket. NEVER arms.")
 i_msMaxDraw = input.int(8, "Max drawings per type (lag guard)", minval = 3, maxval = 14, group = grpMs, tooltip = "Old boxes/labels delete when over limit — stops TV freeze from unbounded drawings. Lower if still laggy.")
 i_msBuf = input.float(12.0, "Confluence near RB zone (pts)", minval = 2.0, step = 1.0, group = grpMs)
 
@@ -357,10 +362,27 @@ f_htfObPack() =>
     float oCe = (oTop + oBot) * 0.5
     [bearOb, bullOb, oTop, oBot, oCe]
 
+// Classic 3-candle FVG ending on last closed HTF bar [1] (eyes only)
+f_fvgPack() =>
+    float h3 = high[3]
+    float l3 = low[3]
+    float h1 = high[1]
+    float l1 = low[1]
+    bool bull = l1 > h3
+    bool bear = h1 < l3
+    float top = bull ? l1 : bear ? l3 : na
+    float bot = bull ? h3 : bear ? h1 : na
+    float ce = not na(top) and not na(bot) ? (top + bot) * 0.5 : na
+    [bear, bull, top, bot, ce]
+
 [ms1CisdBear, ms1CisdBull, ms1IfvgBear, ms1IfvgBull, ms1Close, ms1IfvgTop, ms1IfvgBot, ms1IfvgCe] = request.security(syminfo.tickerid, "1", f_msLtfPack(), barmerge.gaps_off, barmerge.lookahead_off)
 [ms5CisdBear, ms5CisdBull, ms5IfvgBear, ms5IfvgBull, ms5Close, ms5IfvgTop, ms5IfvgBot, ms5IfvgCe] = request.security(syminfo.tickerid, "5", f_msLtfPack(), barmerge.gaps_off, barmerge.lookahead_off)
 [ob15Bear, ob15Bull, ob15Top, ob15Bot, ob15Ce] = request.security(syminfo.tickerid, "15", f_htfObPack(), barmerge.gaps_off, barmerge.lookahead_off)
 [ob60Bear, ob60Bull, ob60Top, ob60Bot, ob60Ce] = request.security(syminfo.tickerid, "60", f_htfObPack(), barmerge.gaps_off, barmerge.lookahead_off)
+[fvgWBear, fvgWBull, fvgWTop, fvgWBot, fvgWCe] = request.security(syminfo.tickerid, "W", f_fvgPack(), barmerge.gaps_off, barmerge.lookahead_off)
+[fvg240Bear, fvg240Bull, fvg240Top, fvg240Bot, fvg240Ce] = request.security(syminfo.tickerid, "240", f_fvgPack(), barmerge.gaps_off, barmerge.lookahead_off)
+[fvg60Bear, fvg60Bull, fvg60Top, fvg60Bot, fvg60Ce] = request.security(syminfo.tickerid, "60", f_fvgPack(), barmerge.gaps_off, barmerge.lookahead_off)
+[fvg15Bear, fvg15Bull, fvg15Top, fvg15Bot, fvg15Ce] = request.security(syminfo.tickerid, "15", f_fvgPack(), barmerge.gaps_off, barmerge.lookahead_off)
 
 float cUpperWick = high - math.max(open, close)
 float cLowerWick = math.min(open, close) - low
@@ -527,6 +549,7 @@ var float suExtreme = na
 var float suEntry = na
 var float suStop = na
 var bool  suLeft = false
+var float suLeavePx = na
 var int   suBar = na
 var bool  suOrd = false
 var bool  suTapped = false
@@ -569,6 +592,8 @@ if newDay
     manualState := "—"
     suSweepTag := "—"
     suH4Pts := na
+    suLeavePx := na
+    suLeft := false
     msPoi := false
     msH4 := false
     msCisd := false
@@ -983,8 +1008,10 @@ if not isTrigger and suDir != 0 and flat
         if not suLeft and (not i_strictLeave or bar_index > suBar)
             if suDir == -1 and low <= suEntry - i_leaveR * riskPts
                 suLeft := true
+                suLeavePx := low
             if suDir == 1 and high >= suEntry + i_leaveR * riskPts
                 suLeft := true
+                suLeavePx := high
         bool nearOk = i_maxApproachR == 0 or math.abs(close - suEntry) <= i_maxApproachR * riskPts
         string armLbl = f_shadowArmLabel()
         manualState := not suLeft ? "WAIT leave" : not nearOk ? "WAIT approach" : not roomToday ? "1/day used" : not dayOk ? "Daily lock" : armLbl
@@ -1407,6 +1434,216 @@ if msViz and inWindow and barstate.isconfirmed
         f_msZone(true, "1HOB", ob60Top, ob60Bot, 22)
     if i_msShowOb and c60 and ob60Bull
         f_msZone(false, "1HOB", ob60Top, ob60Bot, 22)
+
+// ─── Untested HTF / weekly FVGs (eyes only — first presented until mitigated) ─
+var array<float> pdaTopA = array.new_float()
+var array<float> pdaBotA = array.new_float()
+var array<bool> pdaBearA = array.new_bool()
+var array<string> pdaTagA = array.new_string()
+var array<box> pdaBoxA = array.new_box()
+var array<line> pdaCeA = array.new_line()
+var array<label> pdaLblA = array.new_label()
+var int lastFvgW = na
+var int lastFvg240 = na
+var int lastFvg60 = na
+var int lastFvg15 = na
+
+f_pdaDup(float top, float bot) =>
+    bool dup = false
+    int n = array.size(pdaTopA)
+    if n > 0
+        for i = 0 to n - 1
+            if math.abs(array.get(pdaTopA, i) - top) < syminfo.mintick and math.abs(array.get(pdaBotA, i) - bot) < syminfo.mintick
+                dup := true
+    dup
+
+f_pdaPush(bool isShort, string tag, float top, float bot) =>
+    if i_manualOnly and not na(top) and not na(bot) and not f_pdaDup(top, bot)
+        color col = isShort ? c_bear : c_bull
+        float hi = math.max(top, bot)
+        float lo = math.min(top, bot)
+        float ce = (hi + lo) * 0.5
+        color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, i_rbFillTrans)
+        box bx = box.new(bar_index, hi, bar_index + 8, lo, border_color = col, bgcolor = fillC, border_width = 2)
+        line ln = line.new(bar_index, ce, bar_index + 8, ce, color = c_ce, width = 1, style = line.style_dotted)
+        label lb = label.new(bar_index + 1, hi, tag, style = label.style_none, color = color.new(color.black, 100), textcolor = col, size = size.small)
+        array.push(pdaTopA, hi)
+        array.push(pdaBotA, lo)
+        array.push(pdaBearA, isShort)
+        array.push(pdaTagA, tag)
+        array.push(pdaBoxA, bx)
+        array.push(pdaCeA, ln)
+        array.push(pdaLblA, lb)
+        // Cap live PDA count
+        int cap = i_msMaxDraw * 2
+        if array.size(pdaBoxA) > cap
+            box.delete(array.shift(pdaBoxA))
+            line.delete(array.shift(pdaCeA))
+            label.delete(array.shift(pdaLblA))
+            array.shift(pdaTopA)
+            array.shift(pdaBotA)
+            array.shift(pdaBearA)
+            array.shift(pdaTagA)
+
+f_pdaKill(int ix) =>
+    box.delete(array.get(pdaBoxA, ix))
+    line.delete(array.get(pdaCeA, ix))
+    label.delete(array.get(pdaLblA, ix))
+    array.remove(pdaBoxA, ix)
+    array.remove(pdaCeA, ix)
+    array.remove(pdaLblA, ix)
+    array.remove(pdaTopA, ix)
+    array.remove(pdaBotA, ix)
+    array.remove(pdaBearA, ix)
+    array.remove(pdaTagA, ix)
+
+bool cW = ta.change(time("W")) != 0
+if i_manualOnly and barstate.isconfirmed
+    if i_msShowWFvg and cW and fvgWBear and (na(lastFvgW) or time("W") != lastFvgW)
+        lastFvgW := time("W")
+        f_pdaPush(true, "WFVG", fvgWTop, fvgWBot)
+    if i_msShowWFvg and cW and fvgWBull and (na(lastFvgW) or time("W") != lastFvgW)
+        lastFvgW := time("W")
+        f_pdaPush(false, "WFVG", fvgWTop, fvgWBot)
+    if i_msShowFvg240 and c240 and fvg240Bear and (na(lastFvg240) or time("240") != lastFvg240)
+        lastFvg240 := time("240")
+        f_pdaPush(true, "4HFVG", fvg240Top, fvg240Bot)
+    if i_msShowFvg240 and c240 and fvg240Bull and (na(lastFvg240) or time("240") != lastFvg240)
+        lastFvg240 := time("240")
+        f_pdaPush(false, "4HFVG", fvg240Top, fvg240Bot)
+    if i_msShowFvg60 and c60 and fvg60Bear and (na(lastFvg60) or time("60") != lastFvg60)
+        lastFvg60 := time("60")
+        f_pdaPush(true, "1HFVG", fvg60Top, fvg60Bot)
+    if i_msShowFvg60 and c60 and fvg60Bull and (na(lastFvg60) or time("60") != lastFvg60)
+        lastFvg60 := time("60")
+        f_pdaPush(false, "1HFVG", fvg60Top, fvg60Bot)
+    if i_msShowFvg15 and c15 and fvg15Bear and (na(lastFvg15) or time("15") != lastFvg15)
+        lastFvg15 := time("15")
+        f_pdaPush(true, "15FVG", fvg15Top, fvg15Bot)
+    if i_msShowFvg15 and c15 and fvg15Bull and (na(lastFvg15) or time("15") != lastFvg15)
+        lastFvg15 := time("15")
+        f_pdaPush(false, "15FVG", fvg15Top, fvg15Bot)
+
+// Extend + mitigate (full traverse clears the zone)
+if i_manualOnly and array.size(pdaBoxA) > 0
+    for i = array.size(pdaBoxA) - 1 to 0
+        float hi = array.get(pdaTopA, i)
+        float lo = array.get(pdaBotA, i)
+        bool isBear = array.get(pdaBearA, i)
+        bool filled = isBear ? high >= hi : low <= lo
+        if filled
+            f_pdaKill(i)
+        else
+            box.set_right(array.get(pdaBoxA, i), bar_index + 2)
+            line.set_x2(array.get(pdaCeA, i), bar_index + 2)
+            label.set_x(array.get(pdaLblA, i), bar_index + 1)
+
+// ─── Fib OTE pocket + HTF PDA overlap tag (eyes only — never arms) ───────────
+var line lnOte62 = na
+var line lnOte705 = na
+var line lnOte79 = na
+var label lblOteStack = na
+var float oteBandHi = na
+var float oteBandLo = na
+
+f_zoneHitsOte(float zTop, float zBot, float bandHi, float bandLo) =>
+    not na(zTop) and not na(zBot) and not na(bandHi) and not na(bandLo) and math.min(zTop, zBot) <= bandHi and math.max(zTop, zBot) >= bandLo
+
+f_lvlHitsOte(float lvl, float bandHi, float bandLo) =>
+    not na(lvl) and not na(bandHi) and not na(bandLo) and lvl <= bandHi and lvl >= bandLo
+
+bool justLeftOte = i_manualOnly and i_msShowOte and suDir != 0 and suLeft and not suLeft[1] and not na(suExtreme) and not na(suLeavePx)
+if justLeftOte
+    if not na(lnOte62)
+        line.delete(lnOte62)
+    if not na(lnOte705)
+        line.delete(lnOte705)
+    if not na(lnOte79)
+        line.delete(lnOte79)
+    if not na(lblOteStack)
+        label.delete(lblOteStack)
+    float ext = suExtreme
+    float lv = suLeavePx
+    // Retracement from leave back toward extreme: 0.62 / 0.705 / 0.79
+    float y62 = lv + (ext - lv) * 0.62
+    float y705 = lv + (ext - lv) * 0.705
+    float y79 = lv + (ext - lv) * 0.79
+    oteBandHi := math.max(y62, y79)
+    oteBandLo := math.min(y62, y79)
+    int x1 = nz(suBar, bar_index)
+    int x2 = bar_index + 20
+    color oteC = color.new(#e2e8f0, 0)
+    lnOte62 := line.new(x1, y62, x2, y62, color = oteC, width = 1, style = line.style_dotted)
+    lnOte705 := line.new(x1, y705, x2, y705, color = color.new(#facc15, 0), width = 1, style = line.style_dotted)
+    lnOte79 := line.new(x1, y79, x2, y79, color = oteC, width = 1, style = line.style_dotted)
+    lblOteStack := label.new(bar_index, oteBandHi, "OTE", style = label.style_none, color = color.new(color.black, 100), textcolor = suDir == -1 ? c_bear : c_bull, size = size.small)
+
+float otePdh = not na(pdhLvl) ? pdhLvl : prevDayHigh
+float otePdl = not na(pdlLvl) ? pdlLvl : prevDayLow
+
+if i_manualOnly and i_msShowOte and suDir != 0 and suLeft and not na(oteBandHi) and not na(lnOte62)
+    line.set_x2(lnOte62, bar_index + 4)
+    line.set_x2(lnOte705, bar_index + 4)
+    line.set_x2(lnOte79, bar_index + 4)
+    // Which unfinished HTF PDAs sit in the OTE band
+    string stack = "OTE"
+    if array.size(pdaTagA) > 0
+        for i = 0 to array.size(pdaTagA) - 1
+            if f_zoneHitsOte(array.get(pdaTopA, i), array.get(pdaBotA, i), oteBandHi, oteBandLo)
+                string t = array.get(pdaTagA, i)
+                if not str.contains(stack, t)
+                    stack := stack + " · " + t
+    // Armed RB zone
+    if not na(suExtreme) and not na(suWickStart) and f_zoneHitsOte(suExtreme, suWickStart, oteBandHi, oteBandLo)
+        string rbt = structTf == "15" ? "15RB" : structTf == "30" ? "30RB" : structTf == "60" ? "1HRB" : structTf == "240" ? "4HRB" : "RB"
+        if not str.contains(stack, rbt)
+            stack := stack + " · " + rbt
+    // Live OB prints
+    if i_msShowOb and f_zoneHitsOte(ob15Top, ob15Bot, oteBandHi, oteBandLo)
+        if not str.contains(stack, "15OB")
+            stack := stack + " · 15OB"
+    if i_msShowOb and f_zoneHitsOte(ob60Top, ob60Bot, oteBandHi, oteBandLo)
+        if not str.contains(stack, "1HOB")
+            stack := stack + " · 1HOB"
+    // Key opens / PD levels
+    if f_lvlHitsOte(otePdh, oteBandHi, oteBandLo)
+        if not str.contains(stack, "PDH")
+            stack := stack + " · PDH"
+    if f_lvlHitsOte(otePdl, oteBandHi, oteBandLo)
+        if not str.contains(stack, "PDL")
+            stack := stack + " · PDL"
+    if i_useKoSweep and f_lvlHitsOte(ko1000, oteBandHi, oteBandLo)
+        if not str.contains(stack, "10:00")
+            stack := stack + " · 10:00"
+    if i_useKoSweep and f_lvlHitsOte(ko0000, oteBandHi, oteBandLo)
+        if not str.contains(stack, "00:00")
+            stack := stack + " · 00:00"
+    if i_useKoSweep and f_lvlHitsOte(ko1800, oteBandHi, oteBandLo)
+        if not str.contains(stack, "18:00")
+            stack := stack + " · 18:00"
+    // 4H wick extremes / body CE
+    if i_showH4Wick and (f_lvlHitsOte(h4High, oteBandHi, oteBandLo) or f_lvlHitsOte(h4Low, oteBandHi, oteBandLo) or f_lvlHitsOte((h4BodyTop + h4BodyBot) * 0.5, oteBandHi, oteBandLo))
+        if not str.contains(stack, "4H")
+            stack := stack + " · 4H"
+    color tagC = suDir == -1 ? c_bear : c_bull
+    if not na(lblOteStack)
+        label.set_x(lblOteStack, bar_index)
+        label.set_y(lblOteStack, oteBandHi)
+        label.set_text(lblOteStack, stack)
+        label.set_textcolor(lblOteStack, tagC)
+else if suDir == 0 and not na(lnOte62)
+    line.delete(lnOte62)
+    line.delete(lnOte705)
+    line.delete(lnOte79)
+    if not na(lblOteStack)
+        label.delete(lblOteStack)
+    lnOte62 := na
+    lnOte705 := na
+    lnOte79 := na
+    lblOteStack := na
+    oteBandHi := na
+    oteBandLo := na
+    suLeavePx := na
 
 // ─── On-chart trade plan (LIMIT · STOP · TP) ─────────────────────────────────
 // Anchored on setup bar — not a corner HUD. Bias is yours; chart = geometry only.
