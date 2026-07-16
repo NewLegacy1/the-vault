@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { compressChartShot } from "@/lib/journal-shot";
 import { useLocal, fmtUsd, todayStr } from "@/lib/store";
 import {
@@ -22,23 +22,36 @@ import { analyzeBiasJournal } from "@/lib/bias-journal";
 const MORNING_BIASES: MorningBias[] = ["long", "short", "neutral", "skip"];
 const PRB_FILTERS: PrbFilter[] = ["Both", "Long only", "Short only"];
 const STRUCT_TFS: StructTf[] = ["15", "30", "60", "240", "chart"];
+
+/** Chart Morningstar slots — tap what lit up on TV; score = count. */
+const MS_FLAGS: { key: "msPoi" | "msH4" | "msCisd" | "msIfvg1" | "msIfvg5"; label: string; hint: string }[] =
+  [
+    { key: "msPoi", label: "Draw POI", hint: "Tag like PDH / PDL / PM / key open on the RB" },
+    { key: "msH4", label: "4H wick OK", hint: "Developing 4H manipulation wick looked real" },
+    { key: "msCisd", label: "1m CISD", hint: "Chart showed 1m CISD mark" },
+    { key: "msIfvg1", label: "1m IFVG", hint: "Chart showed 1m IFVG mark" },
+    { key: "msIfvg5", label: "5m IFVG", hint: "Chart showed 5m IFVG mark" },
+  ];
+
 const SKIP_REASONS: { id: SkipReason; label: string }[] = [
-  { id: "no_poi", label: "No POI" },
-  { id: "counter_draw", label: "Counter draw" },
-  { id: "eqhl", label: "EQH/EQL" },
-  { id: "ndog", label: "NDOG/NWOG" },
-  { id: "news", label: "News" },
+  { id: "no_poi", label: "No draw POI" },
+  { id: "counter_draw", label: "Against the draw" },
+  { id: "eqhl", label: "EQH / EQL in way" },
+  { id: "ndog", label: "NDOG / NWOG magnet" },
+  { id: "news", label: "News / red folder" },
   { id: "gut", label: "Gut skip" },
-  { id: "low_grade", label: "Low MS grade" },
+  { id: "low_grade", label: "Low confluence" },
   { id: "other", label: "Other" },
 ];
+
+type FormState = ReturnType<typeof emptyForm>;
 
 function emptyForm(mode: JournalLogMode) {
   return {
     mode,
     date: todayStr(),
     accountId: "",
-    direction: "long" as JournalEntry["direction"],
+    direction: "skip" as JournalEntry["direction"],
     morningBias: "neutral" as MorningBias,
     prbFilter: "Both" as PrbFilter,
     redFolder: "no" as RedFolderTag,
@@ -46,14 +59,12 @@ function emptyForm(mode: JournalLogMode) {
     redFolderEvent: "",
     structureTf: "15" as StructTf,
     structureTag: "",
-    msScore: 0,
     msPoi: false,
     msH4: false,
     msCisd: false,
     msIfvg1: false,
     msIfvg5: false,
-    grade: "C" as JournalEntry["grade"],
-    gradeLocked: false,
+    showOutcome: false,
     pnl: "",
     r: "",
     mfeR: "",
@@ -62,6 +73,16 @@ function emptyForm(mode: JournalLogMode) {
     notes: "",
     chartShot: "" as string,
   };
+}
+
+function msScoreFromFlags(f: FormState): number {
+  return (
+    (f.msPoi ? 1 : 0) +
+    (f.msH4 ? 1 : 0) +
+    (f.msCisd ? 1 : 0) +
+    (f.msIfvg1 ? 1 : 0) +
+    (f.msIfvg5 ? 1 : 0)
+  );
 }
 
 export default function JournalPage() {
@@ -75,10 +96,9 @@ export default function JournalPage() {
   const [logErr, setLogErr] = useState("");
   const [shotErr, setShotErr] = useState("");
 
-  useEffect(() => {
-    if (f.gradeLocked) return;
-    setF((prev) => ({ ...prev, grade: letterFromMsScore(prev.msScore) }));
-  }, [f.msScore, f.gradeLocked]);
+  const msScore = msScoreFromFlags(f);
+  const letter = letterFromMsScore(msScore);
+  const tookTrade = f.direction === "long" || f.direction === "short";
 
   const toggleSkip = (id: SkipReason) => {
     setF((prev) => ({
@@ -112,14 +132,15 @@ export default function JournalPage() {
       return;
     }
     if (f.redFolder === "yes" && !f.redFolderTime.trim()) {
-      setLogErr("Red folder = yes needs news time (HHMM NY).");
+      setLogErr("Red folder = yes needs news time (HHMM NY). Use F7 News → Look up a day.");
+      return;
+    }
+    if (isStudy && !f.structureTag.trim() && tookTrade) {
+      setLogErr("Paste the chart tag (e.g. 15m · PDH) so we know which RB you took.");
       return;
     }
     setLogErr("");
-    const fails =
-      f.skipReasons.length > 0
-        ? f.skipReasons.join(",")
-        : "";
+    const score = isStudy ? msScoreFromFlags(f) : undefined;
     const entry: JournalEntry = {
       id: uid(),
       date: f.date,
@@ -130,18 +151,19 @@ export default function JournalPage() {
       redFolder: f.redFolder,
       redFolderTime: f.redFolder === "yes" ? f.redFolderTime.trim() : undefined,
       redFolderEvent: f.redFolder === "yes" ? f.redFolderEvent.trim() || undefined : undefined,
-      grade: f.grade,
-      pnl: parseFloat(f.pnl) || 0,
-      rMultiple: parseFloat(f.r) || 0,
-      mfeR: f.mfeR === "" ? undefined : parseFloat(f.mfeR) || 0,
-      giveBack: f.giveBack,
-      checklistFails: fails,
+      grade: isStudy ? letterFromMsScore(score ?? 0) : "B",
+      pnl: tookTrade && f.showOutcome ? parseFloat(f.pnl) || 0 : 0,
+      rMultiple: tookTrade && f.showOutcome ? parseFloat(f.r) || 0 : 0,
+      mfeR:
+        tookTrade && f.showOutcome && f.mfeR !== "" ? parseFloat(f.mfeR) || 0 : undefined,
+      giveBack: tookTrade && f.showOutcome ? f.giveBack : false,
+      checklistFails: f.skipReasons.join(","),
       skipReasons: f.skipReasons.length ? f.skipReasons : undefined,
       notes: f.notes,
       strategy: isStudy ? "Morningstar" : "PRB",
       structureTf: isStudy ? f.structureTf : undefined,
       structureTag: isStudy ? f.structureTag.trim() || undefined : undefined,
-      msScore: isStudy ? f.msScore : undefined,
+      msScore: score,
       msPoi: isStudy ? f.msPoi : undefined,
       msH4: isStudy ? f.msH4 : undefined,
       msCisd: isStudy ? f.msCisd : undefined,
@@ -168,11 +190,9 @@ export default function JournalPage() {
   const net = trades.reduce((s, j) => s + j.pnl, 0);
   const wins = trades.filter((j) => j.pnl > 50).length;
   const losses = trades.filter((j) => j.pnl < -50).length;
-  const giveBacks10 = rows.slice(0, 10).filter((j) => j.giveBack).length;
   const msRows = rows.filter((j) => j.strategy === "Morningstar" || j.accountId === MORNINGSTAR_STUDY_ID);
-  const avgMs =
-    msRows.filter((j) => typeof j.msScore === "number").reduce((s, j) => s + (j.msScore ?? 0), 0) /
-    Math.max(1, msRows.filter((j) => typeof j.msScore === "number").length);
+  const scored = msRows.filter((j) => typeof j.msScore === "number");
+  const avgMs = scored.reduce((s, j) => s + (j.msScore ?? 0), 0) / Math.max(1, scored.length);
   const biasStats = useMemo(() => analyzeBiasJournal(rows), [rows]);
 
   const acctLabel = (id: string, strategy?: string) => {
@@ -184,36 +204,52 @@ export default function JournalPage() {
     <>
       <div className="stat-strip">
         <div className="stat">
-          <div className="k">Forward net</div>
+          <div className="k">Study logs</div>
+          <div className="v">{msRows.length}</div>
+          <div className="d">
+            {msRows.filter((j) => j.direction === "skip").length} skips · {trades.length} takes
+          </div>
+        </div>
+        <div className="stat">
+          <div className="k">Avg Morningstar</div>
+          <div className="v">{scored.length ? `${avgMs.toFixed(1)}/5` : "—"}</div>
+          <div className="d">from confluence flags</div>
+        </div>
+        <div className="stat">
+          <div className="k">Logged P&L (optional)</div>
           <div className={"v " + (net >= 0 ? "pos" : "neg")}>{fmtUsd(net, true)}</div>
           <div className="d">
-            {trades.length} trades · {rows.length - trades.length} skips
+            {wins}W / {losses}L · only if you filled outcome
           </div>
         </div>
         <div className="stat">
-          <div className="k">W / L / scratch</div>
-          <div className="v">
-            {wins} / {losses} / {trades.length - wins - losses}
+          <div className="k">News calendar</div>
+          <div className="v accent">
+            <Link href="/news">F7</Link>
           </div>
-        </div>
-        <div className="stat">
-          <div className="k">Peaked≥2R→&lt;1R (last 10)</div>
-          <div className={"v " + (giveBacks10 >= 2 ? "warn" : "")}>{giveBacks10}</div>
-          <div className="d">{giveBacks10 >= 2 ? "trail toggle signal" : "BE-only OK"}</div>
-        </div>
-        <div className="stat">
-          <div className="k">Morningstar avg grade</div>
-          <div className="v">{msRows.some((j) => typeof j.msScore === "number") ? avgMs.toFixed(1) + "/5" : "—"}</div>
-          <div className="d">{msRows.length} study logs</div>
+          <div className="d">look up red-folder day</div>
         </div>
       </div>
 
       <div className="panel">
         <div className="panel-title">
-          Log entry <span className="sub">Morningstar study default · trades and skips</span>
+          Morningstar log
+          <span className="sub">tap what you saw on the chart · score fills itself · snapshot optional</span>
         </div>
         <div className="panel-body">
-          <div className="frm-row" style={{ marginBottom: 12 }}>
+          <p className="small dim" style={{ marginTop: 0, lineHeight: 1.55 }}>
+            Chart screenshots can&apos;t reliably auto-read TradingView labels yet — OCR misses MS grades too
+            often. Fast path: check the 5 confluence boxes (same as chart), attach a shot for later, skip
+            P&amp;L unless you care.
+          </p>
+
+          {logErr && (
+            <p className="warn small" style={{ marginTop: 0 }}>
+              {logErr}
+            </p>
+          )}
+
+          <div className="frm-row" style={{ marginBottom: 8 }}>
             <label className="fld">
               Mode
               <select
@@ -228,57 +264,54 @@ export default function JournalPage() {
                 <option value="live">Live account (PRB)</option>
               </select>
             </label>
-          </div>
-
-          {logErr && (
-            <p className="warn small" style={{ marginTop: 0 }}>
-              {logErr}
-            </p>
-          )}
-
-          <div className="frm-row">
             <label className="fld">
               Date
               <input type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />
             </label>
-            {f.mode === "live" && (
-              <>
-                <label className="fld">
-                  Account
-                  <select
-                    value={f.accountId || activeId}
-                    onChange={(e) => setF({ ...f, accountId: e.target.value })}
-                  >
-                    <option value="">—</option>
-                    {accounts.map((a) => (
-                      <option key={a.id} value={a.id}>
-                        {a.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="fld">
-                  PRB filter
-                  <select
-                    value={f.prbFilter}
-                    onChange={(e) => setF({ ...f, prbFilter: e.target.value as PrbFilter })}
-                    title="TV Direction filter that day (live PRB only)"
-                  >
-                    {PRB_FILTERS.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </>
-            )}
+          </div>
+
+          {f.mode === "live" && (
+            <div className="frm-row">
+              <label className="fld">
+                Account
+                <select
+                  value={f.accountId || activeId}
+                  onChange={(e) => setF({ ...f, accountId: e.target.value })}
+                >
+                  <option value="">—</option>
+                  {accounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="fld">
+                TV Direction filter
+                <select
+                  value={f.prbFilter}
+                  onChange={(e) => setF({ ...f, prbFilter: e.target.value as PrbFilter })}
+                >
+                  {PRB_FILTERS.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
+
+          {/* 1 · Session */}
+          <div className="accent small" style={{ letterSpacing: 1, marginTop: 8 }}>
+            1 · SESSION
+          </div>
+          <div className="frm-row">
             <label className="fld">
-              Morning bias
+              Morning bias (D→4H)
               <select
                 value={f.morningBias}
                 onChange={(e) => setF({ ...f, morningBias: e.target.value as MorningBias })}
-                title="D→4H read"
               >
                 {MORNING_BIASES.map((b) => (
                   <option key={b} value={b}>
@@ -288,18 +321,25 @@ export default function JournalPage() {
               </select>
             </label>
             <label className="fld">
-              Dir
+              What I did
               <select
                 value={f.direction}
-                onChange={(e) => setF({ ...f, direction: e.target.value as JournalEntry["direction"] })}
+                onChange={(e) =>
+                  setF({
+                    ...f,
+                    direction: e.target.value as JournalEntry["direction"],
+                    showOutcome: e.target.value !== "skip" ? f.showOutcome : false,
+                  })
+                }
+                title="Direction of the trade you took — or SKIP if you passed"
               >
-                <option value="long">long</option>
-                <option value="short">short</option>
-                <option value="skip">SKIP</option>
+                <option value="skip">Skipped the setup</option>
+                <option value="long">Took the long</option>
+                <option value="short">Took the short</option>
               </select>
             </label>
             <label className="fld">
-              Red folder
+              Red-folder news?
               <select
                 value={f.redFolder}
                 onChange={(e) => setF({ ...f, redFolder: e.target.value as RedFolderTag })}
@@ -325,213 +365,225 @@ export default function JournalPage() {
                   <input
                     value={f.redFolderEvent}
                     onChange={(e) => setF({ ...f, redFolderEvent: e.target.value })}
-                    placeholder="CPI / NFP / …"
-                    style={{ width: 120 }}
+                    placeholder="CPI"
+                    style={{ width: 100 }}
                   />
                 </label>
               </>
             )}
           </div>
+          <p className="small dim" style={{ marginTop: 0 }}>
+            Red folder? <Link href="/news">F7 Look up a day</Link> — copy the time. No Forex Factory needed.
+          </p>
 
           {f.mode === "morningstar" && (
             <>
+              {/* 2 · Setup on chart */}
+              <div className="accent small" style={{ letterSpacing: 1, marginTop: 12 }}>
+                2 · SETUP ON CHART
+              </div>
               <div className="frm-row">
                 <label className="fld">
-                  Structure TF
+                  Arming structure TF
                   <select
                     value={f.structureTf}
                     onChange={(e) => setF({ ...f, structureTf: e.target.value as StructTf })}
                   >
                     {STRUCT_TFS.map((t) => (
                       <option key={t} value={t}>
-                        {t}
+                        {t === "15"
+                          ? "15m"
+                          : t === "30"
+                            ? "30m"
+                            : t === "60"
+                              ? "1H"
+                              : t === "240"
+                                ? "4H"
+                                : "Chart"}
                       </option>
                     ))}
                   </select>
                 </label>
                 <label className="fld">
-                  Structure tag
+                  Chart tag (from RB label)
                   <input
                     value={f.structureTag}
                     onChange={(e) => setF({ ...f, structureTag: e.target.value })}
                     placeholder="15m · PDH"
-                    style={{ width: 140 }}
+                    style={{ width: 160 }}
                   />
-                </label>
-                <label className="fld">
-                  MS score /5
-                  <input
-                    type="number"
-                    min={0}
-                    max={5}
-                    value={f.msScore}
-                    onChange={(e) =>
-                      setF({
-                        ...f,
-                        msScore: Math.max(0, Math.min(5, parseInt(e.target.value, 10) || 0)),
-                        gradeLocked: false,
-                      })
-                    }
-                    style={{ width: 70 }}
-                  />
-                </label>
-                <label className="fld">
-                  Letter
-                  <select
-                    value={f.grade}
-                    onChange={(e) =>
-                      setF({
-                        ...f,
-                        grade: e.target.value as JournalEntry["grade"],
-                        gradeLocked: true,
-                      })
-                    }
-                    title="Suggested from MS score; override if needed"
-                  >
-                    <option>A+</option>
-                    <option>B</option>
-                    <option>C</option>
-                    <option>-</option>
-                  </select>
                 </label>
               </div>
-              <div className="frm-row" style={{ alignItems: "center" }}>
-                <span className="small dim" style={{ marginRight: 6 }}>
-                  Flags
-                </span>
-                {(
-                  [
-                    ["msPoi", "POI"],
-                    ["msH4", "4H"],
-                    ["msCisd", "CISD"],
-                    ["msIfvg1", "iFVG1"],
-                    ["msIfvg5", "iFVG5"],
-                  ] as const
-                ).map(([key, label]) => (
-                  <label key={key} className="chk" style={{ marginRight: 8 }}>
+
+              {/* 3 · Confluence → auto grade */}
+              <div className="accent small" style={{ letterSpacing: 1, marginTop: 12 }}>
+                3 · CONFLUENCE (same as Morningstar chart marks)
+              </div>
+              <p className="small dim" style={{ marginTop: 0, marginBottom: 8 }}>
+                Check each that was lit for this setup. Grade = count of checks (no separate score or letter
+                entry).
+              </p>
+              <div className="frm-row" style={{ alignItems: "stretch", gap: 8 }}>
+                {MS_FLAGS.map((flag) => (
+                  <label
+                    key={flag.key}
+                    className={"chk" + (f[flag.key] ? " done" : "")}
+                    title={flag.hint}
+                    style={{
+                      minWidth: 120,
+                      border: "1px solid var(--border)",
+                      borderRadius: 6,
+                      padding: "8px 10px",
+                    }}
+                  >
                     <input
                       type="checkbox"
-                      checked={f[key]}
-                      onChange={(e) => setF({ ...f, [key]: e.target.checked })}
+                      checked={f[flag.key]}
+                      onChange={(e) => setF({ ...f, [flag.key]: e.target.checked })}
                     />
                     <span className="chk-box" aria-hidden="true" />
-                    <span className="txt">{label}</span>
+                    <span className="txt">
+                      <b>{flag.label}</b>
+                      <span className="note">{flag.hint}</span>
+                    </span>
                   </label>
                 ))}
               </div>
+              <div
+                className="mt"
+                style={{
+                  display: "inline-block",
+                  padding: "8px 14px",
+                  borderRadius: 6,
+                  border: "1px solid var(--border-hi)",
+                  background: "var(--panel, transparent)",
+                }}
+              >
+                <span className="dim small">Auto grade · </span>
+                <span className="accent" style={{ fontSize: 18, fontWeight: 600 }}>
+                  Morningstar {msScore}/5 · {letter}
+                </span>
+                <span className="dim small">
+                  {" "}
+                  ({msScore >= 4 ? "A+ band" : msScore === 3 ? "B band" : "C band"})
+                </span>
+              </div>
+
+              {/* 4 · Why skip / why weak */}
+              <div className="accent small" style={{ letterSpacing: 1, marginTop: 16 }}>
+                4 · WHY SKIP / WHY WEAK (optional)
+              </div>
+              <div className="frm-row" style={{ alignItems: "center" }}>
+                {SKIP_REASONS.map((r) => (
+                  <label key={r.id} className="chk" style={{ marginRight: 6 }}>
+                    <input
+                      type="checkbox"
+                      checked={f.skipReasons.includes(r.id)}
+                      onChange={() => toggleSkip(r.id)}
+                    />
+                    <span className="chk-box" aria-hidden="true" />
+                    <span className="txt">{r.label}</span>
+                  </label>
+                ))}
+              </div>
+              <label className="fld" style={{ maxWidth: "100%", marginTop: 8 }}>
+                Notes
+                <input
+                  value={f.notes}
+                  onChange={(e) => setF({ ...f, notes: e.target.value })}
+                  placeholder="one line — what you saw"
+                  style={{ width: "100%", maxWidth: 480 }}
+                />
+              </label>
             </>
           )}
 
-          <div className="frm-row">
-            <label className="fld">
-              P&L $
-              <input
-                type="number"
-                value={f.pnl}
-                onChange={(e) => setF({ ...f, pnl: e.target.value })}
-                style={{ width: 90 }}
-              />
-            </label>
-            <label className="fld">
-              R
-              <input
-                type="number"
-                step="0.1"
-                value={f.r}
-                onChange={(e) => setF({ ...f, r: e.target.value })}
-                style={{ width: 70 }}
-              />
-            </label>
-            <label className="fld">
-              MFE (R)
-              <input
-                type="number"
-                step="0.1"
-                value={f.mfeR}
-                onChange={(e) => setF({ ...f, mfeR: e.target.value })}
-                style={{ width: 70 }}
-                title="Max favorable excursion in R"
-              />
-            </label>
-            <label className="fld">
-              Peaked ≥2R, exited &lt;1R
-              <input
-                type="checkbox"
-                checked={f.giveBack}
-                onChange={(e) => setF({ ...f, giveBack: e.target.checked })}
-                title="Trail-toggle signal — trade peaked at least 2R then scratched under 1R"
-              />
-            </label>
-            <label className="fld">
-              Notes
-              <input
-                value={f.notes}
-                onChange={(e) => setF({ ...f, notes: e.target.value })}
-                placeholder="path / discretion"
-                style={{ width: 220 }}
-              />
-            </label>
+          {/* 5 · Snapshot */}
+          <div className="accent small" style={{ letterSpacing: 1, marginTop: 16 }}>
+            5 · CHART SNAPSHOT (optional · not auto-parsed)
           </div>
-
-          <div className="frm-row" style={{ alignItems: "center" }}>
-            <span className="small dim" style={{ marginRight: 6 }}>
-              Skip / fail reasons
-            </span>
-            {SKIP_REASONS.map((r) => (
-              <label key={r.id} className="chk" style={{ marginRight: 6 }}>
-                <input
-                  type="checkbox"
-                  checked={f.skipReasons.includes(r.id)}
-                  onChange={() => toggleSkip(r.id)}
-                />
-                <span className="chk-box" aria-hidden="true" />
-                <span className="txt">{r.label}</span>
-              </label>
-            ))}
-          </div>
-
           <div className="frm-row" style={{ alignItems: "flex-end" }}>
             <label className="fld">
-              Chart snapshot
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => onShot(e.target.files?.[0] ?? null)}
-              />
+              Upload PNG/JPG
+              <input type="file" accept="image/*" onChange={(e) => onShot(e.target.files?.[0] ?? null)} />
             </label>
             {f.chartShot && (
-              <button type="button" className="btn-ghost" onClick={() => setPreviewShot(f.chartShot)}>
-                Preview
-              </button>
+              <>
+                <button type="button" className="btn-ghost" onClick={() => setPreviewShot(f.chartShot)}>
+                  Preview
+                </button>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={f.chartShot}
+                  alt="Chart"
+                  style={{ height: 48, borderRadius: 4, border: "1px solid var(--border)" }}
+                />
+              </>
             )}
-            {f.chartShot && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={f.chartShot}
-                alt="Chart snapshot"
-                style={{ height: 48, borderRadius: 4, border: "1px solid var(--border)" }}
-              />
-            )}
-            <button type="button" className="btn" onClick={add}>
-              Log
-            </button>
           </div>
           {shotErr && (
             <p className="warn small" style={{ marginTop: 0 }}>
               {shotErr}
             </p>
           )}
-          {f.mode === "morningstar" && (
-            <p className="small dim" style={{ marginBottom: 0, lineHeight: 1.5 }}>
-              Copy MS n/5 from the chart label. Letter auto-maps (4–5→A+, 3→B, ≤2→C). Grade is eyes-only —
-              does not arm trades. No account required.
-            </p>
+
+          {/* Optional outcome — collapsed */}
+          {tookTrade && (
+            <details
+              className="mt"
+              open={f.showOutcome}
+              onToggle={(e) => setF({ ...f, showOutcome: (e.target as HTMLDetailsElement).open })}
+            >
+              <summary className="small dim" style={{ cursor: "pointer" }}>
+                Optional · P&amp;L / R / MFE (skip this for study — not required)
+              </summary>
+              <div className="frm-row mt">
+                <label className="fld">
+                  P&L $
+                  <input
+                    type="number"
+                    value={f.pnl}
+                    onChange={(e) => setF({ ...f, pnl: e.target.value })}
+                    style={{ width: 90 }}
+                  />
+                </label>
+                <label className="fld">
+                  R multiple
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={f.r}
+                    onChange={(e) => setF({ ...f, r: e.target.value })}
+                    style={{ width: 70 }}
+                  />
+                </label>
+                <label className="fld">
+                  MFE (R)
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={f.mfeR}
+                    onChange={(e) => setF({ ...f, mfeR: e.target.value })}
+                    style={{ width: 70 }}
+                  />
+                </label>
+                <label className="fld">
+                  Peaked ≥2R, exited &lt;1R
+                  <input
+                    type="checkbox"
+                    checked={f.giveBack}
+                    onChange={(e) => setF({ ...f, giveBack: e.target.checked })}
+                  />
+                </label>
+              </div>
+            </details>
           )}
-          {f.mode === "live" && biasStats.filterMismatch > 0 && (
-            <p className="small warn" style={{ marginBottom: 0 }}>
-              Live filter-mismatch count in view: {biasStats.filterMismatch}
-            </p>
-          )}
+
+          <div className="frm-row mt">
+            <button type="button" className="btn" onClick={add}>
+              Log setup
+            </button>
+          </div>
         </div>
       </div>
 
@@ -555,16 +607,10 @@ export default function JournalPage() {
             <thead>
               <tr>
                 <th>Date</th>
-                <th>Strat</th>
-                <th>Bias</th>
+                <th>Did</th>
                 <th>Tag</th>
-                <th>MS</th>
-                <th>Red</th>
-                <th>Dir</th>
                 <th>Grade</th>
-                <th className="num">P&L</th>
-                <th className="num">R</th>
-                <th className="num">MFE</th>
+                <th>Red</th>
                 <th>Shot</th>
                 <th>Notes</th>
                 <th></th>
@@ -574,31 +620,35 @@ export default function JournalPage() {
               {rows.map((j) => (
                 <tr key={j.id}>
                   <td>{j.date}</td>
-                  <td className="small">{acctLabel(j.accountId, j.strategy)}</td>
-                  <td className="small">{j.morningBias ?? "—"}</td>
+                  <td
+                    className={
+                      j.direction === "skip" ? "dim" : j.direction === "long" ? "pos" : "neg"
+                    }
+                  >
+                    {j.direction === "skip" ? "SKIP" : j.direction.toUpperCase()}
+                  </td>
                   <td className="small dim">{j.structureTag ?? "—"}</td>
-                  <td className="small">
-                    {typeof j.msScore === "number" ? `${j.msScore}/5` : "—"}
+                  <td>
+                    {typeof j.msScore === "number" ? (
+                      <>
+                        <span className="accent">{j.msScore}/5</span> {j.grade}
+                      </>
+                    ) : (
+                      j.grade
+                    )}
                   </td>
                   <td className="small dim">
                     {j.redFolder === "yes"
                       ? `${j.redFolderTime ?? "?"} ${j.redFolderEvent ?? ""}`.trim()
                       : (j.redFolder ?? "—")}
                   </td>
-                  <td className={j.direction === "skip" ? "dim" : j.direction === "long" ? "pos" : "neg"}>
-                    {j.direction.toUpperCase()}
-                  </td>
-                  <td>{j.grade}</td>
-                  <td className={"num " + (j.pnl > 0 ? "pos" : j.pnl < 0 ? "neg" : "dim")}>
-                    {j.direction === "skip" ? "—" : fmtUsd(j.pnl, true)}
-                  </td>
-                  <td className="num">{j.direction === "skip" ? "—" : j.rMultiple.toFixed(1)}</td>
-                  <td className="num dim">
-                    {typeof j.mfeR === "number" ? j.mfeR.toFixed(1) : "—"}
-                  </td>
                   <td>
                     {j.chartShot ? (
-                      <button type="button" className="btn-ghost" onClick={() => setPreviewShot(j.chartShot!)}>
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() => setPreviewShot(j.chartShot!)}
+                      >
                         view
                       </button>
                     ) : (
@@ -622,7 +672,7 @@ export default function JournalPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={14} className="dim">
+                  <td colSpan={8} className="dim">
                     Nothing logged yet.
                   </td>
                 </tr>
@@ -657,29 +707,11 @@ export default function JournalPage() {
         </div>
       )}
 
-      {f.mode === "live" && (
+      {f.mode === "live" && biasStats.filterMismatch > 0 && (
         <div className="panel">
-          <div className="panel-title">
-            Live bias tracker <span className="sub">PRB Direction filter vs trade — not used for Morningstar</span>
-          </div>
-          <div className="panel-body">
-            <table className="kv-table">
-              <tbody>
-                <tr>
-                  <td className="dim">Filter mismatch</td>
-                  <td className={biasStats.filterMismatch > 0 ? "warn" : ""}>{biasStats.filterMismatch}</td>
-                </tr>
-                <tr>
-                  <td className="dim">Aligned W / L</td>
-                  <td>
-                    {biasStats.alignedWins} / {biasStats.alignedLosses}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <p className="small dim mt" style={{ marginBottom: 0 }}>
-              Need an account? <Link href="/accounts">Accounts →</Link>
-            </p>
+          <div className="panel-body small warn">
+            Live filter-mismatch count: {biasStats.filterMismatch}.{" "}
+            <Link href="/accounts">Accounts</Link>
           </div>
         </div>
       )}
