@@ -66,12 +66,11 @@ Two bugs:
 - Plans still freeze at TP/STOP (`xloc.bar_time`).
 - Control archive: 1m primary / 5m MARK eyes — Dual7 retest matches that control.
 
-## Bar-replay pass rule (Dual7 · Jul 16)
+## Dual9 note (Day IL + projection-box arm)
 
-1. Stamp = **MS Dual7 · soft leave + 1m retest + Daily ITL**.
-2. **KO-leave** prints again (~soft 5RB, ~17pt / ~86 TP if that geometry returns).
-3. **KO-retest** on pullback ~11:15 with `1RB` (tag may include `· DIL` if reacting off Daily ITL).
-4. Prefer **1m chart** for retest study (1m RB via security on 5m can miss mid-bar prints).
+- **Day IL** = this session’s Path B fib LO (longs) — **not** multi-day ICT ITL.
+- **Powell arm** = sticky **1m and/or 5m RB projection box** @ KO after away→return (archive latch model).
+- Pass: leave plan + later `Powell · 1RB/5RB` near ~11:15 + purple Day IL at fib LO for that day only.
 
 ## Links
 

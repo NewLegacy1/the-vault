@@ -8,7 +8,7 @@
 //   Powell arms from sticky 1m/5m RB projection boxes @ KO (archive model).
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual9",
+     shorttitle              = "MS Dual9c",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -57,8 +57,8 @@ i_latchBars = input.int(90, "RB latch lifetime (chart bars)", minval = 10, maxva
 i_projMin = input.int(45, "Projection box length (minutes)", minval = 10, maxval = 180, group = grpPb)
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_minWick5 = input.float(6.0, "Min 5m RB wick (pts)", minval = 2.0, step = 0.5, group = grpPb)
-i_localLen = input.int(12, "Formal 5m extreme lookback", minval = 4, maxval = 50, group = grpPb)
 i_confClose = input.bool(true, "RB needs confirming close", group = grpPb)
+i_rbWickBody = input.float(1.25, "RB wick ≥ N× body (visual quality)", minval = 0.5, step = 0.25, group = grpPb, tooltip = "Matches the teaching diagram: rejection wick must be longer than the body. 1.25 = wick at least 25% longer than body.")
 i_pathBShowFib = input.bool(true, "Show fib LO / HI anchors only", group = grpPb)
 i_pathBShowState = input.bool(true, "Show Path B status tag", group = grpPb)
 
@@ -156,39 +156,29 @@ bool nwogSunOpenBar = isSun and nyHhmm >= 1800 and nyHhmm[1] < 1800
 bool nwogMonFallback = isMon and nyHhmm >= 930 and nyHhmm[1] < 930
 
 // ─── RB packs ────────────────────────────────────────────────────────────────
-// Formal pack (local extreme) — 5m/15m marks
-f_htfPack(float minW) =>
-    float o1 = open[1]
-    float h1 = high[1]
-    float l1 = low[1]
-    float c1 = close[1]
-    float uw = h1 - math.max(o1, c1)
-    float lw = math.min(o1, c1) - l1
-    bool locH = h1 >= ta.highest(high, i_localLen)[1]
-    bool locL = l1 <= ta.lowest(low, i_localLen)[1]
-    bool bear = locH and uw >= minW and (not i_confClose or c1 < o1)
-    bool bull = locL and lw >= minW and (not i_confClose or c1 > o1)
-    [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1)]
-
-// Path B 1m arm pack — wick rejection only (NO local-extreme).
-// KO retests often are not the 12-bar low/high; requiring locL/locH killed the 11:15 entry.
+// Detects the *closed* bar [1]. Visual match to teaching RB:
+//   bull = long lower wick ≥ minW AND wick ≥ N× body AND close > open
+//   bear = long upper wick (mirror)
+// Box left edge MUST use time[1] (same candle as the pack) — not live `time`.
 f_pb1Pack(float minW) =>
     float o1 = open[1]
     float h1 = high[1]
     float l1 = low[1]
     float c1 = close[1]
+    float body = math.max(math.abs(c1 - o1), syminfo.mintick)
     float uw = h1 - math.max(o1, c1)
     float lw = math.min(o1, c1) - l1
-    bool bear = uw >= minW and (not i_confClose or c1 < o1)
-    bool bull = lw >= minW and (not i_confClose or c1 > o1)
+    bool bear = uw >= minW and uw >= body * i_rbWickBody and (not i_confClose or c1 < o1)
+    bool bull = lw >= minW and lw >= body * i_rbWickBody and (not i_confClose or c1 > o1)
     [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1)]
 
-// Soft packs (wick only) arm leave/retest. Formal 5m pack is eyes / optional quality.
 [b1s, u1s, h1s, l1s, wsB1s, wsU1s] = request.security(syminfo.tickerid, "1", f_pb1Pack(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
 [b5soft, u5soft, h5s, l5s, wsB5s, wsU5s] = request.security(syminfo.tickerid, "5", f_pb1Pack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
-[b5form, u5form, h5f, l5f, wsB5f, wsU5f] = request.security(syminfo.tickerid, "5", f_htfPack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
 int t1sec = request.security(syminfo.tickerid, "1", time, barmerge.gaps_off, barmerge.lookahead_off)
 int t5sec = request.security(syminfo.tickerid, "5", time, barmerge.gaps_off, barmerge.lookahead_off)
+// Closed-bar timestamps — align projection boxes to the actual RB candle
+int t1Closed = request.security(syminfo.tickerid, "1", time[1], barmerge.gaps_off, barmerge.lookahead_off)
+int t5Closed = request.security(syminfo.tickerid, "5", time[1], barmerge.gaps_off, barmerge.lookahead_off)
 bool new1Bar = ta.change(t1sec) != 0
 bool new5Bar = ta.change(t5sec) != 0
 
@@ -201,9 +191,10 @@ float h1 = on1m ? h1c : h1s
 float l1 = on1m ? l1c : l1s
 float wsB1 = on1m ? wsB1c : wsB1s
 float wsU1 = on1m ? wsU1c : wsU1s
+int t1Rb = on1m ? time[1] : t1Closed
+int t5Rb = on5m ? time[1] : t5Closed
 bool trig1 = barstate.isconfirmed and (on1m or new1Bar)
 bool trig5 = barstate.isconfirmed and (on5m or new5Bar)
-// Soft 5m for arming; formal aliases for MARK eyes
 bool b5 = b5soft
 bool u5 = u5soft
 float h5 = h5s
@@ -548,19 +539,30 @@ if newCalDay
     while array.size(pbMark5BoxA) > 0
         box.delete(array.shift(pbMark5BoxA))
         label.delete(array.shift(pbMark5LblA))
-
-// Prefer confirmed Daily ITL; else show latest Daily STL so the level is always visible
-if not na(dItlPx)
-    dilPx := dItlPx
-    dilTime := dItlT
-    dilTag := "Daily ITL"
-else if not na(dStlPx)
-    dilPx := dStlPx
-    dilTime := dStlT
-    dilTag := "Daily STL"
+    while array.size(pbMark1BoxA) > 0
+        box.delete(array.shift(pbMark1BoxA))
+        label.delete(array.shift(pbMark1LblA))
+    pbLatchWs := na
+    pbLatchCe := na
+    pbLatchEx := na
+    pbLatchDir := 0
+    pbLatchBar := na
+    pbLatchTime := na
+    pbLatchTag := "—"
+    dilPx := na
+    dilTime := na
+    if not na(pbProjBox)
+        box.delete(pbProjBox)
+    if not na(pbProjCe)
+        line.delete(pbProjCe)
+    if not na(pbProjLbl)
+        label.delete(pbProjLbl)
+    pbProjBox := na
+    pbProjCe := na
+    pbProjLbl := na
 
 // ─── Path B ──────────────────────────────────────────────────────────────────
-// Leave: soft 5m RB@KO (min risk). Retest/Powell: 1m RB@KO after pullback + OTE/DIL.
+// Leave: soft 5m RB@KO. Powell: sticky 1m/5m RB projection box @ KO after pullback.
 bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and (nyHhmm < i_winEnd or pbLeft or eArmed or oArmed)
 float pbOteLo = na
 float pbOteHi = na
@@ -660,6 +662,12 @@ if pbOn
             pbOteLo := pbFibHi - pbRange * 0.79
             pbOteHi := pbFibHi - pbRange * 0.62
         koInBand := not na(pbOteLo) and ko1000 >= pbOteLo - i_pathBAlign and ko1000 <= pbOteHi + i_pathBAlign
+
+    // Day IL = THIS session's Path B dealing-range extreme (not multi-day ICT ITL)
+    if pbLeft and not na(pbFibLo) and not na(pbFibHi)
+        dilPx := pbDir == 1 ? pbFibLo : pbFibHi
+        dilTime := pbDir == 1 ? pbFibLoTime : pbFibHiTime
+        dilTag := "Day IL"
     nearDil := not na(dilPx) and math.abs(ko1000 - dilPx) <= i_dilAlign
 
     bool nearKo5B = f_nearKo(h5, ko1000) or f_nearKo(wsB5, ko1000) or f_nearKoBand(h5, wsB5, ko1000)
@@ -667,7 +675,7 @@ if pbOn
     bool nearKo1B = f_nearKo(h1, ko1000) or f_nearKo(wsB1, ko1000) or f_nearKoBand(h1, wsB1, ko1000)
     bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000) or f_nearKoBand(wsU1, l1, ko1000)
 
-    // Soft RB latches @ KO
+    // Soft RB for leave sleeve (immediate)
     if pbLeft and barstate.isconfirmed
         if pbDir == 1
             if i_leavePrefer5 and trig5 and u5 and nearKo5U
@@ -682,18 +690,6 @@ if pbOn
                 leaveEx := l1
                 leaveCe := (l1 + wsU1) * 0.5
                 leaveTf := "1RB"
-            if i_retestPrefer1 and trig1 and u1 and nearKo1U
-                retestDir := 1
-                retestWs := wsU1
-                retestEx := l1
-                retestCe := (l1 + wsU1) * 0.5
-                retestTf := "1RB"
-            else if not i_retestPrefer1 and trig5 and u5 and nearKo5U
-                retestDir := 1
-                retestWs := wsU5
-                retestEx := l5
-                retestCe := (l5 + wsU5) * 0.5
-                retestTf := "5RB"
         if pbDir == -1
             if i_leavePrefer5 and trig5 and b5 and nearKo5B
                 leaveDir := -1
@@ -707,44 +703,124 @@ if pbOn
                 leaveEx := h1
                 leaveCe := (h1 + wsB1) * 0.5
                 leaveTf := "1RB"
-            if i_retestPrefer1 and trig1 and b1 and nearKo1B
-                retestDir := -1
-                retestWs := wsB1
-                retestEx := h1
-                retestCe := (h1 + wsB1) * 0.5
-                retestTf := "1RB"
-            else if not i_retestPrefer1 and trig5 and b5 and nearKo5B
-                retestDir := -1
-                retestWs := wsB5
-                retestEx := h5
-                retestCe := (h5 + wsB5) * 0.5
-                retestTf := "5RB"
 
-    // MARK formal 5m (local extreme) — eyes only
-    if i_pathBMark5 and pbLeft and trig5
-        bool mark5Bear = pbDir == -1 and b5form and (f_nearKo(h5f, ko1000) or f_nearKo(wsB5f, ko1000) or f_nearKoBand(h5f, wsB5f, ko1000))
-        bool mark5Bull = pbDir == 1 and u5form and (f_nearKo(l5f, ko1000) or f_nearKo(wsU5f, ko1000) or f_nearKoBand(wsU5f, l5f, ko1000))
-        if mark5Bear or mark5Bull
-            float mTop = mark5Bear ? h5f : wsU5f
-            float mBot = mark5Bear ? wsB5f : l5f
-            if not na(mTop) and not na(mBot) and not na(t5sec)
-                color mCol = mark5Bear ? c_bear : c_bull
-                int mRight = t5sec + 30 * 60 * 1000
-                array.push(pbMark5BoxA, box.new(t5sec, math.max(mTop, mBot), mRight, math.min(mTop, mBot), xloc = xloc.bar_time, border_color = mCol, bgcolor = color.new(mCol, 92), border_width = 2))
-                array.push(pbMark5LblA, label.new(t5sec, math.max(mTop, mBot), "5RB formal · eyes", xloc = xloc.bar_time, style = label.style_label_down, color = #334155, textcolor = color.white, size = size.tiny))
-                while array.size(pbMark5BoxA) > 4
-                    box.delete(array.shift(pbMark5BoxA))
-                    label.delete(array.shift(pbMark5LblA))
+    longEnoughAfterLeave := not na(pbLeaveTime) and (time - pbLeaveTime) >= i_retestMinAfterLeave * 60 * 1000
+    bool powellWindow = pbLeft and hasAway and pbReturned and not inLeaveWin and longEnoughAfterLeave and fibLegOk and barstate.isconfirmed
+
+    // Powell sticky latch — 1m OR 5m RB projection box @ KO (archive model)
+    if powellWindow and not oArmed
+        bool doLatch = false
+        float lWs = na
+        float lEx = na
+        float lCe = na
+        int lDir = 0
+        string lTag = "—"
+        int lT = na
+        if i_powellUse1 and trig1 and pbDir == 1 and u1 and nearKo1U
+            doLatch := true
+            lWs := wsU1
+            lEx := l1
+            lCe := (l1 + wsU1) * 0.5
+            lDir := 1
+            lTag := "1m proj · Powell"
+            lT := t1Rb
+        else if i_powellUse1 and trig1 and pbDir == -1 and b1 and nearKo1B
+            doLatch := true
+            lWs := wsB1
+            lEx := h1
+            lCe := (h1 + wsB1) * 0.5
+            lDir := -1
+            lTag := "1m proj · Powell"
+            lT := t1Rb
+        else if i_powellUse5 and trig5 and pbDir == 1 and u5 and nearKo5U
+            doLatch := true
+            lWs := wsU5
+            lEx := l5
+            lCe := (l5 + wsU5) * 0.5
+            lDir := 1
+            lTag := "5m proj · Powell"
+            lT := t5Rb
+        else if i_powellUse5 and trig5 and pbDir == -1 and b5 and nearKo5B
+            doLatch := true
+            lWs := wsB5
+            lEx := h5
+            lCe := (h5 + wsB5) * 0.5
+            lDir := -1
+            lTag := "5m proj · Powell"
+            lT := t5Rb
+        if doLatch and not na(lWs)
+            pbLatchWs := lWs
+            pbLatchEx := lEx
+            pbLatchCe := lCe
+            pbLatchDir := lDir
+            pbLatchBar := bar_index
+            pbLatchTime := lT
+            pbLatchTag := lTag
+            if not na(pbProjBox)
+                box.delete(pbProjBox)
+            if not na(pbProjCe)
+                line.delete(pbProjCe)
+            if not na(pbProjLbl)
+                label.delete(pbProjLbl)
+            int xR = lT + i_projMin * 60 * 1000
+            color pCol = lDir == 1 ? c_bull : c_bear
+            pbProjBox := box.new(lT, math.max(lEx, lWs), xR, math.min(lEx, lWs), xloc = xloc.bar_time, border_color = pCol, bgcolor = i_rbNoFill ? color.new(pCol, 100) : color.new(pCol, 90), border_width = 2)
+            pbProjCe := line.new(lT, lCe, xR, lCe, xloc = xloc.bar_time, color = c_ce, width = 1, style = line.style_dotted)
+            pbProjLbl := label.new(lT, math.max(lEx, lWs), lTag, xloc = xloc.bar_time, style = label.style_label_down, color = #0f172a, textcolor = pCol, size = size.tiny)
+
+    // Eyes: also mark extra soft RBs near KO during Powell window (non-arming spray capped)
+    if powellWindow and trig1 and i_powellUse1
+        bool m1Bull = pbDir == 1 and u1 and nearKo1U
+        bool m1Bear = pbDir == -1 and b1 and nearKo1B
+        if (m1Bull or m1Bear) and pbLatchTag != "1m proj · Powell" and not na(t1Rb)
+            float mTop = m1Bear ? h1 : wsU1
+            float mBot = m1Bear ? wsB1 : l1
+            int mR = t1Rb + i_projMin * 60 * 1000
+            color mCol = m1Bear ? c_bear : c_bull
+            array.push(pbMark1BoxA, box.new(t1Rb, math.max(mTop, mBot), mR, math.min(mTop, mBot), xloc = xloc.bar_time, border_color = mCol, bgcolor = color.new(mCol, 94), border_width = 1))
+            array.push(pbMark1LblA, label.new(t1Rb, math.max(mTop, mBot), "1m RB", xloc = xloc.bar_time, style = label.style_label_down, color = #334155, textcolor = color.white, size = size.tiny))
+            while array.size(pbMark1BoxA) > 3
+                box.delete(array.shift(pbMark1BoxA))
+                label.delete(array.shift(pbMark1LblA))
+    if powellWindow and trig5 and i_powellUse5
+        bool m5Bull = pbDir == 1 and u5 and nearKo5U
+        bool m5Bear = pbDir == -1 and b5 and nearKo5B
+        if (m5Bull or m5Bear) and not str.startswith(pbLatchTag, "5m") and not na(t5Rb)
+            float mTop5 = m5Bear ? h5 : wsU5
+            float mBot5 = m5Bear ? wsB5 : l5
+            int mR5 = t5Rb + i_projMin * 60 * 1000
+            color mCol5 = m5Bear ? c_bear : c_bull
+            array.push(pbMark5BoxA, box.new(t5Rb, math.max(mTop5, mBot5), mR5, math.min(mTop5, mBot5), xloc = xloc.bar_time, border_color = mCol5, bgcolor = color.new(mCol5, 94), border_width = 1))
+            array.push(pbMark5LblA, label.new(t5Rb, math.max(mTop5, mBot5), "5m RB", xloc = xloc.bar_time, style = label.style_label_down, color = #334155, textcolor = color.white, size = size.tiny))
+            while array.size(pbMark5BoxA) > 3
+                box.delete(array.shift(pbMark5BoxA))
+                label.delete(array.shift(pbMark5LblA))
+
+    // Latch expiry
+    if not na(pbLatchBar) and bar_index - pbLatchBar > i_latchBars
+        pbLatchWs := na
+        pbLatchCe := na
+        pbLatchEx := na
+        pbLatchDir := 0
+        pbLatchBar := na
+        pbLatchTime := na
+        pbLatchTag := "—"
+
+    // Live values from sticky latch for arming
+    retestDir := pbLatchDir
+    retestWs := pbLatchWs
+    retestCe := pbLatchCe
+    retestEx := pbLatchEx
+    retestTf := str.startswith(pbLatchTag, "5m") ? "5RB" : "1RB"
 
     bool leaveBiasOk = (leaveDir == -1 and biasOkShort) or (leaveDir == 1 and biasOkLong)
     bool retestBiasOk = (retestDir == -1 and biasOkShort) or (retestDir == 1 and biasOkLong)
     bool singleSlotLock = i_oneTradeDay and i_pathBSleeve != "KO-leave + KO-retest" and (eArmed or oArmed)
     bool leaveTick = leaveTf == "5RB" ? trig5 : trig1
-    bool retestTick = retestTf == "1RB" ? trig1 : trig5
     bool rbNearDil = not na(dilPx) and not na(retestEx) and math.abs(retestEx - dilPx) <= i_dilAlign
-    // Powell confluence: fib OTE at KO, or RB/KO sitting on Daily ITL/STL
     bool retestConfl = (not i_pathBReqOte or koInBand) or (i_retestNearDil and (nearDil or rbNearDil))
-    longEnoughAfterLeave := not na(pbLeaveTime) and (time - pbLeaveTime) >= i_retestMinAfterLeave * 60 * 1000
+    if not i_retestNearDil and not i_pathBReqOte
+        retestConfl := true
 
     // KO-leave — soft RB@KO soon after leave (min risk kills 6pt junk; 1m fallback if 5m too small)
     if wantLeave and not eArmed and canPlace and not singleSlotLock and leaveBiasOk and leaveDir != 0 and leaveTick and inLeaveWin and not pbReturned
@@ -810,9 +886,9 @@ if pbOn
             manualReady := true
             manualState := f_shadowArmLabel()
 
-    // Powell / KO-retest — after leave window + min time + away peak + return + OTE/DIL
-    bool retestReady = hasAway and pbReturned and not inLeaveWin and longEnoughAfterLeave and fibLegOk and retestConfl and not na(pbAwayPeakBar) and bar_index > pbAwayPeakBar
-    if wantRetest and not oArmed and canPlace and not singleSlotLock and retestBiasOk and retestDir != 0 and retestTick and retestReady
+    // Powell — arm from sticky 1m/5m projection-box latch (not same-bar only)
+    bool retestReady = hasAway and pbReturned and not inLeaveWin and longEnoughAfterLeave and fibLegOk and retestConfl and pbLatchDir != 0 and not na(pbLatchWs)
+    if wantRetest and not oArmed and canPlace and not singleSlotLock and retestBiasOk and retestReady and barstate.isconfirmed
         [entryPx2, stopPx2] = f_plan(retestWs, retestCe, retestEx, retestDir == -1)
         float riskPts1 = na(entryPx2) ? na : math.abs(stopPx2 - entryPx2)
         bool retestSizeOk = not na(riskPts1) and riskPts1 >= i_retestMinRisk
@@ -822,7 +898,7 @@ if pbOn
             oArmed := true
             oDir := retestDir
             oBar := bar_index
-            oTime := time
+            oTime := not na(pbLatchTime) ? pbLatchTime : time
             oEndBar := na
             oEndTime := na
             oWs := retestWs
@@ -831,7 +907,7 @@ if pbOn
             oEntry := entryPx2
             oStop := stopPx2
             oTp := retestDir == 1 ? entryPx2 + i_rr * riskPts1 : entryPx2 - i_rr * riskPts1
-            oTag := "Powell · " + retestTf + (rbNearDil or nearDil ? " · DIL" : "")
+            oTag := "Powell · " + retestTf + (rbNearDil or nearDil ? " · DayIL" : "")
             oFill := 1
             oKpi := "live"
             suDir := oDir
@@ -848,6 +924,10 @@ if pbOn
             suSweepTag := oTag
             manualReady := true
             manualState := f_shadowArmLabel()
+            // consume latch so it doesn't re-fire
+            pbLatchDir := 0
+            pbLatchWs := na
+            pbLatchTag := "—"
 
 // Status
 if not i_pathB
@@ -860,7 +940,7 @@ else if not pbLeft
     pbState := canPlace ? "B wait leave" : "B no leave (arm window ended)"
 else
     string ePart = eArmed ? "leave✓" : wantLeave ? (pbReturned or not inLeaveWin ? "leave missed" : "leave wait RB") : ""
-    string oGate = not longEnoughAfterLeave ? "Powell wait time" : i_pathBReqOte and not koInBand and not (i_retestNearDil and nearDil) ? "Powell wait OTE/DIL" : not fibLegOk ? "Powell wait fib" : "Powell wait 1m RB"
+    string oGate = not longEnoughAfterLeave ? "Powell wait time" : i_pathBReqOte and not koInBand and not (i_retestNearDil and nearDil) ? "Powell wait OTE/DayIL" : not fibLegOk ? "Powell wait fib" : pbLatchDir == 0 ? "Powell wait 1m/5m proj" : "Powell latch ready"
     string oPart = oArmed ? "Powell✓" : wantRetest ? (inLeaveWin ? "Powell wait leave-win" : not hasAway ? "Powell wait away" : not pbReturned ? "Powell wait return" : oGate) : ""
     if eArmed or oArmed
         pbState := ePart + (eArmed and wantRetest ? " · " : "") + oPart
@@ -937,7 +1017,7 @@ if pbFibReady
     int x1 = na(pbFibHiBar) ? bar_index : pbFibHiBar
     int xL = math.min(x0, x1)
     int xR = math.max(bar_index + 8, math.max(x0, x1) + 6)
-    float tick = math.max(rng * 0.05, syminfo.mintick * 20)
+    float tick = math.max(rng * 0.015, syminfo.mintick * 8)
     float midY = (pbFibHi + pbFibLo) * 0.5
     if na(pbLnFib0) or na(pbLbl0)
         if not na(pbLnFib0)
@@ -965,14 +1045,14 @@ if pbFibReady
         pbLn62 := na
         pbLn705 := na
         pbLn79 := na
-        pbLnFib0 := line.new(xL, pbFibLo, xR, pbFibLo, color = #f59e0b, width = 4)
-        pbLnFib1 := line.new(xL, pbFibHi, xR, pbFibHi, color = #fbbf24, width = 4)
-        pbLnFibLeg := line.new(x0, pbFibLo, x1, pbFibHi, color = #f59e0b, width = 3, style = line.style_dashed)
-        pbLnFib0Tick := line.new(x0, pbFibLo - tick, x0, pbFibLo + tick, color = #f59e0b, width = 5)
-        pbLnFib1Tick := line.new(x1, pbFibHi - tick, x1, pbFibHi + tick, color = #fbbf24, width = 5)
-        pbLbl0 := label.new(x0, pbFibLo, "FIB LO (0)", style = label.style_label_up, color = #b45309, textcolor = color.white, size = size.large)
-        pbLbl1 := label.new(x1, pbFibHi, "FIB HI (1)", style = label.style_label_down, color = #b45309, textcolor = color.white, size = size.large)
-        pbLbl := label.new(xR, midY, "FIB leg", style = label.style_label_left, color = #78350f, textcolor = #fde68a, size = size.small)
+        pbLnFib0 := line.new(xL, pbFibLo, xR, pbFibLo, color = #f59e0b, width = 1)
+        pbLnFib1 := line.new(xL, pbFibHi, xR, pbFibHi, color = #fbbf24, width = 1)
+        pbLnFibLeg := line.new(x0, pbFibLo, x1, pbFibHi, color = #f59e0b, width = 1, style = line.style_dashed)
+        pbLnFib0Tick := line.new(x0, pbFibLo - tick, x0, pbFibLo + tick, color = #f59e0b, width = 2)
+        pbLnFib1Tick := line.new(x1, pbFibHi - tick, x1, pbFibHi + tick, color = #fbbf24, width = 2)
+        pbLbl0 := label.new(x0, pbFibLo, "0", style = label.style_label_up, color = #b45309, textcolor = color.white, size = size.tiny)
+        pbLbl1 := label.new(x1, pbFibHi, "1", style = label.style_label_down, color = #b45309, textcolor = color.white, size = size.tiny)
+        pbLbl := label.new(xR, midY, "fib", style = label.style_label_left, color = #78350f, textcolor = #fde68a, size = size.tiny)
     else
         line.set_xy1(pbLnFib0, xL, pbFibLo)
         line.set_xy2(pbLnFib0, xR, pbFibLo)
@@ -1004,8 +1084,9 @@ if i_showPend and eArmed and not na(eEntry) and not na(eStop) and not na(eTp) an
     color eTCol = isShadow ? #94a3b8 : c_tp
     float eRisk = math.abs(eEntry - eStop)
     float eRew = math.abs(eTp - eEntry)
-    // Main box: direction · sleeve · TF · outcome only (STOP/TP pts live on line icons)
-    string eTxt = (eDir == 1 ? "LONG" : "SHORT") + " · " + eTag + (isShadow ? " · SHADOW" : "") + (i_showFillKpi ? "\n" + eKpi : "")
+    float eRR = eRisk > 0 ? eRew / eRisk : 0.0
+    // Main tag: side · sleeve · 1:R · outcome (STOP/TP pts stay on line icons)
+    string eTxt = (eDir == 1 ? "LONG" : "SHORT") + " · " + eTag + " · 1:" + str.tostring(eRR, "#.#") + (isShadow ? " · SHADOW" : "") + (i_showFillKpi ? "\n" + eKpi : "")
     if na(ePlanLeft) or ePlanLeft != eTime
         ePlanLeft := eTime
         if not na(eLnE)
@@ -1020,12 +1101,15 @@ if i_showPend and eArmed and not na(eEntry) and not na(eStop) and not na(eTp) an
         if not na(eFillLbl)
             label.delete(eFillLbl)
             eFillLbl := na
+        if not na(eLbCe)
+            label.delete(eLbCe)
+            eLbCe := na
         eLnE := line.new(eTime, eEntry, eXR, eEntry, xloc = xloc.bar_time, color = eECol, width = 2)
         eLnS := line.new(eTime, eStop, eXR, eStop, xloc = xloc.bar_time, color = eSCol, width = 2)
         eLnT := line.new(eTime, eTp, eXR, eTp, xloc = xloc.bar_time, color = eTCol, width = 2)
-        eLbE := label.new(eXR, eEntry, eTxt, xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = eECol, size = size.small)
-        eLbS := label.new(eXR, eStop, "−" + str.tostring(eRisk, "#.#") + " pt", xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = eSCol, size = size.tiny)
-        eLbT := label.new(eXR, eTp, "+" + str.tostring(eRew, "#.#") + " pt", xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = eTCol, size = size.tiny)
+        eLbE := label.new(eXR, eEntry, eTxt, xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = eECol, size = size.normal)
+        eLbS := label.new(eXR, eStop, "−" + str.tostring(eRisk, "#.#") + " pt", xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = eSCol, size = size.small)
+        eLbT := label.new(eXR, eTp, "+" + str.tostring(eRew, "#.#") + " pt", xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = eTCol, size = size.small)
         eBxRisk := box.new(eTime, math.max(eEntry, eStop), eXR, math.min(eEntry, eStop), xloc = xloc.bar_time, border_color = color.new(eSCol, 70), bgcolor = color.new(eSCol, 92), border_width = 1)
         eBxRew := box.new(eTime, math.max(eEntry, eTp), eXR, math.min(eEntry, eTp), xloc = xloc.bar_time, border_color = color.new(eTCol, 70), bgcolor = color.new(eTCol, 94), border_width = 1)
     else if not eDone
@@ -1055,8 +1139,10 @@ if i_showPend and eArmed and not na(eEntry) and not na(eStop) and not na(eTp) an
         if na(eBxRb)
             eBxRb := box.new(eTime, math.max(eEx, eWs), eRbR, math.min(eEx, eWs), xloc = xloc.bar_time, border_color = #f59e0b, bgcolor = color.new(#f59e0b, 94), border_width = 1)
             if not na(eCe)
+                if not na(eLbCe)
+                    label.delete(eLbCe)
+                    eLbCe := na
                 eLnCe := line.new(eTime, eCe, eRbR, eCe, xloc = xloc.bar_time, color = c_ce, width = 1, style = line.style_dotted)
-                eLbCe := label.new(eTime + 60 * 1000, eCe, "CE", xloc = xloc.bar_time, style = label.style_label_left, color = color.new(#0f172a, 30), textcolor = c_ce, size = size.tiny)
         else if not eDone
             box.set_right(eBxRb, eRbR)
             if not na(eLnCe)
@@ -1074,7 +1160,8 @@ if i_showPend and oArmed and not na(oEntry) and not na(oStop) and not na(oTp) an
     color oTCol = isShadow ? #94a3b8 : c_tp
     float oRisk = math.abs(oEntry - oStop)
     float oRew = math.abs(oTp - oEntry)
-    string oTxt = (oDir == 1 ? "LONG" : "SHORT") + " · " + oTag + (isShadow ? " · SHADOW" : "") + (i_showFillKpi ? "\n" + oKpi : "")
+    float oRR = oRisk > 0 ? oRew / oRisk : 0.0
+    string oTxt = (oDir == 1 ? "LONG" : "SHORT") + " · " + oTag + " · 1:" + str.tostring(oRR, "#.#") + (isShadow ? " · SHADOW" : "") + (i_showFillKpi ? "\n" + oKpi : "")
     if na(oPlanLeft) or oPlanLeft != oTime
         oPlanLeft := oTime
         if not na(oLnE)
@@ -1089,12 +1176,15 @@ if i_showPend and oArmed and not na(oEntry) and not na(oStop) and not na(oTp) an
         if not na(oFillLbl)
             label.delete(oFillLbl)
             oFillLbl := na
+        if not na(oLbCe)
+            label.delete(oLbCe)
+            oLbCe := na
         oLnE := line.new(oTime, oEntry, oXR, oEntry, xloc = xloc.bar_time, color = oECol, width = 2)
         oLnS := line.new(oTime, oStop, oXR, oStop, xloc = xloc.bar_time, color = oSCol, width = 2)
         oLnT := line.new(oTime, oTp, oXR, oTp, xloc = xloc.bar_time, color = oTCol, width = 2)
-        oLbE := label.new(oXR, oEntry, oTxt, xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = oECol, size = size.small)
-        oLbS := label.new(oXR, oStop, "−" + str.tostring(oRisk, "#.#") + " pt", xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = oSCol, size = size.tiny)
-        oLbT := label.new(oXR, oTp, "+" + str.tostring(oRew, "#.#") + " pt", xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = oTCol, size = size.tiny)
+        oLbE := label.new(oXR, oEntry, oTxt, xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = oECol, size = size.normal)
+        oLbS := label.new(oXR, oStop, "−" + str.tostring(oRisk, "#.#") + " pt", xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = oSCol, size = size.small)
+        oLbT := label.new(oXR, oTp, "+" + str.tostring(oRew, "#.#") + " pt", xloc = xloc.bar_time, style = label.style_label_left, color = #0f172a, textcolor = oTCol, size = size.small)
         oBxRisk := box.new(oTime, math.max(oEntry, oStop), oXR, math.min(oEntry, oStop), xloc = xloc.bar_time, border_color = color.new(oSCol, 70), bgcolor = color.new(oSCol, 92), border_width = 1)
         oBxRew := box.new(oTime, math.max(oEntry, oTp), oXR, math.min(oEntry, oTp), xloc = xloc.bar_time, border_color = color.new(oTCol, 70), bgcolor = color.new(oTCol, 94), border_width = 1)
     else if not oDone
@@ -1123,8 +1213,10 @@ if i_showPend and oArmed and not na(oEntry) and not na(oStop) and not na(oTp) an
         if na(oBxRb)
             oBxRb := box.new(oTime, math.max(oEx, oWs), oRbR, math.min(oEx, oWs), xloc = xloc.bar_time, border_color = c_bull, bgcolor = color.new(c_bull, 94), border_width = 1)
             if not na(oCe)
+                if not na(oLbCe)
+                    label.delete(oLbCe)
+                    oLbCe := na
                 oLnCe := line.new(oTime, oCe, oRbR, oCe, xloc = xloc.bar_time, color = c_ce, width = 1, style = line.style_dotted)
-                oLbCe := label.new(oTime + 60 * 1000, oCe, "CE", xloc = xloc.bar_time, style = label.style_label_left, color = color.new(#0f172a, 30), textcolor = c_ce, size = size.tiny)
         else if not oDone
             box.set_right(oBxRb, oRbR)
             if not na(oLnCe)
@@ -1225,13 +1317,13 @@ if i_showNwog and array.size(nwogBoxA) > 0
 // Yellow 10:00 wash only (no magenta KO plot)
 bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00")
 
-plot(pbFibPlotLo, "FIB LO (0)", color.new(#f59e0b, 0), linewidth = 3, style = plot.style_linebr)
-plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 3, style = plot.style_linebr)
+plot(pbFibPlotLo, "FIB LO (0)", color.new(#f59e0b, 0), linewidth = 1, style = plot.style_linebr)
+plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 1, style = plot.style_linebr)
 
-// Daily ITL / STL (purple) — always visible when daily structure exists
-if i_showDil and not na(dilPx)
-    int dilX0 = not na(dilTime) ? dilTime : time - 5 * 24 * 60 * 60 * 1000
-    int dilX1 = time + 30 * 60 * 1000
+// Day IL — THIS session only (from when the low printed → now). Not multi-day.
+if i_showDil and not na(dilPx) and pbLeft
+    int dilX0 = not na(dilTime) ? dilTime : time
+    int dilX1 = time + 15 * 60 * 1000
     if na(dilLn)
         dilLn := line.new(dilX0, dilPx, dilX1, dilPx, xloc = xloc.bar_time, color = #a78bfa, width = 2, style = line.style_dashed)
         dilLbl := label.new(dilX1, dilPx, dilTag + "  " + str.tostring(dilPx, "#.#"), xloc = xloc.bar_time, style = label.style_label_left, color = #5b21b6, textcolor = color.white, size = size.small)
@@ -1246,13 +1338,13 @@ else if not na(dilLn)
     dilLn := na
     dilLbl := na
 
-// Permanent version stamp — if you don't see Dual8, the new paste is not on the chart
+// Permanent version stamp — if you don't see Dual9, the new paste is not on the chart
 var label verStamp = na
 if barstate.islast
     if na(verStamp)
-        verStamp := label.new(bar_index, high, "MS Dual8 · slim plans · Daily ITL · Powell", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
+        verStamp := label.new(bar_index, high, "MS Dual9c · RB on closed candle", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
     else
         label.set_xy(verStamp, bar_index, high)
-        label.set_text(verStamp, "MS Dual8 · slim plans · Daily ITL · Powell")
+        label.set_text(verStamp, "MS Dual9c · RB on closed candle")
 
 alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nleave and/or Powell plan on chart")
