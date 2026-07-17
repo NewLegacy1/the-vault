@@ -3,9 +3,29 @@
 Use this **every session** before you click a trade.  
 The script finds candidates. **You** pick the day bias, then take or skip.
 
-Chart: MNQ · **5m for bias / structure** · **1m RB = Path B entry trigger** · Morningstar · Manual ON · Path B ON.  
-Defaults: 1m trigger ON · 5m/15m triggers OFF (5m RBs were arming junk and wiping the good 1m latch).  
-You still study on 5m — the script pulls 1m RBs onto that chart. Flip to 1m when you want candle detail.
+**Chart:** MNQ · **5m for bias** · Path B **ARMs on 1m RB** · **MARKS 5m RBs** (eyes only).  
+**Inputs:** Manual ON · Path B ON · ARM 1m ON · MARK 5m ON · ARM 5m OFF.
+
+---
+
+## Bar-replay test dates (start here)
+
+Walk each day **09:30 → 13:00** NY. On 5m for story; flip to 1m if you want candle detail.
+
+| Date | Why |
+|---|---|
+| **2026-07-16** | **Control day** — Powell-style long (~11:15). Must show `PathB · 10:00 · 1RB`, fib LO/HI leg, not a junk midday 5RB arm. |
+| 2026-07-15 | Prior session — bias + Path B practice |
+| 2026-07-14 | Prior session |
+| 2026-07-13 | Prior session |
+| 2026-07-10 | Friday — NWOG week context into Sun open |
+| 2026-07-09 | Mid-week practice |
+| 2026-07-08 | Mid-week practice |
+| 2026-07-07 | Mid-week practice |
+
+**Pass rule for Jul 16:** tag = `1RB` · fib LO/HI visible on the leave leg · ENTRY matches the good 1m retest (not the bad midday long).
+
+Then keep walking **backward one weekday at a time** with the journal line below.
 
 ---
 
@@ -66,10 +86,10 @@ Only look for trades that match your bias from Steps 1–2.
 
 ### A. Did 10:00 do its job?
 
-- [ ] 10:00 line is marked  
+- [ ] Yellow **10:00** wash is on the open bar  
 - [ ] Price **wicked** one side of 10:00 (manipulation)  
 - [ ] Price **left** back through 10:00 (distribution starts)  
-- [ ] Script shows **FIB LO (0)** and **FIB HI (1)** — that’s the leg you care about  
+- [ ] Amber **FIB LO (0)** and **FIB HI (1)** labels sit on the wick bars of that leg (diagonal between them)
 
 **Direction check:**
 
@@ -80,18 +100,19 @@ Only look for trades that match your bias from Steps 1–2.
 
 Must match **Day bias**. If not → skip, even if ENTRY prints.
 
-### B. Fib (your eye — script already drew it)
+### B. Fib (your tool — script shows the anchors)
 
-- [ ] Fib is on the **marked leg** (LO → HI)  
+- [ ] Put TradingView fib from **FIB LO (0)** → **FIB HI (1)** (same candles the amber ticks mark)  
 - [ ] **Long:** 10:00 sits in the **discount** pocket (near 0.62–0.79 from the high) — or close enough you accept it  
 - [ ] **Short:** 10:00 sits in the **premium** pocket (near 0.62–0.79 from the low) — or close enough you accept it  
-- [ ] You’re OK if it’s slightly off — you decide; script may still arm  
+- [ ] Dotted 0.62 / 0.705 / 0.79 on chart are a guide — your fib tool is truth  
 
 ### C. Trigger
 
-- [ ] ENTRY tag looks like `PathB · 10:00 · 15RB` / `5RB` / `1RB`  
-- [ ] Rejection block is **at / near** 10:00 (not a random mid-range wick)  
-- [ ] Stop size feels sane (not “hateful”)  
+- [ ] **Armed** ENTRY tag = `PathB · 10:00 · 1RB` (1m only arms)  
+- [ ] Dashed box `5RB @ KO · eyes` may appear — **confluence only**, not the click  
+- [ ] Rejection is **at / near** 10:00 (not a random mid-range wick)  
+- [ ] Stop size feels sane  
 - [ ] Trade is **with** your bias, not against empty NWOG  
 
 ### D. Final gate (say it out loud)
@@ -116,6 +137,7 @@ Skip the day (or the signal) if **any** of these are true:
 - [ ] Messy chop inside NWOG / no clean leave from 10:00  
 - [ ] You can’t explain the trade in one short sentence  
 - [ ] Already took your 1 trade for the day  
+- [ ] Only a `5RB · eyes` mark printed — **no 1RB arm** → no click  
 
 ---
 
@@ -128,7 +150,9 @@ Date: ____
 NWOG: unfilled above / unfilled below / filled / inside
 Week bias: L / S / none
 Day bias: L / S / none
-Path B armed?: Y / N · dir ____ · tag ____
+Path B armed?: Y / N · dir ____ · tag ____ (want 1RB)
+5RB eyes?: Y / N
+Fib LO/HI visible?: Y / N
 Take or skip: ____
 Why (one sentence): ____
 R result (if taken): ____
@@ -140,5 +164,6 @@ R result (if taken): ____
 
 - **NWOG** = week magnet / free bias when empty.  
 - **PDH·PDL + Judas** = day story.  
-- **Path B** = 10:00 wick → leave → fib leg → RB at 10:00.  
+- **Path B** = 10:00 wick → leave → **fib leg (amber LO/HI)** → **1m RB arm** at 10:00.  
+- **5m RB** = mark only.  
 - Script proposes. **Checklist decides.**

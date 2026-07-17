@@ -165,12 +165,13 @@ grpPb = "Morningstar Path B (KO + fib + LTF RB)"
 i_pathB = input.bool(true, "Enable Path B arming (Manual)", group = grpPb, tooltip = "Powell stack: 10:00 manip→leave → LTF RB at KO. Fib OTE is eyes-only unless Require OTE is ON. Manual only.")
 i_pathBAlign = input.float(15.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
 i_pathBReqOte = input.bool(false, "Require KO in fib OTE to arm", group = grpPb, tooltip = "OFF (default with discretionary): fib still draws after leave; you judge 0.62–0.79. ON = hard gate.")
-i_pathBUse1 = input.bool(true, "Allow 1m RB trigger (primary)", group = grpPb, tooltip = "Powell control case. 1m RB at KO is the arm. Works on a 5m chart via request.security.")
-i_pathBUse5 = input.bool(false, "Allow 5m RB trigger", group = grpPb, tooltip = "OFF by default — on 5m charts a 5RB was overwriting the good 1m latch and arming junk (see Jul 16 midday long).")
-i_pathBUse15 = input.bool(false, "Allow 15m RB trigger", group = grpPb, tooltip = "OFF by default. Opt-in only; never preferred over 1m.")
+i_pathBUse1 = input.bool(true, "ARM on 1m RB (primary)", group = grpPb, tooltip = "Only 1m RBs create ENTRY/STOP/TP. Works on a 5m chart via request.security.")
+i_pathBMark5 = input.bool(true, "MARK 5m RBs near KO (eyes only)", group = grpPb, tooltip = "Draws a 5m RB box + tag at KO for discretion. Does NOT arm.")
+i_pathBUse5 = input.bool(false, "ARM on 5m RB (off — eyes use MARK)", group = grpPb, tooltip = "Leave OFF. Turn on only if you want 5m to create ENTRY plans (not recommended).")
+i_pathBUse15 = input.bool(false, "ARM on 15m RB", group = grpPb, tooltip = "OFF by default.")
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
-i_pathBShowFib = input.bool(true, "Show Path B fib leg + OTE (after leave)", group = grpPb, tooltip = "Marks FIB LO (0) · FIB HI (1) of the active leg + 0.62 / 0.705 / 0.79. Tells you exactly where to put the fib tool.")
-i_pathBShowState = input.bool(true, "Show Path B status tag", group = grpPb, tooltip = "ON = floating label: wait manip / leave / latch / ARMED. Look under Morningstar Path B inputs if missing.")
+i_pathBShowFib = input.bool(true, "Show Path B fib leg + OTE (after leave)", group = grpPb, tooltip = "Thick FIB LO (0) / FIB HI (1) at the wick extremes of the leave leg + diagonal + 0.62/0.705/0.79. Use these as your fib tool anchors.")
+i_pathBShowState = input.bool(true, "Show Path B status tag", group = grpPb, tooltip = "ON = floating label: wait manip / leave / latch / ARMED.")
 
 grpMs = "Morningstar extras (OFF = lean · opt-in museum)"
 i_msGrade = input.bool(false, "Show LTF-in-RB score on armed Path A", group = grpMs, tooltip = "Opt-in. Counts CISD/IFVG/5RB inside armed HTF wick — never arms.")
@@ -621,6 +622,8 @@ var bool pbPierceAbove = false
 var bool pbPierceBelow = false
 var float pbHi = na
 var float pbLo = na
+var int pbHiBar = na
+var int pbLoBar = na
 var float pbFibHi = na
 var float pbFibLo = na
 var int pbFibLoBar = na
@@ -632,6 +635,8 @@ var line pbLn79 = na
 var line pbLnFib0 = na
 var line pbLnFib1 = na
 var line pbLnFibLeg = na
+var line pbLnFib0Tick = na
+var line pbLnFib1Tick = na
 var label pbLbl = na
 var label pbLbl0 = na
 var label pbLbl1 = na
@@ -644,6 +649,9 @@ var float pbLatchEx = na
 var int pbLatchDir = 0
 var int pbLatchBar = na
 var string pbLatchTag = "—"
+// 5m eyes-only marks (do not arm)
+var array<box> pbMark5BoxA = array.new_box()
+var array<label> pbMark5LblA = array.new_label()
 
 // NWOG — Fri close → Sun 18:00 (Manual bias; never arms)
 var array<box> nwogBoxA = array.new_box()
@@ -688,6 +696,8 @@ if newDay
     pbPierceBelow := false
     pbHi := na
     pbLo := na
+    pbHiBar := na
+    pbLoBar := na
     pbFibHi := na
     pbFibLo := na
     pbFibLoBar := na
@@ -706,6 +716,10 @@ if newDay
         line.delete(pbLnFib1)
     if not na(pbLnFibLeg)
         line.delete(pbLnFibLeg)
+    if not na(pbLnFib0Tick)
+        line.delete(pbLnFib0Tick)
+    if not na(pbLnFib1Tick)
+        line.delete(pbLnFib1Tick)
     if not na(pbLbl)
         label.delete(pbLbl)
     if not na(pbLbl0)
@@ -720,10 +734,15 @@ if newDay
     pbLnFib0 := na
     pbLnFib1 := na
     pbLnFibLeg := na
+    pbLnFib0Tick := na
+    pbLnFib1Tick := na
     pbLbl := na
     pbLbl0 := na
     pbLbl1 := na
     pbStateLbl := na
+    while array.size(pbMark5BoxA) > 0
+        box.delete(array.shift(pbMark5BoxA))
+        label.delete(array.shift(pbMark5LblA))
     pbLatchWs := na
     pbLatchCe := na
     pbLatchEx := na
@@ -1149,9 +1168,13 @@ f_nearKoPx(float a, float b) =>
     not na(a) and not na(b) and math.abs(a - b) <= i_pathBAlign
 
 if pbOn
-    // Live extremes (for leave detection); fib anchors freeze after leave then only expand with trend
-    pbHi := na(pbHi) ? high : math.max(pbHi, high)
-    pbLo := na(pbLo) ? low : math.min(pbLo, low)
+    // Track extremes + which bar printed them (fib tool anchors = those wick bars)
+    if na(pbHi) or high >= pbHi
+        pbHi := high
+        pbHiBar := bar_index
+    if na(pbLo) or low <= pbLo
+        pbLo := low
+        pbLoBar := bar_index
 
     if high > ko1000
         pbPierceAbove := true
@@ -1167,15 +1190,15 @@ if pbOn
             pbDir := -1
             pbFibHi := pbHi
             pbFibLo := pbLo
-            pbFibLoBar := bar_index
-            pbFibHiBar := bar_index
+            pbFibLoBar := pbLoBar
+            pbFibHiBar := pbHiBar
         else if pbPierceBelow and close > ko1000
             pbLeft := true
             pbDir := 1
             pbFibHi := pbHi
             pbFibLo := pbLo
-            pbFibLoBar := bar_index
-            pbFibHiBar := bar_index
+            pbFibLoBar := pbLoBar
+            pbFibHiBar := pbHiBar
 
     // After leave: expand only with trend (freeze opposite extreme = impulse wick)
     if pbLeft
@@ -1212,8 +1235,8 @@ if pbOn
     bool nearKo1B = f_nearKoPx(h1, ko1000) or f_nearKoPx(wsB1, ko1000) or (not na(h1) and not na(wsB1) and f_nearKoPx((h1 + wsB1) * 0.5, ko1000))
     bool nearKo1U = f_nearKoPx(l1, ko1000) or f_nearKoPx(wsU1, ko1000) or (not na(l1) and not na(wsU1) and f_nearKoPx((l1 + wsU1) * 0.5, ko1000))
 
-    // Latch matching leave direction. Priority: 1m > 5m > 15m.
-    // Never let a later 5m/15m RB overwrite an existing 1m latch (that was the Jul 16 5m-chart bug).
+    // ARM latch = 1m (primary). 5m/15m arm only if their ARM toggles are on.
+    // 5m MARK (eyes) is separate — see below.
     if pbLeft and koInOte and barstate.isconfirmed
         bool have1Latch = pbLatchTag == "PathB · 10:00 · 1RB" and pbLatchDir != 0
         bool latched1Now = false
@@ -1263,6 +1286,21 @@ if pbOn
                 pbLatchDir := 1
                 pbLatchBar := bar_index
                 pbLatchTag := "PathB · 10:00 · 15RB"
+
+    // MARK 5m RBs near KO — eyes only (never sets latch / never arms)
+    if i_pathBMark5 and pbLeft and barstate.isconfirmed and new5Bar
+        bool mark5Bear = pbDir == -1 and b5 and nearKo5B
+        bool mark5Bull = pbDir == 1 and u5 and nearKo5U
+        if mark5Bear or mark5Bull
+            float mTop = mark5Bear ? h5 : wsU5
+            float mBot = mark5Bear ? wsB5 : l5
+            if not na(mTop) and not na(mBot)
+                color mCol = mark5Bear ? color.new(c_bear, 0) : color.new(c_bull, 0)
+                array.push(pbMark5BoxA, box.new(bar_index, math.max(mTop, mBot), bar_index + 6, math.min(mTop, mBot), border_color = mCol, bgcolor = color.new(mCol, 92), border_width = 2, border_style = line.style_dashed))
+                array.push(pbMark5LblA, label.new(bar_index, math.max(mTop, mBot), "5RB @ KO · eyes", style = label.style_label_down, color = color.new(#334155, 10), textcolor = color.white, size = size.tiny))
+                while array.size(pbMark5BoxA) > 4
+                    box.delete(array.shift(pbMark5BoxA))
+                    label.delete(array.shift(pbMark5LblA))
 
     // Latch expires after ~3h on 5m (36 bars) / longer on 1m
     if not na(pbLatchBar) and bar_index - pbLatchBar > i_tapTimeout
@@ -1351,61 +1389,62 @@ if pbOn
 else if i_pathBShowState and not na(pbStateLbl) and not pbOn
     label.set_text(pbStateLbl, nyHhmm < 1000 ? "B before 10:00" : "B window closed")
 
-// Path B fib leg — keep drawing after leave (even outside entry window / after arm)
-if i_manualOnly and i_pathBShowFib and pbLeft and not na(pbFibHi) and not na(pbFibLo)
+// Path B fib leg — LO/HI at the wick bars of the leave leg (put fib tool here)
+if i_manualOnly and i_pathBShowFib and pbLeft and not na(pbFibHi) and not na(pbFibLo) and pbFibHi > pbFibLo
     float pbRangeDraw = pbFibHi - pbFibLo
-    if pbRangeDraw > 0
-        if pbDir == -1
-            pbOteLo := pbFibLo + pbRangeDraw * 0.62
-            pbOteHi := pbFibLo + pbRangeDraw * 0.79
-            pbOteMid := pbFibLo + pbRangeDraw * 0.705
-        else
-            pbOteLo := pbFibHi - pbRangeDraw * 0.79
-            pbOteHi := pbFibHi - pbRangeDraw * 0.62
-            pbOteMid := pbFibHi - pbRangeDraw * 0.705
+    if pbDir == -1
+        pbOteLo := pbFibLo + pbRangeDraw * 0.62
+        pbOteHi := pbFibLo + pbRangeDraw * 0.79
+        pbOteMid := pbFibLo + pbRangeDraw * 0.705
+    else
+        pbOteLo := pbFibHi - pbRangeDraw * 0.79
+        pbOteHi := pbFibHi - pbRangeDraw * 0.62
+        pbOteMid := pbFibHi - pbRangeDraw * 0.705
     int x0 = na(pbFibLoBar) ? bar_index - 8 : pbFibLoBar
     int x1 = na(pbFibHiBar) ? bar_index : pbFibHiBar
     int xL = math.min(x0, x1)
-    int xR = math.max(bar_index + 6, math.max(x0, x1) + 4)
-    color fibCol = pbDir == -1 ? c_bear : c_bull
-    string howTo = pbDir == -1 ? "FIB LO→HI · sell 0.62–0.79" : "FIB LO→HI · buy 0.62–0.79"
-    float midY = not na(pbOteMid) ? pbOteMid : (pbFibHi + pbFibLo) * 0.5
+    int xR = math.max(bar_index + 8, math.max(x0, x1) + 6)
+    float tick = pbRangeDraw * 0.04
+    color fibCol = #f59e0b
+    color fibHiCol = #fbbf24
+    string howTo = pbDir == -1 ? "FIB tool: LO→HI · look sell 0.62–0.79" : "FIB tool: LO→HI · look buy 0.62–0.79"
+    float midY = (pbFibHi + pbFibLo) * 0.5
     if na(pbLnFib0)
-        pbLnFib0 := line.new(xL, pbFibLo, xR, pbFibLo, color = fibCol, width = 2, style = line.style_solid)
-        pbLnFib1 := line.new(xL, pbFibHi, xR, pbFibHi, color = fibCol, width = 2, style = line.style_solid)
-        pbLnFibLeg := line.new(x0, pbFibLo, x1, pbFibHi, color = color.new(fibCol, 20), width = 2, style = line.style_dashed)
-        pbLbl0 := label.new(xR, pbFibLo, "FIB LO (0)", style = label.style_label_left, color = color.new(fibCol, 0), textcolor = color.white, size = size.small)
-        pbLbl1 := label.new(xR, pbFibHi, "FIB HI (1)", style = label.style_label_left, color = color.new(fibCol, 0), textcolor = color.white, size = size.small)
-        pbLbl := label.new(xR, midY, howTo, style = label.style_label_left, color = color.new(#854d0e, 0), textcolor = color.new(#facc15, 0), size = size.small)
-        if not na(pbOteLo)
-            pbLn62 := line.new(xL, pbOteLo, xR, pbOteLo, color = color.new(#e2e8f0, 0), width = 1, style = line.style_dotted)
-            pbLn705 := line.new(xL, pbOteMid, xR, pbOteMid, color = color.new(#facc15, 0), width = 2, style = line.style_dotted)
-            pbLn79 := line.new(xL, pbOteHi, xR, pbOteHi, color = color.new(#e2e8f0, 0), width = 1, style = line.style_dotted)
+        // Horizontals through the leg extremes
+        pbLnFib0 := line.new(xL - 2, pbFibLo, xR, pbFibLo, color = fibCol, width = 3, style = line.style_solid)
+        pbLnFib1 := line.new(xL - 2, pbFibHi, xR, pbFibHi, color = fibHiCol, width = 3, style = line.style_solid)
+        // Diagonal = the leg (wick LO bar → wick HI bar)
+        pbLnFibLeg := line.new(x0, pbFibLo, x1, pbFibHi, color = color.new(#f59e0b, 0), width = 3, style = line.style_dashed)
+        // Vertical ticks on the exact candles to anchor the fib tool
+        pbLnFib0Tick := line.new(x0, pbFibLo - tick, x0, pbFibLo + tick, color = fibCol, width = 4, style = line.style_solid)
+        pbLnFib1Tick := line.new(x1, pbFibHi - tick, x1, pbFibHi + tick, color = fibHiCol, width = 4, style = line.style_solid)
+        pbLbl0 := label.new(x0, pbFibLo, "FIB LO (0)\n← start here", style = label.style_label_up, color = color.new(#92400e, 0), textcolor = color.white, size = size.normal)
+        pbLbl1 := label.new(x1, pbFibHi, "FIB HI (1)\n← end here", style = label.style_label_down, color = color.new(#92400e, 0), textcolor = color.white, size = size.normal)
+        pbLbl := label.new(xR, midY, howTo, style = label.style_label_left, color = color.new(#78350f, 0), textcolor = #fde68a, size = size.normal)
+        pbLn62 := line.new(xL, pbOteLo, xR, pbOteLo, color = color.new(#e2e8f0, 0), width = 1, style = line.style_dotted)
+        pbLn705 := line.new(xL, pbOteMid, xR, pbOteMid, color = color.new(#facc15, 0), width = 2, style = line.style_dotted)
+        pbLn79 := line.new(xL, pbOteHi, xR, pbOteHi, color = color.new(#e2e8f0, 0), width = 1, style = line.style_dotted)
     else
-        line.set_xy1(pbLnFib0, xL, pbFibLo)
+        line.set_xy1(pbLnFib0, xL - 2, pbFibLo)
         line.set_xy2(pbLnFib0, xR, pbFibLo)
-        line.set_xy1(pbLnFib1, xL, pbFibHi)
+        line.set_xy1(pbLnFib1, xL - 2, pbFibHi)
         line.set_xy2(pbLnFib1, xR, pbFibHi)
         line.set_xy1(pbLnFibLeg, x0, pbFibLo)
         line.set_xy2(pbLnFibLeg, x1, pbFibHi)
-        line.set_color(pbLnFib0, fibCol)
-        line.set_color(pbLnFib1, fibCol)
-        label.set_xy(pbLbl0, xR, pbFibLo)
-        label.set_xy(pbLbl1, xR, pbFibHi)
+        line.set_xy1(pbLnFib0Tick, x0, pbFibLo - tick)
+        line.set_xy2(pbLnFib0Tick, x0, pbFibLo + tick)
+        line.set_xy1(pbLnFib1Tick, x1, pbFibHi - tick)
+        line.set_xy2(pbLnFib1Tick, x1, pbFibHi + tick)
+        label.set_xy(pbLbl0, x0, pbFibLo)
+        label.set_xy(pbLbl1, x1, pbFibHi)
         label.set_xy(pbLbl, xR, midY)
         label.set_text(pbLbl, howTo)
-        if not na(pbOteLo)
-            if na(pbLn62)
-                pbLn62 := line.new(xL, pbOteLo, xR, pbOteLo, color = color.new(#e2e8f0, 0), width = 1, style = line.style_dotted)
-                pbLn705 := line.new(xL, pbOteMid, xR, pbOteMid, color = color.new(#facc15, 0), width = 2, style = line.style_dotted)
-                pbLn79 := line.new(xL, pbOteHi, xR, pbOteHi, color = color.new(#e2e8f0, 0), width = 1, style = line.style_dotted)
-            else
-                line.set_xy1(pbLn62, xL, pbOteLo)
-                line.set_xy2(pbLn62, xR, pbOteLo)
-                line.set_xy1(pbLn705, xL, pbOteMid)
-                line.set_xy2(pbLn705, xR, pbOteMid)
-                line.set_xy1(pbLn79, xL, pbOteHi)
-                line.set_xy2(pbLn79, xR, pbOteHi)
+        line.set_xy1(pbLn62, xL, pbOteLo)
+        line.set_xy2(pbLn62, xR, pbOteLo)
+        line.set_xy1(pbLn705, xL, pbOteMid)
+        line.set_xy2(pbLn705, xR, pbOteMid)
+        line.set_xy1(pbLn79, xL, pbOteHi)
+        line.set_xy2(pbLn79, xR, pbOteHi)
 
 // ── Leave-then-retest arming (SOP T03: wait for price to LEAVE, then retest) ──
 // The order is re-evaluated every bar while the setup is live: it only stays
