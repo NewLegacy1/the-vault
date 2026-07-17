@@ -1409,65 +1409,75 @@ if i_manualOnly and i_pathBShowFib and pbLeft and not na(pbFibHi) and not na(pbF
 if not isTrigger and suDir != 0 and flat
     float riskPts = math.abs(suStop - suEntry)
     bool invalidated = (suDir == -1 and close > suStop) or (suDir == 1 and close < suStop)
-    // Manual: do NOT wipe after 13:00 — that hid morning Path B when viewing later
-    bool expireSetup = invalidated or (i_manualOnly ? (not suPathB and bar_index - suBar > i_tapTimeout) : (bar_index - suBar > i_tapTimeout or not canPlace))
-    if expireSetup
-        if suOrd and not i_manualOnly
-            strategy.cancel("Short")
-            strategy.cancel("Long")
-        suOrd := false
-        suDir := 0
-        manualReady := false
-        manualState := "—"
+    // Path B Manual: plan is final at arm — do not run Path A leave/approach/qty killers
+    if suPathB and i_manualOnly
+        if invalidated and bar_index - suBar > 2
+            manualState := "STOP side traded — review"
+            manualReady := false
+            // keep suDir + ENTRY/STOP/TP/fib for journal until new day
+        else
+            manualReady := true
+            manualState := f_shadowArmLabel()
     else
-        if not suLeft and (not i_strictLeave or bar_index > suBar)
-            if suDir == -1 and low <= suEntry - i_leaveR * riskPts
-                suLeft := true
-                suLeavePx := low
-            if suDir == 1 and high >= suEntry + i_leaveR * riskPts
-                suLeft := true
-                suLeavePx := high
-        bool nearOk = i_maxApproachR == 0 or math.abs(close - suEntry) <= i_maxApproachR * riskPts
-        string armLbl = f_shadowArmLabel()
-        manualState := not suLeft ? "WAIT leave" : not nearOk ? "WAIT approach" : not roomToday ? "1/day used" : not dayOk ? "Daily lock" : armLbl
-        if suLeft and roomToday and dayOk
-            if nearOk
-                float tpPx = suDir == -1 ? suEntry - f_effRr() * riskPts : suEntry + f_effRr() * riskPts
-                pendStop := suStop
-                pendTp := tpPx
-                int qty = f_qty(riskPts)
-                if qty > 0
-                    manualReady := true
-                    manualState := armLbl
-                    if not i_manualOnly and f_isLiveArm()
-                        if suDir == -1
-                            strategy.entry("Short", strategy.short, qty = qty, limit = suEntry)
-                            strategy.exit("S-X", from_entry = "Short", stop = suStop, limit = tpPx)
+        // Manual Path A: do NOT wipe after 13:00 (not canPlace). Auto strategy still does.
+        bool expireSetup = invalidated or (i_manualOnly ? (bar_index - suBar > i_tapTimeout) : (bar_index - suBar > i_tapTimeout or not canPlace))
+        if expireSetup
+            if suOrd and not i_manualOnly
+                strategy.cancel("Short")
+                strategy.cancel("Long")
+            suOrd := false
+            suDir := 0
+            manualReady := false
+            manualState := "—"
+        else
+            if not suLeft and (not i_strictLeave or bar_index > suBar)
+                if suDir == -1 and low <= suEntry - i_leaveR * riskPts
+                    suLeft := true
+                    suLeavePx := low
+                if suDir == 1 and high >= suEntry + i_leaveR * riskPts
+                    suLeft := true
+                    suLeavePx := high
+            bool nearOk = i_maxApproachR == 0 or math.abs(close - suEntry) <= i_maxApproachR * riskPts
+            string armLbl = f_shadowArmLabel()
+            manualState := not suLeft ? "WAIT leave" : not nearOk ? "WAIT approach" : not roomToday ? "1/day used" : not dayOk ? "Daily lock" : armLbl
+            if suLeft and roomToday and dayOk
+                if nearOk
+                    float tpPx = suDir == -1 ? suEntry - f_effRr() * riskPts : suEntry + f_effRr() * riskPts
+                    pendStop := suStop
+                    pendTp := tpPx
+                    int qty = f_qty(riskPts)
+                    if qty > 0
+                        manualReady := true
+                        manualState := armLbl
+                        if not i_manualOnly and f_isLiveArm()
+                            if suDir == -1
+                                strategy.entry("Short", strategy.short, qty = qty, limit = suEntry)
+                                strategy.exit("S-X", from_entry = "Short", stop = suStop, limit = tpPx)
+                            else
+                                strategy.entry("Long", strategy.long, qty = qty, limit = suEntry)
+                                strategy.exit("L-X", from_entry = "Long", stop = suStop, limit = tpPx)
+                            if not suOrd
+                                cntOrders += 1
+                            suOrd := true
+                            openRiskPts := riskPts
                         else
-                            strategy.entry("Long", strategy.long, qty = qty, limit = suEntry)
-                            strategy.exit("L-X", from_entry = "Long", stop = suStop, limit = tpPx)
-                        if not suOrd
-                            cntOrders += 1
-                        suOrd := true
-                        openRiskPts := riskPts
+                            suOrd := false
                     else
-                        suOrd := false
+                        cntSkipStop += 1
+                        suDir := 0
+                        manualReady := false
+                        manualState := "Stop bounds"
                 else
-                    cntSkipStop += 1
-                    suDir := 0
                     manualReady := false
-                    manualState := "Stop bounds"
+                    if suOrd and not i_manualOnly
+                        strategy.cancel("Short")
+                        strategy.cancel("Long")
+                        suOrd := false
+                        cntGuard += 1
             else
                 manualReady := false
-                if suOrd and not i_manualOnly
-                    strategy.cancel("Short")
-                    strategy.cancel("Long")
-                    suOrd := false
-                    cntGuard += 1
-        else
-            manualReady := false
-            if suLeft
-                manualState := not roomToday ? "1/day used" : "Daily lock"
+                if suLeft
+                    manualState := not roomToday ? "1/day used" : "Daily lock"
 
 // ── CISD trigger mode: tap the RB zone, then confirm (T05 1m package) ────────
 bool prevBull = close[1] > open[1]
