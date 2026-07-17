@@ -3,7 +3,8 @@
 Use this **every session** before you click a trade.  
 The script finds candidates. **You** pick the day bias, then take or skip.
 
-Chart: MNQ · **5m** · Morningstar · Manual ON · Lean ON · Path B ON.
+Chart: MNQ · **5m primary** · Morningstar · Manual ON · Lean ON · Path B ON.  
+(1m is optional detail — Path B now latches 1m RBs so they still arm on 5m.)
 
 ---
 

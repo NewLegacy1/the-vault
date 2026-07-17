@@ -4,14 +4,14 @@
 
 The script finds the setup. **You** are the bias filter. Three checkpoints.
 
-**Morningstar (Manual study path on gate_v0):** shorttitle **Morningstar** · window **10:00–13:00**.
+**Morningstar (lean gate_v0):** shorttitle **Morningstar** · window **10:00–13:00** · Manual click only.
 
-- **Lean chart ON (default):** PDH/PDL · 10:00 · **NWOG** (box + CE) · armed RB · ENTRY/STOP/TP · Path B **FIB LO/HI leg** + OTE after leave. No confluence spray.
-- **Discretionary filters ON (default):** script arms more candidates; **you** take/skip (draw POI · 4H · counter-draw · Path B OTE are not hard blocks).
-- **Path A:** HTF RB (default **15m**) → leave-retest → ENTRY/STOP/TP.
-- **Path B:** 10:00 manip → leave → **15m/5m/1m RB** near KO → arms `PathB · 10:00 · …RB`. Fib OTE draws after leave (eyes); Require OTE OFF by default.
+- Chart: PDH/PDL · 10:00 · **NWOG** · Path B fib LO/HI · ENTRY/STOP/TP · armed RB only.
+- **Path B (primary):** 10:00 manip → leave → 15/5/1m RB@KO (latched for 5m charts).
+- **Path A (optional):** 15m RB leave-retest.
+- Cut from script: ghosts · tables · trails · CISD · 30/60/240 · IFVG/OB/FVG museum · Deep BT orders. Fat archive: `pine/_archive_Powell_Rejection_Block_gate_v0_fat_2026-07-16.pine`. Locked Lab remains `Powell_Rejection_Block_v1.pine`.
 
-**Daily bias (plain English):** [[Morningstar_Daily_Bias_Checklist]] — NWOG → day story → Path B agree/skip.
+**Daily bias:** [[Morningstar_Daily_Bias_Checklist]]
 
 Journal → **Morningstar study**. Log take **and** skip.
 
