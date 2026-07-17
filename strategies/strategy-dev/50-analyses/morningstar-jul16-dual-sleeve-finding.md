@@ -72,6 +72,14 @@ Two bugs:
 - **Powell arm** = sticky **1m and/or 5m RB projection box** @ KO after away→return (archive latch model).
 - Pass: leave plan + later `Powell · 1RB/5RB` near ~11:15 + purple Day IL at fib LO for that day only.
 
+## Dual18 lean restore (2026-07-17)
+
+- **Archive:** `pine/_archive_Powell_Rejection_Block_gate_v0_Dual17_spray_2026-07-17.pine` (RB museum spray — do not use).
+- **Working script:** `pine/Powell_Rejection_Block_gate_v0.pine` → stamp **`MS Dual18 · lean restore`**.
+- Restored Dual12/13 product: soft RB@KO leave + one untapped Day-IL pool + Powell latch on return. No all-day RB scan boxes. Day IL plot = bounce-locked `dilPx` only.
+- **Acceptance (Jul 16 MNQ 5m):** lean chart · one Day IL · one untapped box · `LONG · leave` · `LONG · Powell · untapped DayIL`.
+- **Geometry debt (Dual19 only after Dual18 pass):** force pool wick-start from the Day-IL print-bar snapshot if entry sits on the wrong candle.
+
 ## Links
 
 - Checklist: [[Morningstar_Daily_Bias_Checklist]]
