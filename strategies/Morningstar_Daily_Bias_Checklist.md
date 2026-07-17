@@ -3,9 +3,10 @@
 Use this **every session** before you click a trade.  
 The script finds candidates. **You** pick the day bias, then take or skip.
 
-**Chart:** MNQ · **5m for bias** · Path B **ARMs on 1m RB** · **MARKS 5m RBs** (eyes only).  
+**Chart:** MNQ · **5m for bias** · **flip to 1m to ARM** (Path B entry is a 1m RB) · **MARKS 5m RBs** (eyes only).  
 **Script:** lean Morningstar (`Powell_Rejection_Block_gate_v0.pine`) — Path B only (no museum / ghosts / tables).  
-**Inputs:** Path B ON · ARM 1m ON · MARK 5m ON · ARM 5m OFF · Show fib ON.
+**Inputs:** Path B ON · ARM 1m ON · MARK 5m ON · ARM 5m OFF · Show fib ON · proximity ≥ 50.  
+**Note:** Status + ENTRY stay up past 13:00 / 18:00 (calendar midnight wipe only). If you only see “B window closed” at the live edge after hours, re-paste this build.
 
 ---
 

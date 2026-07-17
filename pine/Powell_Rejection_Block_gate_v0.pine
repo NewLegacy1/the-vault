@@ -7,13 +7,15 @@
 //       yellow 10:00 wash · ENTRY/STOP/TP · status tag · fib plots/labels
 // CUT: Path A · ghosts · tables · trails · CISD · 30/60/240 · IFVG/OB/FVG museum ·
 //      Deep BT auto-orders · eval caps · rolling/AM opens · give-back HUD
+// FIX 2026-07-16: Path B / plans wipe on NY calendar midnight — NOT CME 18:00 session "D"
+//       (18:00 wipe made status say "B window closed" and erased ENTRY after the cash session).
 strategy(
      title                   = "Morningstar (PRB gate_v0)",
      shorttitle              = "Morningstar",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
-     calc_on_every_tick      = false,
+     calc_on_every_tick      = true,
      max_bars_back           = 5000,
      initial_capital         = 50000,
      default_qty_type        = strategy.fixed,
@@ -79,7 +81,11 @@ c_win10 = input.color(#eab308, "10:00 wash", group = "Colors")
 int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
 int nyMonth = month(time, "America/New_York")
 int nyDow = dayofweek(time, "America/New_York")
-bool newDay = ta.change(time("D", "America/New_York")) != 0
+int nyYmd = year(time, "America/New_York") * 10000 + nyMonth * 100 + dayofmonth(time, "America/New_York")
+// CME daily bars roll ~18:00 ET — do NOT wipe Path B / plans on that. Calendar midnight only.
+bool newCalDay = ta.change(nyYmd) != 0
+// Session day (exchange "D") — PDH/PDL / day high-low only
+bool newSessDay = ta.change(time("D", "America/New_York")) != 0
 bool canPlace = nyHhmm < i_winEnd
 bool mondayOk = not i_skipMonday or nyDow != dayofweek.monday
 bool monthOk = not i_skipJulOct or (nyMonth != 7 and nyMonth != 10)
@@ -103,7 +109,7 @@ var float ko1000 = na
 var float nwogFriClose = na
 var int nwogGapTime = na
 
-if newDay
+if newSessDay
     pdhLvl := curDayHigh
     pdlLvl := curDayLow
     pdhOriginBar := curDayHighBar
@@ -112,7 +118,6 @@ if newDay
     curDayLow := low
     curDayHighBar := bar_index
     curDayLowBar := bar_index
-    ko1000 := na
 else
     if na(curDayHigh) or high >= curDayHigh
         curDayHigh := high
@@ -121,6 +126,9 @@ else
         curDayLow := low
         curDayLowBar := bar_index
 
+// 10:00 KO is a calendar RTH print — clear only at NY midnight, never at 18:00 session roll
+if newCalDay
+    ko1000 := na
 bool ko1000Print = nyHhmm >= 1000 and nyHhmm[1] < 1000
 bool ko1000Fallback = nyHhmm >= 1000 and na(ko1000)
 if ko1000Print or ko1000Fallback
@@ -172,7 +180,7 @@ bool new1Bar = ta.change(t1sec) != 0
 bool new5Bar = ta.change(t5sec) != 0
 bool new15Bar = ta.change(t15sec) != 0
 
-// On a 1m chart use chart bars directly (more reliable than security→same TF)
+// Path B ARM is a 1m event — use the 1m chart for the control day. On 5m, security only sees the last 1m of each 5m bar.
 bool on1m = timeframe.period == "1"
 [b1c, u1c, h1c, l1c, wsB1c, wsU1c] = f_pb1Pack(i_minWick1)
 bool b1 = on1m ? b1c : b1s
@@ -288,7 +296,8 @@ var array<bool> nwogHitHiA = array.new_bool()
 var array<bool> nwogHitLoA = array.new_bool()
 var array<bool> nwogFilledA = array.new_bool()
 
-if newDay
+// Wipe setups on calendar midnight only — 18:00 CME roll must NOT kill ENTRY/STOP/TP
+if newCalDay
     suDir := 0
     suBar := na
     suEntry := na
@@ -393,11 +402,14 @@ if newDay
 bool canArmPb = canPlace and (not i_oneTradeDay or not pbArmedToday) and (suDir == 0 or not suPathB)
 
 // ─── Path B ──────────────────────────────────────────────────────────────────
-bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and (nyHhmm < i_winEnd or pbLeft)
+// Stay live after leave so fib + status keep updating past Last arm (13:00).
+// Plans persist until calendar midnight (not CME 18:00).
+bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and (nyHhmm < i_winEnd or pbLeft or (suPathB and suDir != 0))
 float pbOteLo = na
 float pbOteHi = na
 float pbOteMid = na
 bool koInOte = false
+bool pbStopFail = false
 
 if pbOn
     if na(pbHi) or high >= pbHi
@@ -412,7 +424,8 @@ if pbOn
     if low < ko1000
         pbPierceBelow := true
         pbManip := true
-    if pbManip and not pbLeft and barstate.isconfirmed and nyHhmm < i_winEnd
+    // Same-bar leave OK (Powell: wick then distribute)
+    if pbManip and not pbLeft and barstate.isconfirmed and canPlace
         if pbPierceAbove and close < ko1000
             pbLeft := true
             pbDir := -1
@@ -458,11 +471,11 @@ if pbOn
     bool nearKo5U = f_nearKo(l5, ko1000) or f_nearKo(wsU5, ko1000) or f_nearKoBand(wsU5, l5, ko1000)
     bool nearKo1B = f_nearKo(h1, ko1000) or f_nearKo(wsB1, ko1000) or f_nearKoBand(h1, wsB1, ko1000)
     bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000) or f_nearKoBand(wsU1, l1, ko1000)
+    // 1m chart: every confirmed bar (pack looks at [1]). HTF: when a new 1m closes into this bar.
     bool trig1 = barstate.isconfirmed and (on1m or new1Bar)
     bool trig5 = barstate.isconfirmed and (timeframe.period == "5" or new5Bar)
     bool trig15 = barstate.isconfirmed and (timeframe.period == "15" or new15Bar)
 
-    bool pbStopFail = false
     if pbLeft and koInOte and barstate.isconfirmed
         bool have1Latch = pbLatchTag == "PathB · 10:00 · 1RB" and pbLatchDir != 0
         bool latched1Now = false
@@ -581,36 +594,36 @@ if pbOn
             pbArmedToday := true
             pbLatchDir := 0
 
-    if suPathB and suDir != 0
-        pbState := suDir == -1 ? "ARMED short" : "ARMED long"
-    else if not pbManip
-        pbState := "B wait manip"
-    else if not pbLeft
-        pbState := "B wait leave"
-    else if i_pathBReqOte and not koInOte
-        pbState := "B KO outside OTE"
-    else if pbStopFail
-        pbState := "B stop size fail"
-    else if not canArmPb
-        pbState := "B blocked"
-    else if pbLatchDir != 0
-        pbState := "B latch ready"
-    else
-        pbState := pbDir == -1 ? "B wait bear RB@KO" : "B wait bull RB@KO"
+// Status always — never collapse to a dead "window closed" while left / latched / armed
+if not i_pathB
+    pbState := "Path B off"
+else if suPathB and suDir != 0
+    pbState := (suDir == -1 ? "ARMED short" : "ARMED long") + (pbLeft ? " · FIB on" : "")
+else if nyHhmm < 1000 or na(ko1000)
+    pbState := "B before 10:00"
+else if not pbManip
+    pbState := "B wait manip"
+else if not pbLeft
+    pbState := canPlace ? "B wait leave" : "B no leave (arm window ended)"
+else if i_pathBReqOte and not koInOte
+    pbState := "B KO outside OTE"
+else if pbStopFail
+    pbState := "B stop size fail"
+else if not canPlace and pbLatchDir == 0
+    pbState := pbDir == -1 ? "B left · no bear RB before close" : "B left · no bull RB before close"
+else if not canArmPb
+    pbState := "B blocked (1/day or slot)"
+else if pbLatchDir != 0
+    pbState := "B latch ready"
+else
+    pbState := (pbDir == -1 ? "B wait bear RB@KO" : "B wait bull RB@KO") + (on1m ? "" : " · flip to 1m")
 
-    if i_pathBShowState
-        if na(pbStateLbl)
-            pbStateLbl := label.new(bar_index, high, pbState, style = label.style_label_down, color = color.new(#0f172a, 20), textcolor = color.white, size = size.small)
-        else
-            label.set_xy(pbStateLbl, bar_index, high)
-            label.set_text(pbStateLbl, pbState)
-else if i_pathBShowState
-    string idle = suPathB and suDir != 0 ? (suDir == -1 ? "ARMED short" : "ARMED long") : nyHhmm < 1000 ? "B before 10:00" : "B window closed"
+if i_pathBShowState
     if na(pbStateLbl)
-        pbStateLbl := label.new(bar_index, high, idle, style = label.style_label_down, color = color.new(#0f172a, 20), textcolor = color.white, size = size.small)
+        pbStateLbl := label.new(bar_index, high, pbState, style = label.style_label_down, color = color.new(#0f172a, 20), textcolor = color.white, size = size.small)
     else
         label.set_xy(pbStateLbl, bar_index, high)
-        label.set_text(pbStateLbl, idle)
+        label.set_text(pbStateLbl, pbState)
 
 // Keep Path B plan after window / flat — journal until new day
 if suPathB and suDir != 0 and barstate.isconfirmed
@@ -757,7 +770,7 @@ if planLive
 // ─── PDH / PDL ───────────────────────────────────────────────────────────────
 float usePdh = not na(pdhLvl) ? pdhLvl : prevDayHigh
 float usePdl = not na(pdlLvl) ? pdlLvl : prevDayLow
-if i_showPdhPdl and newDay
+if i_showPdhPdl and newSessDay
     if not na(lnPdh)
         line.delete(lnPdh)
         label.delete(lblPdh)
@@ -851,5 +864,8 @@ bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00")
 
 plot(pbFibPlotLo, "FIB LO (0)", color.new(#f59e0b, 0), linewidth = 3, style = plot.style_linebr)
 plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 3, style = plot.style_linebr)
+
+// Historical arm marker (survives even if label objects get confusing after session roll)
+plotshape(suPathB and suDir != 0 and suBar == bar_index, title = "Path B ARM", style = shape.labelup, location = location.belowbar, color = #0f172a, textcolor = color.white, text = "ARM", size = size.tiny)
 
 alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nCheck bias checklist · click ENTRY/STOP/TP")
