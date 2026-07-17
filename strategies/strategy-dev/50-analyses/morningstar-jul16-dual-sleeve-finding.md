@@ -58,18 +58,23 @@ Two bugs:
 1. **Sticky `pbOteLatched`** — a tiny early fib could mark KO “in OTE” forever, so the ~10:00 RB armed as if it were Powell and **1-trade lock** blocked ~11:15.
 2. **Single plan slot** — even with a correct OTE gate, Early and Powell could not both stay on the chart.
 
-## Actions taken in Pine (dual sleeve · MS Dual3)
+## Actions taken in Pine (dual sleeve → MS Dual6)
 
-- Input **`Which setups to show`**: `Leave + Retest` · `Leave only` · `Retest only`
-- **LEAVE**: first RB@KO in leave window (default 45 min), before a completed return
-- **RETEST**: away (after leave bar) → return to KO → RB@KO — **no fixed clock** (Jul 16 happened ~11:15; other days vary)
-- 5m ARM **ON** by default so 5m charts aren’t silent for days
-- Tags: `LEAVE · PathB · …` / `RETEST · PathB · …` (+ `RETEST~` if fib/KO quality soft)
+- Input **`Which setups to show`**: `KO-leave + KO-retest` · leave-only · retest-only
+- **Dual6 cross-TF identity:** Path B **engine pinned to completed 5m bars** (`request.security` OHLC + formal 5m RB). Plans drawn with `xloc.bar_time`.
+- Default sleeve RB TF = **5m** for both leave and retest → **same ENTRY/STOP/TP on 1m and 5m charts**.
+- Honest limit: historical **1m RB arms cannot match on a 5m chart** (script evaluates once per 5m bar). Choosing “1m” sleeve TF is study-only.
+- **KO-leave:** first formal 5m RB@KO in leave window (before completed return) — recovers the ~17pt risk / ~1:5 (~85–86 TP) leave geometry when that 5m RB is the arm.
+- **KO-retest:** away → peak → return → formal 5m RB@KO (local extreme / relative equal lows; stop = extreme − buffer). No fixed clock.
+- Control archive (`_archive_…working_before_slim…`): Path B arm was **1m primary / 5m MARK eyes** — good Powell study on **1m chart**, not cross-TF identical.
 
-## Bar-replay pass rule (updated)
+## Bar-replay pass rule (Dual6 · Jul 16)
 
-**Jul 16 · Leave + Retest:** amber LEAVE near leave, later RETEST on pullback RB@KO (whatever time that is).  
-Other days: either sleeve alone is fine — cadence should not collapse to one day only.
+Confirm on **both** 1m and 5m after fresh paste (`MS Dual6` stamp):
+
+1. **KO-leave** tags `… · 5RB`, risk ≈ 17pt, TP ≈ 85–86 at 1:5, freezes at WIN·TP (box does not run to session end).
+2. **KO-retest** arms on the pullback RB@KO (not ~12:10 junk); stop under the 5m RB equal-low extreme; prices **match** when switching TF.
+3. Legend/stamp = **MS Dual6 · 5m-pinned · identical 1m↔5m**.
 
 ## Links
 
