@@ -3,8 +3,9 @@
 Use this **every session** before you click a trade.  
 The script finds candidates. **You** pick the day bias, then take or skip.
 
-Chart: MNQ · **5m primary** · Morningstar · Manual ON · Lean ON · Path B ON.  
-(1m is optional detail — Path B now latches 1m RBs so they still arm on 5m.)
+Chart: MNQ · **5m for bias / structure** · **1m RB = Path B entry trigger** · Morningstar · Manual ON · Path B ON.  
+Defaults: 1m trigger ON · 5m/15m triggers OFF (5m RBs were arming junk and wiping the good 1m latch).  
+You still study on 5m — the script pulls 1m RBs onto that chart. Flip to 1m when you want candle detail.
 
 ---
 

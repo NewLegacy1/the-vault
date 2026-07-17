@@ -165,9 +165,9 @@ grpPb = "Morningstar Path B (KO + fib + LTF RB)"
 i_pathB = input.bool(true, "Enable Path B arming (Manual)", group = grpPb, tooltip = "Powell stack: 10:00 manip→leave → LTF RB at KO. Fib OTE is eyes-only unless Require OTE is ON. Manual only.")
 i_pathBAlign = input.float(15.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
 i_pathBReqOte = input.bool(false, "Require KO in fib OTE to arm", group = grpPb, tooltip = "OFF (default with discretionary): fib still draws after leave; you judge 0.62–0.79. ON = hard gate.")
-i_pathBUse15 = input.bool(true, "Allow 15m RB trigger", group = grpPb)
-i_pathBUse5 = input.bool(true, "Allow 5m RB trigger", group = grpPb)
-i_pathBUse1 = input.bool(true, "Allow 1m RB trigger", group = grpPb)
+i_pathBUse1 = input.bool(true, "Allow 1m RB trigger (primary)", group = grpPb, tooltip = "Powell control case. 1m RB at KO is the arm. Works on a 5m chart via request.security.")
+i_pathBUse5 = input.bool(false, "Allow 5m RB trigger", group = grpPb, tooltip = "OFF by default — on 5m charts a 5RB was overwriting the good 1m latch and arming junk (see Jul 16 midday long).")
+i_pathBUse15 = input.bool(false, "Allow 15m RB trigger", group = grpPb, tooltip = "OFF by default. Opt-in only; never preferred over 1m.")
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_pathBShowFib = input.bool(true, "Show Path B fib leg + OTE (after leave)", group = grpPb, tooltip = "Marks FIB LO (0) · FIB HI (1) of the active leg + 0.62 / 0.705 / 0.79. Tells you exactly where to put the fib tool.")
 i_pathBShowState = input.bool(true, "Show Path B status tag", group = grpPb, tooltip = "ON = floating label: wait manip / leave / latch / ARMED. Look under Morningstar Path B inputs if missing.")
@@ -1212,8 +1212,11 @@ if pbOn
     bool nearKo1B = f_nearKoPx(h1, ko1000) or f_nearKoPx(wsB1, ko1000) or (not na(h1) and not na(wsB1) and f_nearKoPx((h1 + wsB1) * 0.5, ko1000))
     bool nearKo1U = f_nearKoPx(l1, ko1000) or f_nearKoPx(wsU1, ko1000) or (not na(l1) and not na(wsU1) and f_nearKoPx((l1 + wsU1) * 0.5, ko1000))
 
-    // Latch only RBs matching leave direction (opposite RB was wiping the good latch)
+    // Latch matching leave direction. Priority: 1m > 5m > 15m.
+    // Never let a later 5m/15m RB overwrite an existing 1m latch (that was the Jul 16 5m-chart bug).
     if pbLeft and koInOte and barstate.isconfirmed
+        bool have1Latch = pbLatchTag == "PathB · 10:00 · 1RB" and pbLatchDir != 0
+        bool latched1Now = false
         if pbDir == -1
             if i_pathBUse1 and new1Bar and b1 and nearKo1B
                 pbLatchWs := wsB1
@@ -1222,14 +1225,15 @@ if pbOn
                 pbLatchDir := -1
                 pbLatchBar := bar_index
                 pbLatchTag := "PathB · 10:00 · 1RB"
-            if i_pathBUse5 and new5Bar and b5 and nearKo5B
+                latched1Now := true
+            if not latched1Now and not have1Latch and i_pathBUse5 and new5Bar and b5 and nearKo5B
                 pbLatchWs := wsB5
                 pbLatchEx := h5
                 pbLatchCe := (h5 + wsB5) * 0.5
                 pbLatchDir := -1
                 pbLatchBar := bar_index
                 pbLatchTag := "PathB · 10:00 · 5RB"
-            if i_pathBUse15 and new15Bar and b15 and nearKo15B
+            if not latched1Now and not have1Latch and pbLatchDir == 0 and i_pathBUse15 and new15Bar and b15 and nearKo15B
                 pbLatchWs := wsB15
                 pbLatchEx := h15
                 pbLatchCe := (h15 + wsB15) * 0.5
@@ -1244,14 +1248,15 @@ if pbOn
                 pbLatchDir := 1
                 pbLatchBar := bar_index
                 pbLatchTag := "PathB · 10:00 · 1RB"
-            if i_pathBUse5 and new5Bar and u5 and nearKo5U
+                latched1Now := true
+            if not latched1Now and not have1Latch and i_pathBUse5 and new5Bar and u5 and nearKo5U
                 pbLatchWs := wsU5
                 pbLatchEx := l5
                 pbLatchCe := (l5 + wsU5) * 0.5
                 pbLatchDir := 1
                 pbLatchBar := bar_index
                 pbLatchTag := "PathB · 10:00 · 5RB"
-            if i_pathBUse15 and new15Bar and u15 and nearKo15U
+            if not latched1Now and not have1Latch and pbLatchDir == 0 and i_pathBUse15 and new15Bar and u15 and nearKo15U
                 pbLatchWs := wsU15
                 pbLatchEx := l15
                 pbLatchCe := (l15 + wsU15) * 0.5
