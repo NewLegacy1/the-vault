@@ -6,10 +6,9 @@ The script finds the setup. **You** are the bias filter. Three checkpoints.
 
 **Morningstar (lean gate_v0):** shorttitle **Morningstar** · window **10:00–13:00** · Manual click only.
 
-- Chart: PDH/PDL · 10:00 · **NWOG** · Path B fib LO/HI · ENTRY/STOP/TP · armed RB only.
-- **Path B (primary):** 10:00 manip → leave → 15/5/1m RB@KO (latched for 5m charts).
-- **Path A (optional):** 15m RB leave-retest.
-- Cut from script: ghosts · tables · trails · CISD · 30/60/240 · IFVG/OB/FVG museum · Deep BT orders. Fat archive: `pine/_archive_Powell_Rejection_Block_gate_v0_fat_2026-07-16.pine`. Locked Lab remains `Powell_Rejection_Block_v1.pine`.
+- Chart: PDH/PDL · 10:00 · **NWOG** · Path B fib LO/HI · ENTRY/STOP/TP · **fill KPI** · armed RB only.
+- **Path B (Powell):** 10:00 manip → leave → **KO in fib OTE** → 1m RB@KO. Early RB@KO = eyes only ([[morningstar-jul16-dual-sleeve-finding]]).
+- Cut from script: ghosts · tables · trails · CISD · 30/60/240 · IFVG/OB/FVG museum · Deep BT orders. Fat archive: `pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine`. Locked Lab remains `Powell_Rejection_Block_v1.pine`.
 
 **Daily bias:** [[Morningstar_Daily_Bias_Checklist]]
 

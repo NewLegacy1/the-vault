@@ -53,6 +53,7 @@ R&D knowledge for The Vault. Lab Monte Carlo notes live in [[cohorts/_index]], n
 
 ### 50 — Analyses
 - [[kill-lessons-track-b]] · [[track-b-meta-progress]]
+- [[morningstar-jul16-dual-sleeve-finding]] — **IMPORTANT** Path B early ~10:00 vs Powell OTE ~11:15
 - [[phase1-autopsy-a0a-d1]] · [[phase2-chain-ev-gated]] · [[phase2-4-cofeature]]
 - [[event-study-prb-a0a-pilot]] · [[markov-occupancy-prb-a0a]] · [[weekly-review-latest]]
 - Track B event studies: [[event-study-b2-mpsf]] · [[event-study-trackb-mpsf-3y]] · [[event-study-b3-nr-expansion]] · [[event-study-trackb-nr-exp-3y]] · [[event-study-b4-vwap-z-fade]] · [[event-study-trackb-vwapz-3y]] · [[event-study-b5-1005-impulse]] · [[event-study-trackb-1005-3y]] · [[event-study-b6-gap-fade]] · [[event-study-trackb-gapfade-3y]] · [[event-study-b7-pm-continuation]] · [[event-study-trackb-pmcont-3y]] · [[event-study-b8-gap-cont]] · [[event-study-b9-mtf-pmcont]] · [[event-study-trackb-mtf-pmcont-mnq-5m]] · [[event-study-b10-lom]] · [[event-study-trackb-lom-mnq-5m]]

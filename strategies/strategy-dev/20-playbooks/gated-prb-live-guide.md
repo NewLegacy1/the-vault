@@ -59,26 +59,25 @@ Optional: set Coach alerts **enter STAND_DOWN** / **exit STAND_DOWN** so Aug ope
 
 If the chart shows only a HUD/table: you almost certainly have **Coach only**. Add **gate_v0** on the same MNQ chart (overlay strategy). Locked `Powell_Rejection_Block_v1.pine` stays untouched.
 
-### Morningstar study (Manual HTF + confluence grade)
+### Morningstar study (Manual Path B)
 
-**Name:** Morningstar — Manual study path on `gate_v0` (TV shorttitle **Morningstar**). Locked PRB v1 / Lab Chart control stay **PRB**.
+**Name:** Morningstar — Manual study on lean `gate_v0` (TV shorttitle **Morningstar**). Locked PRB v1 / Lab Chart control stay **PRB**.
 
-1. Chart: `CME_MINI:MNQ1!` · **5m** · NY session.  
-2. Add **`Morningstar (PRB gate_v0)`** (strategy, overlay).  
-3. Inputs (lean script — few toggles):
-   - **Path B = ON** · **Path A = ON/OFF** · **Show trade plan = ON** · **NWOG = ON**
-   - **Last order = 1300** · **Direction = Both** · **Require Path B OTE = OFF**
-   - Chart: PDH/PDL · 10:00 · NWOG · fib LO/HI · ENTRY/STOP/TP only
-4. Journal: Vault → **Morningstar study** — path A/B · take or skip · why.
-5. Lab Deep BT: use locked **`Powell_Rejection_Block_v1.pine`**, not lean Morningstar. Fat gate archive if needed: `_archive_Powell_Rejection_Block_gate_v0_fat_2026-07-16.pine`.
+**IMPORTANT:** [[morningstar-jul16-dual-sleeve-finding]] — early RB@KO (~10:00) vs Powell OTE (~11:15).
 
-| Mode | Arms | Chart |
+1. Chart: `CME_MINI:MNQ1!` · **5m bias / 1m to ARM** · NY session.  
+2. Add **`Morningstar (PRB gate_v0)`** (strategy, overlay). Re-paste after Pine changes.  
+3. Inputs for **Powell control:**
+   - **Path B ON** · **Require KO in fib OTE ON** · Min fib leg **40** · ARM 1m ON · MARK 5m ON · Early RB eyes ON · Fill KPI ON · ARM 5m OFF
+   - Last arm **1300** · Direction **Both** · NWOG / fib LO/HI / ENTRY/STOP/TP ON
+4. Journal: take **and** skip · read fill KPI (LIMIT → FILLED → WIN/LOSS). Bias: [[Morningstar_Daily_Bias_Checklist]].
+5. Lab Deep BT: locked **`Powell_Rejection_Block_v1.pine`** only. Fat archive: `_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine`.
+
+| Sleeve | Trigger | Script |
 |---|---|---|
-| **Morningstar Path B** | 10:00 leave + 15/5/1m RB@KO | fib + plan |
-| **Morningstar Path A** | 15m RB leave-retest | plan |
+| **Powell / OTE** | leave → fib → KO in 0.62–0.79 → 1m RB@KO | **ARM** + plan + fill KPI |
+| **Early (candidate)** | first RB@KO right after leave | **eyes only** while OTE required |
 | **Lab PRB** | locked v1 | not this lean script |
-
-Grade slots: POI · 4H · 1m CISD · 1m IFVG · 5m IFVG. Letter suggest: 4–5→A+ · 3→B · ≤2→C. Not a Lab promote.
 
 ### Recommended live stack (same pane or two)
 

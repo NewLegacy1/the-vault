@@ -1,11 +1,19 @@
 ---
 strategy: PRB
-updated: 2026-07-14
+updated: 2026-07-16
 tags: [findings, prb, strategy-dev]
 ---
 # PRB — Settled findings & winning trade formula
 
 > Source of truth for what PRB experiments have proven. Update after every settled cohort.
+
+## Morningstar Path B (Manual study · 2026-07-16)
+
+**IMPORTANT — not Lab-settled MC.** Chart finding only. Full note: [[morningstar-jul16-dual-sleeve-finding]].
+
+- **Powell control sleeve:** leave → fib leg → **KO in OTE** → 1m RB@KO (~11:15 on Jul 16). Keep `Require KO in fib OTE` **ON**.
+- **Early sleeve (candidate):** first RB@KO right after leave (~10:00). Appeared when OTE gate was OFF + permissive 1m pack; **steals the day** from Powell if 1-trade lock is on. Mark eyes-only until studied separately.
+- **Do not** treat early ARM ENTRY/STOP/TP as the Powell trade without a fill KPI check.
 
 ## Winning trade formula (current best: v1.5 BE@2R + Auto PDH/PDL)
 
@@ -75,6 +83,7 @@ Cohorts: `strategies/cohorts/eval/*regime_gate_v0*` · `strategies/cohorts/funde
 - Does trail 2.0/1.5 beat BE-only specifically in give-back months (Feb–Mar type)?
 - Long-only vs short-only bias splits by regime?
 - Next Track B (B3/B4) — only with fresh Stage-0; MPSF closed
+- **Morningstar early sleeve** — does first post-leave RB@KO have positive fill→TP expectancy, or only the OTE retest? ([[morningstar-jul16-dual-sleeve-finding]])
 
 ## What failed (graveyard — don't resurrect)
 

@@ -432,6 +432,7 @@ float pbOteLo = na
 float pbOteHi = na
 float pbOteMid = na
 bool koInOte = false
+bool fibLegOk = false
 bool pbStopFail = false
 
 if pbOn
@@ -471,7 +472,7 @@ if pbOn
             pbFibLo := low
             pbFibLoBar := bar_index
     float pbRange = not na(pbFibHi) and not na(pbFibLo) ? pbFibHi - pbFibLo : na
-    bool fibLegOk = not na(pbRange) and pbRange >= i_pathBMinFib
+    fibLegOk := not na(pbRange) and pbRange >= i_pathBMinFib
     if pbLeft
         if fibLegOk
             if pbDir == -1
@@ -607,6 +608,9 @@ if pbOn
             manualState := f_shadowArmLabel()
             pbArmedToday := true
             pbLatchDir := 0
+            fillState := 1
+            fillBar := na
+            fillKpi := "LIMIT live — waiting tap"
 
     if canArmPb and koInOte and pbDir == 1 and biasOkLong and (suDir == 0 or not suPathB) and barstate.isconfirmed and pbLatchDir == 1 and not na(pbLatchWs)
         [entryPx, stopPx] = f_plan(pbLatchWs, pbLatchCe, pbLatchEx, false)
@@ -630,20 +634,25 @@ if pbOn
             manualState := f_shadowArmLabel()
             pbArmedToday := true
             pbLatchDir := 0
+            fillState := 1
+            fillBar := na
+            fillKpi := "LIMIT live — waiting tap"
 
 // Status always — never collapse to a dead "window closed" while left / latched / armed
 if not i_pathB
     pbState := "Path B off"
 else if suPathB and suDir != 0
-    pbState := (suDir == -1 ? "ARMED short" : "ARMED long") + (pbLeft ? " · FIB on" : "")
+    pbState := (suDir == -1 ? "ARMED short" : "ARMED long") + (pbLeft ? " · FIB on" : "") + (fillState >= 1 ? " · " + fillKpi : "")
 else if nyHhmm < 1000 or na(ko1000)
     pbState := "B before 10:00"
 else if not pbManip
     pbState := "B wait manip"
 else if not pbLeft
     pbState := canPlace ? "B wait leave" : "B no leave (arm window ended)"
+else if i_pathBReqOte and not fibLegOk and pbLeft
+    pbState := "B wait fib leg (≥" + str.tostring(i_pathBMinFib, "#") + "pt)"
 else if i_pathBReqOte and not koInOte
-    pbState := "B KO outside OTE"
+    pbState := "B wait OTE @ KO (Powell)"
 else if pbStopFail
     pbState := "B stop size fail"
 else if not canPlace and pbLatchDir == 0
@@ -673,6 +682,49 @@ if suPathB and suDir != 0 and barstate.isconfirmed
     else
         manualReady := true
         manualState := f_shadowArmLabel()
+
+// Fill / outcome KPI — limit is live starting the bar AFTER ARM (you would click then)
+if i_showFillKpi and suPathB and suDir != 0 and not na(suEntry) and not na(pendStop) and not na(pendTp) and barstate.isconfirmed
+    if fillState == 1 and bar_index > suBar
+        bool tapped = suDir == 1 ? low <= suEntry : high >= suEntry
+        if tapped
+            fillState := 2
+            fillBar := bar_index
+            fillKpi := "FILLED"
+    if fillState == 2
+        // Same-bar TP+STOP → STOP wins (conservative). Order: stop first, then TP.
+        bool hitStop = suDir == 1 ? low <= pendStop : high >= pendStop
+        bool hitTp = suDir == 1 ? high >= pendTp : low <= pendTp
+        if hitStop
+            fillState := 4
+            fillKpi := "LOSS · STOP"
+        else if hitTp
+            fillState := 3
+            fillKpi := "WIN · TP"
+    if fillState == 1 and nyHhmm >= i_flatTime
+        fillState := 5
+        fillKpi := "NO FILL by flat"
+    if fillState == 2 and nyHhmm >= i_flatTime
+        fillKpi := "FILLED · open at flat"
+    // KPI tag parked at entry (doesn't chase price)
+    string fillTxt = fillKpi
+    if fillState == 1
+        fillTxt := "LIMIT live — waiting tap\n(arm bar +" + str.tostring(bar_index - suBar) + ")"
+    else if fillState == 2
+        fillTxt := "FILLED · in trade"
+    else if fillState == 3
+        fillTxt := "WIN · TP hit"
+    else if fillState == 4
+        fillTxt := "LOSS · STOP hit"
+    else if fillState == 5
+        fillTxt := "NO FILL by flat"
+    color fillCol = fillState == 3 ? c_tp : fillState == 4 ? c_stop : fillState == 5 ? #94a3b8 : #fde68a
+    if na(fillLbl)
+        fillLbl := label.new(suBar, suEntry, fillTxt, style = label.style_label_right, color = #0f172a, textcolor = fillCol, size = size.small)
+    else
+        label.set_xy(fillLbl, suBar, suEntry)
+        label.set_text(fillLbl, fillTxt)
+        label.set_textcolor(fillLbl, fillCol)
 
 // ─── Fib anchors only (LO + HI) — you place the fib tool ─────────────────────
 bool pbFibReady = i_pathBShowFib and pbLeft and not na(pbFibHi) and not na(pbFibLo) and pbFibHi > pbFibLo
@@ -769,7 +821,7 @@ if planLive
     float rrLive = riskPts > 0 ? rewardPts / riskPts : 0.0
     string dirTxt = suDir == 1 ? "LONG" : "SHORT"
     string shad = isShadow ? " · SHADOW" : ""
-    string eTxt = dirTxt + " · " + suSweepTag + shad + "\n1:" + str.tostring(rrLive, "#.#") + "  ·  risk " + str.tostring(riskPts, "#.#") + " pt"
+    string eTxt = dirTxt + " · " + suSweepTag + shad + "\n1:" + str.tostring(rrLive, "#.#") + "  ·  risk " + str.tostring(riskPts, "#.#") + " pt" + (i_showFillKpi ? "\n" + fillKpi : "")
     string sTxt = "STOP  ·  −" + str.tostring(riskPts, "#.#") + " pt"
     string tTxt = "TP  ·  +" + str.tostring(rewardPts, "#.#") + " pt  ·  1:" + str.tostring(rrLive, "#.#")
     if na(planLeft) or planLeft != suBar
