@@ -40,9 +40,12 @@ i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Lon
 grpPb = "Path B"
 i_pathB = input.bool(true, "Enable Path B", group = grpPb)
 i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb, tooltip = "How close the 1m RB must be to the 10:00 open. 15 was too tight for the Jul 16 11:15 retest.")
-i_pathBReqOte = input.bool(false, "Require KO in fib OTE to arm", group = grpPb)
+// ON = Powell control (wait fib discount/premium @ KO). OFF = first RB after leave (Jul 16 ~10:00 early sleeve — study only).
+i_pathBReqOte = input.bool(true, "Require KO in fib OTE to arm (Powell)", group = grpPb, tooltip = "ON restores the ~11:15 OTE retest. OFF arms the first RB near KO after leave (can steal the day).")
+i_pathBMinFib = input.float(40.0, "Min fib leg (pts) before arm", minval = 10.0, step = 5.0, group = grpPb, tooltip = "Blocks fake OTE on a tiny leave wick. Jul 16 full leg was ~194 pts.")
 i_pathBUse1 = input.bool(true, "ARM on 1m RB", group = grpPb)
 i_pathBMark5 = input.bool(true, "MARK 5m RBs near KO (eyes)", group = grpPb)
+i_pathBMarkEarly = input.bool(true, "MARK early RB before OTE (eyes)", group = grpPb, tooltip = "Shows the first post-leave RB near KO without arming — the early sleeve you saw ~10:00 on Jul 16.")
 i_pathBUse5 = input.bool(false, "ARM on 5m RB (off)", group = grpPb)
 i_pathBUse15 = input.bool(false, "ARM on 15m RB (off)", group = grpPb)
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
@@ -58,6 +61,7 @@ i_showNwog = input.bool(true, "Show NWOG (Fri→Sun 18:00)", group = "Levels")
 i_nwogMinPts = input.float(5.0, "Min NWOG size (pts)", minval = 0.5, step = 0.5, group = "Levels")
 i_showPdhPdl = input.bool(true, "Show PDH / PDL", group = "Levels")
 i_showPend = input.bool(true, "Show ENTRY / STOP / TP", group = "Levels")
+i_showFillKpi = input.bool(true, "Show fill / outcome KPI", group = "Levels", tooltip = "After ARM: did limit get tapped? Then TP vs STOP (stop wins if both same bar).")
 i_showSig = input.bool(true, "Show armed RB box", group = "Levels")
 i_rbExtend = input.int(24, "RB box extend (bars)", minval = 4, maxval = 80, group = "Levels")
 i_rbNoFill = input.bool(true, "RB box: border only", group = "Levels")
@@ -251,6 +255,15 @@ var int pbLatchDir = 0
 var int pbLatchBar = na
 var string pbLatchTag = "—"
 var string pbState = "—"
+// Fill / outcome sim (limit from bar AFTER arm)
+// 0=idle 1=limit live 2=filled 3=TP win 4=STOP loss 5=no fill by flat
+var int fillState = 0
+var int fillBar = na
+var string fillKpi = "—"
+var label fillLbl = na
+var bool pbEarlyMarked = false
+var array<box> pbEarlyBoxA = array.new_box()
+var array<label> pbEarlyLblA = array.new_label()
 
 var line pbLn62 = na
 var line pbLn705 = na
@@ -331,6 +344,16 @@ if newCalDay
     pbLatchBar := na
     pbLatchTag := "—"
     pbState := "—"
+    fillState := 0
+    fillBar := na
+    fillKpi := "—"
+    pbEarlyMarked := false
+    if not na(fillLbl)
+        label.delete(fillLbl)
+    fillLbl := na
+    while array.size(pbEarlyBoxA) > 0
+        box.delete(array.shift(pbEarlyBoxA))
+        label.delete(array.shift(pbEarlyLblA))
     if not na(pbLn62)
         line.delete(pbLn62)
     if not na(pbLn705)
@@ -448,8 +471,9 @@ if pbOn
             pbFibLo := low
             pbFibLoBar := bar_index
     float pbRange = not na(pbFibHi) and not na(pbFibLo) ? pbFibHi - pbFibLo : na
+    bool fibLegOk = not na(pbRange) and pbRange >= i_pathBMinFib
     if pbLeft
-        if not na(pbRange) and pbRange > 0
+        if fibLegOk
             if pbDir == -1
                 pbOteLo := pbFibLo + pbRange * 0.62
                 pbOteHi := pbFibLo + pbRange * 0.79
@@ -461,9 +485,10 @@ if pbOn
             bool koInBand = ko1000 >= pbOteLo - i_pathBAlign and ko1000 <= pbOteHi + i_pathBAlign
             if koInBand
                 pbOteLatched := true
+            // Powell path: need real leg + KO in 0.62–0.79 (or latched once). Early sleeve = ReqOte OFF.
             koInOte := not i_pathBReqOte or koInBand or pbOteLatched
         else
-            koInOte := not i_pathBReqOte
+            koInOte := not i_pathBReqOte and not na(pbRange) and pbRange > 0
 
     bool nearKo15B = f_nearKo(h15, ko1000) or f_nearKo(wsB15, ko1000) or f_nearKoBand(h15, wsB15, ko1000)
     bool nearKo15U = f_nearKo(l15, ko1000) or f_nearKo(wsU15, ko1000) or f_nearKoBand(wsU15, l15, ko1000)
@@ -539,6 +564,18 @@ if pbOn
                 while array.size(pbMark5BoxA) > 4
                     box.delete(array.shift(pbMark5BoxA))
                     label.delete(array.shift(pbMark5LblA))
+
+    // Early sleeve eyes — first post-leave RB@KO while OTE/fib gate still blocks ARM (Jul 16 ~10:00)
+    if i_pathBMarkEarly and i_pathBReqOte and pbLeft and not pbEarlyMarked and not (suPathB and suDir != 0) and barstate.isconfirmed
+        bool earlyBear = pbDir == -1 and ((trig1 and b1 and nearKo1B) or (trig5 and b5 and nearKo5B))
+        bool earlyBull = pbDir == 1 and ((trig1 and u1 and nearKo1U) or (trig5 and u5 and nearKo5U))
+        if (earlyBear or earlyBull) and not koInOte
+            float eTop = earlyBear ? (trig1 and b1 and nearKo1B ? h1 : h5) : (trig1 and u1 and nearKo1U ? wsU1 : wsU5)
+            float eBot = earlyBear ? (trig1 and b1 and nearKo1B ? wsB1 : wsB5) : (trig1 and u1 and nearKo1U ? l1 : l5)
+            if not na(eTop) and not na(eBot)
+                pbEarlyMarked := true
+                array.push(pbEarlyBoxA, box.new(bar_index, math.max(eTop, eBot), bar_index + 8, math.min(eTop, eBot), border_color = #f59e0b, bgcolor = color.new(#f59e0b, 90), border_width = 2))
+                array.push(pbEarlyLblA, label.new(bar_index, math.max(eTop, eBot), "EARLY RB · eyes (not OTE)", style = label.style_label_down, color = #78350f, textcolor = #fde68a, size = size.tiny))
 
     if not na(pbLatchBar) and bar_index - pbLatchBar > i_tapTimeout
         pbLatchWs := na
