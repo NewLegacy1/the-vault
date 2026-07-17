@@ -11,7 +11,7 @@
 //       (18:00 wipe made status say "B window closed" and erased ENTRY after the cash session).
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual4",
+     shorttitle              = "MS Dual5",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -39,17 +39,18 @@ i_biasMode    = input.string("Long & Short", "Direction filter", options = ["Lon
 
 grpPb = "Path B"
 i_pathB = input.bool(true, "Enable Path B", group = grpPb)
-// Leave = first RB@KO soon after leave. Retest = later pullback RB@KO (Powell-style) — NO fixed clock time.
-i_pathBSleeve = input.string("Leave + Retest", "Which setups to show", options = ["Leave + Retest", "Leave only", "Retest only"], group = grpPb, tooltip = "Leave + Retest = two independent plans when both print. Retest is condition-based (away→return→RB), not a fixed 11:15 time.")
+// KO-leave = price LEFT the 10:00 key open, then RB@KO (NOT "skip this trade").
+// KO-retest = later pullback to KO after a run (Powell-style) — any clock time.
+i_pathBSleeve = input.string("KO-leave + KO-retest", "Which setups to show", options = ["KO-leave + KO-retest", "KO-leave only", "KO-retest only"], group = grpPb, tooltip = "KO-leave = RB after price left 10:00 open. KO-retest = pullback RB at KO after a run. Neither means 'skip the trade'.")
 i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
-i_leaveWinMin = input.int(45, "Leave sleeve window (min after leave)", minval = 10, maxval = 120, group = grpPb, tooltip = "First RB@KO in this window (and before a full return) = LEAVE sleeve.")
-i_pathBMinFib = input.float(40.0, "Retest: min fib leg (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "RETEST needs a real leave leg (Powell). LEAVE sleeve ignores this.")
-i_pathBAwayPts = input.float(25.0, "Retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "After leave bar, price must run this far, then pull back to KO, before RETEST.")
-i_pathBReqOte = input.bool(true, "Retest: require KO in fib OTE", group = grpPb, tooltip = "ON = Powell-quality retest (KO in 0.62–0.79). Stops mid-rally junk.")
-i_retestMinRisk = input.float(10.0, "Retest: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb, tooltip = "Rejects tiny mid-leg RBs (the bad ~5pt 10:45 arm).")
+i_leaveWinMin = input.int(45, "KO-leave window (min after left KO)", minval = 10, maxval = 120, group = grpPb)
+i_pathBMinFib = input.float(40.0, "KO-retest: min fib leg (pts)", minval = 5.0, step = 5.0, group = grpPb)
+i_pathBAwayPts = input.float(40.0, "KO-retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "Must run this far from KO after the leave bar, THEN pull back, before KO-retest.")
+i_pathBReqOte = input.bool(true, "KO-retest: require KO in fib OTE", group = grpPb)
+i_retestMinRisk = input.float(12.0, "KO-retest: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_pathBUse1 = input.bool(true, "ARM on 1m RB", group = grpPb)
 i_pathBMark5 = input.bool(true, "MARK 5m RBs near KO (eyes)", group = grpPb)
-i_pathBUse5 = input.bool(true, "LEAVE may ARM on 5m RB", group = grpPb, tooltip = "LEAVE can use 5m. RETEST prefers 1m (Powell); 5m retest only if stop ≥ min risk.")
+i_pathBUse5 = input.bool(true, "KO-leave may ARM on 5m RB", group = grpPb, tooltip = "KO-leave can use 5m. KO-retest is 1m-only (Powell).")
 i_pathBUse15 = input.bool(false, "ARM on 15m RB (off)", group = grpPb)
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_minWick5 = input.float(6.0, "Min 5m RB wick (pts)", minval = 2.0, step = 0.5, group = grpPb)
@@ -85,8 +86,8 @@ c_pdl = input.color(#ef4444, "PDL", group = "Colors")
 c_win10 = input.color(#eab308, "10:00 wash", group = "Colors")
 
 // Derived flags (after ALL inputs)
-bool wantLeave = i_pathBSleeve == "Leave + Retest" or i_pathBSleeve == "Leave only"
-bool wantRetest = i_pathBSleeve == "Leave + Retest" or i_pathBSleeve == "Retest only"
+bool wantLeave = i_pathBSleeve == "KO-leave + KO-retest" or i_pathBSleeve == "KO-leave only"
+bool wantRetest = i_pathBSleeve == "KO-leave + KO-retest" or i_pathBSleeve == "KO-retest only"
 bool biasOkShort = i_biasMode != "Long only"
 bool biasOkLong = i_biasMode != "Short only"
 
@@ -261,7 +262,7 @@ var int pbAwayPeakBar = na
 var bool pbReturned = false
 var string pbState = "—"
 
-// LEAVE sleeve
+// KO-leave sleeve (left the 10:00 key open → RB@KO)
 var bool eArmed = false
 var int eDir = 0
 var int eBar = na
@@ -290,7 +291,7 @@ var int ePlanLeft = na
 var box eBxRb = na
 var label eLblRb = na
 
-// RETEST sleeve (away → peak → return → RB@KO)
+// KO-retest sleeve (away → peak → return → RB@KO)
 var bool oArmed = false
 var int oDir = 0
 var int oBar = na
@@ -507,9 +508,9 @@ if newCalDay
         label.delete(array.shift(pbMark5LblA))
 
 // ─── Path B ──────────────────────────────────────────────────────────────────
-// LEAVE sleeve: first RB@KO in the leave window, before a full away→return.
-// RETEST sleeve: after away (post-leave bars) + return to KO + RB — any clock time.
-// "Leave + Retest" keeps both plans when both print.
+// KO-leave: first RB@KO in the leave window, before a full away→return.
+// KO-retest: after away (post-leave bars) + return to KO + 1m RB — any clock time.
+// "KO-leave + KO-retest" keeps both plans when both print.
 bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and (nyHhmm < i_winEnd or pbLeft or eArmed or oArmed)
 float pbOteLo = na
 float pbOteHi = na
@@ -661,9 +662,9 @@ if pbOn
                     label.delete(array.shift(pbMark5LblA))
 
     bool biasOk = (latchDir == -1 and biasOkShort) or (latchDir == 1 and biasOkLong)
-    bool singleSlotLock = i_oneTradeDay and i_pathBSleeve != "Leave + Retest" and (eArmed or oArmed)
+    bool singleSlotLock = i_oneTradeDay and i_pathBSleeve != "KO-leave + KO-retest" and (eArmed or oArmed)
 
-    // LEAVE — first RB@KO in leave window, before a completed return
+    // KO-leave — RB@KO soon after price LEFT the 10:00 open (takeable setup, not "skip")
     if wantLeave and not eArmed and canPlace and not singleSlotLock and biasOk and latchDir != 0 and inLeaveWin and not pbReturned and barstate.isconfirmed
         [entryPx, stopPx] = f_plan(latchWs, latchCe, latchEx, latchDir == -1)
         if na(entryPx)
@@ -679,7 +680,7 @@ if pbOn
             eEntry := entryPx
             eStop := stopPx
             eTp := latchDir == 1 ? entryPx + i_rr * riskPts0 : entryPx - i_rr * riskPts0
-            eTag := "LEAVE · PathB · " + latchTf
+            eTag := "KO-leave · PathB · " + latchTf
             eFill := 1
             eEndBar := na
             eKpi := "LIMIT live — waiting tap"
@@ -698,15 +699,12 @@ if pbOn
             manualReady := true
             manualState := f_shadowArmLabel()
 
-    // RETEST — after leave window, after away peak, return to KO, quality RB (Powell; any clock)
-    // Rejects the mid-rally ~10:45 junk that stole the real pullback.
-    bool retestTfOk = latchTf == "1RB" or latchTf == "5RB"
-    bool retestReady = hasAway and pbReturned and not inLeaveWin and fibLegOk and (not i_pathBReqOte or koInBand) and not na(pbAwayPeakBar) and bar_index > pbAwayPeakBar
-    if wantRetest and not oArmed and canPlace and not singleSlotLock and biasOk and latchDir != 0 and retestTfOk and retestReady and barstate.isconfirmed
+    // KO-retest — 1m only, after leave-window + away peak + return into KO/OTE (Powell; any clock)
+    bool retestReady = hasAway and pbReturned and not inLeaveWin and fibLegOk and (not i_pathBReqOte or koInBand) and not na(pbAwayPeakBar) and bar_index > pbAwayPeakBar + 2
+    if wantRetest and not oArmed and canPlace and not singleSlotLock and biasOk and latchDir != 0 and latchTf == "1RB" and retestReady and barstate.isconfirmed
         [entryPx2, stopPx2] = f_plan(latchWs, latchCe, latchEx, latchDir == -1)
         float riskPts1 = na(entryPx2) ? na : math.abs(stopPx2 - entryPx2)
-        // RETEST wants 1m; allow 5m only if stop is large enough (filters tiny 5RB junk)
-        bool retestSizeOk = not na(riskPts1) and riskPts1 >= i_retestMinRisk and (latchTf == "1RB" or riskPts1 >= i_retestMinRisk * 1.2)
+        bool retestSizeOk = not na(riskPts1) and riskPts1 >= i_retestMinRisk
         if na(entryPx2) or not retestSizeOk
             pbStopFail := true
         else
@@ -720,7 +718,7 @@ if pbOn
             oEntry := entryPx2
             oStop := stopPx2
             oTp := latchDir == 1 ? entryPx2 + i_rr * riskPts1 : entryPx2 - i_rr * riskPts1
-            oTag := "RETEST · PathB · " + latchTf
+            oTag := "KO-retest · PathB · " + latchTf
             oFill := 1
             oKpi := "LIMIT live — waiting tap"
             suDir := oDir
@@ -748,8 +746,8 @@ else if not pbManip
 else if not pbLeft
     pbState := canPlace ? "B wait leave" : "B no leave (arm window ended)"
 else
-    string ePart = eArmed ? "LEAVE✓" : wantLeave ? (pbReturned or not inLeaveWin ? "LEAVE missed" : "LEAVE wait RB") : ""
-    string oPart = oArmed ? "RETEST✓" : wantRetest ? (inLeaveWin ? "RETEST wait leave-win" : not hasAway ? "RETEST wait away" : na(pbAwayPeakBar) ? "RETEST wait peak" : not pbReturned ? "RETEST wait return" : i_pathBReqOte and not koInBand ? "RETEST wait KO-in-OTE" : not fibLegOk ? "RETEST wait fib" : "RETEST wait RB@KO") : ""
+    string ePart = eArmed ? "KO-leave✓" : wantLeave ? (pbReturned or not inLeaveWin ? "KO-leave missed" : "KO-leave wait RB") : ""
+    string oPart = oArmed ? "KO-retest✓" : wantRetest ? (inLeaveWin ? "retest wait leave-win" : not hasAway ? "retest wait away" : na(pbAwayPeakBar) ? "retest wait peak" : not pbReturned ? "retest wait return" : i_pathBReqOte and not koInBand ? "retest wait KO-in-OTE" : not fibLegOk ? "retest wait fib" : "retest wait 1m RB@KO") : ""
     if eArmed or oArmed
         pbState := ePart + (eArmed and wantRetest ? " · " : "") + oPart
         if eArmed
@@ -786,20 +784,24 @@ f_updFill(int st, int armBar, int dir, float entry, float stop, float tp) =>
     string kpi = out == 1 ? "LIMIT live — waiting tap" : out == 2 ? (nyHhmm >= i_flatTime ? "FILLED · open at flat" : "FILLED · in trade") : out == 3 ? "WIN · TP" : out == 4 ? "LOSS · STOP" : out == 5 ? "NO FILL by flat" : "—"
     [out, kpi]
 
-// Always simulate fills so plan boxes can freeze at TP/STOP (KPI label optional)
+// Always simulate fills so plan boxes freeze at TP/STOP (never chase the live edge)
 if eArmed and barstate.isconfirmed
     int ePrev = eFill
     [eFillTmp, eKpiTmp] = f_updFill(eFill, eBar, eDir, eEntry, eStop, eTp)
     eFill := eFillTmp
     eKpi := eKpiTmp
-    if ePrev < 3 and (eFill == 3 or eFill == 4 or eFill == 5)
+    if eFill >= 3 and na(eEndBar)
+        eEndBar := bar_index
+    else if ePrev < 3 and (eFill == 3 or eFill == 4 or eFill == 5)
         eEndBar := bar_index
 if oArmed and barstate.isconfirmed
     int oPrev = oFill
     [oFillTmp, oKpiTmp] = f_updFill(oFill, oBar, oDir, oEntry, oStop, oTp)
     oFill := oFillTmp
     oKpi := oKpiTmp
-    if oPrev < 3 and (oFill == 3 or oFill == 4 or oFill == 5)
+    if oFill >= 3 and na(oEndBar)
+        oEndBar := bar_index
+    else if oPrev < 3 and (oFill == 3 or oFill == 4 or oFill == 5)
         oEndBar := bar_index
 
 if eArmed or oArmed
@@ -874,7 +876,9 @@ bool isShadow = not dayAllowed
 
 if i_showPend and eArmed and not na(eEntry) and not na(eStop) and not na(eTp)
     bool eDone = eFill == 3 or eFill == 4 or eFill == 5
-    int eXR = eDone and not na(eEndBar) ? math.max(eEndBar, eBar + 1) : math.max(bar_index + 2, eBar + 8)
+    if eDone and na(eEndBar)
+        eEndBar := bar_index
+    int eXR = eDone ? math.max(eEndBar, eBar + 1) : math.max(bar_index + 2, eBar + 8)
     color eECol = isShadow ? #fb923c : #fbbf24
     color eSCol = isShadow ? #fb923c : c_stop
     color eTCol = isShadow ? #94a3b8 : c_tp
@@ -920,7 +924,7 @@ if i_showPend and eArmed and not na(eEntry) and not na(eStop) and not na(eTp)
             label.set_text(eFillLbl, eKpi)
             label.set_textcolor(eFillLbl, eFCol)
     if i_showSig and not na(eWs) and not na(eEx)
-        int eRbR = eDone and not na(eEndBar) ? math.max(eEndBar, eBar + 1) : math.max(bar_index, eBar + 4)
+        int eRbR = eDone ? math.max(eEndBar, eBar + 1) : math.max(bar_index, eBar + 4)
         if na(eBxRb)
             eBxRb := box.new(eBar, math.max(eEx, eWs), eRbR, math.min(eEx, eWs), border_color = #f59e0b, bgcolor = color.new(#f59e0b, 92), border_width = 2)
             eLblRb := label.new(eBar, math.max(eEx, eWs), eTag, style = label.style_label_down, color = #78350f, textcolor = #fde68a, size = size.tiny)
@@ -936,7 +940,9 @@ if i_showPend and eArmed and not na(eEntry) and not na(eStop) and not na(eTp)
 
 if i_showPend and oArmed and not na(oEntry) and not na(oStop) and not na(oTp)
     bool oDone = oFill == 3 or oFill == 4 or oFill == 5
-    int oXR = oDone and not na(oEndBar) ? math.max(oEndBar, oBar + 1) : math.max(bar_index + 2, oBar + 8)
+    if oDone and na(oEndBar)
+        oEndBar := bar_index
+    int oXR = oDone ? math.max(oEndBar, oBar + 1) : math.max(bar_index + 2, oBar + 8)
     color oECol = isShadow ? #fb923c : c_limit
     color oSCol = isShadow ? #fb923c : c_stop
     color oTCol = isShadow ? #94a3b8 : c_tp
@@ -982,7 +988,7 @@ if i_showPend and oArmed and not na(oEntry) and not na(oStop) and not na(oTp)
             label.set_text(oFillLbl, oKpi)
             label.set_textcolor(oFillLbl, oFCol)
     if i_showSig and not na(oWs) and not na(oEx)
-        int oRbR = oDone and not na(oEndBar) ? math.max(oEndBar, oBar + 1) : math.max(bar_index, oBar + 4)
+        int oRbR = oDone ? math.max(oEndBar, oBar + 1) : math.max(bar_index, oBar + 4)
         if na(oBxRb)
             oBxRb := box.new(oBar, math.max(oEx, oWs), oRbR, math.min(oEx, oWs), border_color = c_bull, bgcolor = color.new(c_bull, 92), border_width = 2)
             oLblRb := label.new(oBar, math.max(oEx, oWs), oTag, style = label.style_label_down, color = #0f172a, textcolor = c_bull, size = size.tiny)
@@ -1094,7 +1100,16 @@ bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00")
 plot(pbFibPlotLo, "FIB LO (0)", color.new(#f59e0b, 0), linewidth = 3, style = plot.style_linebr)
 plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 3, style = plot.style_linebr)
 
-plotshape(eArmed and eBar == bar_index, title = "LEAVE ARM", style = shape.labelup, location = location.belowbar, color = #b45309, textcolor = color.white, text = "LEAVE", size = size.tiny)
-plotshape(oArmed and oBar == bar_index, title = "RETEST ARM", style = shape.labelup, location = location.belowbar, color = #0f172a, textcolor = color.white, text = "RETEST", size = size.tiny)
+plotshape(eArmed and eBar == bar_index, title = "KO-leave ARM", style = shape.labelup, location = location.belowbar, color = #b45309, textcolor = color.white, text = "KO-leave", size = size.tiny)
+plotshape(oArmed and oBar == bar_index, title = "KO-retest ARM", style = shape.labelup, location = location.belowbar, color = #0f172a, textcolor = color.white, text = "KO-retest", size = size.tiny)
 
-alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nLEAVE and/or RETEST plan on chart")
+// Permanent version stamp — if you don't see Dual5, the new paste is not on the chart
+var label verStamp = na
+if barstate.islast
+    if na(verStamp)
+        verStamp := label.new(bar_index, high, "MS Dual5 · boxes freeze at TP/STOP", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
+    else
+        label.set_xy(verStamp, bar_index, high)
+        label.set_text(verStamp, "MS Dual5 · boxes freeze at TP/STOP")
+
+alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nKO-leave and/or KO-retest plan on chart")
