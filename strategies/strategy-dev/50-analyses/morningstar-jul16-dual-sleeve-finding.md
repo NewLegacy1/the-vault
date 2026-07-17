@@ -58,23 +58,20 @@ Two bugs:
 1. **Sticky `pbOteLatched`** — a tiny early fib could mark KO “in OTE” forever, so the ~10:00 RB armed as if it were Powell and **1-trade lock** blocked ~11:15.
 2. **Single plan slot** — even with a correct OTE gate, Early and Powell could not both stay on the chart.
 
-## Actions taken in Pine (dual sleeve → MS Dual6)
+## Actions taken in Pine (→ MS Dual7)
 
-- Input **`Which setups to show`**: `KO-leave + KO-retest` · leave-only · retest-only
-- **Dual6 cross-TF identity:** Path B **engine pinned to completed 5m bars** (`request.security` OHLC + formal 5m RB). Plans drawn with `xloc.bar_time`.
-- Default sleeve RB TF = **5m** for both leave and retest → **same ENTRY/STOP/TP on 1m and 5m charts**.
-- Honest limit: historical **1m RB arms cannot match on a 5m chart** (script evaluates once per 5m bar). Choosing “1m” sleeve TF is study-only.
-- **KO-leave:** first formal 5m RB@KO in leave window (before completed return) — recovers the ~17pt risk / ~1:5 (~85–86 TP) leave geometry when that 5m RB is the arm.
-- **KO-retest:** away → peak → return → formal 5m RB@KO (local extreme / relative equal lows; stop = extreme − buffer). No fixed clock.
-- Control archive (`_archive_…working_before_slim…`): Path B arm was **1m primary / 5m MARK eyes** — good Powell study on **1m chart**, not cross-TF identical.
+- **Dual6 regression:** pinning Path B to `eng5` + **formal 5m locL** killed all arms (no leave/retest). Reverted.
+- **Dual7 restore:** chart-bar Path B state again. **KO-leave** = soft 5m wick RB@KO (no 12-bar extreme). **KO-retest** = **1m RB@KO** (archive/Powell control).
+- **Daily ITL (ICT):** Intermediate Term Low = daily STL with higher STLs on both sides. Plotted as purple dashed **Daily ITL**. Retest may arm if KO/RB is near DIL even when fib-OTE is soft (`KO-retest: allow Daily ITL instead of fib OTE`).
+- Plans still freeze at TP/STOP (`xloc.bar_time`).
+- Control archive: 1m primary / 5m MARK eyes — Dual7 retest matches that control.
 
-## Bar-replay pass rule (Dual6 · Jul 16)
+## Bar-replay pass rule (Dual7 · Jul 16)
 
-Confirm on **both** 1m and 5m after fresh paste (`MS Dual6` stamp):
-
-1. **KO-leave** tags `… · 5RB`, risk ≈ 17pt, TP ≈ 85–86 at 1:5, freezes at WIN·TP (box does not run to session end).
-2. **KO-retest** arms on the pullback RB@KO (not ~12:10 junk); stop under the 5m RB equal-low extreme; prices **match** when switching TF.
-3. Legend/stamp = **MS Dual6 · 5m-pinned · identical 1m↔5m**.
+1. Stamp = **MS Dual7 · soft leave + 1m retest + Daily ITL**.
+2. **KO-leave** prints again (~soft 5RB, ~17pt / ~86 TP if that geometry returns).
+3. **KO-retest** on pullback ~11:15 with `1RB` (tag may include `· DIL` if reacting off Daily ITL).
+4. Prefer **1m chart** for retest study (1m RB via security on 5m can miss mid-bar prints).
 
 ## Links
 

@@ -3,16 +3,14 @@
 // DO NOT edit pine/Powell_Rejection_Block_v1.pine (locked Lab).
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
-// KEEP: Path B (10:00→leave→fib→dual sleeve) · NWOG · PDH/PDL · yellow 10:00 ·
-//       ENTRY/STOP/TP · status · fib LO/HI
-// CUT: Path A · ghosts · tables · trails · CISD · 30/60/240 · IFVG/OB/FVG museum
-// FIX: NY calendar midnight wipe (not CME 18:00). Dual6: Path B engine pinned to 5m
-//      so 1m↔5m charts show identical leave/retest prices (bar_time drawings).
-// NOTE: True 1m-RB arms cannot be identical on a 5m chart historically (script
-//       only evaluates once per 5m bar). Cross-TF identity ⇒ pin sleeves to 5m.
+// KEEP: Path B dual sleeve · NWOG · PDH/PDL · Daily ITL · yellow 10:00 · plans
+// Dual7: restore arms (Dual6 5m-engine + formal locL killed all setups).
+//   Leave = soft 5m RB@KO (wick, no 12-bar extreme). Retest = 1m RB@KO (control)
+//   + optional Daily ITL confluence (ICT: STL with higher STLs each side).
+//   Plans still freeze at TP/STOP via bar_time.
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual6",
+     shorttitle              = "MS Dual7",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -46,15 +44,18 @@ i_pathBSleeve = input.string("KO-leave + KO-retest", "Which setups to show", opt
 i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
 i_leaveWinMin = input.int(45, "KO-leave window (min after left KO)", minval = 10, maxval = 120, group = grpPb)
 i_pathBMinFib = input.float(40.0, "KO-retest: min fib leg (pts)", minval = 5.0, step = 5.0, group = grpPb)
-i_pathBAwayPts = input.float(40.0, "KO-retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "Must run this far from KO after the leave bar, THEN pull back, before KO-retest.")
-i_pathBReqOte = input.bool(true, "KO-retest: require KO in fib OTE", group = grpPb)
-i_retestMinRisk = input.float(12.0, "KO-retest: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
-i_leaveRbTf = input.string("5m (identical on 1m/5m charts)", "KO-leave RB TF", options = ["5m (identical on 1m/5m charts)", "1m (1m chart only — will differ on 5m)"], group = grpPb, tooltip = "Default 5m = same leave ENTRY/STOP/TP when you switch 1m↔5m. 1m cannot match on a 5m chart historically.")
-i_retestRbTf = input.string("5m (identical on 1m/5m charts)", "KO-retest RB TF", options = ["5m (identical on 1m/5m charts)", "1m (1m chart only — will differ on 5m)"], group = grpPb, tooltip = "Default 5m formal RB (local extreme / relative equal lows). Stop = RB extreme − buffer.")
-i_pathBMark5 = input.bool(true, "MARK extra 5m RBs near KO (eyes)", group = grpPb)
+i_pathBAwayPts = input.float(25.0, "KO-retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb)
+i_pathBReqOte = input.bool(true, "KO-retest: require KO in fib OTE", group = grpPb, tooltip = "OFF if you use Daily ITL confluence instead.")
+i_retestMinRisk = input.float(8.0, "KO-retest: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
+i_leavePrefer5 = input.bool(true, "KO-leave: prefer soft 5m RB (else 1m)", group = grpPb, tooltip = "Soft = wick rejection, NO 12-bar local-extreme. Restores the ~86pt leave.")
+i_retestPrefer1 = input.bool(true, "KO-retest: prefer 1m RB (Powell control)", group = grpPb, tooltip = "ON = archive control. OFF = soft 5m RB for retest.")
+i_showDil = input.bool(true, "Show Daily ITL (intermediate-term low)", group = grpPb, tooltip = "ICT: daily STL with higher STLs on both sides. Often the level OTE/RB reacts from.")
+i_retestNearDil = input.bool(true, "KO-retest: allow Daily ITL instead of fib OTE", group = grpPb, tooltip = "If KO or RB extreme is near Daily ITL, retest may arm even when fib-OTE gate fails.")
+i_dilAlign = input.float(40.0, "Daily ITL proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
+i_pathBMark5 = input.bool(true, "MARK formal 5m RBs near KO (eyes)", group = grpPb)
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_minWick5 = input.float(6.0, "Min 5m RB wick (pts)", minval = 2.0, step = 0.5, group = grpPb)
-i_localLen = input.int(12, "5m RB extreme lookback (bars)", minval = 4, maxval = 50, group = grpPb, tooltip = "Formal 5m RB must be extreme of last N 5m bars (relative equal highs/lows).")
+i_localLen = input.int(12, "Formal 5m extreme lookback", minval = 4, maxval = 50, group = grpPb)
 i_confClose = input.bool(true, "RB needs confirming close", group = grpPb)
 i_pathBShowFib = input.bool(true, "Show fib LO / HI anchors only", group = grpPb)
 i_pathBShowState = input.bool(true, "Show Path B status tag", group = grpPb)
@@ -86,8 +87,6 @@ c_win10 = input.color(#eab308, "10:00 wash", group = "Colors")
 // Derived flags (after ALL inputs)
 bool wantLeave = i_pathBSleeve == "KO-leave + KO-retest" or i_pathBSleeve == "KO-leave only"
 bool wantRetest = i_pathBSleeve == "KO-leave + KO-retest" or i_pathBSleeve == "KO-retest only"
-bool leaveUse5 = str.startswith(i_leaveRbTf, "5m")
-bool retestUse5 = str.startswith(i_retestRbTf, "5m")
 bool biasOkShort = i_biasMode != "Long only"
 bool biasOkLong = i_biasMode != "Short only"
 
@@ -182,20 +181,24 @@ f_pb1Pack(float minW) =>
     bool bull = lw >= minW and (not i_confClose or c1 > o1)
     [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1)]
 
+// Soft packs (wick only) arm leave/retest. Formal 5m pack is eyes / optional quality.
 [b1s, u1s, h1s, l1s, wsB1s, wsU1s] = request.security(syminfo.tickerid, "1", f_pb1Pack(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
-[b5, u5, h5, l5, wsB5, wsU5] = request.security(syminfo.tickerid, "5", f_htfPack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
-// Completed 5m bar ([1]) — same series on every chart TF when new5Bar fires
-[o5e, h5e, l5e, c5e] = request.security(syminfo.tickerid, "5", [open[1], high[1], low[1], close[1]], barmerge.gaps_off, barmerge.lookahead_off)
-int t5e = request.security(syminfo.tickerid, "5", time[1], barmerge.gaps_off, barmerge.lookahead_off)
+[b5soft, u5soft, h5s, l5s, wsB5s, wsU5s] = request.security(syminfo.tickerid, "5", f_pb1Pack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
+[b5form, u5form, h5f, l5f, wsB5f, wsU5f] = request.security(syminfo.tickerid, "5", f_htfPack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
 int t1sec = request.security(syminfo.tickerid, "1", time, barmerge.gaps_off, barmerge.lookahead_off)
 int t5sec = request.security(syminfo.tickerid, "5", time, barmerge.gaps_off, barmerge.lookahead_off)
 bool new1Bar = ta.change(t1sec) != 0
 bool new5Bar = ta.change(t5sec) != 0
-// Engine tick: only when the 5m clock rolls (identical leave/retest state on 1m and 5m charts)
-bool eng5 = barstate.isconfirmed and new5Bar
 
-// Optional 1m latch (study only — not cross-TF identical on 5m charts)
+// Daily STL pack → build confirmed Daily ITL (middle STL lower than neighbors)
+f_dStlPack() =>
+    bool isStl = low[1] < low[2] and low[1] < low[0]
+    [isStl, low[1], time[1]]
+[dIsStl, dStlPx, dStlT] = request.security(syminfo.tickerid, "D", f_dStlPack(), barmerge.gaps_off, barmerge.lookahead_off)
+bool newDStl = barstate.isconfirmed and dIsStl and not na(dStlT) and ta.change(dStlT) != 0
+
 bool on1m = timeframe.period == "1"
+bool on5m = timeframe.period == "5"
 [b1c, u1c, h1c, l1c, wsB1c, wsU1c] = f_pb1Pack(i_minWick1)
 bool b1 = on1m ? b1c : b1s
 bool u1 = on1m ? u1c : u1s
@@ -204,6 +207,14 @@ float l1 = on1m ? l1c : l1s
 float wsB1 = on1m ? wsB1c : wsB1s
 float wsU1 = on1m ? wsU1c : wsU1s
 bool trig1 = barstate.isconfirmed and (on1m or new1Bar)
+bool trig5 = barstate.isconfirmed and (on5m or new5Bar)
+// Soft 5m for arming; formal aliases for MARK eyes
+bool b5 = b5soft
+bool u5 = u5soft
+float h5 = h5s
+float l5 = l5s
+float wsB5 = wsB5s
+float wsU5 = wsU5s
 
 // ─── Plan math ───────────────────────────────────────────────────────────────
 f_plan(float wickStart, float ce, float extreme, bool isShort) =>
@@ -267,6 +278,13 @@ var int pbFibLoTime = na
 var int pbFibHiTime = na
 var bool pbReturned = false
 var string pbState = "—"
+// Daily ITL (ICT intermediate-term low on Daily)
+var array<float> dStlPxA = array.new_float()
+var array<int> dStlTA = array.new_int()
+var float dilPx = na
+var int dilTime = na
+var line dilLn = na
+var label dilLbl = na
 
 // KO-leave sleeve (left the 10:00 key open → RB@KO)
 var bool eArmed = false
@@ -524,13 +542,30 @@ if newCalDay
         box.delete(array.shift(pbMark5BoxA))
         label.delete(array.shift(pbMark5LblA))
 
-// ─── Path B (5m engine — identical leave/retest prices on 1m and 5m charts) ───
-// KO-leave / KO-retest default to formal 5m RB (local extreme = relative equal lows).
-// Optional 1m RB is study-only and will NOT match when the chart is 5m.
+// ─── Daily ITL (ICT: confirmed daily STL with higher STLs on both sides) ─────
+if newDStl and not na(dStlPx)
+    array.push(dStlPxA, dStlPx)
+    array.push(dStlTA, dStlT)
+    while array.size(dStlPxA) > 8
+        array.shift(dStlPxA)
+        array.shift(dStlTA)
+    int nStl = array.size(dStlPxA)
+    if nStl >= 3
+        float a = array.get(dStlPxA, nStl - 3)
+        float b = array.get(dStlPxA, nStl - 2)
+        float c = array.get(dStlPxA, nStl - 1)
+        if b < a and b < c
+            dilPx := b
+            dilTime := array.get(dStlTA, nStl - 2)
+
+// ─── Path B (chart-state restore — Dual7) ────────────────────────────────────
+// Leave: soft 5m RB@KO in leave window. Retest: 1m RB@KO after away→return
+// (Powell control) with fib-OTE and/or Daily ITL confluence.
 bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and (nyHhmm < i_winEnd or pbLeft or eArmed or oArmed)
 float pbOteLo = na
 float pbOteHi = na
 bool koInBand = false
+bool nearDil = false
 bool fibLegOk = false
 bool hasAway = false
 bool inLeaveWin = false
@@ -544,76 +579,73 @@ int retestDir = 0
 float retestWs = na
 float retestCe = na
 float retestEx = na
-string retestTf = "5RB"
+string retestTf = "1RB"
 
 if pbOn
-    // State machine ticks on completed 5m bars only → same on any chart TF
-    if eng5 and not na(h5e) and not na(l5e) and not na(c5e)
-        if na(pbHi) or h5e >= pbHi
-            pbHi := h5e
-            pbHiBar := bar_index
-        if na(pbLo) or l5e <= pbLo
-            pbLo := l5e
-            pbLoBar := bar_index
-        if h5e > ko1000
-            pbPierceAbove := true
-            pbManip := true
-        if l5e < ko1000
-            pbPierceBelow := true
-            pbManip := true
-        if pbManip and not pbLeft and canPlace
-            if pbPierceAbove and c5e < ko1000
-                pbLeft := true
-                pbDir := -1
-                pbLeaveBar := bar_index
-                pbLeaveTime := t5e
-                pbAway := 0.0
-                pbAwayPeakBar := na
-                pbAwayPeakTime := na
-                pbReturned := false
-                pbFibHi := pbHi
-                pbFibLo := pbLo
-                pbFibLoBar := pbLoBar
-                pbFibHiBar := pbHiBar
-                pbFibLoTime := t5e
-                pbFibHiTime := t5e
-            else if pbPierceBelow and c5e > ko1000
-                pbLeft := true
-                pbDir := 1
-                pbLeaveBar := bar_index
-                pbLeaveTime := t5e
-                pbAway := 0.0
-                pbAwayPeakBar := na
-                pbAwayPeakTime := na
-                pbReturned := false
-                pbFibHi := pbHi
-                pbFibLo := pbLo
-                pbFibLoBar := pbLoBar
-                pbFibHiBar := pbHiBar
-                pbFibLoTime := t5e
-                pbFibHiTime := t5e
-        if pbLeft
-            if pbDir == 1 and h5e >= pbFibHi
-                pbFibHi := h5e
-                pbFibHiBar := bar_index
-                pbFibHiTime := t5e
-            if pbDir == -1 and l5e <= pbFibLo
-                pbFibLo := l5e
-                pbFibLoBar := bar_index
-                pbFibLoTime := t5e
-            // Away measured on 5m bars after the leave 5m bar
-            if not na(pbLeaveTime) and t5e > pbLeaveTime
-                float awayNow = pbDir == 1 ? h5e - ko1000 : pbDir == -1 ? ko1000 - l5e : 0.0
-                if awayNow > pbAway
-                    pbAway := awayNow
-                    pbAwayPeakBar := bar_index
-                    pbAwayPeakTime := t5e
-                float retPad = i_pathBAlign
-                if pbAway >= i_pathBAwayPts and not na(pbAwayPeakTime) and t5e > pbAwayPeakTime
-                    if pbDir == 1 and l5e <= ko1000 + retPad
-                        pbReturned := true
-                    if pbDir == -1 and h5e >= ko1000 - retPad
-                        pbReturned := true
+    if na(pbHi) or high >= pbHi
+        pbHi := high
+        pbHiBar := bar_index
+    if na(pbLo) or low <= pbLo
+        pbLo := low
+        pbLoBar := bar_index
+    if high > ko1000
+        pbPierceAbove := true
+        pbManip := true
+    if low < ko1000
+        pbPierceBelow := true
+        pbManip := true
+    if pbManip and not pbLeft and barstate.isconfirmed and canPlace
+        if pbPierceAbove and close < ko1000
+            pbLeft := true
+            pbDir := -1
+            pbLeaveBar := bar_index
+            pbLeaveTime := time
+            pbAway := 0.0
+            pbAwayPeakBar := na
+            pbAwayPeakTime := na
+            pbReturned := false
+            pbFibHi := pbHi
+            pbFibLo := pbLo
+            pbFibLoBar := pbLoBar
+            pbFibHiBar := pbHiBar
+            pbFibLoTime := time
+            pbFibHiTime := time
+        else if pbPierceBelow and close > ko1000
+            pbLeft := true
+            pbDir := 1
+            pbLeaveBar := bar_index
+            pbLeaveTime := time
+            pbAway := 0.0
+            pbAwayPeakBar := na
+            pbAwayPeakTime := na
+            pbReturned := false
+            pbFibHi := pbHi
+            pbFibLo := pbLo
+            pbFibLoBar := pbLoBar
+            pbFibHiBar := pbHiBar
+            pbFibLoTime := time
+            pbFibHiTime := time
+    if pbLeft
+        if pbDir == 1 and high >= pbFibHi
+            pbFibHi := high
+            pbFibHiBar := bar_index
+            pbFibHiTime := time
+        if pbDir == -1 and low <= pbFibLo
+            pbFibLo := low
+            pbFibLoBar := bar_index
+            pbFibLoTime := time
+        if not na(pbLeaveBar) and bar_index > pbLeaveBar
+            float awayNow = pbDir == 1 ? high - ko1000 : pbDir == -1 ? ko1000 - low : 0.0
+            if awayNow > pbAway
+                pbAway := awayNow
+                pbAwayPeakBar := bar_index
+                pbAwayPeakTime := time
+            float retPad = i_pathBAlign
+            if pbAway >= i_pathBAwayPts and not na(pbAwayPeakTime) and time > pbAwayPeakTime
+                if pbDir == 1 and low <= ko1000 + retPad
+                    pbReturned := true
+                if pbDir == -1 and high >= ko1000 - retPad
+                    pbReturned := true
 
     float pbRange = not na(pbFibHi) and not na(pbFibLo) ? pbFibHi - pbFibLo : na
     fibLegOk := not na(pbRange) and pbRange >= i_pathBMinFib
@@ -627,81 +659,78 @@ if pbOn
             pbOteLo := pbFibHi - pbRange * 0.79
             pbOteHi := pbFibHi - pbRange * 0.62
         koInBand := not na(pbOteLo) and ko1000 >= pbOteLo - i_pathBAlign and ko1000 <= pbOteHi + i_pathBAlign
+    nearDil := not na(dilPx) and math.abs(ko1000 - dilPx) <= i_dilAlign
 
     bool nearKo5B = f_nearKo(h5, ko1000) or f_nearKo(wsB5, ko1000) or f_nearKoBand(h5, wsB5, ko1000)
     bool nearKo5U = f_nearKo(l5, ko1000) or f_nearKo(wsU5, ko1000) or f_nearKoBand(wsU5, l5, ko1000)
     bool nearKo1B = f_nearKo(h1, ko1000) or f_nearKo(wsB1, ko1000) or f_nearKoBand(h1, wsB1, ko1000)
     bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000) or f_nearKoBand(wsU1, l1, ko1000)
 
-    // 5m formal RB latches (only for sleeves pinned to 5m)
-    if pbLeft and eng5
-        if pbDir == -1 and b5 and nearKo5B
-            if leaveUse5
-                leaveDir := -1
-                leaveWs := wsB5
-                leaveEx := h5
-                leaveCe := (h5 + wsB5) * 0.5
-                leaveTf := "5RB"
-            if retestUse5
-                retestDir := -1
-                retestWs := wsB5
-                retestEx := h5
-                retestCe := (h5 + wsB5) * 0.5
-                retestTf := "5RB"
-        if pbDir == 1 and u5 and nearKo5U
-            if leaveUse5
+    // Soft RB latches @ KO
+    if pbLeft and barstate.isconfirmed
+        if pbDir == 1
+            if i_leavePrefer5 and trig5 and u5 and nearKo5U
                 leaveDir := 1
                 leaveWs := wsU5
                 leaveEx := l5
                 leaveCe := (l5 + wsU5) * 0.5
                 leaveTf := "5RB"
-            if retestUse5
-                retestDir := 1
-                retestWs := wsU5
-                retestEx := l5
-                retestCe := (l5 + wsU5) * 0.5
-                retestTf := "5RB"
-
-    // 1m latches (only for sleeves pinned to 1m — not cross-TF identical on 5m charts)
-    if pbLeft and trig1
-        if pbDir == -1 and b1 and nearKo1B
-            if not leaveUse5
-                leaveDir := -1
-                leaveWs := wsB1
-                leaveEx := h1
-                leaveCe := (h1 + wsB1) * 0.5
-                leaveTf := "1RB"
-            if not retestUse5
-                retestDir := -1
-                retestWs := wsB1
-                retestEx := h1
-                retestCe := (h1 + wsB1) * 0.5
-                retestTf := "1RB"
-        if pbDir == 1 and u1 and nearKo1U
-            if not leaveUse5
+            else if trig1 and u1 and nearKo1U
                 leaveDir := 1
                 leaveWs := wsU1
                 leaveEx := l1
                 leaveCe := (l1 + wsU1) * 0.5
                 leaveTf := "1RB"
-            if not retestUse5
+            if i_retestPrefer1 and trig1 and u1 and nearKo1U
                 retestDir := 1
                 retestWs := wsU1
                 retestEx := l1
                 retestCe := (l1 + wsU1) * 0.5
                 retestTf := "1RB"
+            else if not i_retestPrefer1 and trig5 and u5 and nearKo5U
+                retestDir := 1
+                retestWs := wsU5
+                retestEx := l5
+                retestCe := (l5 + wsU5) * 0.5
+                retestTf := "5RB"
+        if pbDir == -1
+            if i_leavePrefer5 and trig5 and b5 and nearKo5B
+                leaveDir := -1
+                leaveWs := wsB5
+                leaveEx := h5
+                leaveCe := (h5 + wsB5) * 0.5
+                leaveTf := "5RB"
+            else if trig1 and b1 and nearKo1B
+                leaveDir := -1
+                leaveWs := wsB1
+                leaveEx := h1
+                leaveCe := (h1 + wsB1) * 0.5
+                leaveTf := "1RB"
+            if i_retestPrefer1 and trig1 and b1 and nearKo1B
+                retestDir := -1
+                retestWs := wsB1
+                retestEx := h1
+                retestCe := (h1 + wsB1) * 0.5
+                retestTf := "1RB"
+            else if not i_retestPrefer1 and trig5 and b5 and nearKo5B
+                retestDir := -1
+                retestWs := wsB5
+                retestEx := h5
+                retestCe := (h5 + wsB5) * 0.5
+                retestTf := "5RB"
 
-    if i_pathBMark5 and pbLeft and eng5
-        bool mark5Bear = pbDir == -1 and b5 and nearKo5B
-        bool mark5Bull = pbDir == 1 and u5 and nearKo5U
+    // MARK formal 5m (local extreme) — eyes only
+    if i_pathBMark5 and pbLeft and trig5
+        bool mark5Bear = pbDir == -1 and b5form and (f_nearKo(h5f, ko1000) or f_nearKo(wsB5f, ko1000) or f_nearKoBand(h5f, wsB5f, ko1000))
+        bool mark5Bull = pbDir == 1 and u5form and (f_nearKo(l5f, ko1000) or f_nearKo(wsU5f, ko1000) or f_nearKoBand(wsU5f, l5f, ko1000))
         if mark5Bear or mark5Bull
-            float mTop = mark5Bear ? h5 : wsU5
-            float mBot = mark5Bear ? wsB5 : l5
-            if not na(mTop) and not na(mBot) and not na(t5e)
+            float mTop = mark5Bear ? h5f : wsU5f
+            float mBot = mark5Bear ? wsB5f : l5f
+            if not na(mTop) and not na(mBot) and not na(t5sec)
                 color mCol = mark5Bear ? c_bear : c_bull
-                int mRight = t5e + 30 * 60 * 1000
-                array.push(pbMark5BoxA, box.new(t5e, math.max(mTop, mBot), mRight, math.min(mTop, mBot), xloc = xloc.bar_time, border_color = mCol, bgcolor = color.new(mCol, 92), border_width = 2))
-                array.push(pbMark5LblA, label.new(t5e, math.max(mTop, mBot), "5RB @ KO · eyes", xloc = xloc.bar_time, style = label.style_label_down, color = #334155, textcolor = color.white, size = size.tiny))
+                int mRight = t5sec + 30 * 60 * 1000
+                array.push(pbMark5BoxA, box.new(t5sec, math.max(mTop, mBot), mRight, math.min(mTop, mBot), xloc = xloc.bar_time, border_color = mCol, bgcolor = color.new(mCol, 92), border_width = 2))
+                array.push(pbMark5LblA, label.new(t5sec, math.max(mTop, mBot), "5RB formal · eyes", xloc = xloc.bar_time, style = label.style_label_down, color = #334155, textcolor = color.white, size = size.tiny))
                 while array.size(pbMark5BoxA) > 4
                     box.delete(array.shift(pbMark5BoxA))
                     label.delete(array.shift(pbMark5LblA))
@@ -709,10 +738,12 @@ if pbOn
     bool leaveBiasOk = (leaveDir == -1 and biasOkShort) or (leaveDir == 1 and biasOkLong)
     bool retestBiasOk = (retestDir == -1 and biasOkShort) or (retestDir == 1 and biasOkLong)
     bool singleSlotLock = i_oneTradeDay and i_pathBSleeve != "KO-leave + KO-retest" and (eArmed or oArmed)
-    bool leaveTick = leaveUse5 ? eng5 : trig1
-    bool retestTick = retestUse5 ? eng5 : trig1
+    bool leaveTick = leaveTf == "5RB" ? trig5 : trig1
+    bool retestTick = retestTf == "1RB" ? trig1 : trig5
+    bool retestConfl = (not i_pathBReqOte or koInBand) or (i_retestNearDil and nearDil)
+    bool rbNearDil = not na(dilPx) and not na(retestEx) and math.abs(retestEx - dilPx) <= i_dilAlign
 
-    // KO-leave — first pinned-TF RB@KO in leave window (before completed return)
+    // KO-leave — soft RB@KO soon after leave (takeable; not "skip")
     if wantLeave and not eArmed and canPlace and not singleSlotLock and leaveBiasOk and leaveDir != 0 and leaveTick and inLeaveWin and not pbReturned
         [entryPx, stopPx] = f_plan(leaveWs, leaveCe, leaveEx, leaveDir == -1)
         if na(entryPx)
@@ -722,7 +753,7 @@ if pbOn
             eArmed := true
             eDir := leaveDir
             eBar := bar_index
-            eTime := leaveUse5 ? t5e : t1sec
+            eTime := time
             eWs := leaveWs
             eCe := leaveCe
             eEx := leaveEx
@@ -749,19 +780,20 @@ if pbOn
             manualReady := true
             manualState := f_shadowArmLabel()
 
-    // KO-retest — after leave-win + away peak + return; pinned TF formal RB (default 5m)
-    bool retestReady = hasAway and pbReturned and not inLeaveWin and fibLegOk and (not i_pathBReqOte or koInBand) and not na(pbAwayPeakTime) and time > pbAwayPeakTime + 10 * 60 * 1000
+    // KO-retest — away→return→RB@KO; fib OTE and/or Daily ITL (Powell; any clock)
+    bool retestReady = hasAway and pbReturned and not inLeaveWin and fibLegOk and retestConfl and not na(pbAwayPeakBar) and bar_index > pbAwayPeakBar
     if wantRetest and not oArmed and canPlace and not singleSlotLock and retestBiasOk and retestDir != 0 and retestTick and retestReady
         [entryPx2, stopPx2] = f_plan(retestWs, retestCe, retestEx, retestDir == -1)
         float riskPts1 = na(entryPx2) ? na : math.abs(stopPx2 - entryPx2)
         bool retestSizeOk = not na(riskPts1) and riskPts1 >= i_retestMinRisk
+        string dilTag = rbNearDil or nearDil ? " · DIL" : ""
         if na(entryPx2) or not retestSizeOk
             pbStopFail := true
         else
             oArmed := true
             oDir := retestDir
             oBar := bar_index
-            oTime := retestUse5 ? t5e : t1sec
+            oTime := time
             oEndBar := na
             oEndTime := na
             oWs := retestWs
@@ -770,7 +802,7 @@ if pbOn
             oEntry := entryPx2
             oStop := stopPx2
             oTp := retestDir == 1 ? entryPx2 + i_rr * riskPts1 : entryPx2 - i_rr * riskPts1
-            oTag := "KO-retest · PathB · " + retestTf
+            oTag := "KO-retest · PathB · " + retestTf + dilTag
             oFill := 1
             oKpi := "LIMIT live — waiting tap"
             suDir := oDir
@@ -798,8 +830,9 @@ else if not pbManip
 else if not pbLeft
     pbState := canPlace ? "B wait leave" : "B no leave (arm window ended)"
 else
-    string ePart = eArmed ? "KO-leave✓" : wantLeave ? (pbReturned or not inLeaveWin ? "KO-leave missed" : "KO-leave wait " + (leaveUse5 ? "5RB" : "1RB")) : ""
-    string oPart = oArmed ? "KO-retest✓" : wantRetest ? (inLeaveWin ? "retest wait leave-win" : not hasAway ? "retest wait away" : na(pbAwayPeakTime) ? "retest wait peak" : not pbReturned ? "retest wait return" : i_pathBReqOte and not koInBand ? "retest wait KO-in-OTE" : not fibLegOk ? "retest wait fib" : "retest wait " + (retestUse5 ? "5RB@KO" : "1RB@KO")) : ""
+    string ePart = eArmed ? "KO-leave✓" : wantLeave ? (pbReturned or not inLeaveWin ? "KO-leave missed" : "KO-leave wait soft RB") : ""
+    string oGate = i_pathBReqOte and not koInBand and not (i_retestNearDil and nearDil) ? "retest wait OTE/DIL" : not fibLegOk ? "retest wait fib" : "retest wait RB@KO"
+    string oPart = oArmed ? "KO-retest✓" : wantRetest ? (inLeaveWin ? "retest wait leave-win" : not hasAway ? "retest wait away" : not pbReturned ? "retest wait return" : oGate) : ""
     if eArmed or oArmed
         pbState := ePart + (eArmed and wantRetest ? " · " : "") + oPart
         if eArmed
@@ -810,6 +843,8 @@ else
         pbState := "B stop size fail"
     else
         pbState := ePart + (str.length(ePart) > 0 and str.length(oPart) > 0 ? " · " : "") + oPart
+        if not na(dilPx)
+            pbState := pbState + " · DIL " + str.tostring(dilPx, "#.#")
 
 if i_pathBShowState
     if na(pbStateLbl)
@@ -1161,13 +1196,28 @@ plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 3, style = pl
 plotshape(eArmed and not na(eTime) and time == eTime, title = "KO-leave ARM", style = shape.labelup, location = location.belowbar, color = #b45309, textcolor = color.white, text = "KO-leave", size = size.tiny)
 plotshape(oArmed and not na(oTime) and time == oTime, title = "KO-retest ARM", style = shape.labelup, location = location.belowbar, color = #0f172a, textcolor = color.white, text = "KO-retest", size = size.tiny)
 
-// Permanent version stamp — if you don't see Dual6, the new paste is not on the chart
+// Daily ITL line
+if i_showDil and not na(dilPx)
+    if na(dilLn)
+        dilLn := line.new(bar_index - 20, dilPx, bar_index + 8, dilPx, color = #a78bfa, width = 2, style = line.style_dashed)
+        dilLbl := label.new(bar_index + 8, dilPx, "Daily ITL", style = label.style_label_left, color = #5b21b6, textcolor = color.white, size = size.small)
+    else
+        line.set_xy1(dilLn, bar_index - 40, dilPx)
+        line.set_xy2(dilLn, bar_index + 8, dilPx)
+        label.set_xy(dilLbl, bar_index + 8, dilPx)
+else if not na(dilLn)
+    line.delete(dilLn)
+    label.delete(dilLbl)
+    dilLn := na
+    dilLbl := na
+
+// Permanent version stamp — if you don't see Dual7, the new paste is not on the chart
 var label verStamp = na
 if barstate.islast
     if na(verStamp)
-        verStamp := label.new(bar_index, high, "MS Dual6 · 5m-pinned · identical 1m↔5m", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
+        verStamp := label.new(bar_index, high, "MS Dual7 · soft leave + 1m retest + Daily ITL", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
     else
         label.set_xy(verStamp, bar_index, high)
-        label.set_text(verStamp, "MS Dual6 · 5m-pinned · identical 1m↔5m")
+        label.set_text(verStamp, "MS Dual7 · soft leave + 1m retest + Daily ITL")
 
 alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nKO-leave and/or KO-retest plan on chart")
