@@ -11,7 +11,7 @@
 //       (18:00 wipe made status say "B window closed" and erased ENTRY after the cash session).
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual3",
+     shorttitle              = "MS Dual4",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -43,11 +43,13 @@ i_pathB = input.bool(true, "Enable Path B", group = grpPb)
 i_pathBSleeve = input.string("Leave + Retest", "Which setups to show", options = ["Leave + Retest", "Leave only", "Retest only"], group = grpPb, tooltip = "Leave + Retest = two independent plans when both print. Retest is condition-based (away→return→RB), not a fixed 11:15 time.")
 i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
 i_leaveWinMin = input.int(45, "Leave sleeve window (min after leave)", minval = 10, maxval = 120, group = grpPb, tooltip = "First RB@KO in this window (and before a full return) = LEAVE sleeve.")
-i_pathBMinFib = input.float(25.0, "Retest: min fib leg (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "Soft quality gate for RETEST tag. Lower = more days qualify.")
-i_pathBAwayPts = input.float(15.0, "Retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "After the leave bar, price must run this far from KO, then come back, before RETEST can arm.")
+i_pathBMinFib = input.float(40.0, "Retest: min fib leg (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "RETEST needs a real leave leg (Powell). LEAVE sleeve ignores this.")
+i_pathBAwayPts = input.float(25.0, "Retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "After leave bar, price must run this far, then pull back to KO, before RETEST.")
+i_pathBReqOte = input.bool(true, "Retest: require KO in fib OTE", group = grpPb, tooltip = "ON = Powell-quality retest (KO in 0.62–0.79). Stops mid-rally junk.")
+i_retestMinRisk = input.float(10.0, "Retest: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb, tooltip = "Rejects tiny mid-leg RBs (the bad ~5pt 10:45 arm).")
 i_pathBUse1 = input.bool(true, "ARM on 1m RB", group = grpPb)
 i_pathBMark5 = input.bool(true, "MARK 5m RBs near KO (eyes)", group = grpPb)
-i_pathBUse5 = input.bool(true, "ARM on 5m RB (needed on 5m charts)", group = grpPb, tooltip = "ON restores setups on 5m charts. 1m still preferred when it prints. Turn OFF only if 5m junk arms bother you.")
+i_pathBUse5 = input.bool(true, "LEAVE may ARM on 5m RB", group = grpPb, tooltip = "LEAVE can use 5m. RETEST prefers 1m (Powell); 5m retest only if stop ≥ min risk.")
 i_pathBUse15 = input.bool(false, "ARM on 15m RB (off)", group = grpPb)
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_minWick5 = input.float(6.0, "Min 5m RB wick (pts)", minval = 2.0, step = 0.5, group = grpPb)
@@ -255,13 +257,15 @@ var int pbFibHiBar = na
 var float pbAway = 0.0
 var int pbLeaveBar = na
 var int pbLeaveTime = na
+var int pbAwayPeakBar = na
 var bool pbReturned = false
 var string pbState = "—"
 
-// Early sleeve (~10:00 leave RB)
+// LEAVE sleeve
 var bool eArmed = false
 var int eDir = 0
 var int eBar = na
+var int eEndBar = na
 var float eEntry = na
 var float eStop = na
 var float eTp = na
@@ -279,16 +283,18 @@ var line eLnCe = na
 var label eLbE = na
 var label eLbS = na
 var label eLbT = na
+var label eLbCe = na
 var box eBxRisk = na
 var box eBxRew = na
 var int ePlanLeft = na
 var box eBxRb = na
 var label eLblRb = na
 
-// RETEST / Powell sleeve (away → return → RB@KO — any time)
+// RETEST sleeve (away → peak → return → RB@KO)
 var bool oArmed = false
 var int oDir = 0
 var int oBar = na
+var int oEndBar = na
 var float oEntry = na
 var float oStop = na
 var float oTp = na
@@ -306,6 +312,7 @@ var line oLnCe = na
 var label oLbE = na
 var label oLbS = na
 var label oLbT = na
+var label oLbCe = na
 var box oBxRisk = na
 var box oBxRew = na
 var int oPlanLeft = na
@@ -396,11 +403,13 @@ if newCalDay
     pbAway := 0.0
     pbLeaveBar := na
     pbLeaveTime := na
+    pbAwayPeakBar := na
     pbReturned := false
     pbState := "—"
     eArmed := false
     eDir := 0
     eBar := na
+    eEndBar := na
     eEntry := na
     eStop := na
     eTp := na
@@ -414,6 +423,7 @@ if newCalDay
     oArmed := false
     oDir := 0
     oBar := na
+    oEndBar := na
     oEntry := na
     oStop := na
     oTp := na
@@ -426,6 +436,12 @@ if newCalDay
     oPlanLeft := na
     f_clearPlan(eLnE, eLnS, eLnT, eLnCe, eLbE, eLbS, eLbT, eBxRisk, eBxRew, eFillLbl, eBxRb, eLblRb)
     f_clearPlan(oLnE, oLnS, oLnT, oLnCe, oLbE, oLbS, oLbT, oBxRisk, oBxRew, oFillLbl, oBxRb, oLblRb)
+    if not na(eLbCe)
+        label.delete(eLbCe)
+    if not na(oLbCe)
+        label.delete(oLbCe)
+    eLbCe := na
+    oLbCe := na
     eLnE := na
     eLnS := na
     eLnT := na
@@ -528,6 +544,7 @@ if pbOn
             pbLeaveBar := bar_index
             pbLeaveTime := time
             pbAway := 0.0
+            pbAwayPeakBar := na
             pbReturned := false
             pbFibHi := pbHi
             pbFibLo := pbLo
@@ -539,6 +556,7 @@ if pbOn
             pbLeaveBar := bar_index
             pbLeaveTime := time
             pbAway := 0.0
+            pbAwayPeakBar := na
             pbReturned := false
             pbFibHi := pbHi
             pbFibLo := pbLo
@@ -551,15 +569,15 @@ if pbOn
         if pbDir == -1 and low <= pbFibLo
             pbFibLo := low
             pbFibLoBar := bar_index
-        // Do not count leave candle toward away (stops leave RB being mis-tagged RETEST)
+        // Do not count leave candle toward away
         if not na(pbLeaveBar) and bar_index > pbLeaveBar
-            if pbDir == 1
-                pbAway := math.max(pbAway, high - ko1000)
-            else if pbDir == -1
-                pbAway := math.max(pbAway, ko1000 - low)
-            // Return = traded back into KO zone after the run (wider than RB proximity)
-            float retPad = i_pathBAlign * 1.5
-            if pbAway >= i_pathBAwayPts
+            float awayNow = pbDir == 1 ? high - ko1000 : pbDir == -1 ? ko1000 - low : 0.0
+            if awayNow > pbAway
+                pbAway := awayNow
+                pbAwayPeakBar := bar_index
+            // Return only after a real away peak, then trade back into KO zone
+            float retPad = i_pathBAlign
+            if pbAway >= i_pathBAwayPts and not na(pbAwayPeakBar) and bar_index > pbAwayPeakBar
                 if pbDir == 1 and low <= ko1000 + retPad
                     pbReturned := true
                 if pbDir == -1 and high >= ko1000 - retPad
@@ -663,6 +681,7 @@ if pbOn
             eTp := latchDir == 1 ? entryPx + i_rr * riskPts0 : entryPx - i_rr * riskPts0
             eTag := "LEAVE · PathB · " + latchTf
             eFill := 1
+            eEndBar := na
             eKpi := "LIMIT live — waiting tap"
             suDir := eDir
             suBar := eBar
@@ -679,24 +698,29 @@ if pbOn
             manualReady := true
             manualState := f_shadowArmLabel()
 
-    // RETEST — away after leave bar, return to KO, RB@KO (whenever that is — not a fixed clock)
-    bool retestReady = hasAway and pbReturned and not na(pbLeaveBar) and bar_index > pbLeaveBar
-    if wantRetest and not oArmed and canPlace and not singleSlotLock and biasOk and latchDir != 0 and retestReady and barstate.isconfirmed
+    // RETEST — after leave window, after away peak, return to KO, quality RB (Powell; any clock)
+    // Rejects the mid-rally ~10:45 junk that stole the real pullback.
+    bool retestTfOk = latchTf == "1RB" or latchTf == "5RB"
+    bool retestReady = hasAway and pbReturned and not inLeaveWin and fibLegOk and (not i_pathBReqOte or koInBand) and not na(pbAwayPeakBar) and bar_index > pbAwayPeakBar
+    if wantRetest and not oArmed and canPlace and not singleSlotLock and biasOk and latchDir != 0 and retestTfOk and retestReady and barstate.isconfirmed
         [entryPx2, stopPx2] = f_plan(latchWs, latchCe, latchEx, latchDir == -1)
-        if na(entryPx2)
+        float riskPts1 = na(entryPx2) ? na : math.abs(stopPx2 - entryPx2)
+        // RETEST wants 1m; allow 5m only if stop is large enough (filters tiny 5RB junk)
+        bool retestSizeOk = not na(riskPts1) and riskPts1 >= i_retestMinRisk and (latchTf == "1RB" or riskPts1 >= i_retestMinRisk * 1.2)
+        if na(entryPx2) or not retestSizeOk
             pbStopFail := true
         else
-            float riskPts1 = math.abs(stopPx2 - entryPx2)
             oArmed := true
             oDir := latchDir
             oBar := bar_index
+            oEndBar := na
             oWs := latchWs
             oCe := latchCe
             oEx := latchEx
             oEntry := entryPx2
             oStop := stopPx2
             oTp := latchDir == 1 ? entryPx2 + i_rr * riskPts1 : entryPx2 - i_rr * riskPts1
-            oTag := (fibLegOk and koInBand ? "RETEST · PathB · " : "RETEST~ · PathB · ") + latchTf
+            oTag := "RETEST · PathB · " + latchTf
             oFill := 1
             oKpi := "LIMIT live — waiting tap"
             suDir := oDir
@@ -725,7 +749,7 @@ else if not pbLeft
     pbState := canPlace ? "B wait leave" : "B no leave (arm window ended)"
 else
     string ePart = eArmed ? "LEAVE✓" : wantLeave ? (pbReturned or not inLeaveWin ? "LEAVE missed" : "LEAVE wait RB") : ""
-    string oPart = oArmed ? "RETEST✓" : wantRetest ? (not hasAway ? "RETEST wait away" : not pbReturned ? "RETEST wait return" : "RETEST wait RB@KO") : ""
+    string oPart = oArmed ? "RETEST✓" : wantRetest ? (inLeaveWin ? "RETEST wait leave-win" : not hasAway ? "RETEST wait away" : na(pbAwayPeakBar) ? "RETEST wait peak" : not pbReturned ? "RETEST wait return" : i_pathBReqOte and not koInBand ? "RETEST wait KO-in-OTE" : not fibLegOk ? "RETEST wait fib" : "RETEST wait RB@KO") : ""
     if eArmed or oArmed
         pbState := ePart + (eArmed and wantRetest ? " · " : "") + oPart
         if eArmed
@@ -762,14 +786,21 @@ f_updFill(int st, int armBar, int dir, float entry, float stop, float tp) =>
     string kpi = out == 1 ? "LIMIT live — waiting tap" : out == 2 ? (nyHhmm >= i_flatTime ? "FILLED · open at flat" : "FILLED · in trade") : out == 3 ? "WIN · TP" : out == 4 ? "LOSS · STOP" : out == 5 ? "NO FILL by flat" : "—"
     [out, kpi]
 
-if i_showFillKpi and eArmed and barstate.isconfirmed
+// Always simulate fills so plan boxes can freeze at TP/STOP (KPI label optional)
+if eArmed and barstate.isconfirmed
+    int ePrev = eFill
     [eFillTmp, eKpiTmp] = f_updFill(eFill, eBar, eDir, eEntry, eStop, eTp)
     eFill := eFillTmp
     eKpi := eKpiTmp
-if i_showFillKpi and oArmed and barstate.isconfirmed
+    if ePrev < 3 and (eFill == 3 or eFill == 4 or eFill == 5)
+        eEndBar := bar_index
+if oArmed and barstate.isconfirmed
+    int oPrev = oFill
     [oFillTmp, oKpiTmp] = f_updFill(oFill, oBar, oDir, oEntry, oStop, oTp)
     oFill := oFillTmp
     oKpi := oKpiTmp
+    if oPrev < 3 and (oFill == 3 or oFill == 4 or oFill == 5)
+        oEndBar := bar_index
 
 if eArmed or oArmed
     manualReady := true
@@ -838,11 +869,12 @@ if pbFibReady
         label.set_xy(pbLbl1, x1, pbFibHi)
         label.set_xy(pbLbl, xR, midY)
 
-// ─── Dual trade plans (Early amber · OTE white) — inline so drawings stick ────
+// ─── Dual trade plans — freeze at TP/STOP/flat so boxes don't overlap forever ─
 bool isShadow = not dayAllowed
 
 if i_showPend and eArmed and not na(eEntry) and not na(eStop) and not na(eTp)
-    int eXR = math.max(bar_index + 4, eBar + 16)
+    bool eDone = eFill == 3 or eFill == 4 or eFill == 5
+    int eXR = eDone and not na(eEndBar) ? math.max(eEndBar, eBar + 1) : math.max(bar_index + 2, eBar + 8)
     color eECol = isShadow ? #fb923c : #fbbf24
     color eSCol = isShadow ? #fb923c : c_stop
     color eTCol = isShadow ? #94a3b8 : c_tp
@@ -888,19 +920,23 @@ if i_showPend and eArmed and not na(eEntry) and not na(eStop) and not na(eTp)
             label.set_text(eFillLbl, eKpi)
             label.set_textcolor(eFillLbl, eFCol)
     if i_showSig and not na(eWs) and not na(eEx)
-        int eRbR = math.max(bar_index, eBar + 4)
+        int eRbR = eDone and not na(eEndBar) ? math.max(eEndBar, eBar + 1) : math.max(bar_index, eBar + 4)
         if na(eBxRb)
-            eBxRb := box.new(eBar, math.max(eEx, eWs), eBar + i_rbExtend, math.min(eEx, eWs), border_color = #f59e0b, bgcolor = color.new(#f59e0b, 92), border_width = 2)
+            eBxRb := box.new(eBar, math.max(eEx, eWs), eRbR, math.min(eEx, eWs), border_color = #f59e0b, bgcolor = color.new(#f59e0b, 92), border_width = 2)
             eLblRb := label.new(eBar, math.max(eEx, eWs), eTag, style = label.style_label_down, color = #78350f, textcolor = #fde68a, size = size.tiny)
             if not na(eCe)
-                eLnCe := line.new(eBar, eCe, eBar + i_rbExtend, eCe, color = c_ce, width = 1, style = line.style_dotted)
+                eLnCe := line.new(eBar, eCe, eRbR, eCe, color = c_ce, width = 1, style = line.style_dotted)
+                eLbCe := label.new(eBar + 1, eCe, "CE", style = label.style_label_left, color = color.new(#0f172a, 30), textcolor = c_ce, size = size.tiny)
         else
             box.set_right(eBxRb, eRbR)
             if not na(eLnCe)
                 line.set_x2(eLnCe, eRbR)
+            if not na(eLbCe)
+                label.set_xy(eLbCe, eBar + 1, eCe)
 
 if i_showPend and oArmed and not na(oEntry) and not na(oStop) and not na(oTp)
-    int oXR = math.max(bar_index + 4, oBar + 16) + 8
+    bool oDone = oFill == 3 or oFill == 4 or oFill == 5
+    int oXR = oDone and not na(oEndBar) ? math.max(oEndBar, oBar + 1) : math.max(bar_index + 2, oBar + 8)
     color oECol = isShadow ? #fb923c : c_limit
     color oSCol = isShadow ? #fb923c : c_stop
     color oTCol = isShadow ? #94a3b8 : c_tp
@@ -946,16 +982,19 @@ if i_showPend and oArmed and not na(oEntry) and not na(oStop) and not na(oTp)
             label.set_text(oFillLbl, oKpi)
             label.set_textcolor(oFillLbl, oFCol)
     if i_showSig and not na(oWs) and not na(oEx)
-        int oRbR = math.max(bar_index, oBar + 4)
+        int oRbR = oDone and not na(oEndBar) ? math.max(oEndBar, oBar + 1) : math.max(bar_index, oBar + 4)
         if na(oBxRb)
-            oBxRb := box.new(oBar, math.max(oEx, oWs), oBar + i_rbExtend, math.min(oEx, oWs), border_color = c_bull, bgcolor = color.new(c_bull, 92), border_width = 2)
+            oBxRb := box.new(oBar, math.max(oEx, oWs), oRbR, math.min(oEx, oWs), border_color = c_bull, bgcolor = color.new(c_bull, 92), border_width = 2)
             oLblRb := label.new(oBar, math.max(oEx, oWs), oTag, style = label.style_label_down, color = #0f172a, textcolor = c_bull, size = size.tiny)
             if not na(oCe)
-                oLnCe := line.new(oBar, oCe, oBar + i_rbExtend, oCe, color = c_ce, width = 1, style = line.style_dotted)
+                oLnCe := line.new(oBar, oCe, oRbR, oCe, color = c_ce, width = 1, style = line.style_dotted)
+                oLbCe := label.new(oBar + 1, oCe, "CE", style = label.style_label_left, color = color.new(#0f172a, 30), textcolor = c_ce, size = size.tiny)
         else
             box.set_right(oBxRb, oRbR)
             if not na(oLnCe)
                 line.set_x2(oLnCe, oRbR)
+            if not na(oLbCe)
+                label.set_xy(oLbCe, oBar + 1, oCe)
 
 // ─── PDH / PDL ───────────────────────────────────────────────────────────────
 float usePdh = not na(pdhLvl) ? pdhLvl : prevDayHigh
