@@ -76,13 +76,23 @@ Two bugs:
 
 - Dual14–19 churn broke the chart. **Aborted.**
 
-## Dual20 — exact Dual13 restore (2026-07-17)
+## Dual20 failed — Dual13 restore did not match chart memory (2026-07-17 night)
 
-- Restored byte-for-byte from git `2bd3b85` (`MS Dual13`) — last build that armed **leave + Powell** on Jul 16.
-- Stamp: **`MS Dual20 · Dual13 restore`** (logic = Dual13; stamp only renamed so you can verify the paste).
-- Archives: Dual17 spray · Dual19 broken under `pine/_archive_*`.
-- **Do not edit** until Dual20 acceptance passes on Jul 16 MNQ 5m.
-- **Acceptance:** `5m RB·DayIL untapped` box · `LONG · leave` · `LONG · Powell · untapped DayIL`.
+User confirmed Dual20/Dual13: **no RB boxes, no entries**. Stop for the night.
+
+## Tomorrow start — hybrid (user direction 2026-07-17 ~00:53)
+
+**Do NOT wholesale restore Dual12/13.** User likes newer drawings/indicators; old full-file restores strip those.
+
+| Keep from current/newer chart | Copy only from Dual12 entry engine (`c1e8997`) |
+|---|---|
+| Bounce-locked Day IL purple plot + tag | Soft 5m/1m RB pack used for leave + pool |
+| Fib LO/HI anchors | Pre-10 untapped pool @ Day IL (store / free / kill) |
+| Lean plan boxes ENTRY/STOP/TP + fill KPI freeze | KO-leave arm path (RB@KO in leave window) |
+| Status tag · PDH/PDL · NWOG · 10:00 wash | Powell latch on first return → wick-start entry |
+| No Dual17 RB museum spray | |
+
+**Method:** base = best current visuals file → replace only leave/pool/Powell arming blocks from Dual12. One stamp. Accept on Jul 16 MNQ 5m before any geometry tweak.
 
 ## Links
 
