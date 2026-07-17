@@ -134,7 +134,8 @@ if isFri
 bool nwogSunOpenBar = isSun and nyHhmm >= 1800 and nyHhmm[1] < 1800
 bool nwogMonFallback = isMon and nyHhmm >= 930 and nyHhmm[1] < 930
 
-// ─── RB packs (1 / 5 / 15) ───────────────────────────────────────────────────
+// ─── RB packs ────────────────────────────────────────────────────────────────
+// Formal pack (local extreme) — 5m/15m marks
 f_htfPack(float minW) =>
     float o1 = open[1]
     float h1 = high[1]
@@ -148,7 +149,20 @@ f_htfPack(float minW) =>
     bool bull = locL and lw >= minW and (not i_confClose or c1 > o1)
     [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1)]
 
-[b1, u1, h1, l1, wsB1, wsU1] = request.security(syminfo.tickerid, "1", f_htfPack(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
+// Path B 1m arm pack — wick rejection only (NO local-extreme).
+// KO retests often are not the 12-bar low/high; requiring locL/locH killed the 11:15 entry.
+f_pb1Pack(float minW) =>
+    float o1 = open[1]
+    float h1 = high[1]
+    float l1 = low[1]
+    float c1 = close[1]
+    float uw = h1 - math.max(o1, c1)
+    float lw = math.min(o1, c1) - l1
+    bool bear = uw >= minW and (not i_confClose or c1 < o1)
+    bool bull = lw >= minW and (not i_confClose or c1 > o1)
+    [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1)]
+
+[b1s, u1s, h1s, l1s, wsB1s, wsU1s] = request.security(syminfo.tickerid, "1", f_pb1Pack(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
 [b5, u5, h5, l5, wsB5, wsU5] = request.security(syminfo.tickerid, "5", f_htfPack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
 [b15, u15, h15, l15, wsB15, wsU15] = request.security(syminfo.tickerid, "15", f_htfPack(i_minWick15), barmerge.gaps_off, barmerge.lookahead_off)
 int t1sec = request.security(syminfo.tickerid, "1", time, barmerge.gaps_off, barmerge.lookahead_off)
@@ -158,13 +172,27 @@ bool new1Bar = ta.change(t1sec) != 0
 bool new5Bar = ta.change(t5sec) != 0
 bool new15Bar = ta.change(t15sec) != 0
 
+// On a 1m chart use chart bars directly (more reliable than security→same TF)
+bool on1m = timeframe.period == "1"
+[b1c, u1c, h1c, l1c, wsB1c, wsU1c] = f_pb1Pack(i_minWick1)
+bool b1 = on1m ? b1c : b1s
+bool u1 = on1m ? u1c : u1s
+float h1 = on1m ? h1c : h1s
+float l1 = on1m ? l1c : l1s
+float wsB1 = on1m ? wsB1c : wsB1s
+float wsU1 = on1m ? wsU1c : wsU1s
+
 // ─── Plan math ───────────────────────────────────────────────────────────────
 f_plan(float wickStart, float ce, float extreme, bool isShort) =>
     float stopPx = isShort ? extreme + i_stopBufPts : extreme - i_stopBufPts
     float riskWs = math.abs(stopPx - wickStart)
     float riskCe = math.abs(stopPx - ce)
+    // Prefer wick-start; fall back to CE; last resort CE with stop capped at max
     float entryPx = riskWs >= i_minStopPts and riskWs <= i_maxStopPts ? wickStart : riskCe >= i_minStopPts and riskCe <= i_maxStopPts ? ce : na
     float stopOut = na(entryPx) ? na : stopPx
+    if na(entryPx) and riskCe > i_maxStopPts and riskCe > 0
+        entryPx := ce
+        stopOut := isShort ? ce + i_maxStopPts : ce - i_maxStopPts
     [entryPx, stopOut]
 
 f_shadowArmLabel() =>
@@ -430,8 +458,7 @@ if pbOn
     bool nearKo5U = f_nearKo(l5, ko1000) or f_nearKo(wsU5, ko1000) or f_nearKoBand(wsU5, l5, ko1000)
     bool nearKo1B = f_nearKo(h1, ko1000) or f_nearKo(wsB1, ko1000) or f_nearKoBand(h1, wsB1, ko1000)
     bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000) or f_nearKoBand(wsU1, l1, ko1000)
-    // On a 1m chart, every confirmed bar is a new 1m bar (security clock can miss)
-    bool trig1 = barstate.isconfirmed and (timeframe.period == "1" or new1Bar)
+    bool trig1 = barstate.isconfirmed and (on1m or new1Bar)
     bool trig5 = barstate.isconfirmed and (timeframe.period == "5" or new5Bar)
     bool trig15 = barstate.isconfirmed and (timeframe.period == "15" or new15Bar)
 
@@ -679,7 +706,7 @@ if i_showSig and suDir != 0 and not na(suBar) and not na(suExtreme) and not na(s
         box.set_right(bxRb, math.max(bar_index, suBar + 4))
         line.set_x2(lnRbCe, math.max(bar_index, suBar + 4))
 
-// ─── Trade plan ──────────────────────────────────────────────────────────────
+// ─── Trade plan (+ R:R / risk KPIs on labels) ────────────────────────────────
 bool planLive = i_showPend and suDir != 0 and not na(suEntry) and not na(pendStop) and not na(pendTp)
 bool isShadow = not dayAllowed
 if planLive
@@ -687,7 +714,14 @@ if planLive
     color eCol = isShadow ? #fb923c : c_limit
     color sCol = isShadow ? #fb923c : c_stop
     color tCol = isShadow ? #94a3b8 : c_tp
-    string eTxt = "ENTRY · " + suSweepTag
+    float riskPts = math.abs(suEntry - pendStop)
+    float rewardPts = math.abs(pendTp - suEntry)
+    float rrLive = riskPts > 0 ? rewardPts / riskPts : 0.0
+    string dirTxt = suDir == 1 ? "LONG" : "SHORT"
+    string shad = isShadow ? " · SHADOW" : ""
+    string eTxt = dirTxt + " · " + suSweepTag + shad + "\n1:" + str.tostring(rrLive, "#.#") + "  ·  risk " + str.tostring(riskPts, "#.#") + " pt"
+    string sTxt = "STOP  ·  −" + str.tostring(riskPts, "#.#") + " pt"
+    string tTxt = "TP  ·  +" + str.tostring(rewardPts, "#.#") + " pt  ·  1:" + str.tostring(rrLive, "#.#")
     if na(planLeft) or planLeft != suBar
         planLeft := suBar
         if not na(planLnE)
@@ -703,8 +737,8 @@ if planLive
         planLnS := line.new(suBar, pendStop, xR, pendStop, color = sCol, width = 2)
         planLnT := line.new(suBar, pendTp, xR, pendTp, color = tCol, width = 2)
         planLbE := label.new(xR, suEntry, eTxt, style = label.style_label_left, color = #0f172a, textcolor = eCol, size = size.small)
-        planLbS := label.new(xR, pendStop, "STOP", style = label.style_label_left, color = #0f172a, textcolor = sCol, size = size.small)
-        planLbT := label.new(xR, pendTp, "TP", style = label.style_label_left, color = #0f172a, textcolor = tCol, size = size.small)
+        planLbS := label.new(xR, pendStop, sTxt, style = label.style_label_left, color = #0f172a, textcolor = sCol, size = size.small)
+        planLbT := label.new(xR, pendTp, tTxt, style = label.style_label_left, color = #0f172a, textcolor = tCol, size = size.small)
         planBxRisk := box.new(suBar, math.max(suEntry, pendStop), xR, math.min(suEntry, pendStop), border_color = color.new(sCol, 70), bgcolor = color.new(sCol, 92), border_width = 1)
         planBxRew := box.new(suBar, math.max(suEntry, pendTp), xR, math.min(suEntry, pendTp), border_color = color.new(tCol, 70), bgcolor = color.new(tCol, 94), border_width = 1)
     else
@@ -715,6 +749,8 @@ if planLive
         label.set_xy(planLbS, xR, pendStop)
         label.set_xy(planLbT, xR, pendTp)
         label.set_text(planLbE, eTxt)
+        label.set_text(planLbS, sTxt)
+        label.set_text(planLbT, tTxt)
         box.set_right(planBxRisk, xR)
         box.set_right(planBxRew, xR)
 
