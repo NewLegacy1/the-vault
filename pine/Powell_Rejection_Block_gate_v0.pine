@@ -3,15 +3,16 @@
 // DO NOT edit pine/Powell_Rejection_Block_v1.pine (locked Lab).
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
-// KEEP: Path B (10:00→leave→fib→1m ARM) · 5m MARK eyes · NWOG · PDH/PDL ·
-//       yellow 10:00 wash · ENTRY/STOP/TP · status tag · fib plots/labels
-// CUT: Path A · ghosts · tables · trails · CISD · 30/60/240 · IFVG/OB/FVG museum ·
-//      Deep BT auto-orders · eval caps · rolling/AM opens · give-back HUD
-// FIX 2026-07-16: Path B / plans wipe on NY calendar midnight — NOT CME 18:00 session "D"
-//       (18:00 wipe made status say "B window closed" and erased ENTRY after the cash session).
+// KEEP: Path B (10:00→leave→fib→dual sleeve) · NWOG · PDH/PDL · yellow 10:00 ·
+//       ENTRY/STOP/TP · status · fib LO/HI
+// CUT: Path A · ghosts · tables · trails · CISD · 30/60/240 · IFVG/OB/FVG museum
+// FIX: NY calendar midnight wipe (not CME 18:00). Dual6: Path B engine pinned to 5m
+//      so 1m↔5m charts show identical leave/retest prices (bar_time drawings).
+// NOTE: True 1m-RB arms cannot be identical on a 5m chart historically (script
+//       only evaluates once per 5m bar). Cross-TF identity ⇒ pin sleeves to 5m.
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual5",
+     shorttitle              = "MS Dual6",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -48,16 +49,13 @@ i_pathBMinFib = input.float(40.0, "KO-retest: min fib leg (pts)", minval = 5.0, 
 i_pathBAwayPts = input.float(40.0, "KO-retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "Must run this far from KO after the leave bar, THEN pull back, before KO-retest.")
 i_pathBReqOte = input.bool(true, "KO-retest: require KO in fib OTE", group = grpPb)
 i_retestMinRisk = input.float(12.0, "KO-retest: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
-i_pathBUse1 = input.bool(true, "ARM on 1m RB", group = grpPb)
-i_pathBMark5 = input.bool(true, "MARK 5m RBs near KO (eyes)", group = grpPb)
-i_pathBUse5 = input.bool(true, "KO-leave may ARM on 5m RB", group = grpPb, tooltip = "KO-leave can use 5m. KO-retest is 1m-only (Powell).")
-i_pathBUse15 = input.bool(false, "ARM on 15m RB (off)", group = grpPb)
+i_leaveRbTf = input.string("5m (identical on 1m/5m charts)", "KO-leave RB TF", options = ["5m (identical on 1m/5m charts)", "1m (1m chart only — will differ on 5m)"], group = grpPb, tooltip = "Default 5m = same leave ENTRY/STOP/TP when you switch 1m↔5m. 1m cannot match on a 5m chart historically.")
+i_retestRbTf = input.string("5m (identical on 1m/5m charts)", "KO-retest RB TF", options = ["5m (identical on 1m/5m charts)", "1m (1m chart only — will differ on 5m)"], group = grpPb, tooltip = "Default 5m formal RB (local extreme / relative equal lows). Stop = RB extreme − buffer.")
+i_pathBMark5 = input.bool(true, "MARK extra 5m RBs near KO (eyes)", group = grpPb)
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_minWick5 = input.float(6.0, "Min 5m RB wick (pts)", minval = 2.0, step = 0.5, group = grpPb)
-i_minWick15 = input.float(12.0, "Min 15m RB wick (pts)", minval = 4.0, step = 1.0, group = grpPb)
-i_localLen = input.int(12, "RB extreme lookback (bars)", minval = 4, maxval = 50, group = grpPb)
+i_localLen = input.int(12, "5m RB extreme lookback (bars)", minval = 4, maxval = 50, group = grpPb, tooltip = "Formal 5m RB must be extreme of last N 5m bars (relative equal highs/lows).")
 i_confClose = input.bool(true, "RB needs confirming close", group = grpPb)
-i_tapTimeout = input.int(90, "Latch expires (chart bars)", minval = 4, maxval = 200, group = grpPb)
 i_pathBShowFib = input.bool(true, "Show fib LO / HI anchors only", group = grpPb)
 i_pathBShowState = input.bool(true, "Show Path B status tag", group = grpPb)
 
@@ -88,6 +86,8 @@ c_win10 = input.color(#eab308, "10:00 wash", group = "Colors")
 // Derived flags (after ALL inputs)
 bool wantLeave = i_pathBSleeve == "KO-leave + KO-retest" or i_pathBSleeve == "KO-leave only"
 bool wantRetest = i_pathBSleeve == "KO-leave + KO-retest" or i_pathBSleeve == "KO-retest only"
+bool leaveUse5 = str.startswith(i_leaveRbTf, "5m")
+bool retestUse5 = str.startswith(i_retestRbTf, "5m")
 bool biasOkShort = i_biasMode != "Long only"
 bool biasOkLong = i_biasMode != "Short only"
 
@@ -184,15 +184,16 @@ f_pb1Pack(float minW) =>
 
 [b1s, u1s, h1s, l1s, wsB1s, wsU1s] = request.security(syminfo.tickerid, "1", f_pb1Pack(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
 [b5, u5, h5, l5, wsB5, wsU5] = request.security(syminfo.tickerid, "5", f_htfPack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
-[b15, u15, h15, l15, wsB15, wsU15] = request.security(syminfo.tickerid, "15", f_htfPack(i_minWick15), barmerge.gaps_off, barmerge.lookahead_off)
+// Completed 5m OHLC for Path B engine (identical state on any chart TF)
+[o5e, h5e, l5e, c5e] = request.security(syminfo.tickerid, "5", [open[1], high[1], low[1], close[1]], barmerge.gaps_off, barmerge.lookahead_off)
 int t1sec = request.security(syminfo.tickerid, "1", time, barmerge.gaps_off, barmerge.lookahead_off)
 int t5sec = request.security(syminfo.tickerid, "5", time, barmerge.gaps_off, barmerge.lookahead_off)
-int t15sec = request.security(syminfo.tickerid, "15", time, barmerge.gaps_off, barmerge.lookahead_off)
 bool new1Bar = ta.change(t1sec) != 0
 bool new5Bar = ta.change(t5sec) != 0
-bool new15Bar = ta.change(t15sec) != 0
+// Engine tick: one completed 5m bar (works the same on 1m and 5m charts)
+bool eng5 = barstate.isconfirmed and (timeframe.period == "5" or new5Bar)
 
-// Path B ARM is a 1m event — use the 1m chart for the control day. On 5m, security only sees the last 1m of each 5m bar.
+// Optional 1m latch (study only — not cross-TF identical on 5m charts)
 bool on1m = timeframe.period == "1"
 [b1c, u1c, h1c, l1c, wsB1c, wsU1c] = f_pb1Pack(i_minWick1)
 bool b1 = on1m ? b1c : b1s
@@ -201,6 +202,7 @@ float h1 = on1m ? h1c : h1s
 float l1 = on1m ? l1c : l1s
 float wsB1 = on1m ? wsB1c : wsB1s
 float wsU1 = on1m ? wsU1c : wsU1s
+bool trig1 = barstate.isconfirmed and (on1m or new1Bar)
 
 // ─── Plan math ───────────────────────────────────────────────────────────────
 f_plan(float wickStart, float ce, float extreme, bool isShort) =>
@@ -259,6 +261,9 @@ var float pbAway = 0.0
 var int pbLeaveBar = na
 var int pbLeaveTime = na
 var int pbAwayPeakBar = na
+var int pbAwayPeakTime = na
+var int pbFibLoTime = na
+var int pbFibHiTime = na
 var bool pbReturned = false
 var string pbState = "—"
 
@@ -266,7 +271,9 @@ var string pbState = "—"
 var bool eArmed = false
 var int eDir = 0
 var int eBar = na
+var int eTime = na
 var int eEndBar = na
+var int eEndTime = na
 var float eEntry = na
 var float eStop = na
 var float eTp = na
@@ -295,7 +302,9 @@ var label eLblRb = na
 var bool oArmed = false
 var int oDir = 0
 var int oBar = na
+var int oTime = na
 var int oEndBar = na
+var int oEndTime = na
 var float oEntry = na
 var float oStop = na
 var float oTp = na
@@ -405,12 +414,17 @@ if newCalDay
     pbLeaveBar := na
     pbLeaveTime := na
     pbAwayPeakBar := na
+    pbAwayPeakTime := na
+    pbFibLoTime := na
+    pbFibHiTime := na
     pbReturned := false
     pbState := "—"
     eArmed := false
     eDir := 0
     eBar := na
+    eTime := na
     eEndBar := na
+    eEndTime := na
     eEntry := na
     eStop := na
     eTp := na
@@ -424,7 +438,9 @@ if newCalDay
     oArmed := false
     oDir := 0
     oBar := na
+    oTime := na
     oEndBar := na
+    oEndTime := na
     oEntry := na
     oStop := na
     oTp := na
