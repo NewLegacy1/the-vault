@@ -36,7 +36,7 @@ i_skipMonday  = input.bool(true, "Skip Mondays (SHADOW)", group = "Session")
 i_skipJulOct  = input.bool(false, "Skip July & October (SHADOW)", group = "Session")
 i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Long only", "Short only"], group = "Session")
 
-i_pathA = input.bool(true, "Enable Path A (15m RB leave-retest)", group = "Paths", tooltip = "Secondary. Path B is the cleaner KO+fib stack.")
+i_pathA = input.bool(false, "Enable Path A (15m RB leave-retest)", group = "Paths", tooltip = "OFF by default — Path A was stealing the day and blocking Path B. Path B is primary.")
 i_pathB = input.bool(true, "Enable Path B (10:00 + fib + LTF RB)", group = "Paths")
 i_pathBAlign = input.float(15.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = "Paths")
 i_pathBReqOte = input.bool(false, "Path B: require KO in fib OTE", group = "Paths")
@@ -51,12 +51,11 @@ i_confClose = input.bool(true, "RB needs confirming close", group = "Paths")
 i_leaveR = input.float(1.0, "Path A: leave N×risk before arm (0=now)", minval = 0.0, step = 0.25, group = "Paths")
 i_tapTimeout = input.int(36, "Setup / latch expires (chart bars)", minval = 4, maxval = 120, group = "Paths")
 
-i_showNwog = input.bool(true, "Show NWOG (Fri close → Sun 18:00)", group = "Levels")
-i_nwogKeep = input.int(4, "NWOG history", minval = 1, maxval = 8, group = "Levels")
+i_showNwog = input.bool(true, "Show NWOG (Fri close → Sun 18:00 ET)", group = "Levels", tooltip = "Current week only. CME week open = Sunday 18:00. Falls back to Monday open if Sunday bars are missing.")
 i_nwogMinPts = input.float(5.0, "Min NWOG size (pts)", minval = 0.5, step = 0.5, group = "Levels")
 i_showPdhPdl = input.bool(true, "Show PDH / PDL (this session)", group = "Levels")
 i_pathBShowFib = input.bool(true, "Show Path B fib leg + OTE", group = "Levels")
-i_pathBShowState = input.bool(false, "Show Path B status tag", group = "Levels")
+i_pathBShowState = input.bool(true, "Show Path B status tag", group = "Levels", tooltip = "ON so you can see wait manip / leave / latch / ARMED while debugging.")
 i_showPend = input.bool(true, "Show ENTRY / STOP / TP", group = "Levels")
 i_showSig = input.bool(true, "Show armed RB box", group = "Levels")
 i_rbExtend = input.int(24, "RB box extend (bars)", minval = 4, maxval = 80, group = "Levels")
@@ -192,7 +191,7 @@ var bool manualReady = false
 var string manualState = "—"
 var string suSweepTag = "—"
 var bool suPathB = false
-var bool dayUsed = false
+var bool pbArmedToday = false
 
 var int pbDir = 0
 var bool pbManip = false
@@ -289,7 +288,7 @@ if newDay
     manualState := "—"
     suSweepTag := "—"
     suPathB := false
-    dayUsed := false
+    pbArmedToday := false
     pbDir := 0
     pbManip := false
     pbLeft := false
@@ -331,80 +330,11 @@ if newDay
     lblRbMark := na
     rbLeft := na
 
-bool roomToday = not i_oneTradeDay or not dayUsed
-bool canArm = roomToday and canPlace and suDir == 0
-bool canArmPb = roomToday and canPlace and (suDir == 0 or (not suPathB and not manualReady))
+// Path B can replace a Path A still waiting. Once Path B armed today, don't re-arm.
+bool canArm = canPlace and suDir == 0
+bool canArmPb = canPlace and not pbArmedToday and (suDir == 0 or (not suPathB and not manualReady))
 
-// ─── Path A: 15m RB (optional, light) ────────────────────────────────────────
-if i_pathA and canArm and barstate.isconfirmed and nyHhmm >= i_winStart and nyHhmm < i_winEnd
-    if rb15Bear
-        float tws = wsB15
-        float tex = h15
-        float tce = (h15 + wsB15) * 0.5
-        [entryPx, stopPx] = f_plan(tws, tce, tex, true)
-        if not na(entryPx)
-            float riskPts0 = math.abs(stopPx - entryPx)
-            suDir := -1
-            suWickStart := tws
-            suCe := tce
-            suExtreme := tex
-            suEntry := entryPx
-            suStop := stopPx
-            pendStop := stopPx
-            pendTp := entryPx - i_rr * riskPts0
-            suBar := bar_index
-            suLeft := i_leaveR == 0
-            suPathB := false
-            suSweepTag := "PathA · 15RB"
-            manualReady := suLeft
-            manualState := suLeft ? f_shadowArmLabel() : "WAIT leave"
-    else if rb15Bull and suDir == 0
-        float tws = wsU15
-        float tex = l15
-        float tce = (l15 + wsU15) * 0.5
-        [entryPx, stopPx] = f_plan(tws, tce, tex, false)
-        if not na(entryPx)
-            float riskPts0 = math.abs(stopPx - entryPx)
-            suDir := 1
-            suWickStart := tws
-            suCe := tce
-            suExtreme := tex
-            suEntry := entryPx
-            suStop := stopPx
-            pendStop := stopPx
-            pendTp := entryPx + i_rr * riskPts0
-            suBar := bar_index
-            suLeft := i_leaveR == 0
-            suPathB := false
-            suSweepTag := "PathA · 15RB"
-            manualReady := suLeft
-            manualState := suLeft ? f_shadowArmLabel() : "WAIT leave"
-
-// Path A leave-retest
-if i_pathA and not suPathB and suDir != 0 and not na(suEntry)
-    float riskPts = math.abs(suStop - suEntry)
-    bool invalidated = (suDir == -1 and close > suStop) or (suDir == 1 and close < suStop)
-    if bar_index - suBar > i_tapTimeout or not canPlace or invalidated
-        suDir := 0
-        manualReady := false
-        manualState := "—"
-    else
-        if not suLeft
-            if suDir == -1 and low <= suEntry - i_leaveR * riskPts
-                suLeft := true
-                suLeavePx := low
-            if suDir == 1 and high >= suEntry + i_leaveR * riskPts
-                suLeft := true
-                suLeavePx := high
-        if suLeft
-            manualReady := true
-            manualState := f_shadowArmLabel()
-            dayUsed := true
-        else
-            manualReady := false
-            manualState := "WAIT leave"
-
-// ─── Path B ──────────────────────────────────────────────────────────────────
+// ─── Path B FIRST (primary) ──────────────────────────────────────────────────
 bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and nyHhmm < i_winEnd
 float pbOteLo = na
 float pbOteHi = na
@@ -460,12 +390,12 @@ if pbOn
         else
             koInOte := not i_pathBReqOte
 
-    bool nearKo15B = f_nearKo(h15, ko1000) or f_nearKo(wsB15, ko1000)
-    bool nearKo15U = f_nearKo(l15, ko1000) or f_nearKo(wsU15, ko1000)
-    bool nearKo5B = f_nearKo(h5, ko1000) or f_nearKo(wsB5, ko1000)
-    bool nearKo5U = f_nearKo(l5, ko1000) or f_nearKo(wsU5, ko1000)
-    bool nearKo1B = f_nearKo(h1, ko1000) or f_nearKo(wsB1, ko1000)
-    bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000)
+    bool nearKo15B = f_nearKo(h15, ko1000) or f_nearKo(wsB15, ko1000) or (not na(h15) and not na(wsB15) and f_nearKo((h15 + wsB15) * 0.5, ko1000))
+    bool nearKo15U = f_nearKo(l15, ko1000) or f_nearKo(wsU15, ko1000) or (not na(l15) and not na(wsU15) and f_nearKo((l15 + wsU15) * 0.5, ko1000))
+    bool nearKo5B = f_nearKo(h5, ko1000) or f_nearKo(wsB5, ko1000) or (not na(h5) and not na(wsB5) and f_nearKo((h5 + wsB5) * 0.5, ko1000))
+    bool nearKo5U = f_nearKo(l5, ko1000) or f_nearKo(wsU5, ko1000) or (not na(l5) and not na(wsU5) and f_nearKo((l5 + wsU5) * 0.5, ko1000))
+    bool nearKo1B = f_nearKo(h1, ko1000) or f_nearKo(wsB1, ko1000) or (not na(h1) and not na(wsB1) and f_nearKo((h1 + wsB1) * 0.5, ko1000))
+    bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000) or (not na(l1) and not na(wsU1) and f_nearKo((l1 + wsU1) * 0.5, ko1000))
 
     if pbLeft and koInOte and barstate.isconfirmed
         if i_pathBUse1 and new1Bar and b1 and nearKo1B
@@ -538,7 +468,7 @@ if pbOn
             suSweepTag := pbLatchTag
             manualReady := true
             manualState := f_shadowArmLabel()
-            dayUsed := true
+            pbArmedToday := true
             pbLatchDir := 0
             pbState := "ARMED short"
 
@@ -561,7 +491,7 @@ if pbOn
             suSweepTag := pbLatchTag
             manualReady := true
             manualState := f_shadowArmLabel()
-            dayUsed := true
+            pbArmedToday := true
             pbLatchDir := 0
             pbState := "ARMED long"
 
