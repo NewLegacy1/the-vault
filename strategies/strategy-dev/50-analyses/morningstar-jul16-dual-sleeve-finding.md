@@ -74,12 +74,15 @@ Two bugs:
 
 ## Dual18 lean restore (2026-07-17)
 
-- **Archive:** `pine/_archive_Powell_Rejection_Block_gate_v0_Dual17_spray_2026-07-17.pine` (RB museum spray — do not use).
-- **Working script:** `pine/Powell_Rejection_Block_gate_v0.pine` → stamp **`MS Dual18b · detect fix`**.
-- Restored Dual12/13 product: soft RB@KO leave + one untapped Day-IL pool + Powell latch on return. No all-day RB scan boxes. Day IL plot = bounce-locked `dilPx` only.
-- **Dual18 empty-chart bug:** pack used `open[1]` on confirmed bars → double-lag, missed leave + Day-IL RB. Dual18b uses confirmed-bar OHLC; session-low print falls back into pool if soft RB misses.
-- **Acceptance (Jul 16 MNQ 5m):** lean chart · one Day IL · one untapped box · `LONG · leave` · `LONG · Powell · untapped DayIL`.
-- **Geometry debt (Dual19 only after Dual18 pass):** force pool wick-start from the Day-IL print-bar snapshot if entry sits on the wrong candle.
+- Dual14–19 churn broke the chart. **Aborted.**
+
+## Dual20 — exact Dual13 restore (2026-07-17)
+
+- Restored byte-for-byte from git `2bd3b85` (`MS Dual13`) — last build that armed **leave + Powell** on Jul 16.
+- Stamp: **`MS Dual20 · Dual13 restore`** (logic = Dual13; stamp only renamed so you can verify the paste).
+- Archives: Dual17 spray · Dual19 broken under `pine/_archive_*`.
+- **Do not edit** until Dual20 acceptance passes on Jul 16 MNQ 5m.
+- **Acceptance:** `5m RB·DayIL untapped` box · `LONG · leave` · `LONG · Powell · untapped DayIL`.
 
 ## Links
 

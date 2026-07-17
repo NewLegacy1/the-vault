@@ -4,11 +4,11 @@
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
 // KEEP: Path B dual sleeve · Day IL · untapped pre-10 RB · fib · plans · NWOG/PDH
-// Dual20: exact restore of Dual13 (git 2bd3b85) — last build with Jul16 leave+Powell arms.
-// Broken Dual14–19 archived. Do not "improve" until Dual20 passes acceptance.
+// Dual19: teaching RB only — wick ≥ min pts → wick-start/extreme. No body-ratio / conf-close.
+// Dual17 spray archive: pine/_archive_Powell_Rejection_Block_gate_v0_Dual17_spray_2026-07-17.pine
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual20",
+     shorttitle              = "MS Dual19",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -43,7 +43,7 @@ i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step =
 i_leaveWinMin = input.int(45, "KO-leave window (min after left KO)", minval = 10, maxval = 120, group = grpPb)
 i_pathBAwayPts = input.float(25.0, "KO-retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb)
 i_retestMinRisk = input.float(10.0, "Powell: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
-i_leaveMinRisk = input.float(10.0, "KO-leave: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
+i_leaveMinRisk = input.float(6.0, "KO-leave: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_leavePrefer5 = input.bool(true, "KO-leave: prefer soft 5m RB (else 1m)", group = grpPb)
 i_powellUse1 = input.bool(true, "Powell: also pool 1m untapped RB", group = grpPb, tooltip = "Secondary — prefer 5m. Pools RBs from 09:30 (before 10:00), not only after.")
 i_powellUse5 = input.bool(true, "Powell: pool untapped 5m RB (primary)", group = grpPb, tooltip = "PRIMARY — capture 5m RB at Day IL from 09:30. Must leave untapped, then later return = second trade at wick start.")
@@ -52,14 +52,11 @@ i_retestNearDil = input.bool(true, "Powell: untapped RB must be at Day IL", grou
 i_dilAlign = input.float(50.0, "Day IL proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
 i_dilBounce = input.float(15.0, "Day IL confirm bounce (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "RTH low locks as Day IL after price trades this far above it.")
 i_dilPivot = input.int(2, "Day IL pivot strength", minval = 1, maxval = 5, group = grpPb, tooltip = "Confirmed pivot-low lookback. Lowest RTH pivot = Day IL.")
-i_powellSoft = input.bool(true, "Powell: soft RB quality for pool", group = grpPb, tooltip = "ON = looser wick/body so the morning Day-IL rejection qualifies.")
 i_utFreePts = input.float(10.0, "Untapped: leave-zone buffer (pts)", minval = 1.0, step = 1.0, group = grpPb, tooltip = "RB is 'freed/untapped' only after close clears wick-start by this many pts.")
 i_retestMinAfterLeave = input.int(15, "Powell: min minutes after leave", minval = 5, maxval = 180, group = grpPb)
 i_projMin = input.int(45, "Projection box length (minutes)", minval = 10, maxval = 180, group = grpPb)
-i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
-i_minWick5 = input.float(6.0, "Min 5m RB wick (pts)", minval = 2.0, step = 0.5, group = grpPb)
-i_confClose = input.bool(true, "RB needs confirming close", group = grpPb)
-i_rbWickBody = input.float(1.25, "RB wick ≥ N× body (visual quality)", minval = 0.5, step = 0.25, group = grpPb, tooltip = "Matches the teaching diagram: rejection wick must be longer than the body. 1.25 = wick at least 25% longer than body.")
+i_minWick1 = input.float(3.0, "Min 1m RB wick (pts)", minval = 0.5, step = 0.5, group = grpPb)
+i_minWick5 = input.float(4.0, "Min 5m RB wick (pts)", minval = 0.5, step = 0.5, group = grpPb, tooltip = "Teaching RB: lower/upper wick ≥ this many pts. That is the ONLY quality filter.")
 i_pathBShowFib = input.bool(true, "Show fib LO / HI anchors only", group = grpPb)
 i_pathBShowState = input.bool(true, "Show Path B status tag", group = grpPb)
 
@@ -155,28 +152,29 @@ if isFri
 bool nwogSunOpenBar = isSun and nyHhmm >= 1800 and nyHhmm[1] < 1800
 bool nwogMonFallback = isMon and nyHhmm >= 930 and nyHhmm[1] < 930
 
-// ─── RB packs ────────────────────────────────────────────────────────────────
-// Detects the *closed* bar [1]. Visual match to teaching RB:
-//   bull = long lower wick ≥ minW AND wick ≥ N× body AND close > open
-//   bear = long upper wick (mirror)
-// Box left edge MUST use time[1] (same candle as the pack) — not live `time`.
-f_pb1Pack(float minW) =>
-    float o1 = open[1]
-    float h1 = high[1]
-    float l1 = low[1]
-    float c1 = close[1]
-    float body = math.max(math.abs(c1 - o1), syminfo.mintick)
-    float uw = h1 - math.max(o1, c1)
-    float lw = math.min(o1, c1) - l1
-    bool bear = uw >= minW and uw >= body * i_rbWickBody and (not i_confClose or c1 < o1)
-    bool bull = lw >= minW and lw >= body * i_rbWickBody and (not i_confClose or c1 > o1)
-    [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1)]
+// ─── Rejection block (teaching diagram — ONLY filter) ────────────────────────
+// Bull: lower wick ≥ minW · wick-start = min(O,C) · extreme = low
+// Bear: upper wick ≥ minW · wick-start = max(O,C) · extreme = high
+// No body-ratio. No confirming-close. No local-extreme. Nothing else.
+f_rb(float minW) =>
+    float wsB = math.max(open, close)
+    float wsU = math.min(open, close)
+    float uw = high - wsB
+    float lw = wsU - low
+    [uw >= minW, lw >= minW, high, low, wsB, wsU]
 
-[b1s, u1s, h1s, l1s, wsB1s, wsU1s] = request.security(syminfo.tickerid, "1", f_pb1Pack(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
-[b5soft, u5soft, h5s, l5s, wsB5s, wsU5s] = request.security(syminfo.tickerid, "5", f_pb1Pack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
+// Last completed bar (for request.security from a higher TF chart)
+f_rbPrev(float minW) =>
+    float wsB = math.max(open[1], close[1])
+    float wsU = math.min(open[1], close[1])
+    float uw = high[1] - wsB
+    float lw = wsU - low[1]
+    [uw >= minW, lw >= minW, high[1], low[1], wsB, wsU]
+
+[b1s, u1s, h1s, l1s, wsB1s, wsU1s] = request.security(syminfo.tickerid, "1", f_rbPrev(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
+[b5s, u5s, h5s, l5s, wsB5s, wsU5s] = request.security(syminfo.tickerid, "5", f_rbPrev(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
 int t1sec = request.security(syminfo.tickerid, "1", time, barmerge.gaps_off, barmerge.lookahead_off)
 int t5sec = request.security(syminfo.tickerid, "5", time, barmerge.gaps_off, barmerge.lookahead_off)
-// Closed-bar timestamps — align projection boxes to the actual RB candle
 int t1Closed = request.security(syminfo.tickerid, "1", time[1], barmerge.gaps_off, barmerge.lookahead_off)
 int t5Closed = request.security(syminfo.tickerid, "5", time[1], barmerge.gaps_off, barmerge.lookahead_off)
 bool new1Bar = ta.change(t1sec) != 0
@@ -184,23 +182,24 @@ bool new5Bar = ta.change(t5sec) != 0
 
 bool on1m = timeframe.period == "1"
 bool on5m = timeframe.period == "5"
-[b1c, u1c, h1c, l1c, wsB1c, wsU1c] = f_pb1Pack(i_minWick1)
+[b1c, u1c, h1c, l1c, wsB1c, wsU1c] = f_rb(i_minWick1)
+[b5c, u5c, h5c, l5c, wsB5c, wsU5c] = f_rb(i_minWick5)
 bool b1 = on1m ? b1c : b1s
 bool u1 = on1m ? u1c : u1s
 float h1 = on1m ? h1c : h1s
 float l1 = on1m ? l1c : l1s
 float wsB1 = on1m ? wsB1c : wsB1s
 float wsU1 = on1m ? wsU1c : wsU1s
-int t1Rb = on1m ? time[1] : t1Closed
-int t5Rb = on5m ? time[1] : t5Closed
+int t1Rb = on1m ? time : t1Closed
+int t5Rb = on5m ? time : t5Closed
 bool trig1 = barstate.isconfirmed and (on1m or new1Bar)
 bool trig5 = barstate.isconfirmed and (on5m or new5Bar)
-bool b5 = b5soft
-bool u5 = u5soft
-float h5 = h5s
-float l5 = l5s
-float wsB5 = wsB5s
-float wsU5 = wsU5s
+bool b5 = on5m ? b5c : b5s
+bool u5 = on5m ? u5c : u5s
+float h5 = on5m ? h5c : h5s
+float l5 = on5m ? l5c : l5s
+float wsB5 = on5m ? wsB5c : wsB5s
+float wsU5 = on5m ? wsU5c : wsU5s
 
 // ─── Plan math ───────────────────────────────────────────────────────────────
 f_plan(float wickStart, float ce, float extreme, bool isShort) =>
@@ -522,19 +521,17 @@ if newCalDay
     utCeLn := na
     utLbl := na
 
-// Day IL / Day IH — RTH only, independent of fib. Pivot + bounce-confirmed absolute low.
+// Day IL / Day IH — RTH only. Bounce-locked dilPx (never live dilRaw staircase on chart).
 bool rthDil = nyHhmm >= 930 and nyHhmm < i_flatTime
 float pivLo = ta.pivotlow(low, i_dilPivot, i_dilPivot)
 float pivHi = ta.pivothigh(high, i_dilPivot, i_dilPivot)
 if rthDil
-    // Absolute RTH running extreme
     if na(dilRaw) or low < dilRaw
         dilRaw := low
         dilRawTime := time
     if na(dihRaw) or high > dihRaw
         dihRaw := high
         dihRawTime := time
-    // Bounce-confirm absolute low/high (uses highest/lowest since the print via running compare)
     if not na(dilRaw) and high >= dilRaw + i_dilBounce
         if na(dilPx) or dilRaw < dilPx
             dilPx := dilRaw
@@ -542,36 +539,13 @@ if rthDil
     if not na(dihRaw) and low <= dihRaw - i_dilBounce
         if na(dihPx) or dihRaw > dihPx
             dihPx := dihRaw
-    // Pivot path — lowest confirmed RTH swing low (your ~09:45 intermediate)
-    if not na(pivLo)
-        if na(dilPx) or pivLo < dilPx
-            dilPx := pivLo
-            dilTag := "Day IL"
-    if not na(pivHi)
-        if na(dihPx) or pivHi > dihPx
-            dihPx := pivHi
+    if na(dilPx) and not na(pivLo)
+        dilPx := pivLo
+        dilTag := "Day IL"
+    if na(dihPx) and not na(pivHi)
+        dihPx := pivHi
 
-// Soft / formal RB quality — available from 09:30 (not gated by 10:00)
-float body1 = math.max(math.abs(wsB1 - wsU1), syminfo.mintick)
-float lw1 = wsU1 - l1
-float uw1 = h1 - wsB1
-float body5 = math.max(math.abs(wsB5 - wsU5), syminfo.mintick)
-float lw5 = wsU5 - l5
-float uw5 = h5 - wsB5
-float minW1s = i_powellSoft ? math.max(2.0, i_minWick1 * 0.5) : i_minWick1
-float minW5s = i_powellSoft ? math.max(3.0, i_minWick5 * 0.5) : i_minWick5
-float bodMult = i_powellSoft ? 0.55 : i_rbWickBody
-bool softU1 = not na(l1) and lw1 >= minW1s and lw1 >= body1 * bodMult and lw1 >= uw1
-bool softB1 = not na(h1) and uw1 >= minW1s and uw1 >= body1 * bodMult and uw1 >= lw1
-bool softU5 = not na(l5) and lw5 >= minW5s and lw5 >= body5 * bodMult and lw5 >= uw5
-bool softB5 = not na(h5) and uw5 >= minW5s and uw5 >= body5 * bodMult and uw5 >= lw5
-bool powU1 = u1 or (i_powellSoft and softU1)
-bool powB1 = b1 or (i_powellSoft and softB1)
-bool powU5 = u5 or (i_powellSoft and softU5)
-bool powB5 = b5 or (i_powellSoft and softB5)
-
-// Pool rejection blocks from 09:30 — including BEFORE 10:00 — at Day IL
-bool utScan = i_pathB and rthDil and not oArmed and barstate.isconfirmed
+// Day-IL untapped pool — teaching RB at Day IL, else the session-low print bar itself.
 bool utDoStore = false
 float utNewWs = na
 float utNewCe = na
@@ -579,54 +553,59 @@ float utNewEx = na
 int utNewDir = 0
 int utNewT = na
 string utNewTag = "—"
-if utScan
-    bool dilReady = not na(dilPx)
-    if i_powellUse5 and trig5
-        if powU5
-            bool atDil = not dilReady or f_nearDil(l5, dilPx) or f_nearDilBand(wsU5, l5, dilPx)
-            bool deeper = not utLive or l5 < utEx
-            bool take = deeper and (not i_retestNearDil or atDil)
-            if take
-                utDoStore := true
-                utNewWs := wsU5
-                utNewCe := (l5 + wsU5) * 0.5
-                utNewEx := l5
-                utNewDir := 1
-                utNewT := t5Rb
-                utNewTag := "5m RB·DayIL"
-        if powB5 and not utDoStore
-            bool atDih = na(dihPx) or f_nearDil(h5, dihPx) or f_nearDilBand(h5, wsB5, dihPx)
-            bool higher = not utLive or h5 > utEx
-            bool takeB = higher and utDir != 1 and (not i_retestNearDil or atDih)
-            if takeB
-                utDoStore := true
-                utNewWs := wsB5
-                utNewCe := (h5 + wsB5) * 0.5
-                utNewEx := h5
-                utNewDir := -1
-                utNewT := t5Rb
-                utNewTag := "5m RB·DayIH"
-    if i_powellUse1 and trig1 and not utLive and not utDoStore
-        if powU1
-            bool atDil1 = na(dilPx) or f_nearDil(l1, dilPx) or f_nearDilBand(wsU1, l1, dilPx)
-            if not i_retestNearDil or atDil1
-                utDoStore := true
-                utNewWs := wsU1
-                utNewCe := (l1 + wsU1) * 0.5
-                utNewEx := l1
-                utNewDir := 1
-                utNewT := t1Rb
-                utNewTag := "1m RB·DayIL"
-        if powB1 and not utDoStore
-            bool atDih1 = na(dihPx) or f_nearDil(h1, dihPx) or f_nearDilBand(h1, wsB1, dihPx)
-            if not i_retestNearDil or atDih1
-                utDoStore := true
-                utNewWs := wsB1
-                utNewCe := (h1 + wsB1) * 0.5
-                utNewEx := h1
-                utNewDir := -1
-                utNewT := t1Rb
-                utNewTag := "1m RB·DayIH"
+float poolDil = not na(dilPx) ? dilPx : dilRaw
+float poolDih = not na(dihPx) ? dihPx : dihRaw
+// Once freed/untapped, keep that pool — do not overwrite with a later session low.
+bool utCanReplace = not utLive or not utFreed
+if i_pathB and rthDil and not oArmed and barstate.isconfirmed and utCanReplace
+    // Session-low print bar (5m chart) — Day-IL sweep candle
+    if i_powellUse5 and on5m and not na(dilRaw) and dilRawTime == time
+        float sws = math.min(open, close)
+        if sws <= low + syminfo.mintick
+            sws := math.max(open, close)
+        bool deeperSw = not utLive or low < utEx - syminfo.mintick
+        if deeperSw or not utLive
+            utDoStore := true
+            utNewWs := sws
+            utNewEx := low
+            utNewCe := (low + sws) * 0.5
+            utNewDir := 1
+            utNewT := time
+            utNewTag := "5m RB·DayIL"
+    // Teaching bullish 5m RB tagging Day IL
+    if i_powellUse5 and trig5 and u5 and not na(t5Rb) and not na(poolDil) and not utDoStore
+        bool nearDil5 = f_nearDil(l5, poolDil) or f_nearDil(wsU5, poolDil) or f_nearDilBand(wsU5, l5, poolDil)
+        bool deeper5 = not utLive or l5 < utEx - syminfo.mintick
+        if nearDil5 and (deeper5 or not utLive or utDir != 1)
+            utDoStore := true
+            utNewWs := wsU5
+            utNewEx := l5
+            utNewCe := (l5 + wsU5) * 0.5
+            utNewDir := 1
+            utNewT := t5Rb
+            utNewTag := "5m RB·DayIL"
+    if i_powellUse5 and trig5 and b5 and not na(t5Rb) and not na(poolDih) and not utDoStore
+        bool nearDih5 = f_nearDil(h5, poolDih) or f_nearDil(wsB5, poolDih) or f_nearDilBand(h5, wsB5, poolDih)
+        bool deeper5b = not utLive or h5 > utEx + syminfo.mintick
+        if nearDih5 and (deeper5b or not utLive or utDir != -1)
+            utDoStore := true
+            utNewWs := wsB5
+            utNewEx := h5
+            utNewCe := (h5 + wsB5) * 0.5
+            utNewDir := -1
+            utNewT := t5Rb
+            utNewTag := "5m RB·DayIH"
+    if i_powellUse1 and trig1 and u1 and not na(t1Rb) and not na(poolDil) and not utDoStore
+        bool nearDil1 = f_nearDil(l1, poolDil) or f_nearDil(wsU1, poolDil) or f_nearDilBand(wsU1, l1, poolDil)
+        bool deeper1 = not utLive or l1 < utEx - syminfo.mintick
+        if nearDil1 and (deeper1 or not utLive)
+            utDoStore := true
+            utNewWs := wsU1
+            utNewEx := l1
+            utNewCe := (l1 + wsU1) * 0.5
+            utNewDir := 1
+            utNewT := t1Rb
+            utNewTag := "1m RB·DayIL"
 if utDoStore and not na(utNewWs) and not na(utNewT)
     if not na(utBox)
         box.delete(utBox)
@@ -646,41 +625,15 @@ if utDoStore and not na(utNewWs) and not na(utNewT)
     color utCol = utNewDir == 1 ? c_bull : c_bear
     utBox := box.new(utNewT, math.max(utNewEx, utNewWs), utXR, math.min(utNewEx, utNewWs), xloc = xloc.bar_time, border_color = utCol, bgcolor = i_rbNoFill ? color.new(utCol, 100) : color.new(utCol, 88), border_width = 2)
     utCeLn := line.new(utNewT, utNewCe, utXR, utNewCe, xloc = xloc.bar_time, color = c_ce, width = 1, style = line.style_dotted)
-    utLbl := label.new(utNewT, math.max(utNewEx, utNewWs), utNewTag + " untapped", xloc = xloc.bar_time, style = label.style_label_down, color = #0f172a, textcolor = utCol, size = size.small)
+    utLbl := label.new(utNewT, math.max(utNewEx, utNewWs), utNewTag + " · untapped", xloc = xloc.bar_time, style = label.style_label_down, color = #0f172a, textcolor = utCol, size = size.small)
 
-// Once Day IL locks, drop pool RBs that are not at that low
-if utLive and i_retestNearDil and not na(dilPx) and utDir == 1 and not oArmed
-    bool utAtDil = f_nearDil(utEx, dilPx) or f_nearDilBand(math.max(utEx, utWs), math.min(utEx, utWs), dilPx)
-    if not utAtDil
-        utLive := false
-        if not na(utBox)
-            box.delete(utBox)
-        if not na(utCeLn)
-            line.delete(utCeLn)
-        if not na(utLbl)
-            label.delete(utLbl)
-        utBox := na
-        utCeLn := na
-        utLbl := na
-
-// Untapped lifecycle: free → stay valid → early tap kills → break kills
-bool powellGateOpen = pbLeft and pbAway >= i_pathBAwayPts and not na(pbLeaveTime) and (time - pbLeaveTime) >= i_retestMinAfterLeave * 60 * 1000 and (time - pbLeaveTime) > i_leaveWinMin * 60 * 1000
+// Untapped lifecycle: free after leave-zone → kill only if extreme breaks (not wick-start retest).
 if utLive and not oArmed and not na(utTime) and time > utTime
     if utDir == 1
         if not utFreed and close >= utWs + i_utFreePts
             utFreed := true
-        if low < utEx
-            utLive := false
-            if not na(utBox)
-                box.delete(utBox)
-            if not na(utCeLn)
-                line.delete(utCeLn)
-            if not na(utLbl)
-                label.delete(utLbl)
-            utBox := na
-            utCeLn := na
-            utLbl := na
-        else if utFreed and low <= utWs and not powellGateOpen
+        if barstate.isconfirmed and close < utEx - syminfo.mintick
+            utFreed := false
             utLive := false
             if not na(utBox)
                 box.delete(utBox)
@@ -694,18 +647,8 @@ if utLive and not oArmed and not na(utTime) and time > utTime
     if utDir == -1 and utLive
         if not utFreed and close <= utWs - i_utFreePts
             utFreed := true
-        if high > utEx
-            utLive := false
-            if not na(utBox)
-                box.delete(utBox)
-            if not na(utCeLn)
-                line.delete(utCeLn)
-            if not na(utLbl)
-                label.delete(utLbl)
-            utBox := na
-            utCeLn := na
-            utLbl := na
-        else if utFreed and high >= utWs and not powellGateOpen
+        if barstate.isconfirmed and close > utEx + syminfo.mintick
+            utFreed := false
             utLive := false
             if not na(utBox)
                 box.delete(utBox)
@@ -820,7 +763,7 @@ if pbOn
     bool nearKo1B = f_nearKo(h1, ko1000) or f_nearKo(wsB1, ko1000) or f_nearKoBand(h1, wsB1, ko1000)
     bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000) or f_nearKoBand(wsU1, l1, ko1000)
 
-    // Soft RB for leave sleeve (immediate) — still @ KO / fib-0 geometry
+    // Leave sleeve: teaching RB @ KO (wick ≥ min pts only)
     if pbLeft and barstate.isconfirmed
         if pbDir == 1
             if i_leavePrefer5 and trig5 and u5 and nearKo5U
@@ -903,8 +846,8 @@ if pbOn
     bool rbNearDil = not na(dayLvl) and not na(retestEx) and (f_nearDil(retestEx, dayLvl) or f_nearDil(retestWs, dayLvl) or f_nearDilBand(math.max(retestEx, retestWs), math.min(retestEx, retestWs), dayLvl))
     bool retestConfl = not i_retestNearDil or rbNearDil or str.contains(pbLatchTag, "DayIL") or str.contains(pbLatchTag, "DayIH")
 
-    // KO-leave — soft RB@KO soon after leave (min risk kills 6pt junk; 1m fallback if 5m too small)
-    if wantLeave and not eArmed and canPlace and not singleSlotLock and leaveBiasOk and leaveDir != 0 and leaveTick and inLeaveWin and not pbReturned
+    // KO-leave — soft RB@KO soon after leave (allow same complex as leave bar)
+    if wantLeave and not eArmed and canPlace and not singleSlotLock and leaveBiasOk and leaveDir != 0 and leaveTick and inLeaveWin
         float useWs = leaveWs
         float useCe = leaveCe
         float useEx = leaveEx
@@ -952,7 +895,7 @@ if pbOn
             eKpi := "live"
             manualReady := true
 
-    // Powell — arm from sticky 1m/5m projection-box latch @ Day IL
+    // Powell — Dual12 latch arm: return into pre-pooled untapped Day-IL RB (wick-start entry)
     bool retestReady = hasAway and pbReturnedDil and not inLeaveWin and longEnoughAfterLeave and retestConfl and pbLatchDir != 0 and not na(pbLatchWs)
     if wantRetest and not oArmed and canPlace and not singleSlotLock and retestBiasOk and retestReady and barstate.isconfirmed
         [entryPx2, stopPx2] = f_plan(retestWs, retestCe, retestEx, retestDir == -1)
@@ -972,13 +915,11 @@ if pbOn
             oStop := stopPx2
             oTp := retestDir == 1 ? entryPx2 + i_rr * riskPts1 : entryPx2 - i_rr * riskPts1
             oTag := "Powell · " + retestTf + " · untapped DayIL"
-            // consume untapped pool — trade taken on first return
             utLive := false
             utFreed := false
             oFill := 1
             oKpi := "live"
             manualReady := true
-            // consume latch so it doesn't re-fire
             pbLatchDir := 0
             pbLatchWs := na
             pbLatchTag := "—"
@@ -987,7 +928,7 @@ if pbOn
 if not i_pathB
     pbState := "Path B off"
 else if nyHhmm < 1000 or na(ko1000)
-    pbState := utLive ? "B pre-10 · " + utTag + (utFreed ? " untapped" : " freeing") : "B before 10:00 · scan RB"
+    pbState := utLive ? "B pre-10 · " + utTag + (utFreed ? " untapped" : " freeing") : "B before 10:00"
 else if not pbManip
     pbState := utLive ? "B wait manip · " + utTag : "B wait manip"
 else if not pbLeft
@@ -1341,7 +1282,7 @@ bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00")
 
 plot(pbFibPlotLo, "FIB LO (0)", color.new(#f59e0b, 0), linewidth = 1, style = plot.style_linebr)
 plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 1, style = plot.style_linebr)
-// Day IL as plot (survives max_lines purge — was why the level vanished)
+// Day IL = bounce-locked dilPx only (no live dilRaw staircase)
 plot(i_showDil and not na(dilPx) ? dilPx : na, "Day IL", color.new(#c084fc, 0), linewidth = 2, style = plot.style_linebr)
 
 // Day IL price tag on last bar only (recreate — avoid stale line/label ids)
@@ -1352,13 +1293,13 @@ if barstate.islast
     if i_showDil and not na(dilPx)
         dilLbl := label.new(bar_index + 2, dilPx, dilTag + "  " + str.tostring(dilPx, "#.#"), xloc = xloc.bar_index, style = label.style_label_left, color = #6b21a8, textcolor = color.white, size = size.normal)
 
-// Permanent version stamp — if you don't see Dual20, the new paste is not on the chart
+// Permanent version stamp — if you don't see Dual19, the new paste is not on the chart
 var label verStamp = na
 if barstate.islast
     if na(verStamp)
-        verStamp := label.new(bar_index, high, "MS Dual20 · Dual13 restore", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
+        verStamp := label.new(bar_index, high, "MS Dual19 · teaching RB", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
     else
         label.set_xy(verStamp, bar_index, high)
-        label.set_text(verStamp, "MS Dual20 · Dual13 restore")
+        label.set_text(verStamp, "MS Dual19 · teaching RB")
 
 alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nleave and/or Powell plan on chart")
