@@ -4,10 +4,10 @@
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
 // KEEP: Path B dual sleeve · Day IL · untapped pre-10 RB · fib · plans · NWOG/PDH
-// Dual13: slim — removed dead spray / OTE gate / su-mirrors / unused inputs.
+// Dual14: Day-IL RB = SWEEP candle wick-start (min o/c of the bar that printed the low).
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual13",
+     shorttitle              = "MS Dual14",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -155,11 +155,22 @@ bool nwogSunOpenBar = isSun and nyHhmm >= 1800 and nyHhmm[1] < 1800
 bool nwogMonFallback = isMon and nyHhmm >= 930 and nyHhmm[1] < 930
 
 // ─── RB packs ────────────────────────────────────────────────────────────────
-// Detects the *closed* bar [1]. Visual match to teaching RB:
-//   bull = long lower wick ≥ minW AND wick ≥ N× body AND close > open
-//   bear = long upper wick (mirror)
-// Box left edge MUST use time[1] (same candle as the pack) — not live `time`.
+// Teaching RB (bull): long lower wick; wick-start = min(open,close); extreme = low.
+// On confirmed bars use offset 0 (the bar that just closed) — NOT [1] (prior candle).
+// Security() paths still use [1] (last completed HTF bar from lower-TF perspective).
 f_pb1Pack(float minW) =>
+    float o1 = open
+    float h1 = high
+    float l1 = low
+    float c1 = close
+    float body = math.max(math.abs(c1 - o1), syminfo.mintick)
+    float uw = h1 - math.max(o1, c1)
+    float lw = math.min(o1, c1) - l1
+    bool bear = uw >= minW and uw >= body * i_rbWickBody and (not i_confClose or c1 < o1)
+    bool bull = lw >= minW and lw >= body * i_rbWickBody and (not i_confClose or c1 > o1)
+    [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1)]
+
+f_pb1PackPrev(float minW) =>
     float o1 = open[1]
     float h1 = high[1]
     float l1 = low[1]
@@ -171,11 +182,10 @@ f_pb1Pack(float minW) =>
     bool bull = lw >= minW and lw >= body * i_rbWickBody and (not i_confClose or c1 > o1)
     [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1)]
 
-[b1s, u1s, h1s, l1s, wsB1s, wsU1s] = request.security(syminfo.tickerid, "1", f_pb1Pack(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
-[b5soft, u5soft, h5s, l5s, wsB5s, wsU5s] = request.security(syminfo.tickerid, "5", f_pb1Pack(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
+[b1s, u1s, h1s, l1s, wsB1s, wsU1s] = request.security(syminfo.tickerid, "1", f_pb1PackPrev(i_minWick1), barmerge.gaps_off, barmerge.lookahead_off)
+[b5soft, u5soft, h5s, l5s, wsB5s, wsU5s] = request.security(syminfo.tickerid, "5", f_pb1PackPrev(i_minWick5), barmerge.gaps_off, barmerge.lookahead_off)
 int t1sec = request.security(syminfo.tickerid, "1", time, barmerge.gaps_off, barmerge.lookahead_off)
 int t5sec = request.security(syminfo.tickerid, "5", time, barmerge.gaps_off, barmerge.lookahead_off)
-// Closed-bar timestamps — align projection boxes to the actual RB candle
 int t1Closed = request.security(syminfo.tickerid, "1", time[1], barmerge.gaps_off, barmerge.lookahead_off)
 int t5Closed = request.security(syminfo.tickerid, "5", time[1], barmerge.gaps_off, barmerge.lookahead_off)
 bool new1Bar = ta.change(t1sec) != 0
@@ -184,22 +194,24 @@ bool new5Bar = ta.change(t5sec) != 0
 bool on1m = timeframe.period == "1"
 bool on5m = timeframe.period == "5"
 [b1c, u1c, h1c, l1c, wsB1c, wsU1c] = f_pb1Pack(i_minWick1)
+[b5c, u5c, h5c, l5c, wsB5c, wsU5c] = f_pb1Pack(i_minWick5)
 bool b1 = on1m ? b1c : b1s
 bool u1 = on1m ? u1c : u1s
 float h1 = on1m ? h1c : h1s
 float l1 = on1m ? l1c : l1s
 float wsB1 = on1m ? wsB1c : wsB1s
 float wsU1 = on1m ? wsU1c : wsU1s
-int t1Rb = on1m ? time[1] : t1Closed
-int t5Rb = on5m ? time[1] : t5Closed
+// Chart TF: RB sits on the confirmed bar itself. HTF via security: last completed bar.
+int t1Rb = on1m ? time : t1Closed
+int t5Rb = on5m ? time : t5Closed
 bool trig1 = barstate.isconfirmed and (on1m or new1Bar)
 bool trig5 = barstate.isconfirmed and (on5m or new5Bar)
-bool b5 = b5soft
-bool u5 = u5soft
-float h5 = h5s
-float l5 = l5s
-float wsB5 = wsB5s
-float wsU5 = wsU5s
+bool b5 = on5m ? b5c : b5soft
+bool u5 = on5m ? u5c : u5soft
+float h5 = on5m ? h5c : h5s
+float l5 = on5m ? l5c : l5s
+float wsB5 = on5m ? wsB5c : wsB5s
+float wsU5 = on5m ? wsU5c : wsU5s
 
 // ─── Plan math ───────────────────────────────────────────────────────────────
 f_plan(float wickStart, float ce, float extreme, bool isShort) =>
@@ -525,15 +537,19 @@ if newCalDay
 bool rthDil = nyHhmm >= 930 and nyHhmm < i_flatTime
 float pivLo = ta.pivotlow(low, i_dilPivot, i_dilPivot)
 float pivHi = ta.pivothigh(high, i_dilPivot, i_dilPivot)
-if rthDil
-    // Absolute RTH running extreme
-    if na(dilRaw) or low < dilRaw
+// True when THIS confirmed bar prints a new RTH low/high (liquidity sweep candle)
+bool madeNewDil = false
+bool madeNewDih = false
+if rthDil and barstate.isconfirmed
+    madeNewDil := na(dilRaw) or low < dilRaw
+    madeNewDih := na(dihRaw) or high > dihRaw
+    if madeNewDil
         dilRaw := low
         dilRawTime := time
-    if na(dihRaw) or high > dihRaw
+    if madeNewDih
         dihRaw := high
         dihRawTime := time
-    // Bounce-confirm absolute low/high (uses highest/lowest since the print via running compare)
+    // Bounce-confirm locks Day IL / Day IH
     if not na(dilRaw) and high >= dilRaw + i_dilBounce
         if na(dilPx) or dilRaw < dilPx
             dilPx := dilRaw
@@ -541,7 +557,6 @@ if rthDil
     if not na(dihRaw) and low <= dihRaw - i_dilBounce
         if na(dihPx) or dihRaw > dihPx
             dihPx := dihRaw
-    // Pivot path — lowest confirmed RTH swing low (your ~09:45 intermediate)
     if not na(pivLo)
         if na(dilPx) or pivLo < dilPx
             dilPx := pivLo
@@ -569,7 +584,8 @@ bool powB1 = b1 or (i_powellSoft and softB1)
 bool powU5 = u5 or (i_powellSoft and softU5)
 bool powB5 = b5 or (i_powellSoft and softB5)
 
-// Pool rejection blocks from 09:30 — including BEFORE 10:00 — at Day IL
+// Day-IL untapped RB = the SWEEP candle that printed the low (teaching diagram).
+// Entry / wick-start = min(open, close) of THAT candle — never a later "near Dil" bar.
 bool utScan = i_pathB and rthDil and not oArmed and barstate.isconfirmed
 bool utDoStore = false
 float utNewWs = na
@@ -579,53 +595,49 @@ int utNewDir = 0
 int utNewT = na
 string utNewTag = "—"
 if utScan
-    bool dilReady = not na(dilPx)
+    // Primary: the 5m bar whose low IS the session Day IL (liquidity sweep candle)
     if i_powellUse5 and trig5
-        if powU5
-            bool atDil = not dilReady or f_nearDil(l5, dilPx) or f_nearDilBand(wsU5, l5, dilPx)
-            bool deeper = not utLive or l5 < utEx
-            bool take = deeper and (not i_retestNearDil or atDil)
-            if take
-                utDoStore := true
-                utNewWs := wsU5
-                utNewCe := (l5 + wsU5) * 0.5
-                utNewEx := l5
-                utNewDir := 1
-                utNewT := t5Rb
-                utNewTag := "5m RB·DayIL"
-        if powB5 and not utDoStore
-            bool atDih = na(dihPx) or f_nearDil(h5, dihPx) or f_nearDilBand(h5, wsB5, dihPx)
-            bool higher = not utLive or h5 > utEx
-            bool takeB = higher and utDir != 1 and (not i_retestNearDil or atDih)
-            if takeB
-                utDoStore := true
-                utNewWs := wsB5
-                utNewCe := (h5 + wsB5) * 0.5
-                utNewEx := h5
-                utNewDir := -1
-                utNewT := t5Rb
-                utNewTag := "5m RB·DayIH"
+        bool sweep5 = on5m ? madeNewDil : not na(l5) and not na(dilRaw) and math.abs(l5 - dilRaw) <= syminfo.mintick * 4
+        float sweepWs5 = wsU5
+        float sweepEx5 = l5
+        float sweepLw5 = sweepWs5 - sweepEx5
+        // Real lower wick only — no green-close / body-ratio gate on the sweep candle
+        bool sweepOk5 = sweep5 and not na(sweepEx5) and sweepLw5 >= minW5s
+        bool deeper5 = not utLive or sweepEx5 < utEx
+        if sweepOk5 and deeper5
+            utDoStore := true
+            utNewWs := sweepWs5
+            utNewCe := (sweepEx5 + sweepWs5) * 0.5
+            utNewEx := sweepEx5
+            utNewDir := 1
+            utNewT := t5Rb
+            utNewTag := "5m RB·DayIL"
+        bool sweep5H = on5m ? madeNewDih : not na(h5) and not na(dihRaw) and math.abs(h5 - dihRaw) <= syminfo.mintick * 4
+        float sweepWs5H = wsB5
+        float sweepEx5H = h5
+        float sweepUw5 = sweepEx5H - sweepWs5H
+        bool sweepOk5H = sweep5H and not na(sweepEx5H) and sweepUw5 >= minW5s
+        bool higher5 = not utLive or sweepEx5H > utEx
+        if not utDoStore and sweepOk5H and higher5
+            utDoStore := true
+            utNewWs := sweepWs5H
+            utNewCe := (sweepEx5H + sweepWs5H) * 0.5
+            utNewEx := sweepEx5H
+            utNewDir := -1
+            utNewT := t5Rb
+            utNewTag := "5m RB·DayIH"
+    // Fallback 1m only if no 5m sweep pooled yet — still must be the low-print candle
     if i_powellUse1 and trig1 and not utLive and not utDoStore
-        if powU1
-            bool atDil1 = na(dilPx) or f_nearDil(l1, dilPx) or f_nearDilBand(wsU1, l1, dilPx)
-            if not i_retestNearDil or atDil1
-                utDoStore := true
-                utNewWs := wsU1
-                utNewCe := (l1 + wsU1) * 0.5
-                utNewEx := l1
-                utNewDir := 1
-                utNewT := t1Rb
-                utNewTag := "1m RB·DayIL"
-        if powB1 and not utDoStore
-            bool atDih1 = na(dihPx) or f_nearDil(h1, dihPx) or f_nearDilBand(h1, wsB1, dihPx)
-            if not i_retestNearDil or atDih1
-                utDoStore := true
-                utNewWs := wsB1
-                utNewCe := (h1 + wsB1) * 0.5
-                utNewEx := h1
-                utNewDir := -1
-                utNewT := t1Rb
-                utNewTag := "1m RB·DayIH"
+        bool sweep1 = on1m ? madeNewDil : (not na(l1) and not na(dilRaw) and math.abs(l1 - dilRaw) <= syminfo.mintick)
+        float sweepLw1 = wsU1 - l1
+        if sweep1 and sweepLw1 >= minW1s
+            utDoStore := true
+            utNewWs := wsU1
+            utNewCe := (l1 + wsU1) * 0.5
+            utNewEx := l1
+            utNewDir := 1
+            utNewT := t1Rb
+            utNewTag := "1m RB·DayIL"
 if utDoStore and not na(utNewWs) and not na(utNewT)
     if not na(utBox)
         box.delete(utBox)
@@ -647,10 +659,9 @@ if utDoStore and not na(utNewWs) and not na(utNewT)
     utCeLn := line.new(utNewT, utNewCe, utXR, utNewCe, xloc = xloc.bar_time, color = c_ce, width = 1, style = line.style_dotted)
     utLbl := label.new(utNewT, math.max(utNewEx, utNewWs), utNewTag + " untapped", xloc = xloc.bar_time, style = label.style_label_down, color = #0f172a, textcolor = utCol, size = size.small)
 
-// Once Day IL locks, drop pool RBs that are not at that low
+// Day IL locked: pool extreme must be the Day IL print (not a nearby later candle)
 if utLive and i_retestNearDil and not na(dilPx) and utDir == 1 and not oArmed
-    bool utAtDil = f_nearDil(utEx, dilPx) or f_nearDilBand(math.max(utEx, utWs), math.min(utEx, utWs), dilPx)
-    if not utAtDil
+    if math.abs(utEx - dilPx) > i_dilAlign
         utLive := false
         if not na(utBox)
             box.delete(utBox)
@@ -1351,13 +1362,13 @@ if barstate.islast
     if i_showDil and not na(dilPx)
         dilLbl := label.new(bar_index + 2, dilPx, dilTag + "  " + str.tostring(dilPx, "#.#"), xloc = xloc.bar_index, style = label.style_label_left, color = #6b21a8, textcolor = color.white, size = size.normal)
 
-// Permanent version stamp — if you don't see Dual13, the new paste is not on the chart
+// Permanent version stamp — if you don't see Dual14, the new paste is not on the chart
 var label verStamp = na
 if barstate.islast
     if na(verStamp)
-        verStamp := label.new(bar_index, high, "MS Dual13 · slim", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
+        verStamp := label.new(bar_index, high, "MS Dual14 · sweep-candle RB", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
     else
         label.set_xy(verStamp, bar_index, high)
-        label.set_text(verStamp, "MS Dual13 · slim")
+        label.set_text(verStamp, "MS Dual14 · sweep-candle RB")
 
 alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nleave and/or Powell plan on chart")
