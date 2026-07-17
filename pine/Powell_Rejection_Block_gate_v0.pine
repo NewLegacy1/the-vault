@@ -4,10 +4,10 @@
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
 // KEEP: Path B dual sleeve · NWOG · PDH/PDL · Day IL · yellow 10:00 · plans
-// Dual11: Day IL via pivot+bounce (plot — survives max_lines). Powell soft RB@DayIL.
+// Dual12: Untapped pre-10:00 5m RB @ Day IL → Powell arms on later return (wick-start entry).
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual11",
+     shorttitle              = "MS Dual12",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -45,14 +45,15 @@ i_pathBAwayPts = input.float(25.0, "KO-retest: min away from KO (pts)", minval =
 i_retestMinRisk = input.float(10.0, "Powell: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_leaveMinRisk = input.float(10.0, "KO-leave: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_leavePrefer5 = input.bool(true, "KO-leave: prefer soft 5m RB (else 1m)", group = grpPb)
-i_powellUse1 = input.bool(true, "Powell: ARM from 1m RB @ Day IL", group = grpPb, tooltip = "1m RB projection box when the wick tags today's Day IL (not fib 0 / not only KO).")
-i_powellUse5 = input.bool(true, "Powell: ARM from 5m RB @ Day IL", group = grpPb)
+i_powellUse1 = input.bool(true, "Powell: also pool 1m untapped RB", group = grpPb, tooltip = "Secondary — prefer 5m. Pools RBs from 09:30 (before 10:00), not only after.")
+i_powellUse5 = input.bool(true, "Powell: pool untapped 5m RB (primary)", group = grpPb, tooltip = "PRIMARY — capture 5m RB at Day IL from 09:30. Must leave untapped, then later return = second trade at wick start.")
 i_showDil = input.bool(true, "Show Day IL (session swing low)", group = grpPb, tooltip = "Confirmed NY-session intermediate low (bounce-confirmed day low). NEVER fib LO — fib 0 is separate.")
-i_retestNearDil = input.bool(true, "Powell: require RB at Day IL", group = grpPb, tooltip = "ON = Powell only arms when RB extreme/wick is near Day IL.")
+i_retestNearDil = input.bool(true, "Powell: untapped RB must be at Day IL", group = grpPb, tooltip = "ON = only keep the untapped RB whose extreme tags Day IL.")
 i_dilAlign = input.float(50.0, "Day IL proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
 i_dilBounce = input.float(15.0, "Day IL confirm bounce (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "RTH low locks as Day IL after price trades this far above it.")
 i_dilPivot = input.int(2, "Day IL pivot strength", minval = 1, maxval = 5, group = grpPb, tooltip = "Confirmed pivot-low lookback. Lowest RTH pivot = Day IL.")
-i_powellSoft = input.bool(true, "Powell: soft RB at Day IL (looser wick/body)", group = grpPb, tooltip = "ON = Day-IL sleeve accepts smaller rejection wicks so the afternoon reaction can arm.")
+i_powellSoft = input.bool(true, "Powell: soft RB quality for pool", group = grpPb, tooltip = "ON = looser wick/body so the morning Day-IL rejection qualifies.")
+i_utFreePts = input.float(10.0, "Untapped: leave-zone buffer (pts)", minval = 1.0, step = 1.0, group = grpPb, tooltip = "RB is 'freed/untapped' only after close clears wick-start by this many pts.")
 i_retestMinAfterLeave = input.int(15, "Powell: min minutes after leave", minval = 5, maxval = 180, group = grpPb)
 i_pathBReqOte = input.bool(false, "Powell: also require KO in fib OTE", group = grpPb, tooltip = "OFF by default — Powell is Day-IL reaction. Fib OTE is optional confluence.")
 i_latchBars = input.int(90, "RB latch lifetime (chart bars)", minval = 10, maxval = 300, group = grpPb, tooltip = "How long a 1m/5m projection box stays armed-ready before it expires.")
@@ -285,7 +286,7 @@ var int dihTime = na
 var string dilTag = "Day IL"
 var line dilLn = na
 var label dilLbl = na
-// Sticky Powell latch (1m/5m projection box → arm)
+// Sticky Powell latch (legacy same-bar) + untapped pre-10:00 RB pool
 var float pbLatchWs = na
 var float pbLatchCe = na
 var float pbLatchEx = na
@@ -298,6 +299,19 @@ var line pbProjCe = na
 var label pbProjLbl = na
 var array<box> pbMark1BoxA = array.new_box()
 var array<label> pbMark1LblA = array.new_label()
+// Untapped RB pool — can form BEFORE 10:00 at Day IL; Powell = later first return
+var float utWs = na
+var float utCe = na
+var float utEx = na
+var int utDir = 0
+var int utTime = na
+var int utBar = na
+var string utTag = "—"
+var bool utLive = false
+var bool utFreed = false
+var box utBox = na
+var line utCeLn = na
+var label utLbl = na
 
 // KO-leave sleeve (left the 10:00 key open → RB@KO)
 var bool eArmed = false
