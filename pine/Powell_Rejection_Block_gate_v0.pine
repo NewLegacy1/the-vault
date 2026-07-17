@@ -25,9 +25,9 @@ strategy(
      slippage                = 1,
      margin_long             = 0,
      margin_short            = 0,
-     max_lines_count         = 120,
-     max_boxes_count         = 80,
-     max_labels_count        = 80)
+     max_lines_count         = 180,
+     max_boxes_count         = 100,
+     max_labels_count        = 120)
 
 // ─── Inputs ──────────────────────────────────────────────────────────────────
 i_winEnd      = input.int(1300, "Last arm (HHMM)", minval = 0, maxval = 2359, group = "Session")
@@ -39,15 +39,17 @@ i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Lon
 
 grpPb = "Path B"
 i_pathB = input.bool(true, "Enable Path B", group = grpPb)
-i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb, tooltip = "How close the 1m RB must be to the 10:00 open. 15 was too tight for the Jul 16 11:15 retest.")
-// ON = Powell control (wait fib discount/premium @ KO). OFF = first RB after leave (Jul 16 ~10:00 early sleeve — study only).
-i_pathBReqOte = input.bool(true, "Require KO in fib OTE to arm (Powell)", group = grpPb, tooltip = "ON restores the ~11:15 OTE retest. OFF arms the first RB near KO after leave (can steal the day).")
-i_pathBMinFib = input.float(40.0, "Min fib leg (pts) before arm", minval = 10.0, step = 5.0, group = grpPb, tooltip = "Blocks fake OTE on a tiny leave wick. Jul 16 full leg was ~194 pts.")
+i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb, tooltip = "How close the 1m RB must be to the 10:00 open.")
+// Both = show Early (~10:00) AND OTE/Powell (~11:15) plans so you can pick or take two.
+i_pathBSleeve = input.string("Both", "Path B sleeves", options = ["Both", "Early only", "OTE only (Powell)"], group = grpPb, tooltip = "Both keeps the leave RB and the later OTE retest as separate plans. OTE only = Powell control.")
+i_pathBMinFib = input.float(40.0, "OTE: min fib leg (pts)", minval = 10.0, step = 5.0, group = grpPb, tooltip = "OTE sleeve only. Blocks fake OTE on a stub wick.")
+i_pathBAwayPts = input.float(30.0, "OTE: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "Price must run this far from KO after leave before an OTE retest can arm. Stops the ~10:00 RB from counting as Powell.")
 i_pathBUse1 = input.bool(true, "ARM on 1m RB", group = grpPb)
 i_pathBMark5 = input.bool(true, "MARK 5m RBs near KO (eyes)", group = grpPb)
-i_pathBMarkEarly = input.bool(true, "MARK early RB before OTE (eyes)", group = grpPb, tooltip = "Shows the first post-leave RB near KO without arming — the early sleeve you saw ~10:00 on Jul 16.")
 i_pathBUse5 = input.bool(false, "ARM on 5m RB (off)", group = grpPb)
 i_pathBUse15 = input.bool(false, "ARM on 15m RB (off)", group = grpPb)
+bool wantEarly = i_pathBSleeve == "Both" or i_pathBSleeve == "Early only"
+bool wantOte = i_pathBSleeve == "Both" or i_pathBSleeve == "OTE only (Powell)"
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_minWick5 = input.float(6.0, "Min 5m RB wick (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_minWick15 = input.float(12.0, "Min 15m RB wick (pts)", minval = 4.0, step = 1.0, group = grpPb)
@@ -218,6 +220,7 @@ f_nearKoBand(float hi, float lo, float ko) =>
     not na(hi) and not na(lo) and not na(ko) and lo <= ko + i_pathBAlign and hi >= ko - i_pathBAlign
 
 // ─── State ───────────────────────────────────────────────────────────────────
+// Legacy single-slot mirrors the newest arm (status / alerts). Dual sleeves below.
 var int suDir = 0
 var int suBar = na
 var float suEntry = na
@@ -232,7 +235,6 @@ var bool manualReady = false
 var string manualState = "—"
 var string suSweepTag = "—"
 var bool suPathB = false
-var bool pbArmedToday = false
 
 var int pbDir = 0
 var bool pbManip = false
@@ -247,23 +249,60 @@ var float pbFibHi = na
 var float pbFibLo = na
 var int pbFibLoBar = na
 var int pbFibHiBar = na
-var bool pbOteLatched = false
-var float pbLatchWs = na
-var float pbLatchCe = na
-var float pbLatchEx = na
-var int pbLatchDir = 0
-var int pbLatchBar = na
-var string pbLatchTag = "—"
+var float pbAway = 0.0
 var string pbState = "—"
-// Fill / outcome sim (limit from bar AFTER arm)
-// 0=idle 1=limit live 2=filled 3=TP win 4=STOP loss 5=no fill by flat
-var int fillState = 0
-var int fillBar = na
-var string fillKpi = "—"
-var label fillLbl = na
-var bool pbEarlyMarked = false
-var array<box> pbEarlyBoxA = array.new_box()
-var array<label> pbEarlyLblA = array.new_label()
+
+// Early sleeve (~10:00 leave RB)
+var bool eArmed = false
+var int eDir = 0
+var int eBar = na
+var float eEntry = na
+var float eStop = na
+var float eTp = na
+var float eWs = na
+var float eCe = na
+var float eEx = na
+var string eTag = "—"
+var int eFill = 0
+var string eKpi = "—"
+var label eFillLbl = na
+var line eLnE = na
+var line eLnS = na
+var line eLnT = na
+var label eLbE = na
+var label eLbS = na
+var label eLbT = na
+var box eBxRisk = na
+var box eBxRew = na
+var int ePlanLeft = na
+var box eBxRb = na
+var label eLblRb = na
+
+// OTE / Powell sleeve (~11:15 retest)
+var bool oArmed = false
+var int oDir = 0
+var int oBar = na
+var float oEntry = na
+var float oStop = na
+var float oTp = na
+var float oWs = na
+var float oCe = na
+var float oEx = na
+var string oTag = "—"
+var int oFill = 0
+var string oKpi = "—"
+var label oFillLbl = na
+var line oLnE = na
+var line oLnS = na
+var line oLnT = na
+var label oLbE = na
+var label oLbS = na
+var label oLbT = na
+var box oBxRisk = na
+var box oBxRew = na
+var int oPlanLeft = na
+var box oBxRb = na
+var label oLblRb = na
 
 var line pbLn62 = na
 var line pbLn705 = na
@@ -277,21 +316,6 @@ var label pbLbl = na
 var label pbLbl0 = na
 var label pbLbl1 = na
 var label pbStateLbl = na
-
-var line planLnE = na
-var line planLnS = na
-var line planLnT = na
-var label planLbE = na
-var label planLbS = na
-var label planLbT = na
-var box planBxRisk = na
-var box planBxRew = na
-var int planLeft = na
-
-var box bxRb = na
-var line lnRbCe = na
-var label lblRbMark = na
-var int rbLeft = na
 
 var line lnPdh = na
 var line lnPdl = na
@@ -309,6 +333,30 @@ var array<bool> nwogHitHiA = array.new_bool()
 var array<bool> nwogHitLoA = array.new_bool()
 var array<bool> nwogFilledA = array.new_bool()
 
+f_clearPlan(line lnE, line lnS, line lnT, label lbE, label lbS, label lbT, box bxR, box bxW, label fl, box bxRb, label lbRb) =>
+    if not na(lnE)
+        line.delete(lnE)
+    if not na(lnS)
+        line.delete(lnS)
+    if not na(lnT)
+        line.delete(lnT)
+    if not na(lbE)
+        label.delete(lbE)
+    if not na(lbS)
+        label.delete(lbS)
+    if not na(lbT)
+        label.delete(lbT)
+    if not na(bxR)
+        box.delete(bxR)
+    if not na(bxW)
+        box.delete(bxW)
+    if not na(fl)
+        label.delete(fl)
+    if not na(bxRb)
+        box.delete(bxRb)
+    if not na(lbRb)
+        label.delete(lbRb)
+
 // Wipe setups on calendar midnight only — 18:00 CME roll must NOT kill ENTRY/STOP/TP
 if newCalDay
     suDir := 0
@@ -322,7 +370,6 @@ if newCalDay
     manualState := "—"
     suSweepTag := "—"
     suPathB := false
-    pbArmedToday := false
     pbDir := 0
     pbManip := false
     pbLeft := false
@@ -336,24 +383,58 @@ if newCalDay
     pbFibLo := na
     pbFibLoBar := na
     pbFibHiBar := na
-    pbOteLatched := false
-    pbLatchWs := na
-    pbLatchCe := na
-    pbLatchEx := na
-    pbLatchDir := 0
-    pbLatchBar := na
-    pbLatchTag := "—"
+    pbAway := 0.0
     pbState := "—"
-    fillState := 0
-    fillBar := na
-    fillKpi := "—"
-    pbEarlyMarked := false
-    if not na(fillLbl)
-        label.delete(fillLbl)
-    fillLbl := na
-    while array.size(pbEarlyBoxA) > 0
-        box.delete(array.shift(pbEarlyBoxA))
-        label.delete(array.shift(pbEarlyLblA))
+    eArmed := false
+    eDir := 0
+    eBar := na
+    eEntry := na
+    eStop := na
+    eTp := na
+    eWs := na
+    eCe := na
+    eEx := na
+    eTag := "—"
+    eFill := 0
+    eKpi := "—"
+    ePlanLeft := na
+    oArmed := false
+    oDir := 0
+    oBar := na
+    oEntry := na
+    oStop := na
+    oTp := na
+    oWs := na
+    oCe := na
+    oEx := na
+    oTag := "—"
+    oFill := 0
+    oKpi := "—"
+    oPlanLeft := na
+    f_clearPlan(eLnE, eLnS, eLnT, eLbE, eLbS, eLbT, eBxRisk, eBxRew, eFillLbl, eBxRb, eLblRb)
+    f_clearPlan(oLnE, oLnS, oLnT, oLbE, oLbS, oLbT, oBxRisk, oBxRew, oFillLbl, oBxRb, oLblRb)
+    eLnE := na
+    eLnS := na
+    eLnT := na
+    eLbE := na
+    eLbS := na
+    eLbT := na
+    eBxRisk := na
+    eBxRew := na
+    eFillLbl := na
+    eBxRb := na
+    eLblRb := na
+    oLnE := na
+    oLnS := na
+    oLnT := na
+    oLbE := na
+    oLbS := na
+    oLbT := na
+    oBxRisk := na
+    oBxRew := na
+    oFillLbl := na
+    oBxRb := na
+    oLblRb := na
     if not na(pbLn62)
         line.delete(pbLn62)
     if not na(pbLn705)
@@ -393,47 +474,23 @@ if newCalDay
     while array.size(pbMark5BoxA) > 0
         box.delete(array.shift(pbMark5BoxA))
         label.delete(array.shift(pbMark5LblA))
-    if not na(bxRb)
-        box.delete(bxRb)
-    if not na(lnRbCe)
-        line.delete(lnRbCe)
-    if not na(lblRbMark)
-        label.delete(lblRbMark)
-    bxRb := na
-    lnRbCe := na
-    lblRbMark := na
-    rbLeft := na
-    if not na(planLnE)
-        line.delete(planLnE)
-        line.delete(planLnS)
-        line.delete(planLnT)
-        label.delete(planLbE)
-        label.delete(planLbS)
-        label.delete(planLbT)
-        box.delete(planBxRisk)
-        box.delete(planBxRew)
-    planLnE := na
-    planLnS := na
-    planLnT := na
-    planLbE := na
-    planLbS := na
-    planLbT := na
-    planBxRisk := na
-    planBxRew := na
-    planLeft := na
-
-bool canArmPb = canPlace and (not i_oneTradeDay or not pbArmedToday) and (suDir == 0 or not suPathB)
 
 // ─── Path B ──────────────────────────────────────────────────────────────────
-// Stay live after leave so fib + status keep updating past Last arm (13:00).
-// Plans persist until calendar midnight (not CME 18:00).
-bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and (nyHhmm < i_winEnd or pbLeft or (suPathB and suDir != 0))
+// Early sleeve: first RB@KO after leave, BEFORE price runs away.
+// OTE sleeve: after away-run + KO in live fib 0.62–0.79 + RB@KO (Powell ~11:15).
+// Both mode keeps two independent plans (pick one or take two).
+bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and (nyHhmm < i_winEnd or pbLeft or eArmed or oArmed)
 float pbOteLo = na
 float pbOteHi = na
-float pbOteMid = na
-bool koInOte = false
+bool koInBand = false
 bool fibLegOk = false
+bool hasAway = false
 bool pbStopFail = false
+int latchDir = 0
+float latchWs = na
+float latchCe = na
+float latchEx = na
+string latchTf = "1RB"
 
 if pbOn
     if na(pbHi) or high >= pbHi
@@ -448,7 +505,6 @@ if pbOn
     if low < ko1000
         pbPierceBelow := true
         pbManip := true
-    // Same-bar leave OK (Powell: wick then distribute)
     if pbManip and not pbLeft and barstate.isconfirmed and canPlace
         if pbPierceAbove and close < ko1000
             pbLeft := true
@@ -471,86 +527,73 @@ if pbOn
         if pbDir == -1 and low <= pbFibLo
             pbFibLo := low
             pbFibLoBar := bar_index
+        if pbDir == 1
+            pbAway := math.max(pbAway, high - ko1000)
+        else if pbDir == -1
+            pbAway := math.max(pbAway, ko1000 - low)
     float pbRange = not na(pbFibHi) and not na(pbFibLo) ? pbFibHi - pbFibLo : na
     fibLegOk := not na(pbRange) and pbRange >= i_pathBMinFib
-    if pbLeft
-        if fibLegOk
-            if pbDir == -1
-                pbOteLo := pbFibLo + pbRange * 0.62
-                pbOteHi := pbFibLo + pbRange * 0.79
-                pbOteMid := pbFibLo + pbRange * 0.705
-            else
-                pbOteLo := pbFibHi - pbRange * 0.79
-                pbOteHi := pbFibHi - pbRange * 0.62
-                pbOteMid := pbFibHi - pbRange * 0.705
-            bool koInBand = ko1000 >= pbOteLo - i_pathBAlign and ko1000 <= pbOteHi + i_pathBAlign
-            if koInBand
-                pbOteLatched := true
-            // Powell path: need real leg + KO in 0.62–0.79 (or latched once). Early sleeve = ReqOte OFF.
-            koInOte := not i_pathBReqOte or koInBand or pbOteLatched
+    hasAway := pbAway >= i_pathBAwayPts
+    // Live OTE only (no sticky latch — sticky was why ~10:00 stole Powell)
+    if pbLeft and fibLegOk
+        if pbDir == -1
+            pbOteLo := pbFibLo + pbRange * 0.62
+            pbOteHi := pbFibLo + pbRange * 0.79
         else
-            koInOte := not i_pathBReqOte and not na(pbRange) and pbRange > 0
+            pbOteLo := pbFibHi - pbRange * 0.79
+            pbOteHi := pbFibHi - pbRange * 0.62
+        koInBand := ko1000 >= pbOteLo - i_pathBAlign and ko1000 <= pbOteHi + i_pathBAlign
 
-    bool nearKo15B = f_nearKo(h15, ko1000) or f_nearKo(wsB15, ko1000) or f_nearKoBand(h15, wsB15, ko1000)
-    bool nearKo15U = f_nearKo(l15, ko1000) or f_nearKo(wsU15, ko1000) or f_nearKoBand(wsU15, l15, ko1000)
     bool nearKo5B = f_nearKo(h5, ko1000) or f_nearKo(wsB5, ko1000) or f_nearKoBand(h5, wsB5, ko1000)
     bool nearKo5U = f_nearKo(l5, ko1000) or f_nearKo(wsU5, ko1000) or f_nearKoBand(wsU5, l5, ko1000)
     bool nearKo1B = f_nearKo(h1, ko1000) or f_nearKo(wsB1, ko1000) or f_nearKoBand(h1, wsB1, ko1000)
     bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000) or f_nearKoBand(wsU1, l1, ko1000)
-    // 1m chart: every confirmed bar (pack looks at [1]). HTF: when a new 1m closes into this bar.
+    bool nearKo15B = f_nearKo(h15, ko1000) or f_nearKo(wsB15, ko1000) or f_nearKoBand(h15, wsB15, ko1000)
+    bool nearKo15U = f_nearKo(l15, ko1000) or f_nearKo(wsU15, ko1000) or f_nearKoBand(wsU15, l15, ko1000)
     bool trig1 = barstate.isconfirmed and (on1m or new1Bar)
     bool trig5 = barstate.isconfirmed and (timeframe.period == "5" or new5Bar)
     bool trig15 = barstate.isconfirmed and (timeframe.period == "15" or new15Bar)
 
-    if pbLeft and koInOte and barstate.isconfirmed
-        bool have1Latch = pbLatchTag == "PathB · 10:00 · 1RB" and pbLatchDir != 0
-        bool latched1Now = false
+    // Detect RB@KO (not gated on OTE — sleeves decide)
+    if pbLeft and barstate.isconfirmed
         if pbDir == -1
             if i_pathBUse1 and trig1 and b1 and nearKo1B
-                pbLatchWs := wsB1
-                pbLatchEx := h1
-                pbLatchCe := (h1 + wsB1) * 0.5
-                pbLatchDir := -1
-                pbLatchBar := bar_index
-                pbLatchTag := "PathB · 10:00 · 1RB"
-                latched1Now := true
-            if not latched1Now and not have1Latch and i_pathBUse5 and trig5 and b5 and nearKo5B
-                pbLatchWs := wsB5
-                pbLatchEx := h5
-                pbLatchCe := (h5 + wsB5) * 0.5
-                pbLatchDir := -1
-                pbLatchBar := bar_index
-                pbLatchTag := "PathB · 10:00 · 5RB"
-            if not latched1Now and not have1Latch and pbLatchDir == 0 and i_pathBUse15 and trig15 and b15 and nearKo15B
-                pbLatchWs := wsB15
-                pbLatchEx := h15
-                pbLatchCe := (h15 + wsB15) * 0.5
-                pbLatchDir := -1
-                pbLatchBar := bar_index
-                pbLatchTag := "PathB · 10:00 · 15RB"
+                latchDir := -1
+                latchWs := wsB1
+                latchEx := h1
+                latchCe := (h1 + wsB1) * 0.5
+                latchTf := "1RB"
+            else if i_pathBUse5 and trig5 and b5 and nearKo5B
+                latchDir := -1
+                latchWs := wsB5
+                latchEx := h5
+                latchCe := (h5 + wsB5) * 0.5
+                latchTf := "5RB"
+            else if i_pathBUse15 and trig15 and b15 and nearKo15B
+                latchDir := -1
+                latchWs := wsB15
+                latchEx := h15
+                latchCe := (h15 + wsB15) * 0.5
+                latchTf := "15RB"
         if pbDir == 1
             if i_pathBUse1 and trig1 and u1 and nearKo1U
-                pbLatchWs := wsU1
-                pbLatchEx := l1
-                pbLatchCe := (l1 + wsU1) * 0.5
-                pbLatchDir := 1
-                pbLatchBar := bar_index
-                pbLatchTag := "PathB · 10:00 · 1RB"
-                latched1Now := true
-            if not latched1Now and not have1Latch and i_pathBUse5 and trig5 and u5 and nearKo5U
-                pbLatchWs := wsU5
-                pbLatchEx := l5
-                pbLatchCe := (l5 + wsU5) * 0.5
-                pbLatchDir := 1
-                pbLatchBar := bar_index
-                pbLatchTag := "PathB · 10:00 · 5RB"
-            if not latched1Now and not have1Latch and pbLatchDir == 0 and i_pathBUse15 and trig15 and u15 and nearKo15U
-                pbLatchWs := wsU15
-                pbLatchEx := l15
-                pbLatchCe := (l15 + wsU15) * 0.5
-                pbLatchDir := 1
-                pbLatchBar := bar_index
-                pbLatchTag := "PathB · 10:00 · 15RB"
+                latchDir := 1
+                latchWs := wsU1
+                latchEx := l1
+                latchCe := (l1 + wsU1) * 0.5
+                latchTf := "1RB"
+            else if i_pathBUse5 and trig5 and u5 and nearKo5U
+                latchDir := 1
+                latchWs := wsU5
+                latchEx := l5
+                latchCe := (l5 + wsU5) * 0.5
+                latchTf := "5RB"
+            else if i_pathBUse15 and trig15 and u15 and nearKo15U
+                latchDir := 1
+                latchWs := wsU15
+                latchEx := l15
+                latchCe := (l15 + wsU15) * 0.5
+                latchTf := "15RB"
 
     if i_pathBMark5 and pbLeft and trig5
         bool mark5Bear = pbDir == -1 and b5 and nearKo5B
@@ -566,103 +609,100 @@ if pbOn
                     box.delete(array.shift(pbMark5BoxA))
                     label.delete(array.shift(pbMark5LblA))
 
-    // Early sleeve eyes — first post-leave RB@KO while OTE/fib gate still blocks ARM (Jul 16 ~10:00)
-    if i_pathBMarkEarly and i_pathBReqOte and pbLeft and not pbEarlyMarked and not (suPathB and suDir != 0) and barstate.isconfirmed
-        bool earlyBear = pbDir == -1 and ((trig1 and b1 and nearKo1B) or (trig5 and b5 and nearKo5B))
-        bool earlyBull = pbDir == 1 and ((trig1 and u1 and nearKo1U) or (trig5 and u5 and nearKo5U))
-        if (earlyBear or earlyBull) and not koInOte
-            float eTop = earlyBear ? (trig1 and b1 and nearKo1B ? h1 : h5) : (trig1 and u1 and nearKo1U ? wsU1 : wsU5)
-            float eBot = earlyBear ? (trig1 and b1 and nearKo1B ? wsB1 : wsB5) : (trig1 and u1 and nearKo1U ? l1 : l5)
-            if not na(eTop) and not na(eBot)
-                pbEarlyMarked := true
-                array.push(pbEarlyBoxA, box.new(bar_index, math.max(eTop, eBot), bar_index + 8, math.min(eTop, eBot), border_color = #f59e0b, bgcolor = color.new(#f59e0b, 90), border_width = 2))
-                array.push(pbEarlyLblA, label.new(bar_index, math.max(eTop, eBot), "EARLY RB · eyes (not OTE)", style = label.style_label_down, color = #78350f, textcolor = #fde68a, size = size.tiny))
+    bool biasOk = (latchDir == -1 and biasOkShort) or (latchDir == 1 and biasOkLong)
+    bool singleSlotLock = i_oneTradeDay and i_pathBSleeve != "Both" and (eArmed or oArmed)
 
-    if not na(pbLatchBar) and bar_index - pbLatchBar > i_tapTimeout
-        pbLatchWs := na
-        pbLatchCe := na
-        pbLatchEx := na
-        pbLatchDir := 0
-        pbLatchBar := na
-        pbLatchTag := "—"
-
-    if canArmPb and koInOte and pbDir == -1 and biasOkShort and barstate.isconfirmed and pbLatchDir == -1 and not na(pbLatchWs)
-        [entryPx, stopPx] = f_plan(pbLatchWs, pbLatchCe, pbLatchEx, true)
+    // EARLY arm — RB@KO before the away-run (Jul 16 ~10:00)
+    if wantEarly and not eArmed and canPlace and not singleSlotLock and biasOk and latchDir != 0 and not hasAway and barstate.isconfirmed
+        [entryPx, stopPx] = f_plan(latchWs, latchCe, latchEx, latchDir == -1)
         if na(entryPx)
             pbStopFail := true
         else
             float riskPts0 = math.abs(stopPx - entryPx)
-            suDir := -1
-            suWickStart := pbLatchWs
-            suCe := pbLatchCe
-            suExtreme := pbLatchEx
-            suEntry := entryPx
-            suStop := stopPx
-            pendStop := stopPx
-            pendTp := entryPx - i_rr * riskPts0
-            suBar := bar_index
-            suLeft := true
+            eArmed := true
+            eDir := latchDir
+            eBar := bar_index
+            eWs := latchWs
+            eCe := latchCe
+            eEx := latchEx
+            eEntry := entryPx
+            eStop := stopPx
+            eTp := latchDir == 1 ? entryPx + i_rr * riskPts0 : entryPx - i_rr * riskPts0
+            eTag := "EARLY · PathB · 10:00 · " + latchTf
+            eFill := 1
+            eKpi := "LIMIT live — waiting tap"
+            suDir := eDir
+            suBar := eBar
+            suEntry := eEntry
+            suStop := eStop
+            pendStop := eStop
+            pendTp := eTp
+            suWickStart := eWs
+            suCe := eCe
+            suExtreme := eEx
             suPathB := true
-            suSweepTag := pbLatchTag
+            suLeft := true
+            suSweepTag := eTag
             manualReady := true
             manualState := f_shadowArmLabel()
-            pbArmedToday := true
-            pbLatchDir := 0
-            fillState := 1
-            fillBar := na
-            fillKpi := "LIMIT live — waiting tap"
 
-    if canArmPb and koInOte and pbDir == 1 and biasOkLong and (suDir == 0 or not suPathB) and barstate.isconfirmed and pbLatchDir == 1 and not na(pbLatchWs)
-        [entryPx, stopPx] = f_plan(pbLatchWs, pbLatchCe, pbLatchEx, false)
-        if na(entryPx)
+    // OTE / Powell arm — after away-run + min fib + RB@KO (Jul 16 ~11:15).
+    // KO-in-band is preferred (clean tag) but not required — hard require blocked real retests when KO sat just outside 0.62–0.79.
+    if wantOte and not oArmed and canPlace and not singleSlotLock and biasOk and latchDir != 0 and hasAway and fibLegOk and barstate.isconfirmed
+        [entryPx2, stopPx2] = f_plan(latchWs, latchCe, latchEx, latchDir == -1)
+        if na(entryPx2)
             pbStopFail := true
         else
-            float riskPts0 = math.abs(stopPx - entryPx)
-            suDir := 1
-            suWickStart := pbLatchWs
-            suCe := pbLatchCe
-            suExtreme := pbLatchEx
-            suEntry := entryPx
-            suStop := stopPx
-            pendStop := stopPx
-            pendTp := entryPx + i_rr * riskPts0
-            suBar := bar_index
-            suLeft := true
+            float riskPts1 = math.abs(stopPx2 - entryPx2)
+            oArmed := true
+            oDir := latchDir
+            oBar := bar_index
+            oWs := latchWs
+            oCe := latchCe
+            oEx := latchEx
+            oEntry := entryPx2
+            oStop := stopPx2
+            oTp := latchDir == 1 ? entryPx2 + i_rr * riskPts1 : entryPx2 - i_rr * riskPts1
+            oTag := (koInBand ? "OTE · PathB · 10:00 · " : "OTE~ · PathB · 10:00 · ") + latchTf
+            oFill := 1
+            oKpi := "LIMIT live — waiting tap"
+            suDir := oDir
+            suBar := oBar
+            suEntry := oEntry
+            suStop := oStop
+            pendStop := oStop
+            pendTp := oTp
+            suWickStart := oWs
+            suCe := oCe
+            suExtreme := oEx
             suPathB := true
-            suSweepTag := pbLatchTag
+            suLeft := true
+            suSweepTag := oTag
             manualReady := true
             manualState := f_shadowArmLabel()
-            pbArmedToday := true
-            pbLatchDir := 0
-            fillState := 1
-            fillBar := na
-            fillKpi := "LIMIT live — waiting tap"
 
-// Status always — never collapse to a dead "window closed" while left / latched / armed
+// Status
 if not i_pathB
     pbState := "Path B off"
-else if suPathB and suDir != 0
-    pbState := (suDir == -1 ? "ARMED short" : "ARMED long") + (pbLeft ? " · FIB on" : "") + (fillState >= 1 ? " · " + fillKpi : "")
 else if nyHhmm < 1000 or na(ko1000)
     pbState := "B before 10:00"
 else if not pbManip
     pbState := "B wait manip"
 else if not pbLeft
     pbState := canPlace ? "B wait leave" : "B no leave (arm window ended)"
-else if i_pathBReqOte and not fibLegOk and pbLeft
-    pbState := "B wait fib leg (≥" + str.tostring(i_pathBMinFib, "#") + "pt)"
-else if i_pathBReqOte and not koInOte
-    pbState := "B wait OTE @ KO (Powell)"
-else if pbStopFail
-    pbState := "B stop size fail"
-else if not canPlace and pbLatchDir == 0
-    pbState := pbDir == -1 ? "B left · no bear RB before close" : "B left · no bull RB before close"
-else if not canArmPb
-    pbState := "B blocked (1/day or slot)"
-else if pbLatchDir != 0
-    pbState := "B latch ready"
 else
-    pbState := (pbDir == -1 ? "B wait bear RB@KO" : "B wait bull RB@KO") + (on1m ? "" : " · flip to 1m")
+    string ePart = eArmed ? "EARLY✓" : wantEarly ? (hasAway ? "EARLY missed" : "EARLY wait RB") : ""
+    string oPart = oArmed ? "OTE✓" : wantOte ? (not hasAway ? "OTE wait away" : not fibLegOk ? "OTE wait fib" : "OTE wait RB@KO" + (on1m ? "" : " · flip 1m")) : ""
+    if eArmed or oArmed
+        pbState := ePart + (eArmed and wantOte ? " · " : "") + oPart
+        if eArmed
+            pbState := pbState + " · " + eKpi
+        if oArmed
+            pbState := pbState + (eArmed ? " | " : " · ") + oKpi
+    else if pbStopFail
+        pbState := "B stop size fail"
+    else
+        pbState := ePart + (str.length(ePart) > 0 and str.length(oPart) > 0 ? " · " : "") + oPart
 
 if i_pathBShowState
     if na(pbStateLbl)
@@ -671,60 +711,38 @@ if i_pathBShowState
         label.set_xy(pbStateLbl, bar_index, high)
         label.set_text(pbStateLbl, pbState)
 
-// Keep Path B plan after window / flat — journal until new day
-if suPathB and suDir != 0 and barstate.isconfirmed
-    bool blown = (suDir == -1 and close > suStop) or (suDir == 1 and close < suStop)
-    if blown and bar_index - suBar > 2
-        manualState := "STOP side traded — review"
-        manualReady := false
-    else if nyHhmm >= i_flatTime
-        manualState := "Flat — plan still up"
-    else
-        manualReady := true
-        manualState := f_shadowArmLabel()
+// Fill KPI helper (per sleeve)
+f_updFill(int st, int armBar, int dir, float entry, float stop, float tp) =>
+    int out = st
+    if st < 3
+        if st == 1 and bar_index > armBar and (dir == 1 ? low <= entry : high >= entry)
+            out := 2
+        if out == 2
+            bool hitStop = dir == 1 ? low <= stop : high >= stop
+            bool hitTp = dir == 1 ? high >= tp : low <= tp
+            if hitStop
+                out := 4
+            else if hitTp
+                out := 3
+        if out == 1 and nyHhmm >= i_flatTime
+            out := 5
+    string kpi = out == 1 ? "LIMIT live — waiting tap" : out == 2 ? (nyHhmm >= i_flatTime ? "FILLED · open at flat" : "FILLED · in trade") : out == 3 ? "WIN · TP" : out == 4 ? "LOSS · STOP" : out == 5 ? "NO FILL by flat" : "—"
+    [out, kpi]
 
-// Fill / outcome KPI — limit is live starting the bar AFTER ARM (you would click then)
-if i_showFillKpi and suPathB and suDir != 0 and not na(suEntry) and not na(pendStop) and not na(pendTp) and barstate.isconfirmed
-    if fillState == 1 and bar_index > suBar
-        bool tapped = suDir == 1 ? low <= suEntry : high >= suEntry
-        if tapped
-            fillState := 2
-            fillBar := bar_index
-            fillKpi := "FILLED"
-    if fillState == 2
-        // Same-bar TP+STOP → STOP wins (conservative). Order: stop first, then TP.
-        bool hitStop = suDir == 1 ? low <= pendStop : high >= pendStop
-        bool hitTp = suDir == 1 ? high >= pendTp : low <= pendTp
-        if hitStop
-            fillState := 4
-            fillKpi := "LOSS · STOP"
-        else if hitTp
-            fillState := 3
-            fillKpi := "WIN · TP"
-    if fillState == 1 and nyHhmm >= i_flatTime
-        fillState := 5
-        fillKpi := "NO FILL by flat"
-    if fillState == 2 and nyHhmm >= i_flatTime
-        fillKpi := "FILLED · open at flat"
-    // KPI tag parked at entry (doesn't chase price)
-    string fillTxt = fillKpi
-    if fillState == 1
-        fillTxt := "LIMIT live — waiting tap\n(arm bar +" + str.tostring(bar_index - suBar) + ")"
-    else if fillState == 2
-        fillTxt := "FILLED · in trade"
-    else if fillState == 3
-        fillTxt := "WIN · TP hit"
-    else if fillState == 4
-        fillTxt := "LOSS · STOP hit"
-    else if fillState == 5
-        fillTxt := "NO FILL by flat"
-    color fillCol = fillState == 3 ? c_tp : fillState == 4 ? c_stop : fillState == 5 ? #94a3b8 : #fde68a
-    if na(fillLbl)
-        fillLbl := label.new(suBar, suEntry, fillTxt, style = label.style_label_right, color = #0f172a, textcolor = fillCol, size = size.small)
-    else
-        label.set_xy(fillLbl, suBar, suEntry)
-        label.set_text(fillLbl, fillTxt)
-        label.set_textcolor(fillLbl, fillCol)
+if i_showFillKpi and eArmed and barstate.isconfirmed
+    [eFillTmp, eKpiTmp] = f_updFill(eFill, eBar, eDir, eEntry, eStop, eTp)
+    eFill := eFillTmp
+    eKpi := eKpiTmp
+if i_showFillKpi and oArmed and barstate.isconfirmed
+    [oFillTmp, oKpiTmp] = f_updFill(oFill, oBar, oDir, oEntry, oStop, oTp)
+    oFill := oFillTmp
+    oKpi := oKpiTmp
+
+if eArmed or oArmed
+    manualReady := true
+    manualState := f_shadowArmLabel()
+    if nyHhmm >= i_flatTime
+        manualState := "Flat — plan(s) still up"
 
 // ─── Fib anchors only (LO + HI) — you place the fib tool ─────────────────────
 bool pbFibReady = i_pathBShowFib and pbLeft and not na(pbFibHi) and not na(pbFibLo) and pbFibHi > pbFibLo
@@ -787,74 +805,111 @@ if pbFibReady
         label.set_xy(pbLbl1, x1, pbFibHi)
         label.set_xy(pbLbl, xR, midY)
 
-// ─── Armed RB box ────────────────────────────────────────────────────────────
-if i_showSig and suDir != 0 and not na(suBar) and not na(suExtreme) and not na(suWickStart)
-    color col = suDir == -1 ? c_bear : c_bull
-    float top = math.max(suExtreme, suWickStart)
-    float bot = math.min(suExtreme, suWickStart)
-    color fillC = i_rbNoFill ? color.new(col, 100) : color.new(col, 90)
-    if na(bxRb) or rbLeft != suBar
-        if not na(bxRb)
-            box.delete(bxRb)
-        if not na(lnRbCe)
-            line.delete(lnRbCe)
-        if not na(lblRbMark)
-            label.delete(lblRbMark)
-        rbLeft := suBar
-        bxRb := box.new(suBar, top, suBar + i_rbExtend, bot, border_color = col, bgcolor = fillC, border_width = 2)
-        lnRbCe := line.new(suBar, suCe, suBar + i_rbExtend, suCe, color = c_ce, width = 1, style = line.style_dotted)
-        lblRbMark := label.new(suBar, top, suSweepTag, style = label.style_none, color = color.new(color.black, 100), textcolor = col, size = size.small)
-    else
-        box.set_right(bxRb, math.max(bar_index, suBar + 4))
-        line.set_x2(lnRbCe, math.max(bar_index, suBar + 4))
-
-// ─── Trade plan (+ R:R / risk KPIs on labels) ────────────────────────────────
-bool planLive = i_showPend and suDir != 0 and not na(suEntry) and not na(pendStop) and not na(pendTp)
+// ─── Dual trade plans (Early amber · OTE white) ──────────────────────────────
 bool isShadow = not dayAllowed
-if planLive
-    int xR = math.max(bar_index + 4, suBar + 16)
-    color eCol = isShadow ? #fb923c : c_limit
-    color sCol = isShadow ? #fb923c : c_stop
-    color tCol = isShadow ? #94a3b8 : c_tp
-    float riskPts = math.abs(suEntry - pendStop)
-    float rewardPts = math.abs(pendTp - suEntry)
-    float rrLive = riskPts > 0 ? rewardPts / riskPts : 0.0
-    string dirTxt = suDir == 1 ? "LONG" : "SHORT"
-    string shad = isShadow ? " · SHADOW" : ""
-    string eTxt = dirTxt + " · " + suSweepTag + shad + "\n1:" + str.tostring(rrLive, "#.#") + "  ·  risk " + str.tostring(riskPts, "#.#") + " pt" + (i_showFillKpi ? "\n" + fillKpi : "")
-    string sTxt = "STOP  ·  −" + str.tostring(riskPts, "#.#") + " pt"
-    string tTxt = "TP  ·  +" + str.tostring(rewardPts, "#.#") + " pt  ·  1:" + str.tostring(rrLive, "#.#")
-    if na(planLeft) or planLeft != suBar
-        planLeft := suBar
-        if not na(planLnE)
-            line.delete(planLnE)
-            line.delete(planLnS)
-            line.delete(planLnT)
-            label.delete(planLbE)
-            label.delete(planLbS)
-            label.delete(planLbT)
-            box.delete(planBxRisk)
-            box.delete(planBxRew)
-        planLnE := line.new(suBar, suEntry, xR, suEntry, color = eCol, width = 2)
-        planLnS := line.new(suBar, pendStop, xR, pendStop, color = sCol, width = 2)
-        planLnT := line.new(suBar, pendTp, xR, pendTp, color = tCol, width = 2)
-        planLbE := label.new(xR, suEntry, eTxt, style = label.style_label_left, color = #0f172a, textcolor = eCol, size = size.small)
-        planLbS := label.new(xR, pendStop, sTxt, style = label.style_label_left, color = #0f172a, textcolor = sCol, size = size.small)
-        planLbT := label.new(xR, pendTp, tTxt, style = label.style_label_left, color = #0f172a, textcolor = tCol, size = size.small)
-        planBxRisk := box.new(suBar, math.max(suEntry, pendStop), xR, math.min(suEntry, pendStop), border_color = color.new(sCol, 70), bgcolor = color.new(sCol, 92), border_width = 1)
-        planBxRew := box.new(suBar, math.max(suEntry, pendTp), xR, math.min(suEntry, pendTp), border_color = color.new(tCol, 70), bgcolor = color.new(tCol, 94), border_width = 1)
-    else
-        line.set_x2(planLnE, xR)
-        line.set_x2(planLnS, xR)
-        line.set_x2(planLnT, xR)
-        label.set_xy(planLbE, xR, suEntry)
-        label.set_xy(planLbS, xR, pendStop)
-        label.set_xy(planLbT, xR, pendTp)
-        label.set_text(planLbE, eTxt)
-        label.set_text(planLbS, sTxt)
-        label.set_text(planLbT, tTxt)
-        box.set_right(planBxRisk, xR)
-        box.set_right(planBxRew, xR)
+f_drawSleeve(bool armed, int armBar, int dir, float entry, float stop, float tp, string tag, string kpi, color accent, int xOff, line lnE, line lnS, line lnT, label lbE, label lbS, label lbT, box bxR, box bxW, int planLeft, label fillLbl, int fillSt, box bxRb, label lbRb, float ws, float ce, float ex) =>
+    line oLnE = lnE
+    line oLnS = lnS
+    line oLnT = lnT
+    label oLbE = lbE
+    label oLbS = lbS
+    label oLbT = lbT
+    box oBxR = bxR
+    box oBxW = bxW
+    int oLeft = planLeft
+    label oFl = fillLbl
+    box oRb = bxRb
+    label oRbL = lbRb
+    if i_showPend and armed and not na(entry) and not na(stop) and not na(tp)
+        int xR = math.max(bar_index + 4, armBar + 16) + xOff
+        color eCol = isShadow ? #fb923c : accent
+        color sCol = isShadow ? #fb923c : c_stop
+        color tCol = isShadow ? #94a3b8 : c_tp
+        float riskPts = math.abs(entry - stop)
+        float rewardPts = math.abs(tp - entry)
+        float rrLive = riskPts > 0 ? rewardPts / riskPts : 0.0
+        string dirTxt = dir == 1 ? "LONG" : "SHORT"
+        string shad = isShadow ? " · SHADOW" : ""
+        string eTxt = dirTxt + " · " + tag + shad + "\n1:" + str.tostring(rrLive, "#.#") + "  ·  risk " + str.tostring(riskPts, "#.#") + " pt" + (i_showFillKpi ? "\n" + kpi : "")
+        string sTxt = "STOP  ·  −" + str.tostring(riskPts, "#.#") + " pt"
+        string tTxt = "TP  ·  +" + str.tostring(rewardPts, "#.#") + " pt  ·  1:" + str.tostring(rrLive, "#.#")
+        if na(oLeft) or oLeft != armBar
+            oLeft := armBar
+            if not na(oLnE)
+                line.delete(oLnE)
+                line.delete(oLnS)
+                line.delete(oLnT)
+                label.delete(oLbE)
+                label.delete(oLbS)
+                label.delete(oLbT)
+                box.delete(oBxR)
+                box.delete(oBxW)
+            oLnE := line.new(armBar, entry, xR, entry, color = eCol, width = 2)
+            oLnS := line.new(armBar, stop, xR, stop, color = sCol, width = 2)
+            oLnT := line.new(armBar, tp, xR, tp, color = tCol, width = 2)
+            oLbE := label.new(xR, entry, eTxt, style = label.style_label_left, color = #0f172a, textcolor = eCol, size = size.small)
+            oLbS := label.new(xR, stop, sTxt, style = label.style_label_left, color = #0f172a, textcolor = sCol, size = size.small)
+            oLbT := label.new(xR, tp, tTxt, style = label.style_label_left, color = #0f172a, textcolor = tCol, size = size.small)
+            oBxR := box.new(armBar, math.max(entry, stop), xR, math.min(entry, stop), border_color = color.new(sCol, 70), bgcolor = color.new(sCol, 92), border_width = 1)
+            oBxW := box.new(armBar, math.max(entry, tp), xR, math.min(entry, tp), border_color = color.new(tCol, 70), bgcolor = color.new(tCol, 94), border_width = 1)
+        else
+            line.set_x2(oLnE, xR)
+            line.set_x2(oLnS, xR)
+            line.set_x2(oLnT, xR)
+            label.set_xy(oLbE, xR, entry)
+            label.set_xy(oLbS, xR, stop)
+            label.set_xy(oLbT, xR, tp)
+            label.set_text(oLbE, eTxt)
+            label.set_text(oLbS, sTxt)
+            label.set_text(oLbT, tTxt)
+            box.set_right(oBxR, xR)
+            box.set_right(oBxW, xR)
+        if i_showFillKpi
+            color fillCol = fillSt == 3 ? c_tp : fillSt == 4 ? c_stop : fillSt == 5 ? #94a3b8 : #fde68a
+            if na(oFl)
+                oFl := label.new(armBar, entry, kpi, style = label.style_label_right, color = #0f172a, textcolor = fillCol, size = size.small)
+            else
+                label.set_xy(oFl, armBar, entry)
+                label.set_text(oFl, kpi)
+                label.set_textcolor(oFl, fillCol)
+        if i_showSig and not na(ws) and not na(ex)
+            color rbCol = dir == -1 ? c_bear : c_bull
+            float top = math.max(ex, ws)
+            float bot = math.min(ex, ws)
+            color fillC = i_rbNoFill ? color.new(rbCol, 100) : color.new(rbCol, 90)
+            if na(oRb)
+                oRb := box.new(armBar, top, armBar + i_rbExtend, bot, border_color = rbCol, bgcolor = fillC, border_width = 2)
+                oRbL := label.new(armBar, top, tag, style = label.style_label_down, color = #0f172a, textcolor = rbCol, size = size.tiny)
+            else
+                box.set_right(oRb, math.max(bar_index, armBar + 4))
+    [oLnE, oLnS, oLnT, oLbE, oLbS, oLbT, oBxR, oBxW, oLeft, oFl, oRb, oRbL]
+
+[eLnE2, eLnS2, eLnT2, eLbE2, eLbS2, eLbT2, eBxR2, eBxW2, eLeft2, eFl2, eRb2, eRbL2] = f_drawSleeve(eArmed, eBar, eDir, eEntry, eStop, eTp, eTag, eKpi, #fbbf24, 0, eLnE, eLnS, eLnT, eLbE, eLbS, eLbT, eBxRisk, eBxRew, ePlanLeft, eFillLbl, eFill, eBxRb, eLblRb, eWs, eCe, eEx)
+eLnE := eLnE2
+eLnS := eLnS2
+eLnT := eLnT2
+eLbE := eLbE2
+eLbS := eLbS2
+eLbT := eLbT2
+eBxRisk := eBxR2
+eBxRew := eBxW2
+ePlanLeft := eLeft2
+eFillLbl := eFl2
+eBxRb := eRb2
+eLblRb := eRbL2
+[oLnE2, oLnS2, oLnT2, oLbE2, oLbS2, oLbT2, oBxR2, oBxW2, oLeft2, oFl2, oRb2, oRbL2] = f_drawSleeve(oArmed, oBar, oDir, oEntry, oStop, oTp, oTag, oKpi, c_limit, 6, oLnE, oLnS, oLnT, oLbE, oLbS, oLbT, oBxRisk, oBxRew, oPlanLeft, oFillLbl, oFill, oBxRb, oLblRb, oWs, oCe, oEx)
+oLnE := oLnE2
+oLnS := oLnS2
+oLnT := oLnT2
+oLbE := oLbE2
+oLbS := oLbS2
+oLbT := oLbT2
+oBxRisk := oBxR2
+oBxRew := oBxW2
+oPlanLeft := oLeft2
+oFillLbl := oFl2
+oBxRb := oRb2
+oLblRb := oRbL2
 
 // ─── PDH / PDL ───────────────────────────────────────────────────────────────
 float usePdh = not na(pdhLvl) ? pdhLvl : prevDayHigh
@@ -954,7 +1009,7 @@ bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00")
 plot(pbFibPlotLo, "FIB LO (0)", color.new(#f59e0b, 0), linewidth = 3, style = plot.style_linebr)
 plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 3, style = plot.style_linebr)
 
-// Historical arm marker (survives even if label objects get confusing after session roll)
-plotshape(suPathB and suDir != 0 and suBar == bar_index, title = "Path B ARM", style = shape.labelup, location = location.belowbar, color = #0f172a, textcolor = color.white, text = "ARM", size = size.tiny)
+plotshape(eArmed and eBar == bar_index, title = "EARLY ARM", style = shape.labelup, location = location.belowbar, color = #b45309, textcolor = color.white, text = "EARLY", size = size.tiny)
+plotshape(oArmed and oBar == bar_index, title = "OTE ARM", style = shape.labelup, location = location.belowbar, color = #0f172a, textcolor = color.white, text = "OTE", size = size.tiny)
 
-alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nCheck bias checklist · click ENTRY/STOP/TP")
+alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nCheck bias checklist · Early and/or OTE plan on chart")

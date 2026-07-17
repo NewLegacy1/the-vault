@@ -67,16 +67,16 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 
 1. Chart: `CME_MINI:MNQ1!` · **5m bias / 1m to ARM** · NY session.  
 2. Add **`Morningstar (PRB gate_v0)`** (strategy, overlay). Re-paste after Pine changes.  
-3. Inputs for **Powell control:**
-   - **Path B ON** · **Require KO in fib OTE ON** · Min fib leg **40** · ARM 1m ON · MARK 5m ON · Early RB eyes ON · Fill KPI ON · ARM 5m OFF
+3. Inputs:
+   - **Path B ON** · **Path B sleeves = Both** · Min fib **40** · Min away **30** · ARM 1m ON · MARK 5m ON · Fill KPI ON · ARM 5m OFF
    - Last arm **1300** · Direction **Both** · NWOG / fib LO/HI / ENTRY/STOP/TP ON
-4. Journal: take **and** skip · read fill KPI (LIMIT → FILLED → WIN/LOSS). Bias: [[Morningstar_Daily_Bias_Checklist]].
+4. Journal: which sleeve(s) you take · fill KPI per plan. Bias: [[Morningstar_Daily_Bias_Checklist]].
 5. Lab Deep BT: locked **`Powell_Rejection_Block_v1.pine`** only. Fat archive: `_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine`.
 
 | Sleeve | Trigger | Script |
 |---|---|---|
-| **Powell / OTE** | leave → fib → KO in 0.62–0.79 → 1m RB@KO | **ARM** + plan + fill KPI |
-| **Early (candidate)** | first RB@KO right after leave | **eyes only** while OTE required |
+| **EARLY** | first RB@KO after leave, before away-run | amber plan + fill KPI |
+| **OTE (Powell)** | after away-run + min fib + RB@KO | white plan + fill KPI |
 | **Lab PRB** | locked v1 | not this lean script |
 
 ### Recommended live stack (same pane or two)

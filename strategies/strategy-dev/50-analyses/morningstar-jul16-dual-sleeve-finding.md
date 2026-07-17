@@ -51,18 +51,27 @@ Script now simulates after ARM:
 
 Shown on the ENTRY label + a KPI tag at the arm bar.
 
-## Actions taken in Pine
+## Why OTE still missing after “Require OTE ON”
 
-- `Require KO in fib OTE to arm (Powell)` → **default ON**
-- `Min fib leg (pts) before arm` → **40** (blocks fake OTE on a stub wick)
-- `MARK early RB before OTE (eyes)` → **ON** (keeps the ~10:00 finding visible without arming)
-- Fill / outcome KPI → **ON**
+Two bugs:
 
-To re-study the early sleeve alone: turn **Require OTE OFF** (know it steals Powell).
+1. **Sticky `pbOteLatched`** — a tiny early fib could mark KO “in OTE” forever, so the ~10:00 RB armed as if it were Powell and **1-trade lock** blocked ~11:15.
+2. **Single plan slot** — even with a correct OTE gate, Early and Powell could not both stay on the chart.
+
+## Actions taken in Pine (dual sleeve)
+
+- Input **`Path B sleeves`**: `Both` (default) · `Early only` · `OTE only (Powell)`
+- **Early**: first RB@KO **before** price runs `OTE: min away from KO` (default 30 pts)
+- **OTE**: RB@KO **after** that away-run + min fib leg (default 40). Separate ENTRY/STOP/TP + fill KPI
+- Tags: `EARLY · PathB · …` (amber) and `OTE · PathB · …` (white). `OTE~` = KO slightly outside 0.62–0.79 band
+- Markers: **EARLY** / **OTE** plotshapes on the arm bars
 
 ## Bar-replay pass rule (updated)
 
-**Jul 16 control:** with OTE **ON** + 1m chart (or 5m with patience) → expect ARM near the **pullback to KO in discount**, tag `PathB · 10:00 · 1RB`, plus early **eyes** mark near leave — not an early-only plan stealing the day.
+**Jul 16 · sleeves = Both · 1m chart:**  
+1) amber **EARLY** plan near leave (~10:00) with fill KPI  
+2) later **OTE** plan on the pullback RB@KO (~11:15) with its own fill KPI  
+You choose one, or take both for study.
 
 ## Links
 
