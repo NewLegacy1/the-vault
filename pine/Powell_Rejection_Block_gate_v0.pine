@@ -102,7 +102,7 @@ var int pdhOriginBar = na
 var int pdlOriginBar = na
 var float ko1000 = na
 var float nwogFriClose = na
-var int nwogLastPushWeek = na
+var int nwogGapTime = na  // time of bar that created this week's NWOG (na = none yet)
 
 if newDay
     pdhLvl := curDayHigh
@@ -126,10 +126,12 @@ if nyHhmm >= 1000 and nyHhmm[1] < 1000
 
 bool isFri = nyDow == dayofweek.friday
 bool isSun = nyDow == dayofweek.sunday
+bool isMon = nyDow == dayofweek.monday
 if isFri
     nwogFriClose := close
+// CME week open = first bar at/after Sunday 18:00 ET. Monday 09:30 only if Sunday never printed a gap.
 bool nwogSunOpenBar = isSun and nyHhmm >= 1800 and nyHhmm[1] < 1800
-int nwogWeekKey = year(time, "America/New_York") * 10000 + month(time, "America/New_York") * 100 + dayofmonth(time, "America/New_York")
+bool nwogMonFallback = isMon and nyHhmm >= 930 and nyHhmm[1] < 930
 
 // ─── RB packs (1 / 5 / 15 only) ───────────────────────────────────────────────
 f_htfPack(float minW) =>
@@ -330,12 +332,13 @@ if newDay
     lblRbMark := na
     rbLeft := na
 
-// Path B can replace a Path A still waiting. Once Path B armed today, don't re-arm.
+// Path B can replace Path A (even if Path A already armed). Once Path B armed today, don't re-arm.
 bool canArm = canPlace and suDir == 0
-bool canArmPb = canPlace and not pbArmedToday and (suDir == 0 or (not suPathB and not manualReady))
+bool canArmPb = canPlace and (not i_oneTradeDay or not pbArmedToday) and (suDir == 0 or not suPathB)
 
 // ─── Path B FIRST (primary) ──────────────────────────────────────────────────
-bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and nyHhmm < i_winEnd
+// Stay alive after leave so fib keeps updating past 13:00; arming still gated by canPlace.
+bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and (nyHhmm < i_winEnd or pbLeft)
 float pbOteLo = na
 float pbOteHi = na
 float pbOteMid = na
@@ -350,7 +353,7 @@ if pbOn
     if low < ko1000
         pbPierceBelow := true
         pbManip := true
-    if pbManip and not pbLeft and barstate.isconfirmed
+    if pbManip and not pbLeft and barstate.isconfirmed and nyHhmm < i_winEnd
         if pbPierceAbove and close < ko1000
             pbLeft := true
             pbDir := -1
@@ -365,6 +368,19 @@ if pbOn
             pbFibLo := pbLo
             pbFibLoBar := bar_index
             pbFibHiBar := bar_index
+        // Path B leave steals the day from Path A
+        if pbLeft and not suPathB and suDir != 0
+            suDir := 0
+            suBar := na
+            suEntry := na
+            suStop := na
+            pendStop := na
+            pendTp := na
+            suLeft := false
+            suLeavePx := na
+            manualReady := false
+            manualState := "—"
+            suSweepTag := "—"
     if pbLeft
         if pbDir == 1 and high >= pbFibHi
             pbFibHi := high
@@ -516,6 +532,13 @@ if pbOn
         else
             label.set_xy(pbStateLbl, bar_index, high)
             label.set_text(pbStateLbl, pbState)
+else if i_pathBShowState and not na(pbStateLbl)
+    if suPathB and suDir != 0
+        label.set_text(pbStateLbl, suDir == -1 ? "ARMED short" : "ARMED long")
+        label.set_xy(pbStateLbl, bar_index, high)
+    else
+        label.set_text(pbStateLbl, nyHhmm < 1000 ? "B before 10:00" : "B window closed")
+        label.set_xy(pbStateLbl, bar_index, high)
 
 // Path B fib (after leave — stays up)
 if i_pathBShowFib and pbLeft and not na(pbFibHi) and not na(pbFibLo) and pbFibHi > pbFibLo
@@ -563,11 +586,79 @@ if i_pathBShowFib and pbLeft and not na(pbFibHi) and not na(pbFibLo) and pbFibHi
         line.set_xy1(pbLn79, xL, pbOteHi)
         line.set_xy2(pbLn79, xR, pbOteHi)
 
-// Expire Path B plan
-if suPathB and suDir != 0 and (bar_index - suBar > i_tapTimeout or not canPlace)
-    suDir := 0
-    manualReady := false
-    manualState := "—"
+// Keep Path B plan on chart until new day (do NOT wipe after 13:00 — that hid the morning trade)
+// Soft invalidate only if stop is clearly blown while still in the entry window
+if suPathB and suDir != 0 and canPlace and barstate.isconfirmed
+    bool blown = (suDir == -1 and close > suStop) or (suDir == 1 and close < suStop)
+    if blown and bar_index - suBar > 2
+        // keep levels visible; just mark state
+        manualState := "STOP side traded — review"
+        manualReady := false
+
+// ─── Path A (optional, only if Path B never left) ────────────────────────────
+if i_pathA and not pbLeft and not pbArmedToday and canArm and barstate.isconfirmed and nyHhmm >= i_winStart and nyHhmm < i_winEnd
+    if rb15Bear
+        float tws = wsB15
+        float tex = h15
+        float tce = (h15 + wsB15) * 0.5
+        [entryPx, stopPx] = f_plan(tws, tce, tex, true)
+        if not na(entryPx)
+            float riskPts0 = math.abs(stopPx - entryPx)
+            suDir := -1
+            suWickStart := tws
+            suCe := tce
+            suExtreme := tex
+            suEntry := entryPx
+            suStop := stopPx
+            pendStop := stopPx
+            pendTp := entryPx - i_rr * riskPts0
+            suBar := bar_index
+            suLeft := i_leaveR == 0
+            suPathB := false
+            suSweepTag := "PathA · 15RB"
+            manualReady := suLeft
+            manualState := suLeft ? f_shadowArmLabel() : "WAIT leave"
+    else if rb15Bull and suDir == 0
+        float tws = wsU15
+        float tex = l15
+        float tce = (l15 + wsU15) * 0.5
+        [entryPx, stopPx] = f_plan(tws, tce, tex, false)
+        if not na(entryPx)
+            float riskPts0 = math.abs(stopPx - entryPx)
+            suDir := 1
+            suWickStart := tws
+            suCe := tce
+            suExtreme := tex
+            suEntry := entryPx
+            suStop := stopPx
+            pendStop := stopPx
+            pendTp := entryPx + i_rr * riskPts0
+            suBar := bar_index
+            suLeft := i_leaveR == 0
+            suPathB := false
+            suSweepTag := "PathA · 15RB"
+            manualReady := suLeft
+            manualState := suLeft ? f_shadowArmLabel() : "WAIT leave"
+
+if i_pathA and not suPathB and not pbArmedToday and suDir != 0 and not na(suEntry)
+    float riskPts = math.abs(suStop - suEntry)
+    bool invalidated = (suDir == -1 and close > suStop) or (suDir == 1 and close < suStop)
+    if invalidated or (canPlace and bar_index - suBar > i_tapTimeout)
+        suDir := 0
+        manualReady := false
+        manualState := "—"
+    else if not suLeft
+        if suDir == -1 and low <= suEntry - i_leaveR * riskPts
+            suLeft := true
+            suLeavePx := low
+        if suDir == 1 and high >= suEntry + i_leaveR * riskPts
+            suLeft := true
+            suLeavePx := high
+        manualReady := false
+        manualState := "WAIT leave"
+    else
+        manualReady := true
+        manualState := f_shadowArmLabel()
 
 // ─── Armed RB box ────────────────────────────────────────────────────────────
 if i_showSig and suDir != 0 and not na(suBar) and not na(suExtreme) and not na(suWickStart)
@@ -698,21 +789,9 @@ if i_showPdhPdl and nyHhmm < i_flatTime
         line.set_x2(lnPdl, bar_index)
         label.set_xy(lblPdl, bar_index, usePdl)
 
-// ─── NWOG ────────────────────────────────────────────────────────────────────
-f_nwogPush(float top, float bot) =>
-    float hi = math.max(top, bot)
-    float lo = math.min(top, bot)
-    float ce = (hi + lo) * 0.5
-    color col = #a78bfa
-    array.push(nwogBoxA, box.new(bar_index, hi, bar_index + 4, lo, border_color = col, bgcolor = color.new(col, 88), border_width = 2))
-    array.push(nwogCeA, line.new(bar_index, ce, bar_index + 4, ce, color = #c4b5fd, width = 1, style = line.style_dotted))
-    array.push(nwogLblA, label.new(bar_index + 1, hi, "NWOG · CE", style = label.style_label_left, color = #5b21b6, textcolor = color.white, size = size.small))
-    array.push(nwogTopA, hi)
-    array.push(nwogBotA, lo)
-    array.push(nwogHitHiA, false)
-    array.push(nwogHitLoA, false)
-    array.push(nwogFilledA, false)
-    while array.size(nwogBoxA) > i_nwogKeep
+// ─── NWOG (current week only · Fri close → Sun 18:00 ET) ─────────────────────
+f_nwogClearAll() =>
+    while array.size(nwogBoxA) > 0
         box.delete(array.shift(nwogBoxA))
         line.delete(array.shift(nwogCeA))
         label.delete(array.shift(nwogLblA))
@@ -722,13 +801,36 @@ f_nwogPush(float top, float bot) =>
         array.shift(nwogHitLoA)
         array.shift(nwogFilledA)
 
-if i_showNwog and nwogSunOpenBar and barstate.isconfirmed and not na(nwogFriClose)
-    if math.abs(open - nwogFriClose) >= i_nwogMinPts and (na(nwogLastPushWeek) or nwogWeekKey != nwogLastPushWeek)
-        nwogLastPushWeek := nwogWeekKey
-        f_nwogPush(open, nwogFriClose)
+f_nwogPush(float top, float bot, string tag) =>
+    f_nwogClearAll()
+    float hi = math.max(top, bot)
+    float lo = math.min(top, bot)
+    float ce = (hi + lo) * 0.5
+    color col = #a78bfa
+    array.push(nwogBoxA, box.new(bar_index, hi, bar_index + 4, lo, border_color = col, bgcolor = color.new(col, 88), border_width = 2))
+    array.push(nwogCeA, line.new(bar_index, ce, bar_index + 4, ce, color = #c4b5fd, width = 1, style = line.style_dotted))
+    array.push(nwogLblA, label.new(bar_index + 1, hi, tag, style = label.style_label_left, color = #5b21b6, textcolor = color.white, size = size.small))
+    array.push(nwogTopA, hi)
+    array.push(nwogBotA, lo)
+    array.push(nwogHitHiA, false)
+    array.push(nwogHitLoA, false)
+    array.push(nwogFilledA, false)
+
+// One gap per CME week: Sun 18:00 primary; Mon 09:30 only if Sunday never created one.
+// At each new Sunday open, wipe last week's box so only the current week remains.
+if i_showNwog and nwogSunOpenBar and barstate.isconfirmed
+    nwogGapTime := na
+    f_nwogClearAll()
+bool nwogGapOk = i_showNwog and barstate.isconfirmed and not na(nwogFriClose) and math.abs(open - nwogFriClose) >= i_nwogMinPts
+if nwogGapOk and nwogSunOpenBar
+    nwogGapTime := time
+    f_nwogPush(open, nwogFriClose, "NWOG · CE · Sun 18:00")
+else if nwogGapOk and nwogMonFallback and na(nwogGapTime)
+    nwogGapTime := time
+    f_nwogPush(open, nwogFriClose, "NWOG · CE · Mon open")
 
 if i_showNwog and array.size(nwogBoxA) > 0
-    for i = array.size(nwogBoxA) - 1 to 0
+    for i = 0 to array.size(nwogBoxA) - 1
         float hi = array.get(nwogTopA, i)
         float lo = array.get(nwogBotA, i)
         bool hitHi = array.get(nwogHitHiA, i) or high >= hi
@@ -752,7 +854,6 @@ if i_showNwog and array.size(nwogBoxA) > 0
             label.set_text(lb, "NWOG filled")
             label.set_color(lb, #475569)
         else
-            label.set_text(lb, "NWOG · CE")
             label.set_color(lb, #5b21b6)
 
 bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00")
