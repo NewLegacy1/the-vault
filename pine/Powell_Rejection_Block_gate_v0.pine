@@ -3,12 +3,12 @@
 // DO NOT edit pine/Powell_Rejection_Block_v1.pine (locked Lab).
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
-// KEEP: Path B dual sleeve · NWOG · PDH/PDL · Daily ITL · yellow 10:00 · plans
-// Dual8: clean plan labels · freeze boxes at TP/STOP · Daily ITL visible ·
-//   leave rejects tiny RBs · Powell retest = 1m RB@KO after real pullback.
+// KEEP: Path B dual sleeve · NWOG · PDH/PDL · Day IL · yellow 10:00 · plans
+// Dual9: Day IL = THIS session's dealing-range low (fib LO), not multi-day ITL.
+//   Powell arms from sticky 1m/5m RB projection boxes @ KO (archive model).
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual8",
+     shorttitle              = "MS Dual9",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -44,15 +44,17 @@ i_leaveWinMin = input.int(45, "KO-leave window (min after left KO)", minval = 10
 i_pathBMinFib = input.float(40.0, "KO-retest: min fib leg (pts)", minval = 5.0, step = 5.0, group = grpPb)
 i_pathBAwayPts = input.float(25.0, "KO-retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb)
 i_pathBReqOte = input.bool(true, "KO-retest: require KO in fib OTE", group = grpPb, tooltip = "OFF if you use Daily ITL confluence instead.")
-i_retestMinRisk = input.float(12.0, "KO-retest: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
-i_leaveMinRisk = input.float(10.0, "KO-leave: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb, tooltip = "Rejects tiny 1m junk (~6pt) that stole the ~17pt leave.")
+i_retestMinRisk = input.float(10.0, "Powell: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
+i_leaveMinRisk = input.float(10.0, "KO-leave: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_leavePrefer5 = input.bool(true, "KO-leave: prefer soft 5m RB (else 1m)", group = grpPb)
-i_retestPrefer1 = input.bool(true, "KO-retest: prefer 1m RB (Powell)", group = grpPb)
-i_showDil = input.bool(true, "Show Daily ITL / Daily STL", group = grpPb, tooltip = "ICT ITL = daily STL with higher STLs on both sides. Falls back to latest Daily STL until ITL confirms.")
-i_retestNearDil = input.bool(true, "KO-retest: DIL confluence helps OTE gate", group = grpPb)
-i_dilAlign = input.float(60.0, "Daily ITL proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
-i_retestMinAfterLeave = input.int(35, "KO-retest: min minutes after leave", minval = 5, maxval = 180, group = grpPb, tooltip = "Powell on Jul 16 was ~75m after leave. Blocks early mid-rally junk.")
-i_pathBMark5 = input.bool(true, "MARK formal 5m RBs near KO (eyes)", group = grpPb)
+i_powellUse1 = input.bool(true, "Powell: ARM from 1m RB projection box", group = grpPb, tooltip = "Archive control — 1m RB@KO latches a projecting box, then arms ENTRY/STOP/TP.")
+i_powellUse5 = input.bool(true, "Powell: ARM from 5m RB projection box", group = grpPb, tooltip = "Also latch/arm from soft 5m RB@KO (same projection-box model).")
+i_showDil = input.bool(true, "Show Day IL (this session)", group = grpPb, tooltip = "THIS calendar day's Path B dealing-range low (fib LO for longs). Not a multi-day ICT ITL.")
+i_retestNearDil = input.bool(true, "Powell: RB should tag Day IL or KO-in-OTE", group = grpPb)
+i_dilAlign = input.float(40.0, "Day IL proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
+i_retestMinAfterLeave = input.int(20, "Powell: min minutes after leave", minval = 5, maxval = 180, group = grpPb)
+i_latchBars = input.int(90, "RB latch lifetime (chart bars)", minval = 10, maxval = 300, group = grpPb, tooltip = "How long a 1m/5m projection box stays armed-ready before it expires.")
+i_projMin = input.int(45, "Projection box length (minutes)", minval = 10, maxval = 180, group = grpPb)
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_minWick5 = input.float(6.0, "Min 5m RB wick (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_localLen = input.int(12, "Formal 5m extreme lookback", minval = 4, maxval = 50, group = grpPb)
@@ -190,30 +192,6 @@ int t5sec = request.security(syminfo.tickerid, "5", time, barmerge.gaps_off, bar
 bool new1Bar = ta.change(t1sec) != 0
 bool new5Bar = ta.change(t5sec) != 0
 
-// Daily structure engine (runs on D): latest STL + confirmed ITL (STL with higher STLs each side)
-f_dItlEngine() =>
-    var float s1 = na
-    var float s2 = na
-    var float s3 = na
-    var int t1 = na
-    var int t2 = na
-    var int t3 = na
-    var float itl = na
-    var int itlT = na
-    bool stlNow = barstate.isconfirmed and low[1] < low[2] and low[1] < low[0]
-    if stlNow
-        s1 := s2
-        t1 := t2
-        s2 := s3
-        t2 := t3
-        s3 := low[1]
-        t3 := time[1]
-        if not na(s1) and not na(s2) and not na(s3) and s2 < s1 and s2 < s3
-            itl := s2
-            itlT := t2
-    [s3, t3, itl, itlT]
-[dStlPx, dStlT, dItlPx, dItlT] = request.security(syminfo.tickerid, "D", f_dItlEngine(), barmerge.gaps_off, barmerge.lookahead_off)
-
 bool on1m = timeframe.period == "1"
 bool on5m = timeframe.period == "5"
 [b1c, u1c, h1c, l1c, wsB1c, wsU1c] = f_pb1Pack(i_minWick1)
@@ -295,12 +273,25 @@ var int pbFibLoTime = na
 var int pbFibHiTime = na
 var bool pbReturned = false
 var string pbState = "—"
-// Daily ITL / STL display
+// Day IL = this session's dealing-range extreme (fib LO longs / fib HI shorts)
 var float dilPx = na
 var int dilTime = na
-var string dilTag = "Daily ITL"
+var string dilTag = "Day IL"
 var line dilLn = na
 var label dilLbl = na
+// Sticky Powell latch (1m/5m projection box → arm)
+var float pbLatchWs = na
+var float pbLatchCe = na
+var float pbLatchEx = na
+var int pbLatchDir = 0
+var int pbLatchBar = na
+var int pbLatchTime = na
+var string pbLatchTag = "—"
+var box pbProjBox = na
+var line pbProjCe = na
+var label pbProjLbl = na
+var array<box> pbMark1BoxA = array.new_box()
+var array<label> pbMark1LblA = array.new_label()
 
 // KO-leave sleeve (left the 10:00 key open → RB@KO)
 var bool eArmed = false
