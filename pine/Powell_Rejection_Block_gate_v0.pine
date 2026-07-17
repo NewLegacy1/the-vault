@@ -10,8 +10,8 @@
 // FIX 2026-07-16: Path B / plans wipe on NY calendar midnight — NOT CME 18:00 session "D"
 //       (18:00 wipe made status say "B window closed" and erased ENTRY after the cash session).
 strategy(
-     title                   = "Morningstar (PRB gate_v0)",
-     shorttitle              = "Morningstar",
+     title                   = "Morningstar Dual (PRB gate_v0)",
+     shorttitle              = "MS Dual",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -29,41 +29,39 @@ strategy(
      max_boxes_count         = 100,
      max_labels_count        = 120)
 
-// ─── Inputs ──────────────────────────────────────────────────────────────────
+// ─── Inputs (ALL input.* must stay contiguous — no other code between them) ───
 i_winEnd      = input.int(1300, "Last arm (HHMM)", minval = 0, maxval = 2359, group = "Session")
 i_flatTime    = input.int(1555, "Session end label (HHMM)", minval = 0, maxval = 2359, group = "Session")
-i_oneTradeDay = input.bool(true, "Max 1 setup per day", group = "Session")
+i_oneTradeDay = input.bool(false, "Max 1 setup per day (off when studying both sleeves)", group = "Session")
 i_skipMonday  = input.bool(true, "Skip Mondays (SHADOW)", group = "Session")
 i_skipJulOct  = input.bool(false, "Skip July & October (SHADOW)", group = "Session")
-i_biasMode    = input.string("Both", "Direction filter", options = ["Both", "Long only", "Short only"], group = "Session")
+i_biasMode    = input.string("Long & Short", "Direction filter", options = ["Long & Short", "Long only", "Short only"], group = "Session")
 
 grpPb = "Path B"
 i_pathB = input.bool(true, "Enable Path B", group = grpPb)
-i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb, tooltip = "How close the 1m RB must be to the 10:00 open.")
-// Both = show Early (~10:00) AND OTE/Powell (~11:15) plans so you can pick or take two.
-i_pathBSleeve = input.string("Both", "Path B sleeves", options = ["Both", "Early only", "OTE only (Powell)"], group = grpPb, tooltip = "Both keeps the leave RB and the later OTE retest as separate plans. OTE only = Powell control.")
-i_pathBMinFib = input.float(40.0, "OTE: min fib leg (pts)", minval = 10.0, step = 5.0, group = grpPb, tooltip = "OTE sleeve only. Blocks fake OTE on a stub wick.")
-i_pathBAwayPts = input.float(30.0, "OTE: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "Price must run this far from KO after leave before an OTE retest can arm. Stops the ~10:00 RB from counting as Powell.")
+// First Path B control — must be visible under gear → Path B
+i_pathBSleeve = input.string("Early + OTE", "Which setups to show", options = ["Early + OTE", "Early only", "OTE only"], group = grpPb, tooltip = "Early + OTE = two plans on Jul 16 (~10:00 leave RB and ~11:15 retest). Pick one or take both.")
+i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
+i_pathBMinFib = input.float(40.0, "OTE: min fib leg (pts)", minval = 10.0, step = 5.0, group = grpPb)
+i_pathBAwayPts = input.float(20.0, "OTE: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "After leave, price must run this far from KO before OTE can arm.")
 i_pathBUse1 = input.bool(true, "ARM on 1m RB", group = grpPb)
 i_pathBMark5 = input.bool(true, "MARK 5m RBs near KO (eyes)", group = grpPb)
 i_pathBUse5 = input.bool(false, "ARM on 5m RB (off)", group = grpPb)
 i_pathBUse15 = input.bool(false, "ARM on 15m RB (off)", group = grpPb)
-bool wantEarly = i_pathBSleeve == "Both" or i_pathBSleeve == "Early only"
-bool wantOte = i_pathBSleeve == "Both" or i_pathBSleeve == "OTE only (Powell)"
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
 i_minWick5 = input.float(6.0, "Min 5m RB wick (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_minWick15 = input.float(12.0, "Min 15m RB wick (pts)", minval = 4.0, step = 1.0, group = grpPb)
 i_localLen = input.int(12, "RB extreme lookback (bars)", minval = 4, maxval = 50, group = grpPb)
 i_confClose = input.bool(true, "RB needs confirming close", group = grpPb)
 i_tapTimeout = input.int(90, "Latch expires (chart bars)", minval = 4, maxval = 200, group = grpPb)
-i_pathBShowFib = input.bool(true, "Show fib LO / HI anchors only", group = grpPb, tooltip = "Amber FIB LO (0) + FIB HI (1) on the leave leg. No 0.62/0.705/0.79 — you place the fib tool.")
+i_pathBShowFib = input.bool(true, "Show fib LO / HI anchors only", group = grpPb)
 i_pathBShowState = input.bool(true, "Show Path B status tag", group = grpPb)
 
 i_showNwog = input.bool(true, "Show NWOG (Fri→Sun 18:00)", group = "Levels")
 i_nwogMinPts = input.float(5.0, "Min NWOG size (pts)", minval = 0.5, step = 0.5, group = "Levels")
 i_showPdhPdl = input.bool(true, "Show PDH / PDL", group = "Levels")
 i_showPend = input.bool(true, "Show ENTRY / STOP / TP", group = "Levels")
-i_showFillKpi = input.bool(true, "Show fill / outcome KPI", group = "Levels", tooltip = "After ARM: did limit get tapped? Then TP vs STOP (stop wins if both same bar).")
+i_showFillKpi = input.bool(true, "Show fill / outcome KPI", group = "Levels")
 i_showSig = input.bool(true, "Show armed RB box", group = "Levels")
 i_rbExtend = input.int(24, "RB box extend (bars)", minval = 4, maxval = 80, group = "Levels")
 i_rbNoFill = input.bool(true, "RB box: border only", group = "Levels")
@@ -83,6 +81,12 @@ c_pdh = input.color(#22c55e, "PDH", group = "Colors")
 c_pdl = input.color(#ef4444, "PDL", group = "Colors")
 c_win10 = input.color(#eab308, "10:00 wash", group = "Colors")
 
+// Derived flags (after ALL inputs)
+bool wantEarly = i_pathBSleeve == "Early + OTE" or i_pathBSleeve == "Early only"
+bool wantOte = i_pathBSleeve == "Early + OTE" or i_pathBSleeve == "OTE only"
+bool biasOkShort = i_biasMode != "Long only"
+bool biasOkLong = i_biasMode != "Short only"
+
 // ─── Time ────────────────────────────────────────────────────────────────────
 int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
 int nyMonth = month(time, "America/New_York")
@@ -96,8 +100,6 @@ bool canPlace = nyHhmm < i_winEnd
 bool mondayOk = not i_skipMonday or nyDow != dayofweek.monday
 bool monthOk = not i_skipJulOct or (nyMonth != 7 and nyMonth != 10)
 bool dayAllowed = mondayOk and monthOk
-bool biasOkShort = i_biasMode != "Long only"
-bool biasOkLong = i_biasMode != "Short only"
 
 // ─── Levels ──────────────────────────────────────────────────────────────────
 float prevDayHigh = request.security(syminfo.tickerid, "D", high[1], lookahead = barmerge.lookahead_on)
@@ -610,7 +612,7 @@ if pbOn
                     label.delete(array.shift(pbMark5LblA))
 
     bool biasOk = (latchDir == -1 and biasOkShort) or (latchDir == 1 and biasOkLong)
-    bool singleSlotLock = i_oneTradeDay and i_pathBSleeve != "Both" and (eArmed or oArmed)
+    bool singleSlotLock = i_oneTradeDay and i_pathBSleeve != "Early + OTE" and (eArmed or oArmed)
 
     // EARLY arm — RB@KO before the away-run (Jul 16 ~10:00)
     if wantEarly and not eArmed and canPlace and not singleSlotLock and biasOk and latchDir != 0 and not hasAway and barstate.isconfirmed
@@ -805,111 +807,114 @@ if pbFibReady
         label.set_xy(pbLbl1, x1, pbFibHi)
         label.set_xy(pbLbl, xR, midY)
 
-// ─── Dual trade plans (Early amber · OTE white) ──────────────────────────────
+// ─── Dual trade plans (Early amber · OTE white) — inline so drawings stick ────
 bool isShadow = not dayAllowed
-f_drawSleeve(bool armed, int armBar, int dir, float entry, float stop, float tp, string tag, string kpi, color accent, int xOff, line lnE, line lnS, line lnT, label lbE, label lbS, label lbT, box bxR, box bxW, int planLeft, label fillLbl, int fillSt, box bxRb, label lbRb, float ws, float ce, float ex) =>
-    line oLnE = lnE
-    line oLnS = lnS
-    line oLnT = lnT
-    label oLbE = lbE
-    label oLbS = lbS
-    label oLbT = lbT
-    box oBxR = bxR
-    box oBxW = bxW
-    int oLeft = planLeft
-    label oFl = fillLbl
-    box oRb = bxRb
-    label oRbL = lbRb
-    if i_showPend and armed and not na(entry) and not na(stop) and not na(tp)
-        int xR = math.max(bar_index + 4, armBar + 16) + xOff
-        color eCol = isShadow ? #fb923c : accent
-        color sCol = isShadow ? #fb923c : c_stop
-        color tCol = isShadow ? #94a3b8 : c_tp
-        float riskPts = math.abs(entry - stop)
-        float rewardPts = math.abs(tp - entry)
-        float rrLive = riskPts > 0 ? rewardPts / riskPts : 0.0
-        string dirTxt = dir == 1 ? "LONG" : "SHORT"
-        string shad = isShadow ? " · SHADOW" : ""
-        string eTxt = dirTxt + " · " + tag + shad + "\n1:" + str.tostring(rrLive, "#.#") + "  ·  risk " + str.tostring(riskPts, "#.#") + " pt" + (i_showFillKpi ? "\n" + kpi : "")
-        string sTxt = "STOP  ·  −" + str.tostring(riskPts, "#.#") + " pt"
-        string tTxt = "TP  ·  +" + str.tostring(rewardPts, "#.#") + " pt  ·  1:" + str.tostring(rrLive, "#.#")
-        if na(oLeft) or oLeft != armBar
-            oLeft := armBar
-            if not na(oLnE)
-                line.delete(oLnE)
-                line.delete(oLnS)
-                line.delete(oLnT)
-                label.delete(oLbE)
-                label.delete(oLbS)
-                label.delete(oLbT)
-                box.delete(oBxR)
-                box.delete(oBxW)
-            oLnE := line.new(armBar, entry, xR, entry, color = eCol, width = 2)
-            oLnS := line.new(armBar, stop, xR, stop, color = sCol, width = 2)
-            oLnT := line.new(armBar, tp, xR, tp, color = tCol, width = 2)
-            oLbE := label.new(xR, entry, eTxt, style = label.style_label_left, color = #0f172a, textcolor = eCol, size = size.small)
-            oLbS := label.new(xR, stop, sTxt, style = label.style_label_left, color = #0f172a, textcolor = sCol, size = size.small)
-            oLbT := label.new(xR, tp, tTxt, style = label.style_label_left, color = #0f172a, textcolor = tCol, size = size.small)
-            oBxR := box.new(armBar, math.max(entry, stop), xR, math.min(entry, stop), border_color = color.new(sCol, 70), bgcolor = color.new(sCol, 92), border_width = 1)
-            oBxW := box.new(armBar, math.max(entry, tp), xR, math.min(entry, tp), border_color = color.new(tCol, 70), bgcolor = color.new(tCol, 94), border_width = 1)
-        else
-            line.set_x2(oLnE, xR)
-            line.set_x2(oLnS, xR)
-            line.set_x2(oLnT, xR)
-            label.set_xy(oLbE, xR, entry)
-            label.set_xy(oLbS, xR, stop)
-            label.set_xy(oLbT, xR, tp)
-            label.set_text(oLbE, eTxt)
-            label.set_text(oLbS, sTxt)
-            label.set_text(oLbT, tTxt)
-            box.set_right(oBxR, xR)
-            box.set_right(oBxW, xR)
-        if i_showFillKpi
-            color fillCol = fillSt == 3 ? c_tp : fillSt == 4 ? c_stop : fillSt == 5 ? #94a3b8 : #fde68a
-            if na(oFl)
-                oFl := label.new(armBar, entry, kpi, style = label.style_label_right, color = #0f172a, textcolor = fillCol, size = size.small)
-            else
-                label.set_xy(oFl, armBar, entry)
-                label.set_text(oFl, kpi)
-                label.set_textcolor(oFl, fillCol)
-        if i_showSig and not na(ws) and not na(ex)
-            color rbCol = dir == -1 ? c_bear : c_bull
-            float top = math.max(ex, ws)
-            float bot = math.min(ex, ws)
-            color fillC = i_rbNoFill ? color.new(rbCol, 100) : color.new(rbCol, 90)
-            if na(oRb)
-                oRb := box.new(armBar, top, armBar + i_rbExtend, bot, border_color = rbCol, bgcolor = fillC, border_width = 2)
-                oRbL := label.new(armBar, top, tag, style = label.style_label_down, color = #0f172a, textcolor = rbCol, size = size.tiny)
-            else
-                box.set_right(oRb, math.max(bar_index, armBar + 4))
-    [oLnE, oLnS, oLnT, oLbE, oLbS, oLbT, oBxR, oBxW, oLeft, oFl, oRb, oRbL]
 
-[eLnE2, eLnS2, eLnT2, eLbE2, eLbS2, eLbT2, eBxR2, eBxW2, eLeft2, eFl2, eRb2, eRbL2] = f_drawSleeve(eArmed, eBar, eDir, eEntry, eStop, eTp, eTag, eKpi, #fbbf24, 0, eLnE, eLnS, eLnT, eLbE, eLbS, eLbT, eBxRisk, eBxRew, ePlanLeft, eFillLbl, eFill, eBxRb, eLblRb, eWs, eCe, eEx)
-eLnE := eLnE2
-eLnS := eLnS2
-eLnT := eLnT2
-eLbE := eLbE2
-eLbS := eLbS2
-eLbT := eLbT2
-eBxRisk := eBxR2
-eBxRew := eBxW2
-ePlanLeft := eLeft2
-eFillLbl := eFl2
-eBxRb := eRb2
-eLblRb := eRbL2
-[oLnE2, oLnS2, oLnT2, oLbE2, oLbS2, oLbT2, oBxR2, oBxW2, oLeft2, oFl2, oRb2, oRbL2] = f_drawSleeve(oArmed, oBar, oDir, oEntry, oStop, oTp, oTag, oKpi, c_limit, 6, oLnE, oLnS, oLnT, oLbE, oLbS, oLbT, oBxRisk, oBxRew, oPlanLeft, oFillLbl, oFill, oBxRb, oLblRb, oWs, oCe, oEx)
-oLnE := oLnE2
-oLnS := oLnS2
-oLnT := oLnT2
-oLbE := oLbE2
-oLbS := oLbS2
-oLbT := oLbT2
-oBxRisk := oBxR2
-oBxRew := oBxW2
-oPlanLeft := oLeft2
-oFillLbl := oFl2
-oBxRb := oRb2
-oLblRb := oRbL2
+if i_showPend and eArmed and not na(eEntry) and not na(eStop) and not na(eTp)
+    int eXR = math.max(bar_index + 4, eBar + 16)
+    color eECol = isShadow ? #fb923c : #fbbf24
+    color eSCol = isShadow ? #fb923c : c_stop
+    color eTCol = isShadow ? #94a3b8 : c_tp
+    float eRisk = math.abs(eEntry - eStop)
+    float eRew = math.abs(eTp - eEntry)
+    float eRR = eRisk > 0 ? eRew / eRisk : 0.0
+    string eTxt = (eDir == 1 ? "LONG" : "SHORT") + " · " + eTag + (isShadow ? " · SHADOW" : "") + "\n1:" + str.tostring(eRR, "#.#") + "  ·  risk " + str.tostring(eRisk, "#.#") + " pt" + (i_showFillKpi ? "\n" + eKpi : "")
+    if na(ePlanLeft) or ePlanLeft != eBar
+        ePlanLeft := eBar
+        if not na(eLnE)
+            line.delete(eLnE)
+            line.delete(eLnS)
+            line.delete(eLnT)
+            label.delete(eLbE)
+            label.delete(eLbS)
+            label.delete(eLbT)
+            box.delete(eBxRisk)
+            box.delete(eBxRew)
+        eLnE := line.new(eBar, eEntry, eXR, eEntry, color = eECol, width = 2)
+        eLnS := line.new(eBar, eStop, eXR, eStop, color = eSCol, width = 2)
+        eLnT := line.new(eBar, eTp, eXR, eTp, color = eTCol, width = 2)
+        eLbE := label.new(eXR, eEntry, eTxt, style = label.style_label_left, color = #0f172a, textcolor = eECol, size = size.small)
+        eLbS := label.new(eXR, eStop, "STOP  ·  −" + str.tostring(eRisk, "#.#") + " pt", style = label.style_label_left, color = #0f172a, textcolor = eSCol, size = size.small)
+        eLbT := label.new(eXR, eTp, "TP  ·  +" + str.tostring(eRew, "#.#") + " pt", style = label.style_label_left, color = #0f172a, textcolor = eTCol, size = size.small)
+        eBxRisk := box.new(eBar, math.max(eEntry, eStop), eXR, math.min(eEntry, eStop), border_color = color.new(eSCol, 70), bgcolor = color.new(eSCol, 92), border_width = 1)
+        eBxRew := box.new(eBar, math.max(eEntry, eTp), eXR, math.min(eEntry, eTp), border_color = color.new(eTCol, 70), bgcolor = color.new(eTCol, 94), border_width = 1)
+    else
+        line.set_x2(eLnE, eXR)
+        line.set_x2(eLnS, eXR)
+        line.set_x2(eLnT, eXR)
+        label.set_xy(eLbE, eXR, eEntry)
+        label.set_xy(eLbS, eXR, eStop)
+        label.set_xy(eLbT, eXR, eTp)
+        label.set_text(eLbE, eTxt)
+        box.set_right(eBxRisk, eXR)
+        box.set_right(eBxRew, eXR)
+    if i_showFillKpi
+        color eFCol = eFill == 3 ? c_tp : eFill == 4 ? c_stop : eFill == 5 ? #94a3b8 : #fde68a
+        if na(eFillLbl)
+            eFillLbl := label.new(eBar, eEntry, eKpi, style = label.style_label_right, color = #0f172a, textcolor = eFCol, size = size.small)
+        else
+            label.set_xy(eFillLbl, eBar, eEntry)
+            label.set_text(eFillLbl, eKpi)
+            label.set_textcolor(eFillLbl, eFCol)
+    if i_showSig and not na(eWs) and not na(eEx)
+        if na(eBxRb)
+            eBxRb := box.new(eBar, math.max(eEx, eWs), eBar + i_rbExtend, math.min(eEx, eWs), border_color = #f59e0b, bgcolor = color.new(#f59e0b, 92), border_width = 2)
+            eLblRb := label.new(eBar, math.max(eEx, eWs), eTag, style = label.style_label_down, color = #78350f, textcolor = #fde68a, size = size.tiny)
+        else
+            box.set_right(eBxRb, math.max(bar_index, eBar + 4))
+
+if i_showPend and oArmed and not na(oEntry) and not na(oStop) and not na(oTp)
+    int oXR = math.max(bar_index + 4, oBar + 16) + 8
+    color oECol = isShadow ? #fb923c : c_limit
+    color oSCol = isShadow ? #fb923c : c_stop
+    color oTCol = isShadow ? #94a3b8 : c_tp
+    float oRisk = math.abs(oEntry - oStop)
+    float oRew = math.abs(oTp - oEntry)
+    float oRR = oRisk > 0 ? oRew / oRisk : 0.0
+    string oTxt = (oDir == 1 ? "LONG" : "SHORT") + " · " + oTag + (isShadow ? " · SHADOW" : "") + "\n1:" + str.tostring(oRR, "#.#") + "  ·  risk " + str.tostring(oRisk, "#.#") + " pt" + (i_showFillKpi ? "\n" + oKpi : "")
+    if na(oPlanLeft) or oPlanLeft != oBar
+        oPlanLeft := oBar
+        if not na(oLnE)
+            line.delete(oLnE)
+            line.delete(oLnS)
+            line.delete(oLnT)
+            label.delete(oLbE)
+            label.delete(oLbS)
+            label.delete(oLbT)
+            box.delete(oBxRisk)
+            box.delete(oBxRew)
+        oLnE := line.new(oBar, oEntry, oXR, oEntry, color = oECol, width = 2)
+        oLnS := line.new(oBar, oStop, oXR, oStop, color = oSCol, width = 2)
+        oLnT := line.new(oBar, oTp, oXR, oTp, color = oTCol, width = 2)
+        oLbE := label.new(oXR, oEntry, oTxt, style = label.style_label_left, color = #0f172a, textcolor = oECol, size = size.small)
+        oLbS := label.new(oXR, oStop, "STOP  ·  −" + str.tostring(oRisk, "#.#") + " pt", style = label.style_label_left, color = #0f172a, textcolor = oSCol, size = size.small)
+        oLbT := label.new(oXR, oTp, "TP  ·  +" + str.tostring(oRew, "#.#") + " pt", style = label.style_label_left, color = #0f172a, textcolor = oTCol, size = size.small)
+        oBxRisk := box.new(oBar, math.max(oEntry, oStop), oXR, math.min(oEntry, oStop), border_color = color.new(oSCol, 70), bgcolor = color.new(oSCol, 92), border_width = 1)
+        oBxRew := box.new(oBar, math.max(oEntry, oTp), oXR, math.min(oEntry, oTp), border_color = color.new(oTCol, 70), bgcolor = color.new(oTCol, 94), border_width = 1)
+    else
+        line.set_x2(oLnE, oXR)
+        line.set_x2(oLnS, oXR)
+        line.set_x2(oLnT, oXR)
+        label.set_xy(oLbE, oXR, oEntry)
+        label.set_xy(oLbS, oXR, oStop)
+        label.set_xy(oLbT, oXR, oTp)
+        label.set_text(oLbE, oTxt)
+        box.set_right(oBxRisk, oXR)
+        box.set_right(oBxRew, oXR)
+    if i_showFillKpi
+        color oFCol = oFill == 3 ? c_tp : oFill == 4 ? c_stop : oFill == 5 ? #94a3b8 : #fde68a
+        if na(oFillLbl)
+            oFillLbl := label.new(oBar, oEntry, oKpi, style = label.style_label_right, color = #0f172a, textcolor = oFCol, size = size.small)
+        else
+            label.set_xy(oFillLbl, oBar, oEntry)
+            label.set_text(oFillLbl, oKpi)
+            label.set_textcolor(oFillLbl, oFCol)
+    if i_showSig and not na(oWs) and not na(oEx)
+        if na(oBxRb)
+            oBxRb := box.new(oBar, math.max(oEx, oWs), oBar + i_rbExtend, math.min(oEx, oWs), border_color = c_bull, bgcolor = color.new(c_bull, 92), border_width = 2)
+            oLblRb := label.new(oBar, math.max(oEx, oWs), oTag, style = label.style_label_down, color = #0f172a, textcolor = c_bull, size = size.tiny)
+        else
+            box.set_right(oBxRb, math.max(bar_index, oBar + 4))
 
 // ─── PDH / PDL ───────────────────────────────────────────────────────────────
 float usePdh = not na(pdhLvl) ? pdhLvl : prevDayHigh
