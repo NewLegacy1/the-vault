@@ -5,9 +5,9 @@ The script finds candidates. **You** pick the day bias, then take or skip.
 
 **Chart:** MNQ · **5m for bias** · **flip to 1m to ARM** (Path B entry is a 1m RB) · **MARKS 5m RBs** (eyes only).  
 **Script:** lean Morningstar (`Powell_Rejection_Block_gate_v0.pine`) — Path B only (no museum / ghosts / tables).  
-**Inputs:** Path B ON · **Path B sleeves = Both** · Min fib 40 · Min away 30 · ARM 1m ON · MARK 5m ON · ARM 5m OFF · Fill KPI ON · proximity ≥ 50.  
-**Note:** Status + plans stay up past 13:00 / 18:00 (calendar midnight wipe only).  
-**Dual sleeve:** [[morningstar-jul16-dual-sleeve-finding]] — **EARLY** (~10:00) and **OTE** (~11:15) as separate plans; pick one or take both.
+**Inputs:** Path B ON · **Which setups = Leave + Retest** · Leave window 45m · ARM 1m ON · ARM 5m ON · Fill KPI ON · proximity ≥ 50.  
+**Note:** Status + plans stay up past 13:00 / 18:00 (calendar midnight wipe only). Legend must say **MS Dual3**.  
+**Dual sleeve:** [[morningstar-jul16-dual-sleeve-finding]] — **LEAVE** (soon after leave) and **RETEST** (away→return→RB, any clock time).
 
 ---
 

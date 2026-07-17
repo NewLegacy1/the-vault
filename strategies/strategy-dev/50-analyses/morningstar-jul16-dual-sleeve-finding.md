@@ -58,20 +58,18 @@ Two bugs:
 1. **Sticky `pbOteLatched`** — a tiny early fib could mark KO “in OTE” forever, so the ~10:00 RB armed as if it were Powell and **1-trade lock** blocked ~11:15.
 2. **Single plan slot** — even with a correct OTE gate, Early and Powell could not both stay on the chart.
 
-## Actions taken in Pine (dual sleeve)
+## Actions taken in Pine (dual sleeve · MS Dual3)
 
-- Input **`Path B sleeves`**: `Both` (default) · `Early only` · `OTE only (Powell)`
-- **Early**: first RB@KO **before** price runs `OTE: min away from KO` (default 30 pts)
-- **OTE**: RB@KO **after** that away-run + min fib leg (default 40). Separate ENTRY/STOP/TP + fill KPI
-- Tags: `EARLY · PathB · …` (amber) and `OTE · PathB · …` (white). `OTE~` = KO slightly outside 0.62–0.79 band
-- Markers: **EARLY** / **OTE** plotshapes on the arm bars
+- Input **`Which setups to show`**: `Leave + Retest` · `Leave only` · `Retest only`
+- **LEAVE**: first RB@KO in leave window (default 45 min), before a completed return
+- **RETEST**: away (after leave bar) → return to KO → RB@KO — **no fixed clock** (Jul 16 happened ~11:15; other days vary)
+- 5m ARM **ON** by default so 5m charts aren’t silent for days
+- Tags: `LEAVE · PathB · …` / `RETEST · PathB · …` (+ `RETEST~` if fib/KO quality soft)
 
 ## Bar-replay pass rule (updated)
 
-**Jul 16 · sleeves = Both · 1m chart:**  
-1) amber **EARLY** plan near leave (~10:00) with fill KPI  
-2) later **OTE** plan on the pullback RB@KO (~11:15) with its own fill KPI  
-You choose one, or take both for study.
+**Jul 16 · Leave + Retest:** amber LEAVE near leave, later RETEST on pullback RB@KO (whatever time that is).  
+Other days: either sleeve alone is fine — cadence should not collapse to one day only.
 
 ## Links
 
