@@ -4,10 +4,10 @@
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
 // KEEP: Path B dual sleeve · Day IL · untapped pre-10 RB · fib · plans · NWOG/PDH
-// Dual16: fix pool kill-on-tap + sweep wick-start; restore closed-bar RB for leave.
+// Dual17: draw every 5m/1m RB + fix DayIL pool on new-low confirm + direct Powell arm.
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual16",
+     shorttitle              = "MS Dual17",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -68,6 +68,7 @@ i_showPdhPdl = input.bool(true, "Show PDH / PDL", group = "Levels")
 i_showPend = input.bool(true, "Show ENTRY / STOP / TP", group = "Levels")
 i_showFillKpi = input.bool(true, "Show fill / outcome KPI", group = "Levels")
 i_showSig = input.bool(true, "Show armed RB box", group = "Levels")
+i_showRbScan = input.bool(true, "Show 5m/1m RB scan boxes", group = "Levels", tooltip = "Teaching diagram: draw a box on every closed 5m/1m rejection block during RTH.")
 i_rbNoFill = input.bool(true, "RB box: border only", group = "Levels")
 
 i_maxStopPts = input.float(40.0, "Max stop (pts)", minval = 2.0, step = 1.0, group = "Risk")
@@ -238,6 +239,13 @@ f_nearDil(float a, float b) =>
 f_nearDilBand(float hi, float lo, float lvl) =>
     not na(hi) and not na(lo) and not na(lvl) and lo <= lvl + i_dilAlign and hi >= lvl - i_dilAlign
 
+// Wick-start = min(O,C) of the rejection candle; body-top fallback if closed at extreme.
+f_utWickStart(float o, float c, float lo) =>
+    float ws = math.min(o, c)
+    if ws <= lo + syminfo.mintick
+        ws := math.max(o, c)
+    ws
+
 // ─── State ───────────────────────────────────────────────────────────────────
 var bool manualReady = false
 
@@ -299,6 +307,7 @@ var bool utFreed = false
 var box utBox = na
 var line utCeLn = na
 var label utLbl = na
+var array<box> rbScanA = array.new_box()
 
 // KO-leave sleeve (left the 10:00 key open → RB@KO)
 var bool eArmed = false
@@ -542,6 +551,7 @@ if newCalDay
     utBox := na
     utCeLn := na
     utLbl := na
+    array.clear(rbScanA)
 
 // Day IL / Day IH — RTH only. Snapshot the exact bar that prints the low.
 bool rthDil = nyHhmm >= 930 and nyHhmm < i_flatTime
@@ -606,14 +616,29 @@ bool powB1 = b1 or (i_powellSoft and softB1)
 bool powU5 = u5 or (i_powellSoft and softU5)
 bool powB5 = b5 or (i_powellSoft and softB5)
 
-// Day-IL untapped RB — print-bar snapshot only. Wick-start = min(O,C) of sweep candle.
-f_utWickStart(float o, float c, float lo) =>
-    float ws = math.min(o, c)
-    // If body closed at the low, use top of body (teaching wick-start above extreme)
-    if ws <= lo + syminfo.mintick
-        ws := math.max(o, c)
-    ws
+// ── RB scan boxes (teaching diagram — every closed 5m/1m RB during RTH) ──────
+bool rthScan = nyHhmm >= 930 and nyHhmm < i_winEnd
+if i_showRbScan and i_pathB and rthScan and barstate.isconfirmed
+    if trig5 and powU5 and not na(t5Rb)
+        int tR5 = t5Rb + 20 * 60 * 1000
+        box b5u = box.new(t5Rb, math.max(l5, wsU5), tR5, math.min(l5, wsU5), xloc = xloc.bar_time, border_color = c_bull, bgcolor = i_rbNoFill ? color.new(c_bull, 100) : color.new(c_bull, 90), border_width = 1)
+        array.push(rbScanA, b5u)
+    if trig5 and powB5 and not na(t5Rb)
+        int tR5b = t5Rb + 20 * 60 * 1000
+        box b5b = box.new(t5Rb, math.max(h5, wsB5), tR5b, math.min(h5, wsB5), xloc = xloc.bar_time, border_color = c_bear, bgcolor = i_rbNoFill ? color.new(c_bear, 100) : color.new(c_bear, 90), border_width = 1)
+        array.push(rbScanA, b5b)
+    if i_powellUse1 and trig1 and powU1 and not na(t1Rb)
+        int tR1 = t1Rb + 10 * 60 * 1000
+        box b1u = box.new(t1Rb, math.max(l1, wsU1), tR1, math.min(l1, wsU1), xloc = xloc.bar_time, border_color = color.new(c_bull, 20), bgcolor = i_rbNoFill ? color.new(c_bull, 100) : color.new(c_bull, 94), border_width = 1)
+        array.push(rbScanA, b1u)
+    if i_powellUse1 and trig1 and powB1 and not na(t1Rb)
+        int tR1b = t1Rb + 10 * 60 * 1000
+        box b1b = box.new(t1Rb, math.max(h1, wsB1), tR1b, math.min(h1, wsB1), xloc = xloc.bar_time, border_color = color.new(c_bear, 20), bgcolor = i_rbNoFill ? color.new(c_bear, 100) : color.new(c_bear, 94), border_width = 1)
+        array.push(rbScanA, b1b)
+    while array.size(rbScanA) > 100
+        box.delete(array.shift(rbScanA))
 
+// Day-IL untapped RB — bar that confirmed as session low (dilRawTime == time).
 bool utDoStore = false
 float utNewWs = na
 float utNewCe = na
@@ -621,10 +646,9 @@ float utNewEx = na
 int utNewDir = 0
 int utNewT = na
 string utNewTag = "—"
-// Pool on the confirmed bar that prints a NEW session low (before Path B / after)
-if i_pathB and rthDil and not oArmed and barstate.isconfirmed and i_powellUse5 and madeNewDil and not na(dilSweepL)
-    float sws = f_utWickStart(dilSweepO, dilSweepC, dilSweepL)
-    float sex = dilSweepL
+if i_pathB and rthDil and not oArmed and barstate.isconfirmed and i_powellUse5 and not na(dilRaw) and dilRawTime == time
+    float sws = f_utWickStart(open, close, low)
+    float sex = low
     bool deeper = not utLive or sex < utEx - syminfo.mintick
     if deeper or not utLive
         utDoStore := true
@@ -632,7 +656,7 @@ if i_pathB and rthDil and not oArmed and barstate.isconfirmed and i_powellUse5 a
         utNewCe := (sex + sws) * 0.5
         utNewEx := sex
         utNewDir := 1
-        utNewT := dilSweepT
+        utNewT := time
         utNewTag := "5m RB·DayIL"
 if utDoStore and not na(utNewWs) and not na(utNewT)
     if not na(utBox)
@@ -651,42 +675,19 @@ if utDoStore and not na(utNewWs) and not na(utNewT)
     utFreed := false
     int utXR = utNewT + math.max(i_projMin, 120) * 60 * 1000
     color utCol = utNewDir == 1 ? c_bull : c_bear
-    utBox := box.new(utNewT, math.max(utNewEx, utNewWs), utXR, math.min(utNewEx, utNewWs), xloc = xloc.bar_time, border_color = utCol, bgcolor = i_rbNoFill ? color.new(utCol, 100) : color.new(utCol, 88), border_width = 2)
+    utBox := box.new(utNewT, math.max(utNewEx, utNewWs), utXR, math.min(utNewEx, utNewWs), xloc = xloc.bar_time, border_color = utCol, bgcolor = i_rbNoFill ? color.new(utCol, 100) : color.new(utCol, 82), border_width = 3)
     utCeLn := line.new(utNewT, utNewCe, utXR, utNewCe, xloc = xloc.bar_time, color = c_ce, width = 1, style = line.style_dotted)
-    utLbl := label.new(utNewT, math.max(utNewEx, utNewWs), utNewTag + " · sweep wick", xloc = xloc.bar_time, style = label.style_label_down, color = #0f172a, textcolor = utCol, size = size.small)
+    utLbl := label.new(utNewT, math.max(utNewEx, utNewWs), utNewTag + " · sweep", xloc = xloc.bar_time, style = label.style_label_down, color = #0f172a, textcolor = utCol, size = size.small)
 
-// Keep pool glued to Day IL print extreme
-if utLive and not na(dilRaw) and utDir == 1 and not oArmed
-    if math.abs(utEx - dilRaw) > syminfo.mintick * 4
-        utLive := false
-        if not na(utBox)
-            box.delete(utBox)
-        if not na(utCeLn)
-            line.delete(utCeLn)
-        if not na(utLbl)
-            label.delete(utLbl)
-        utBox := na
-        utCeLn := na
-        utLbl := na
-
-// Untapped lifecycle: free → stay valid → early tap kills → break kills
-bool powellGateOpen = pbLeft and pbAway >= i_pathBAwayPts and not na(pbLeaveTime) and (time - pbLeaveTime) >= i_retestMinAfterLeave * 60 * 1000 and (time - pbLeaveTime) > i_leaveWinMin * 60 * 1000
+// Untapped lifecycle: free after bounce → stay valid until extreme breaks
+// Do NOT kill on wick-start retest — that touch is the Powell trigger.
 if utLive and not oArmed and not na(utTime) and time > utTime
     if utDir == 1
         if not utFreed and close >= utWs + i_utFreePts
             utFreed := true
-        if low < utEx
-            utLive := false
-            if not na(utBox)
-                box.delete(utBox)
-            if not na(utCeLn)
-                line.delete(utCeLn)
-            if not na(utLbl)
-                label.delete(utLbl)
-            utBox := na
-            utCeLn := na
-            utLbl := na
-        else if utFreed and low <= utWs and not powellGateOpen
+        // Invalidate only on confirmed close through the sweep extreme
+        if barstate.isconfirmed and close < utEx - syminfo.mintick
+            utFreed := false
             utLive := false
             if not na(utBox)
                 box.delete(utBox)
@@ -700,18 +701,8 @@ if utLive and not oArmed and not na(utTime) and time > utTime
     if utDir == -1 and utLive
         if not utFreed and close <= utWs - i_utFreePts
             utFreed := true
-        if high > utEx
-            utLive := false
-            if not na(utBox)
-                box.delete(utBox)
-            if not na(utCeLn)
-                line.delete(utCeLn)
-            if not na(utLbl)
-                label.delete(utLbl)
-            utBox := na
-            utCeLn := na
-            utLbl := na
-        else if utFreed and high >= utWs and not powellGateOpen
+        if barstate.isconfirmed and close > utEx + syminfo.mintick
+            utFreed := false
             utLive := false
             if not na(utBox)
                 box.delete(utBox)
@@ -827,28 +818,32 @@ if pbOn
     bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000) or f_nearKoBand(wsU1, l1, ko1000)
 
     // Soft RB for leave sleeve (immediate) — still @ KO / fib-0 geometry
+    bool leaveU5 = u5 or (i_powellSoft and softU5)
+    bool leaveB5 = b5 or (i_powellSoft and softB5)
+    bool leaveU1 = u1 or (i_powellSoft and softU1)
+    bool leaveB1 = b1 or (i_powellSoft and softB1)
     if pbLeft and barstate.isconfirmed
         if pbDir == 1
-            if i_leavePrefer5 and trig5 and u5 and nearKo5U
+            if i_leavePrefer5 and trig5 and leaveU5 and nearKo5U
                 leaveDir := 1
                 leaveWs := wsU5
                 leaveEx := l5
                 leaveCe := (l5 + wsU5) * 0.5
                 leaveTf := "5RB"
-            else if trig1 and u1 and nearKo1U
+            else if trig1 and leaveU1 and nearKo1U
                 leaveDir := 1
                 leaveWs := wsU1
                 leaveEx := l1
                 leaveCe := (l1 + wsU1) * 0.5
                 leaveTf := "1RB"
         if pbDir == -1
-            if i_leavePrefer5 and trig5 and b5 and nearKo5B
+            if i_leavePrefer5 and trig5 and leaveB5 and nearKo5B
                 leaveDir := -1
                 leaveWs := wsB5
                 leaveEx := h5
                 leaveCe := (h5 + wsB5) * 0.5
                 leaveTf := "5RB"
-            else if trig1 and b1 and nearKo1B
+            else if trig1 and leaveB1 and nearKo1B
                 leaveDir := -1
                 leaveWs := wsB1
                 leaveEx := h1
@@ -903,14 +898,14 @@ if pbOn
     retestTf := str.contains(pbLatchTag, "5m") ? "5RB" : "1RB"
 
     bool leaveBiasOk = (leaveDir == -1 and biasOkShort) or (leaveDir == 1 and biasOkLong)
-    bool retestBiasOk = (retestDir == -1 and biasOkShort) or (retestDir == 1 and biasOkLong)
+    bool retestBiasOk = (utDir == -1 and biasOkShort) or (utDir == 1 and biasOkLong)
     bool singleSlotLock = i_oneTradeDay and i_pathBSleeve != "KO-leave + KO-retest" and (eArmed or oArmed)
     bool leaveTick = leaveTf == "5RB" ? trig5 : trig1
     bool rbNearDil = not na(dayLvl) and not na(retestEx) and (f_nearDil(retestEx, dayLvl) or f_nearDil(retestWs, dayLvl) or f_nearDilBand(math.max(retestEx, retestWs), math.min(retestEx, retestWs), dayLvl))
     bool retestConfl = not i_retestNearDil or rbNearDil or str.contains(pbLatchTag, "DayIL") or str.contains(pbLatchTag, "DayIH")
 
     // KO-leave — soft RB@KO soon after leave (min risk kills 6pt junk; 1m fallback if 5m too small)
-    if wantLeave and not eArmed and canPlace and not singleSlotLock and leaveBiasOk and leaveDir != 0 and leaveTick and inLeaveWin and not pbReturned
+    if wantLeave and not eArmed and canPlace and not singleSlotLock and leaveBiasOk and leaveDir != 0 and leaveTick and inLeaveWin
         float useWs = leaveWs
         float useCe = leaveCe
         float useEx = leaveEx
@@ -920,7 +915,7 @@ if pbOn
         float entryPx = ePlan0
         float stopPx = sPlan0
         float riskPts0 = na(entryPx) ? na : math.abs(stopPx - entryPx)
-        if (na(entryPx) or riskPts0 < i_leaveMinRisk) and trig1 and pbDir == 1 and u1 and nearKo1U
+        if (na(entryPx) or riskPts0 < i_leaveMinRisk) and trig1 and pbDir == 1 and leaveU1 and nearKo1U
             useWs := wsU1
             useCe := (l1 + wsU1) * 0.5
             useEx := l1
@@ -930,7 +925,7 @@ if pbOn
             entryPx := ePlan1
             stopPx := sPlan1
             riskPts0 := na(entryPx) ? na : math.abs(stopPx - entryPx)
-        if (na(entryPx) or riskPts0 < i_leaveMinRisk) and trig1 and pbDir == -1 and b1 and nearKo1B
+        if (na(entryPx) or riskPts0 < i_leaveMinRisk) and trig1 and pbDir == -1 and leaveB1 and nearKo1B
             useWs := wsB1
             useCe := (h1 + wsB1) * 0.5
             useEx := h1
@@ -958,9 +953,15 @@ if pbOn
             eKpi := "live"
             manualReady := true
 
-    // Powell — arm from sticky 1m/5m projection-box latch @ Day IL
-    bool retestReady = hasAway and pbReturnedDil and not inLeaveWin and longEnoughAfterLeave and retestConfl and pbLatchDir != 0 and not na(pbLatchWs)
+    // Powell — arm directly on return into untapped Day-IL RB (wick-start entry)
+    bool powellTouch = utLive and utFreed and (utDir == 1 ? low <= utWs and low >= utEx - i_dilAlign : high >= utWs and high <= utEx + i_dilAlign)
+    bool retestReady = hasAway and not inLeaveWin and longEnoughAfterLeave and powellTouch and pbDir == utDir and utDir != 0
     if wantRetest and not oArmed and canPlace and not singleSlotLock and retestBiasOk and retestReady and barstate.isconfirmed
+        retestDir := utDir
+        retestWs := utWs
+        retestCe := utCe
+        retestEx := utEx
+        retestTf := "5RB"
         [entryPx2, stopPx2] = f_plan(retestWs, retestCe, retestEx, retestDir == -1)
         float riskPts1 = na(entryPx2) ? na : math.abs(stopPx2 - entryPx2)
         bool retestSizeOk = not na(riskPts1) and riskPts1 >= i_retestMinRisk
@@ -969,7 +970,7 @@ if pbOn
         else
             oArmed := true
             oDir := retestDir
-            oTime := not na(pbLatchTime) ? pbLatchTime : time
+            oTime := utTime
             oEndTime := na
             oWs := retestWs
             oCe := retestCe
@@ -1348,7 +1349,8 @@ bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00")
 plot(pbFibPlotLo, "FIB LO (0)", color.new(#f59e0b, 0), linewidth = 1, style = plot.style_linebr)
 plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 1, style = plot.style_linebr)
 // Day IL as plot (survives max_lines purge — was why the level vanished)
-plot(i_showDil and not na(dilPx) ? dilPx : na, "Day IL", color.new(#c084fc, 0), linewidth = 2, style = plot.style_linebr)
+float dilPlot = not na(dilPx) ? dilPx : dilRaw
+plot(i_showDil and not na(dilPlot) ? dilPlot : na, "Day IL", color.new(#c084fc, 0), linewidth = 2, style = plot.style_linebr)
 
 // Day IL price tag on last bar only (recreate — avoid stale line/label ids)
 if barstate.islast
@@ -1358,13 +1360,13 @@ if barstate.islast
     if i_showDil and not na(dilPx)
         dilLbl := label.new(bar_index + 2, dilPx, dilTag + "  " + str.tostring(dilPx, "#.#"), xloc = xloc.bar_index, style = label.style_label_left, color = #6b21a8, textcolor = color.white, size = size.normal)
 
-// Permanent version stamp — if you don't see Dual15, the new paste is not on the chart
+// Permanent version stamp — if you don't see Dual17, the new paste is not on the chart
 var label verStamp = na
 if barstate.islast
     if na(verStamp)
-        verStamp := label.new(bar_index, high, "MS Dual15 · print-bar snapshot", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
+        verStamp := label.new(bar_index, high, "MS Dual17 · RB scan + pool fix", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
     else
         label.set_xy(verStamp, bar_index, high)
-        label.set_text(verStamp, "MS Dual15 · print-bar snapshot")
+        label.set_text(verStamp, "MS Dual17 · RB scan + pool fix")
 
 alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nleave and/or Powell plan on chart")
