@@ -1056,7 +1056,6 @@ if oArmed and barstate.isconfirmed
 
 if eArmed or oArmed
     manualReady := true
-    if nyHhmm >= i_flatTime
 
 // ─── Fib anchors only (LO + HI) — you place the fib tool ─────────────────────
 bool pbFibReady = i_pathBShowFib and pbLeft and not na(pbFibHi) and not na(pbFibLo) and pbFibHi > pbFibLo
