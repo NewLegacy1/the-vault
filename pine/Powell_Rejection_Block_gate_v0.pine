@@ -4,11 +4,10 @@
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
 // KEEP: Path B dual sleeve · NWOG · PDH/PDL · Day IL · yellow 10:00 · plans
-// Dual10: Day IL ≠ fib LO. Day IL = confirmed NY-session swing low (morning IL).
-//   Powell arms from 1m/5m RB projection into Day IL (not KO/fib-0).
+// Dual11: Day IL via pivot+bounce (plot — survives max_lines). Powell soft RB@DayIL.
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual10",
+     shorttitle              = "MS Dual11",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -22,12 +21,12 @@ strategy(
      slippage                = 1,
      margin_long             = 0,
      margin_short            = 0,
-     max_lines_count         = 180,
-     max_boxes_count         = 100,
-     max_labels_count        = 120)
+     max_lines_count         = 500,
+     max_boxes_count         = 200,
+     max_labels_count        = 200)
 
 // ─── Inputs (ALL input.* must stay contiguous — no other code between them) ───
-i_winEnd      = input.int(1300, "Last arm (HHMM)", minval = 0, maxval = 2359, group = "Session")
+i_winEnd      = input.int(1500, "Last arm (HHMM)", minval = 0, maxval = 2359, group = "Session")
 i_flatTime    = input.int(1555, "Session end label (HHMM)", minval = 0, maxval = 2359, group = "Session")
 i_oneTradeDay = input.bool(false, "Max 1 setup per day (off when studying both sleeves)", group = "Session")
 i_skipMonday  = input.bool(true, "Skip Mondays (SHADOW)", group = "Session")
@@ -50,9 +49,11 @@ i_powellUse1 = input.bool(true, "Powell: ARM from 1m RB @ Day IL", group = grpPb
 i_powellUse5 = input.bool(true, "Powell: ARM from 5m RB @ Day IL", group = grpPb)
 i_showDil = input.bool(true, "Show Day IL (session swing low)", group = grpPb, tooltip = "Confirmed NY-session intermediate low (bounce-confirmed day low). NEVER fib LO — fib 0 is separate.")
 i_retestNearDil = input.bool(true, "Powell: require RB at Day IL", group = grpPb, tooltip = "ON = Powell only arms when RB extreme/wick is near Day IL.")
-i_dilAlign = input.float(40.0, "Day IL proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
-i_dilBounce = input.float(25.0, "Day IL confirm bounce (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "Session low becomes Day IL only after price bounces this far — locks the morning IL (your ~09:45 circle).")
-i_retestMinAfterLeave = input.int(20, "Powell: min minutes after leave", minval = 5, maxval = 180, group = grpPb)
+i_dilAlign = input.float(50.0, "Day IL proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
+i_dilBounce = input.float(15.0, "Day IL confirm bounce (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "RTH low locks as Day IL after price trades this far above it.")
+i_dilPivot = input.int(2, "Day IL pivot strength", minval = 1, maxval = 5, group = grpPb, tooltip = "Confirmed pivot-low lookback. Lowest RTH pivot = Day IL.")
+i_powellSoft = input.bool(true, "Powell: soft RB at Day IL (looser wick/body)", group = grpPb, tooltip = "ON = Day-IL sleeve accepts smaller rejection wicks so the afternoon reaction can arm.")
+i_retestMinAfterLeave = input.int(15, "Powell: min minutes after leave", minval = 5, maxval = 180, group = grpPb)
 i_pathBReqOte = input.bool(false, "Powell: also require KO in fib OTE", group = grpPb, tooltip = "OFF by default — Powell is Day-IL reaction. Fib OTE is optional confluence.")
 i_latchBars = input.int(90, "RB latch lifetime (chart bars)", minval = 10, maxval = 300, group = grpPb, tooltip = "How long a 1m/5m projection box stays armed-ready before it expires.")
 i_projMin = input.int(45, "Projection box length (minutes)", minval = 10, maxval = 180, group = grpPb)
@@ -582,23 +583,38 @@ if newCalDay
     pbProjCe := na
     pbProjLbl := na
 
-// Day IL / Day IH — from 09:30 NY, bounce-confirmed. Independent of fib anchors.
-if nyHhmm >= 930
+// Day IL / Day IH — RTH only, independent of fib. Pivot + bounce-confirmed absolute low.
+bool rthDil = nyHhmm >= 930 and nyHhmm < i_flatTime
+float pivLo = ta.pivotlow(low, i_dilPivot, i_dilPivot)
+float pivHi = ta.pivothigh(high, i_dilPivot, i_dilPivot)
+if rthDil
+    // Absolute RTH running extreme
     if na(dilRaw) or low < dilRaw
         dilRaw := low
         dilRawTime := time
+    if na(dihRaw) or high > dihRaw
+        dihRaw := high
+        dihRawTime := time
+    // Bounce-confirm absolute low/high (uses highest/lowest since the print via running compare)
     if not na(dilRaw) and high >= dilRaw + i_dilBounce
         if na(dilPx) or dilRaw < dilPx
             dilPx := dilRaw
             dilTime := dilRawTime
             dilTag := "Day IL"
-    if na(dihRaw) or high > dihRaw
-        dihRaw := high
-        dihRawTime := time
     if not na(dihRaw) and low <= dihRaw - i_dilBounce
         if na(dihPx) or dihRaw > dihPx
             dihPx := dihRaw
             dihTime := dihRawTime
+    // Pivot path — lowest confirmed RTH swing low (your ~09:45 intermediate)
+    if not na(pivLo)
+        if na(dilPx) or pivLo < dilPx
+            dilPx := pivLo
+            dilTime := time[i_dilPivot]
+            dilTag := "Day IL"
+    if not na(pivHi)
+        if na(dihPx) or pivHi > dihPx
+            dihPx := pivHi
+            dihTime := time[i_dilPivot]
 
 // ─── Path B ──────────────────────────────────────────────────────────────────
 // Leave: soft RB@KO. Powell: sticky 1m/5m RB projection into Day IL (not fib 0).
@@ -646,6 +662,7 @@ if pbOn
             pbAwayPeakBar := na
             pbAwayPeakTime := na
             pbReturned := false
+            pbReturnedDil := false
             pbFibHi := pbHi
             pbFibLo := pbLo
             pbFibLoBar := pbLoBar
@@ -661,6 +678,7 @@ if pbOn
             pbAwayPeakBar := na
             pbAwayPeakTime := na
             pbReturned := false
+            pbReturnedDil := false
             pbFibHi := pbHi
             pbFibLo := pbLo
             pbFibLoBar := pbLoBar
@@ -715,6 +733,25 @@ if pbOn
     bool nearDil1B = not na(dayLvl) and (f_nearDil(h1, dayLvl) or f_nearDil(wsB1, dayLvl) or f_nearDilBand(h1, wsB1, dayLvl))
     bool nearDil1U = not na(dayLvl) and (f_nearDil(l1, dayLvl) or f_nearDil(wsU1, dayLvl) or f_nearDilBand(wsU1, l1, dayLvl))
 
+    // Soft Day-IL rejection (looser than leave teaching RB) — uses same OHLC pack fields
+    float body1 = math.max(math.abs(wsB1 - wsU1), syminfo.mintick)
+    float lw1 = wsU1 - l1
+    float uw1 = h1 - wsB1
+    float body5 = math.max(math.abs(wsB5 - wsU5), syminfo.mintick)
+    float lw5 = wsU5 - l5
+    float uw5 = h5 - wsB5
+    float minW1s = i_powellSoft ? math.max(2.0, i_minWick1 * 0.5) : i_minWick1
+    float minW5s = i_powellSoft ? math.max(3.0, i_minWick5 * 0.5) : i_minWick5
+    float bodMult = i_powellSoft ? 0.55 : i_rbWickBody
+    bool softU1 = not na(l1) and lw1 >= minW1s and lw1 >= body1 * bodMult and lw1 >= uw1
+    bool softB1 = not na(h1) and uw1 >= minW1s and uw1 >= body1 * bodMult and uw1 >= lw1
+    bool softU5 = not na(l5) and lw5 >= minW5s and lw5 >= body5 * bodMult and lw5 >= uw5
+    bool softB5 = not na(h5) and uw5 >= minW5s and uw5 >= body5 * bodMult and uw5 >= lw5
+    bool powU1 = u1 or (i_powellSoft and softU1)
+    bool powB1 = b1 or (i_powellSoft and softB1)
+    bool powU5 = u5 or (i_powellSoft and softU5)
+    bool powB5 = b5 or (i_powellSoft and softB5)
+
     // Soft RB for leave sleeve (immediate) — still @ KO / fib-0 geometry
     if pbLeft and barstate.isconfirmed
         if pbDir == 1
@@ -745,7 +782,7 @@ if pbOn
                 leaveTf := "1RB"
 
     // Return into Day IL / Day IH after the away-run (Powell trigger — not return to KO alone)
-    if pbLeft and hasAway and nearDil and not na(pbAwayPeakBar) and bar_index >= pbAwayPeakBar
+    if pbLeft and nearDil and not na(pbAwayPeakBar) and bar_index >= pbAwayPeakBar and pbAway >= i_pathBAwayPts
         if pbDir == 1 and low <= dayLvl + i_dilAlign
             pbReturnedDil := true
         if pbDir == -1 and high >= dayLvl - i_dilAlign
@@ -754,7 +791,7 @@ if pbOn
     longEnoughAfterLeave := not na(pbLeaveTime) and (time - pbLeaveTime) >= i_retestMinAfterLeave * 60 * 1000
     bool powellWindow = pbLeft and hasAway and pbReturnedDil and not inLeaveWin and longEnoughAfterLeave and barstate.isconfirmed
 
-    // Powell sticky latch — 1m OR 5m RB projection box @ Day IL (not KO/fib-0)
+    // Powell sticky latch — 1m OR 5m RB (soft OK) @ Day IL (not KO/fib-0)
     if powellWindow and not oArmed
         bool doLatch = false
         float lWs = na
@@ -763,7 +800,7 @@ if pbOn
         int lDir = 0
         string lTag = "—"
         int lT = na
-        if i_powellUse1 and trig1 and pbDir == 1 and u1 and nearDil1U
+        if i_powellUse1 and trig1 and pbDir == 1 and powU1 and nearDil1U
             doLatch := true
             lWs := wsU1
             lEx := l1
@@ -771,7 +808,7 @@ if pbOn
             lDir := 1
             lTag := "1m proj · DayIL"
             lT := t1Rb
-        else if i_powellUse1 and trig1 and pbDir == -1 and b1 and nearDil1B
+        else if i_powellUse1 and trig1 and pbDir == -1 and powB1 and nearDil1B
             doLatch := true
             lWs := wsB1
             lEx := h1
@@ -779,7 +816,7 @@ if pbOn
             lDir := -1
             lTag := "1m proj · DayIH"
             lT := t1Rb
-        else if i_powellUse5 and trig5 and pbDir == 1 and u5 and nearDil5U
+        else if i_powellUse5 and trig5 and pbDir == 1 and powU5 and nearDil5U
             doLatch := true
             lWs := wsU5
             lEx := l5
@@ -787,7 +824,7 @@ if pbOn
             lDir := 1
             lTag := "5m proj · DayIL"
             lT := t5Rb
-        else if i_powellUse5 and trig5 and pbDir == -1 and b5 and nearDil5B
+        else if i_powellUse5 and trig5 and pbDir == -1 and powB5 and nearDil5B
             doLatch := true
             lWs := wsB5
             lEx := h5
@@ -817,8 +854,8 @@ if pbOn
 
     // Eyes: mark soft RBs near Day IL during Powell window
     if powellWindow and trig1 and i_powellUse1
-        bool m1Bull = pbDir == 1 and u1 and nearDil1U
-        bool m1Bear = pbDir == -1 and b1 and nearDil1B
+        bool m1Bull = pbDir == 1 and powU1 and nearDil1U
+        bool m1Bear = pbDir == -1 and powB1 and nearDil1B
         if (m1Bull or m1Bear) and not str.startswith(pbLatchTag, "1m") and not na(t1Rb)
             float mTop = m1Bear ? h1 : wsU1
             float mBot = m1Bear ? wsB1 : l1
@@ -830,8 +867,8 @@ if pbOn
                 box.delete(array.shift(pbMark1BoxA))
                 label.delete(array.shift(pbMark1LblA))
     if powellWindow and trig5 and i_powellUse5
-        bool m5Bull = pbDir == 1 and u5 and nearDil5U
-        bool m5Bear = pbDir == -1 and b5 and nearDil5B
+        bool m5Bull = pbDir == 1 and powU5 and nearDil5U
+        bool m5Bear = pbDir == -1 and powB5 and nearDil5B
         if (m5Bull or m5Bear) and not str.startswith(pbLatchTag, "5m") and not na(t5Rb)
             float mTop5 = m5Bear ? h5 : wsU5
             float mBot5 = m5Bear ? wsB5 : l5
@@ -1364,32 +1401,27 @@ bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00")
 
 plot(pbFibPlotLo, "FIB LO (0)", color.new(#f59e0b, 0), linewidth = 1, style = plot.style_linebr)
 plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 1, style = plot.style_linebr)
+// Day IL as plot (survives max_lines purge — was why the level vanished)
+plot(i_showDil and not na(dilPx) ? dilPx : na, "Day IL", color.new(#c084fc, 0), linewidth = 2, style = plot.style_linebr)
 
-// Day IL — bounce-confirmed session swing low (not fib 0). Drawn once locked.
-if i_showDil and not na(dilPx)
-    int dilX0 = not na(dilTime) ? dilTime : time
-    int dilX1 = time + 15 * 60 * 1000
-    if na(dilLn)
-        dilLn := line.new(dilX0, dilPx, dilX1, dilPx, xloc = xloc.bar_time, color = #c084fc, width = 2, style = line.style_dashed)
-        dilLbl := label.new(dilX1, dilPx, dilTag + "  " + str.tostring(dilPx, "#.#"), xloc = xloc.bar_time, style = label.style_label_left, color = #6b21a8, textcolor = color.white, size = size.small)
-    else
-        line.set_xy1(dilLn, dilX0, dilPx)
-        line.set_xy2(dilLn, dilX1, dilPx)
-        label.set_xy(dilLbl, dilX1, dilPx)
-        label.set_text(dilLbl, dilTag + "  " + str.tostring(dilPx, "#.#"))
-else if not na(dilLn)
-    line.delete(dilLn)
-    label.delete(dilLbl)
-    dilLn := na
-    dilLbl := na
+// Day IL price tag on last bar only (recreate — avoid stale line/label ids)
+if barstate.islast
+    if not na(dilLn)
+        line.delete(dilLn)
+        dilLn := na
+    if not na(dilLbl)
+        label.delete(dilLbl)
+        dilLbl := na
+    if i_showDil and not na(dilPx)
+        dilLbl := label.new(bar_index + 2, dilPx, dilTag + "  " + str.tostring(dilPx, "#.#"), xloc = xloc.bar_index, style = label.style_label_left, color = #6b21a8, textcolor = color.white, size = size.normal)
 
-// Permanent version stamp — if you don't see Dual10, the new paste is not on the chart
+// Permanent version stamp — if you don't see Dual11, the new paste is not on the chart
 var label verStamp = na
 if barstate.islast
     if na(verStamp)
-        verStamp := label.new(bar_index, high, "MS Dual10 · DayIL ≠ fib0", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
+        verStamp := label.new(bar_index, high, "MS Dual11 · DayIL plot", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
     else
         label.set_xy(verStamp, bar_index, high)
-        label.set_text(verStamp, "MS Dual10 · DayIL ≠ fib0")
+        label.set_text(verStamp, "MS Dual11 · DayIL plot")
 
 alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nleave and/or Powell plan on chart")
