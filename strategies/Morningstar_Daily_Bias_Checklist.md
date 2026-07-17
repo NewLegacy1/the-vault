@@ -4,7 +4,8 @@ Use this **every session** before you click a trade.
 The script finds candidates. **You** pick the day bias, then take or skip.
 
 **Chart:** MNQ · **5m for bias** · Path B **ARMs on 1m RB** · **MARKS 5m RBs** (eyes only).  
-**Inputs:** Manual ON · Path B ON · ARM 1m ON · MARK 5m ON · ARM 5m OFF.
+**Script:** lean Morningstar (`Powell_Rejection_Block_gate_v0.pine`) — Path B only (no museum / ghosts / tables).  
+**Inputs:** Path B ON · ARM 1m ON · MARK 5m ON · ARM 5m OFF · Show fib ON.
 
 ---
 
@@ -89,7 +90,7 @@ Only look for trades that match your bias from Steps 1–2.
 - [ ] Yellow **10:00** wash is on the open bar  
 - [ ] Price **wicked** one side of 10:00 (manipulation)  
 - [ ] Price **left** back through 10:00 (distribution starts)  
-- [ ] Amber **FIB LO (0)** and **FIB HI (1)** labels sit on the wick bars of that leg (diagonal between them)
+- [ ] Amber **FIB LO (0)** and **FIB HI (1)** mark the leg — put your fib tool there (script does not draw 0.62–0.79)
 
 **Direction check:**
 
@@ -100,12 +101,11 @@ Only look for trades that match your bias from Steps 1–2.
 
 Must match **Day bias**. If not → skip, even if ENTRY prints.
 
-### B. Fib (your tool — script shows the anchors)
+### B. Fib (your tool)
 
-- [ ] Put TradingView fib from **FIB LO (0)** → **FIB HI (1)** (same candles the amber ticks mark)  
-- [ ] **Long:** 10:00 sits in the **discount** pocket (near 0.62–0.79 from the high) — or close enough you accept it  
-- [ ] **Short:** 10:00 sits in the **premium** pocket (near 0.62–0.79 from the low) — or close enough you accept it  
-- [ ] Dotted 0.62 / 0.705 / 0.79 on chart are a guide — your fib tool is truth  
+- [ ] Put TradingView fib from **FIB LO (0)** → **FIB HI (1)**  
+- [ ] **Long:** 10:00 in discount (your 0.62–0.79) — or close enough you accept  
+- [ ] **Short:** 10:00 in premium — or close enough you accept  
 
 ### C. Trigger
 
