@@ -4,11 +4,11 @@
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
 // KEEP: Path B dual sleeve · Day IL · untapped pre-10 RB · fib · plans · NWOG/PDH
-// Dual18: lean restore — Dual12/13 leave + untapped Day-IL pool + Powell latch (no RB spray).
+// Dual18b: lean restore + fix RB detect (use confirmed bar OHLC, not [1] double-lag).
 // Dual17 spray archive: pine/_archive_Powell_Rejection_Block_gate_v0_Dual17_spray_2026-07-17.pine
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual18",
+     shorttitle              = "MS Dual18b",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -43,7 +43,7 @@ i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step =
 i_leaveWinMin = input.int(45, "KO-leave window (min after left KO)", minval = 10, maxval = 120, group = grpPb)
 i_pathBAwayPts = input.float(25.0, "KO-retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb)
 i_retestMinRisk = input.float(10.0, "Powell: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
-i_leaveMinRisk = input.float(10.0, "KO-leave: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
+i_leaveMinRisk = input.float(6.0, "KO-leave: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_leavePrefer5 = input.bool(true, "KO-leave: prefer soft 5m RB (else 1m)", group = grpPb)
 i_powellUse1 = input.bool(true, "Powell: also pool 1m untapped RB", group = grpPb, tooltip = "Secondary — prefer 5m. Pools RBs from 09:30 (before 10:00), not only after.")
 i_powellUse5 = input.bool(true, "Powell: pool untapped 5m RB (primary)", group = grpPb, tooltip = "PRIMARY — capture 5m RB at Day IL from 09:30. Must leave untapped, then later return = second trade at wick start.")
@@ -156,7 +156,8 @@ bool nwogSunOpenBar = isSun and nyHhmm >= 1800 and nyHhmm[1] < 1800
 bool nwogMonFallback = isMon and nyHhmm >= 930 and nyHhmm[1] < 930
 
 // ─── RB packs ────────────────────────────────────────────────────────────────
-// Teaching RB pack on the bar that just closed (offset 0 at confirm).
+// On barstate.isconfirmed, open/high/low/close ARE the bar that just closed.
+// Using [1] here double-lags and misses the leave / Day-IL rejection candle.
 f_pb1Pack(float minW) =>
     float o1 = open
     float h1 = high
@@ -169,7 +170,7 @@ f_pb1Pack(float minW) =>
     bool bull = lw >= minW and lw >= body * i_rbWickBody and (not i_confClose or c1 > o1)
     [bear, bull, h1, l1, math.max(o1, c1), math.min(o1, c1)]
 
-// Leave / security: prior closed bar [1] (proven KO-leave timing on 5m chart).
+// HTF via security: last completed lower-TF bar from this chart's perspective.
 f_pb1PackPrev(float minW) =>
     float o1 = open[1]
     float h1 = high[1]
@@ -193,25 +194,25 @@ bool new5Bar = ta.change(t5sec) != 0
 
 bool on1m = timeframe.period == "1"
 bool on5m = timeframe.period == "5"
-// Leave sleeve: closed bar [1]. Powell sweep snapshot uses live bar OHLC on print bar.
-[b1Leave, u1Leave, h1Leave, l1Leave, wsB1Leave, wsU1Leave] = f_pb1PackPrev(i_minWick1)
-[b5Leave, u5Leave, h5Leave, l5Leave, wsB5Leave, wsU5Leave] = f_pb1PackPrev(i_minWick5)
-bool b1 = on1m ? b1Leave : b1s
-bool u1 = on1m ? u1Leave : u1s
-float h1 = on1m ? h1Leave : h1s
-float l1 = on1m ? l1Leave : l1s
-float wsB1 = on1m ? wsB1Leave : wsB1s
-float wsU1 = on1m ? wsU1Leave : wsU1s
-int t1Rb = on1m ? time[1] : t1Closed
-int t5Rb = on5m ? time[1] : t5Closed
+// Chart TF: confirmed bar itself. Other TF: last completed via security.
+[b1c, u1c, h1c, l1c, wsB1c, wsU1c] = f_pb1Pack(i_minWick1)
+[b5c, u5c, h5c, l5c, wsB5c, wsU5c] = f_pb1Pack(i_minWick5)
+bool b1 = on1m ? b1c : b1s
+bool u1 = on1m ? u1c : u1s
+float h1 = on1m ? h1c : h1s
+float l1 = on1m ? l1c : l1s
+float wsB1 = on1m ? wsB1c : wsB1s
+float wsU1 = on1m ? wsU1c : wsU1s
+int t1Rb = on1m ? time : t1Closed
+int t5Rb = on5m ? time : t5Closed
 bool trig1 = barstate.isconfirmed and (on1m or new1Bar)
 bool trig5 = barstate.isconfirmed and (on5m or new5Bar)
-bool b5 = on5m ? b5Leave : b5soft
-bool u5 = on5m ? u5Leave : u5soft
-float h5 = on5m ? h5Leave : h5s
-float l5 = on5m ? l5Leave : l5s
-float wsB5 = on5m ? wsB5Leave : wsB5s
-float wsU5 = on5m ? wsU5Leave : wsU5s
+bool b5 = on5m ? b5c : b5soft
+bool u5 = on5m ? u5c : u5soft
+float h5 = on5m ? h5c : h5s
+float l5 = on5m ? l5c : l5s
+float wsB5 = on5m ? wsB5c : wsB5s
+float wsU5 = on5m ? wsU5c : wsU5s
 
 // ─── Plan math ───────────────────────────────────────────────────────────────
 f_plan(float wickStart, float ce, float extreme, bool isShort) =>
@@ -576,8 +577,8 @@ bool powB1 = b1 or (i_powellSoft and softB1)
 bool powU5 = u5 or (i_powellSoft and softU5)
 bool powB5 = b5 or (i_powellSoft and softB5)
 
-// Day-IL untapped RB pool (Dual12): soft 5m/1m RB whose extreme tags Day IL / Day IH from 09:30.
-// One live pool; deeper extreme replaces. Wick-start = pack ws (min O,C of that RB candle).
+// Day-IL untapped RB pool: soft 5m RB @ Day IL, else session-low print bar (teaching sweep).
+// One live pool; deeper extreme replaces. Wick-start = min(O,C) of that candle.
 bool utDoStore = false
 float utNewWs = na
 float utNewCe = na
@@ -588,6 +589,7 @@ string utNewTag = "—"
 float poolDil = not na(dilPx) ? dilPx : dilRaw
 float poolDih = not na(dihPx) ? dihPx : dihRaw
 if i_pathB and rthDil and not oArmed and barstate.isconfirmed
+    // Primary: soft/formal 5m bullish RB tagging Day IL
     if i_powellUse5 and trig5 and powU5 and not na(t5Rb) and not na(poolDil)
         bool nearDil5 = f_nearDil(l5, poolDil) or f_nearDil(wsU5, poolDil) or f_nearDilBand(wsU5, l5, poolDil)
         bool deeper5 = not utLive or l5 < utEx - syminfo.mintick
@@ -598,6 +600,20 @@ if i_pathB and rthDil and not oArmed and barstate.isconfirmed
             utNewCe := (l5 + wsU5) * 0.5
             utNewDir := 1
             utNewT := t5Rb
+            utNewTag := "5m RB·DayIL"
+    // Fallback: this confirmed bar printed the session low (sweep candle) — always pool it
+    if i_powellUse5 and on5m and not na(dilRaw) and dilRawTime == time and not utDoStore
+        float sws = math.min(open, close)
+        if sws <= low + syminfo.mintick
+            sws := math.max(open, close)
+        bool deeperSw = not utLive or low < utEx - syminfo.mintick
+        if deeperSw or not utLive
+            utDoStore := true
+            utNewWs := sws
+            utNewEx := low
+            utNewCe := (low + sws) * 0.5
+            utNewDir := 1
+            utNewT := time
             utNewTag := "5m RB·DayIL"
     if i_powellUse5 and trig5 and powB5 and not na(t5Rb) and not na(poolDih) and not utDoStore
         bool nearDih5 = f_nearDil(h5, poolDih) or f_nearDil(wsB5, poolDih) or f_nearDilBand(h5, wsB5, poolDih)
@@ -865,8 +881,8 @@ if pbOn
     bool rbNearDil = not na(dayLvl) and not na(retestEx) and (f_nearDil(retestEx, dayLvl) or f_nearDil(retestWs, dayLvl) or f_nearDilBand(math.max(retestEx, retestWs), math.min(retestEx, retestWs), dayLvl))
     bool retestConfl = not i_retestNearDil or rbNearDil or str.contains(pbLatchTag, "DayIL") or str.contains(pbLatchTag, "DayIH")
 
-    // KO-leave — soft RB@KO soon after leave (Dual13: skip once price has returned to KO)
-    if wantLeave and not eArmed and canPlace and not singleSlotLock and leaveBiasOk and leaveDir != 0 and leaveTick and inLeaveWin and not pbReturned
+    // KO-leave — soft RB@KO soon after leave (allow same complex as leave bar)
+    if wantLeave and not eArmed and canPlace and not singleSlotLock and leaveBiasOk and leaveDir != 0 and leaveTick and inLeaveWin
         float useWs = leaveWs
         float useCe = leaveCe
         float useEx = leaveEx
@@ -1312,13 +1328,13 @@ if barstate.islast
     if i_showDil and not na(dilPx)
         dilLbl := label.new(bar_index + 2, dilPx, dilTag + "  " + str.tostring(dilPx, "#.#"), xloc = xloc.bar_index, style = label.style_label_left, color = #6b21a8, textcolor = color.white, size = size.normal)
 
-// Permanent version stamp — if you don't see Dual18, the new paste is not on the chart
+// Permanent version stamp — if you don't see Dual18b, the new paste is not on the chart
 var label verStamp = na
 if barstate.islast
     if na(verStamp)
-        verStamp := label.new(bar_index, high, "MS Dual18 · lean restore", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
+        verStamp := label.new(bar_index, high, "MS Dual18b · detect fix", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
     else
         label.set_xy(verStamp, bar_index, high)
-        label.set_text(verStamp, "MS Dual18 · lean restore")
+        label.set_text(verStamp, "MS Dual18b · detect fix")
 
 alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nleave and/or Powell plan on chart")
