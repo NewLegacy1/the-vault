@@ -4,11 +4,11 @@
 // Working fat backup: pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine
 //
 // KEEP: Path B dual sleeve · NWOG · PDH/PDL · Day IL · yellow 10:00 · plans
-// Dual9: Day IL = THIS session's dealing-range low (fib LO), not multi-day ITL.
-//   Powell arms from sticky 1m/5m RB projection boxes @ KO (archive model).
+// Dual10: Day IL ≠ fib LO. Day IL = confirmed NY-session swing low (morning IL).
+//   Powell arms from 1m/5m RB projection into Day IL (not KO/fib-0).
 strategy(
      title                   = "Morningstar Dual (PRB gate_v0)",
-     shorttitle              = "MS Dual9c",
+     shorttitle              = "MS Dual10",
      overlay                 = true,
      pyramiding              = 0,
      process_orders_on_close = true,
@@ -43,16 +43,17 @@ i_pathBAlign = input.float(50.0, "RB / KO proximity (pts)", minval = 2.0, step =
 i_leaveWinMin = input.int(45, "KO-leave window (min after left KO)", minval = 10, maxval = 120, group = grpPb)
 i_pathBMinFib = input.float(40.0, "KO-retest: min fib leg (pts)", minval = 5.0, step = 5.0, group = grpPb)
 i_pathBAwayPts = input.float(25.0, "KO-retest: min away from KO (pts)", minval = 5.0, step = 5.0, group = grpPb)
-i_pathBReqOte = input.bool(true, "KO-retest: require KO in fib OTE", group = grpPb, tooltip = "OFF if you use Daily ITL confluence instead.")
 i_retestMinRisk = input.float(10.0, "Powell: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_leaveMinRisk = input.float(10.0, "KO-leave: min stop size (pts)", minval = 2.0, step = 0.5, group = grpPb)
 i_leavePrefer5 = input.bool(true, "KO-leave: prefer soft 5m RB (else 1m)", group = grpPb)
-i_powellUse1 = input.bool(true, "Powell: ARM from 1m RB projection box", group = grpPb, tooltip = "Archive control — 1m RB@KO latches a projecting box, then arms ENTRY/STOP/TP.")
-i_powellUse5 = input.bool(true, "Powell: ARM from 5m RB projection box", group = grpPb, tooltip = "Also latch/arm from soft 5m RB@KO (same projection-box model).")
-i_showDil = input.bool(true, "Show Day IL (this session)", group = grpPb, tooltip = "THIS calendar day's Path B dealing-range low (fib LO for longs). Not a multi-day ICT ITL.")
-i_retestNearDil = input.bool(true, "Powell: RB should tag Day IL or KO-in-OTE", group = grpPb)
+i_powellUse1 = input.bool(true, "Powell: ARM from 1m RB @ Day IL", group = grpPb, tooltip = "1m RB projection box when the wick tags today's Day IL (not fib 0 / not only KO).")
+i_powellUse5 = input.bool(true, "Powell: ARM from 5m RB @ Day IL", group = grpPb)
+i_showDil = input.bool(true, "Show Day IL (session swing low)", group = grpPb, tooltip = "Confirmed NY-session intermediate low (bounce-confirmed day low). NEVER fib LO — fib 0 is separate.")
+i_retestNearDil = input.bool(true, "Powell: require RB at Day IL", group = grpPb, tooltip = "ON = Powell only arms when RB extreme/wick is near Day IL.")
 i_dilAlign = input.float(40.0, "Day IL proximity (pts)", minval = 2.0, step = 1.0, group = grpPb)
+i_dilBounce = input.float(25.0, "Day IL confirm bounce (pts)", minval = 5.0, step = 5.0, group = grpPb, tooltip = "Session low becomes Day IL only after price bounces this far — locks the morning IL (your ~09:45 circle).")
 i_retestMinAfterLeave = input.int(20, "Powell: min minutes after leave", minval = 5, maxval = 180, group = grpPb)
+i_pathBReqOte = input.bool(false, "Powell: also require KO in fib OTE", group = grpPb, tooltip = "OFF by default — Powell is Day-IL reaction. Fib OTE is optional confluence.")
 i_latchBars = input.int(90, "RB latch lifetime (chart bars)", minval = 10, maxval = 300, group = grpPb, tooltip = "How long a 1m/5m projection box stays armed-ready before it expires.")
 i_projMin = input.int(45, "Projection box length (minutes)", minval = 10, maxval = 180, group = grpPb)
 i_minWick1 = input.float(4.0, "Min 1m RB wick (pts)", minval = 1.0, step = 0.5, group = grpPb)
@@ -225,6 +226,12 @@ f_nearKo(float a, float b) =>
 f_nearKoBand(float hi, float lo, float ko) =>
     not na(hi) and not na(lo) and not na(ko) and lo <= ko + i_pathBAlign and hi >= ko - i_pathBAlign
 
+f_nearDil(float a, float b) =>
+    not na(a) and not na(b) and math.abs(a - b) <= i_dilAlign
+
+f_nearDilBand(float hi, float lo, float lvl) =>
+    not na(hi) and not na(lo) and not na(lvl) and lo <= lvl + i_dilAlign and hi >= lvl - i_dilAlign
+
 // ─── State ───────────────────────────────────────────────────────────────────
 // Legacy single-slot mirrors the newest arm (status / alerts). Dual sleeves below.
 var int suDir = 0
@@ -263,10 +270,17 @@ var int pbAwayPeakTime = na
 var int pbFibLoTime = na
 var int pbFibHiTime = na
 var bool pbReturned = false
+var bool pbReturnedDil = false
 var string pbState = "—"
-// Day IL = this session's dealing-range extreme (fib LO longs / fib HI shorts)
+// Day IL / Day IH = bounce-confirmed NY session extremes (NEVER fib LO/HI)
+var float dilRaw = na
+var int dilRawTime = na
 var float dilPx = na
 var int dilTime = na
+var float dihRaw = na
+var int dihRawTime = na
+var float dihPx = na
+var int dihTime = na
 var string dilTag = "Day IL"
 var line dilLn = na
 var label dilLbl = na
@@ -435,7 +449,14 @@ if newCalDay
     pbFibLoTime := na
     pbFibHiTime := na
     pbReturned := false
+    pbReturnedDil := false
     pbState := "—"
+    dilRaw := na
+    dilRawTime := na
+    dihRaw := na
+    dihRawTime := na
+    dihPx := na
+    dihTime := na
     eArmed := false
     eDir := 0
     eBar := na
@@ -561,8 +582,26 @@ if newCalDay
     pbProjCe := na
     pbProjLbl := na
 
+// Day IL / Day IH — from 09:30 NY, bounce-confirmed. Independent of fib anchors.
+if nyHhmm >= 930
+    if na(dilRaw) or low < dilRaw
+        dilRaw := low
+        dilRawTime := time
+    if not na(dilRaw) and high >= dilRaw + i_dilBounce
+        if na(dilPx) or dilRaw < dilPx
+            dilPx := dilRaw
+            dilTime := dilRawTime
+            dilTag := "Day IL"
+    if na(dihRaw) or high > dihRaw
+        dihRaw := high
+        dihRawTime := time
+    if not na(dihRaw) and low <= dihRaw - i_dilBounce
+        if na(dihPx) or dihRaw > dihPx
+            dihPx := dihRaw
+            dihTime := dihRawTime
+
 // ─── Path B ──────────────────────────────────────────────────────────────────
-// Leave: soft 5m RB@KO. Powell: sticky 1m/5m RB projection box @ KO after pullback.
+// Leave: soft RB@KO. Powell: sticky 1m/5m RB projection into Day IL (not fib 0).
 bool pbOn = i_pathB and not na(ko1000) and nyHhmm >= 1000 and (nyHhmm < i_winEnd or pbLeft or eArmed or oArmed)
 float pbOteLo = na
 float pbOteHi = na
@@ -663,19 +702,20 @@ if pbOn
             pbOteHi := pbFibHi - pbRange * 0.62
         koInBand := not na(pbOteLo) and ko1000 >= pbOteLo - i_pathBAlign and ko1000 <= pbOteHi + i_pathBAlign
 
-    // Day IL = THIS session's Path B dealing-range extreme (not multi-day ICT ITL)
-    if pbLeft and not na(pbFibLo) and not na(pbFibHi)
-        dilPx := pbDir == 1 ? pbFibLo : pbFibHi
-        dilTime := pbDir == 1 ? pbFibLoTime : pbFibHiTime
-        dilTag := "Day IL"
-    nearDil := not na(dilPx) and math.abs(ko1000 - dilPx) <= i_dilAlign
+    // Active day level for Powell: Day IL (longs) / Day IH (shorts) — never fib
+    float dayLvl = pbDir == -1 ? dihPx : dilPx
+    nearDil := not na(dayLvl)
 
     bool nearKo5B = f_nearKo(h5, ko1000) or f_nearKo(wsB5, ko1000) or f_nearKoBand(h5, wsB5, ko1000)
     bool nearKo5U = f_nearKo(l5, ko1000) or f_nearKo(wsU5, ko1000) or f_nearKoBand(wsU5, l5, ko1000)
     bool nearKo1B = f_nearKo(h1, ko1000) or f_nearKo(wsB1, ko1000) or f_nearKoBand(h1, wsB1, ko1000)
     bool nearKo1U = f_nearKo(l1, ko1000) or f_nearKo(wsU1, ko1000) or f_nearKoBand(wsU1, l1, ko1000)
+    bool nearDil5B = not na(dayLvl) and (f_nearDil(h5, dayLvl) or f_nearDil(wsB5, dayLvl) or f_nearDilBand(h5, wsB5, dayLvl))
+    bool nearDil5U = not na(dayLvl) and (f_nearDil(l5, dayLvl) or f_nearDil(wsU5, dayLvl) or f_nearDilBand(wsU5, l5, dayLvl))
+    bool nearDil1B = not na(dayLvl) and (f_nearDil(h1, dayLvl) or f_nearDil(wsB1, dayLvl) or f_nearDilBand(h1, wsB1, dayLvl))
+    bool nearDil1U = not na(dayLvl) and (f_nearDil(l1, dayLvl) or f_nearDil(wsU1, dayLvl) or f_nearDilBand(wsU1, l1, dayLvl))
 
-    // Soft RB for leave sleeve (immediate)
+    // Soft RB for leave sleeve (immediate) — still @ KO / fib-0 geometry
     if pbLeft and barstate.isconfirmed
         if pbDir == 1
             if i_leavePrefer5 and trig5 and u5 and nearKo5U
@@ -704,10 +744,17 @@ if pbOn
                 leaveCe := (h1 + wsB1) * 0.5
                 leaveTf := "1RB"
 
-    longEnoughAfterLeave := not na(pbLeaveTime) and (time - pbLeaveTime) >= i_retestMinAfterLeave * 60 * 1000
-    bool powellWindow = pbLeft and hasAway and pbReturned and not inLeaveWin and longEnoughAfterLeave and fibLegOk and barstate.isconfirmed
+    // Return into Day IL / Day IH after the away-run (Powell trigger — not return to KO alone)
+    if pbLeft and hasAway and nearDil and not na(pbAwayPeakBar) and bar_index >= pbAwayPeakBar
+        if pbDir == 1 and low <= dayLvl + i_dilAlign
+            pbReturnedDil := true
+        if pbDir == -1 and high >= dayLvl - i_dilAlign
+            pbReturnedDil := true
 
-    // Powell sticky latch — 1m OR 5m RB projection box @ KO (archive model)
+    longEnoughAfterLeave := not na(pbLeaveTime) and (time - pbLeaveTime) >= i_retestMinAfterLeave * 60 * 1000
+    bool powellWindow = pbLeft and hasAway and pbReturnedDil and not inLeaveWin and longEnoughAfterLeave and barstate.isconfirmed
+
+    // Powell sticky latch — 1m OR 5m RB projection box @ Day IL (not KO/fib-0)
     if powellWindow and not oArmed
         bool doLatch = false
         float lWs = na
@@ -716,37 +763,37 @@ if pbOn
         int lDir = 0
         string lTag = "—"
         int lT = na
-        if i_powellUse1 and trig1 and pbDir == 1 and u1 and nearKo1U
+        if i_powellUse1 and trig1 and pbDir == 1 and u1 and nearDil1U
             doLatch := true
             lWs := wsU1
             lEx := l1
             lCe := (l1 + wsU1) * 0.5
             lDir := 1
-            lTag := "1m proj · Powell"
+            lTag := "1m proj · DayIL"
             lT := t1Rb
-        else if i_powellUse1 and trig1 and pbDir == -1 and b1 and nearKo1B
+        else if i_powellUse1 and trig1 and pbDir == -1 and b1 and nearDil1B
             doLatch := true
             lWs := wsB1
             lEx := h1
             lCe := (h1 + wsB1) * 0.5
             lDir := -1
-            lTag := "1m proj · Powell"
+            lTag := "1m proj · DayIH"
             lT := t1Rb
-        else if i_powellUse5 and trig5 and pbDir == 1 and u5 and nearKo5U
+        else if i_powellUse5 and trig5 and pbDir == 1 and u5 and nearDil5U
             doLatch := true
             lWs := wsU5
             lEx := l5
             lCe := (l5 + wsU5) * 0.5
             lDir := 1
-            lTag := "5m proj · Powell"
+            lTag := "5m proj · DayIL"
             lT := t5Rb
-        else if i_powellUse5 and trig5 and pbDir == -1 and b5 and nearKo5B
+        else if i_powellUse5 and trig5 and pbDir == -1 and b5 and nearDil5B
             doLatch := true
             lWs := wsB5
             lEx := h5
             lCe := (h5 + wsB5) * 0.5
             lDir := -1
-            lTag := "5m proj · Powell"
+            lTag := "5m proj · DayIH"
             lT := t5Rb
         if doLatch and not na(lWs)
             pbLatchWs := lWs
@@ -768,30 +815,30 @@ if pbOn
             pbProjCe := line.new(lT, lCe, xR, lCe, xloc = xloc.bar_time, color = c_ce, width = 1, style = line.style_dotted)
             pbProjLbl := label.new(lT, math.max(lEx, lWs), lTag, xloc = xloc.bar_time, style = label.style_label_down, color = #0f172a, textcolor = pCol, size = size.tiny)
 
-    // Eyes: also mark extra soft RBs near KO during Powell window (non-arming spray capped)
+    // Eyes: mark soft RBs near Day IL during Powell window
     if powellWindow and trig1 and i_powellUse1
-        bool m1Bull = pbDir == 1 and u1 and nearKo1U
-        bool m1Bear = pbDir == -1 and b1 and nearKo1B
-        if (m1Bull or m1Bear) and pbLatchTag != "1m proj · Powell" and not na(t1Rb)
+        bool m1Bull = pbDir == 1 and u1 and nearDil1U
+        bool m1Bear = pbDir == -1 and b1 and nearDil1B
+        if (m1Bull or m1Bear) and not str.startswith(pbLatchTag, "1m") and not na(t1Rb)
             float mTop = m1Bear ? h1 : wsU1
             float mBot = m1Bear ? wsB1 : l1
             int mR = t1Rb + i_projMin * 60 * 1000
             color mCol = m1Bear ? c_bear : c_bull
             array.push(pbMark1BoxA, box.new(t1Rb, math.max(mTop, mBot), mR, math.min(mTop, mBot), xloc = xloc.bar_time, border_color = mCol, bgcolor = color.new(mCol, 94), border_width = 1))
-            array.push(pbMark1LblA, label.new(t1Rb, math.max(mTop, mBot), "1m RB", xloc = xloc.bar_time, style = label.style_label_down, color = #334155, textcolor = color.white, size = size.tiny))
+            array.push(pbMark1LblA, label.new(t1Rb, math.max(mTop, mBot), "1m RB@IL", xloc = xloc.bar_time, style = label.style_label_down, color = #334155, textcolor = color.white, size = size.tiny))
             while array.size(pbMark1BoxA) > 3
                 box.delete(array.shift(pbMark1BoxA))
                 label.delete(array.shift(pbMark1LblA))
     if powellWindow and trig5 and i_powellUse5
-        bool m5Bull = pbDir == 1 and u5 and nearKo5U
-        bool m5Bear = pbDir == -1 and b5 and nearKo5B
+        bool m5Bull = pbDir == 1 and u5 and nearDil5U
+        bool m5Bear = pbDir == -1 and b5 and nearDil5B
         if (m5Bull or m5Bear) and not str.startswith(pbLatchTag, "5m") and not na(t5Rb)
             float mTop5 = m5Bear ? h5 : wsU5
             float mBot5 = m5Bear ? wsB5 : l5
             int mR5 = t5Rb + i_projMin * 60 * 1000
             color mCol5 = m5Bear ? c_bear : c_bull
             array.push(pbMark5BoxA, box.new(t5Rb, math.max(mTop5, mBot5), mR5, math.min(mTop5, mBot5), xloc = xloc.bar_time, border_color = mCol5, bgcolor = color.new(mCol5, 94), border_width = 1))
-            array.push(pbMark5LblA, label.new(t5Rb, math.max(mTop5, mBot5), "5m RB", xloc = xloc.bar_time, style = label.style_label_down, color = #334155, textcolor = color.white, size = size.tiny))
+            array.push(pbMark5LblA, label.new(t5Rb, math.max(mTop5, mBot5), "5m RB@IL", xloc = xloc.bar_time, style = label.style_label_down, color = #334155, textcolor = color.white, size = size.tiny))
             while array.size(pbMark5BoxA) > 3
                 box.delete(array.shift(pbMark5BoxA))
                 label.delete(array.shift(pbMark5LblA))
@@ -817,10 +864,8 @@ if pbOn
     bool retestBiasOk = (retestDir == -1 and biasOkShort) or (retestDir == 1 and biasOkLong)
     bool singleSlotLock = i_oneTradeDay and i_pathBSleeve != "KO-leave + KO-retest" and (eArmed or oArmed)
     bool leaveTick = leaveTf == "5RB" ? trig5 : trig1
-    bool rbNearDil = not na(dilPx) and not na(retestEx) and math.abs(retestEx - dilPx) <= i_dilAlign
-    bool retestConfl = (not i_pathBReqOte or koInBand) or (i_retestNearDil and (nearDil or rbNearDil))
-    if not i_retestNearDil and not i_pathBReqOte
-        retestConfl := true
+    bool rbNearDil = not na(dayLvl) and not na(retestEx) and (f_nearDil(retestEx, dayLvl) or f_nearDil(retestWs, dayLvl) or f_nearDilBand(math.max(retestEx, retestWs), math.min(retestEx, retestWs), dayLvl))
+    bool retestConfl = (not i_retestNearDil or rbNearDil) and (not i_pathBReqOte or (koInBand and fibLegOk))
 
     // KO-leave — soft RB@KO soon after leave (min risk kills 6pt junk; 1m fallback if 5m too small)
     if wantLeave and not eArmed and canPlace and not singleSlotLock and leaveBiasOk and leaveDir != 0 and leaveTick and inLeaveWin and not pbReturned
@@ -886,8 +931,8 @@ if pbOn
             manualReady := true
             manualState := f_shadowArmLabel()
 
-    // Powell — arm from sticky 1m/5m projection-box latch (not same-bar only)
-    bool retestReady = hasAway and pbReturned and not inLeaveWin and longEnoughAfterLeave and fibLegOk and retestConfl and pbLatchDir != 0 and not na(pbLatchWs)
+    // Powell — arm from sticky 1m/5m projection-box latch @ Day IL
+    bool retestReady = hasAway and pbReturnedDil and not inLeaveWin and longEnoughAfterLeave and retestConfl and pbLatchDir != 0 and not na(pbLatchWs)
     if wantRetest and not oArmed and canPlace and not singleSlotLock and retestBiasOk and retestReady and barstate.isconfirmed
         [entryPx2, stopPx2] = f_plan(retestWs, retestCe, retestEx, retestDir == -1)
         float riskPts1 = na(entryPx2) ? na : math.abs(stopPx2 - entryPx2)
@@ -907,7 +952,7 @@ if pbOn
             oEntry := entryPx2
             oStop := stopPx2
             oTp := retestDir == 1 ? entryPx2 + i_rr * riskPts1 : entryPx2 - i_rr * riskPts1
-            oTag := "Powell · " + retestTf + (rbNearDil or nearDil ? " · DayIL" : "")
+            oTag := "Powell · " + retestTf + " · DayIL"
             oFill := 1
             oKpi := "live"
             suDir := oDir
@@ -940,8 +985,8 @@ else if not pbLeft
     pbState := canPlace ? "B wait leave" : "B no leave (arm window ended)"
 else
     string ePart = eArmed ? "leave✓" : wantLeave ? (pbReturned or not inLeaveWin ? "leave missed" : "leave wait RB") : ""
-    string oGate = not longEnoughAfterLeave ? "Powell wait time" : i_pathBReqOte and not koInBand and not (i_retestNearDil and nearDil) ? "Powell wait OTE/DayIL" : not fibLegOk ? "Powell wait fib" : pbLatchDir == 0 ? "Powell wait 1m/5m proj" : "Powell latch ready"
-    string oPart = oArmed ? "Powell✓" : wantRetest ? (inLeaveWin ? "Powell wait leave-win" : not hasAway ? "Powell wait away" : not pbReturned ? "Powell wait return" : oGate) : ""
+    string oGate = not longEnoughAfterLeave ? "Powell wait time" : not nearDil ? "Powell wait DayIL" : i_pathBReqOte and not koInBand ? "Powell wait OTE" : pbLatchDir == 0 ? "Powell wait RB@DayIL" : "Powell latch ready"
+    string oPart = oArmed ? "Powell✓" : wantRetest ? (inLeaveWin ? "Powell wait leave-win" : not hasAway ? "Powell wait away" : not pbReturnedDil ? "Powell wait DayIL return" : oGate) : ""
     if eArmed or oArmed
         pbState := ePart + (eArmed and wantRetest ? " · " : "") + oPart
         if eArmed
@@ -1320,13 +1365,13 @@ bgcolor(nyHhmm == 1000 ? color.new(c_win10, 88) : na, title = "10:00")
 plot(pbFibPlotLo, "FIB LO (0)", color.new(#f59e0b, 0), linewidth = 1, style = plot.style_linebr)
 plot(pbFibPlotHi, "FIB HI (1)", color.new(#fbbf24, 0), linewidth = 1, style = plot.style_linebr)
 
-// Day IL — THIS session only (from when the low printed → now). Not multi-day.
-if i_showDil and not na(dilPx) and pbLeft
+// Day IL — bounce-confirmed session swing low (not fib 0). Drawn once locked.
+if i_showDil and not na(dilPx)
     int dilX0 = not na(dilTime) ? dilTime : time
     int dilX1 = time + 15 * 60 * 1000
     if na(dilLn)
-        dilLn := line.new(dilX0, dilPx, dilX1, dilPx, xloc = xloc.bar_time, color = #a78bfa, width = 2, style = line.style_dashed)
-        dilLbl := label.new(dilX1, dilPx, dilTag + "  " + str.tostring(dilPx, "#.#"), xloc = xloc.bar_time, style = label.style_label_left, color = #5b21b6, textcolor = color.white, size = size.small)
+        dilLn := line.new(dilX0, dilPx, dilX1, dilPx, xloc = xloc.bar_time, color = #c084fc, width = 2, style = line.style_dashed)
+        dilLbl := label.new(dilX1, dilPx, dilTag + "  " + str.tostring(dilPx, "#.#"), xloc = xloc.bar_time, style = label.style_label_left, color = #6b21a8, textcolor = color.white, size = size.small)
     else
         line.set_xy1(dilLn, dilX0, dilPx)
         line.set_xy2(dilLn, dilX1, dilPx)
@@ -1338,13 +1383,13 @@ else if not na(dilLn)
     dilLn := na
     dilLbl := na
 
-// Permanent version stamp — if you don't see Dual9, the new paste is not on the chart
+// Permanent version stamp — if you don't see Dual10, the new paste is not on the chart
 var label verStamp = na
 if barstate.islast
     if na(verStamp)
-        verStamp := label.new(bar_index, high, "MS Dual9c · RB on closed candle", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
+        verStamp := label.new(bar_index, high, "MS Dual10 · DayIL ≠ fib0", xloc = xloc.bar_index, yloc = yloc.price, style = label.style_label_left, color = color.new(#0f172a, 10), textcolor = #fde68a, size = size.small)
     else
         label.set_xy(verStamp, bar_index, high)
-        label.set_text(verStamp, "MS Dual9c · RB on closed candle")
+        label.set_text(verStamp, "MS Dual10 · DayIL ≠ fib0")
 
 alertcondition(manualReady and dayAllowed, title = "Morningstar ARMED", message = "Morningstar ARMED — {{ticker}} {{interval}}\nleave and/or Powell plan on chart")
