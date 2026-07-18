@@ -14,9 +14,11 @@ Dual46 (Morningstar Path B) + candidate sleeves (NWOG), sized ~10 MNQ, 1:5 cappe
 - **2–3 research agents run in parallel**, each owning a topic batch for one cycle
   (~30 min of deep research per cycle).
 - Each cycle each agent: web-search + fetch primary sources → for YouTube (ICT lectures,
-  Powell's free course), try transcript extraction via an npm transcript package run with
-  `npx tsx` from `vault-app/` (no API key needed); fall back to published
-  summaries/community notes if blocked → write **one note per topic** into this folder tree.
+  Powell's free course), extract captions with **yt-dlp** (installed 2026-07-17, v2026.07.04):
+  `yt-dlp --write-auto-sub --sub-lang en --skip-download -o "<out>" <url>` (new shells may
+  need PATH refresh: `$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') +
+  ';' + [Environment]::GetEnvironmentVariable('Path','User')`); npm `youtube-transcript` via
+  `npx tsx` from `vault-app/` is the fallback → write **one note per topic** into this tree.
 - After each wave the orchestrator reviews outputs, dedupes, and launches the next wave.
 - Re-run anytime: point agents at unclaimed topics in the queue below.
 
@@ -38,9 +40,9 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 ## Topic queue (20)
 
 ### Quant methods (agent A)
-1. [ ] Walk-forward testing & overfitting prevention for discretionary-hybrid systems
-2. [ ] Monte Carlo path simulation for prop-firm eval/funded survival (E[$/wk] math)
-3. [ ] Position sizing under trailing drawdown: Kelly, fixed-fractional, prop-optimal
+1. [x] Walk-forward & overfitting — `quant/walk-forward-testing-overfitting-prevention.md` (wave 1)
+2. [x] Monte Carlo prop survival — `quant/monte-carlo-prop-firm-survival.md` (wave 1)
+3. [x] Sizing under trailing DD — `quant/position-sizing-under-trailing-drawdown.md` (wave 1)
 4. [ ] Minimum sample size & significance for trade systems (n, WR CIs, regime coverage)
 5. [ ] Intraday regime detection: trend vs chop filters for session selection
 6. [ ] Stop placement research: fixed vs structure vs volatility (ATR) — wick-out rates
@@ -50,9 +52,9 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 10. [ ] Execution latency cost: reaction time vs pre-staged orders (replay vs live)
 
 ### ICT concepts (agent B)
-11. [ ] New Week/Day Opening Gaps (NWOG/NDOG): rules, CE, respect statistics
-12. [ ] Judas swing & manipulation legs: timing windows, 9:30–10:00 behavior
-13. [ ] OTE (optimal trade entry) & the 0.62–0.79 golden pocket — original definition
+11. [x] NWOG/NDOG — `ict/nwog-ndog-opening-gaps.md` (wave 1)
+12. [x] Judas swing — `ict/judas-swing.md` (wave 1)
+13. [x] OTE / golden pocket — `ict/ote-optimal-trade-entry.md` (wave 1)
 14. [ ] Rejection blocks vs order blocks: precise definitions, entry/stop conventions
 15. [ ] Key opens (midnight, 8:30, 9:30, 10:00) & Power of 3 (AMD)
 16. [ ] FVG / IFVG / BISI-SIBI & consequent encroachment (CE) targeting

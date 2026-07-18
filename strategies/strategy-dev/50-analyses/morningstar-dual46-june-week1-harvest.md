@@ -132,6 +132,13 @@ A 10-pt stop rule would have died there too. Edge cases live in stop placement, 
 - TP: 1:5 capped 100 pts (same as Dual46)
 - Chip **Disc** · tag "NWOG" in notes · log misses and would-haves too
 
+**Census columns (added 07-17 from [[../knowledge/ict/nwog-ndog-opening-gaps|ICT research]]):**
+no public NWOG respect-rate study exists — this census is the first real one. Independent
+NQ gap data shows respect/fill probability swings 8%→93% **by gap size**, so per tap also log:
+- **gap size (pts)** · **gap age (days since printed)** · **tap location (near edge / CE / far edge)**
+- stop A/B: **beyond far edge** vs **near-edge wick-and-reclaim** (RB-style — cheaper on wide gaps)
+- whether the tap sits inside the 9:50–10:10 window (pairs with our 10:00 KO routine)
+
 **Discipline:** Dual46 stays frozen — this is a *separate sleeve*, not a Dual46 input change.
 Build the census through the May walk; formalize into a spec/pine only after, when n is
 meaningful. One system under test at a time.
