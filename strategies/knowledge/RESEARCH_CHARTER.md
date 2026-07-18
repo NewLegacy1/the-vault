@@ -96,6 +96,12 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 38. [x] ICT weekly profiles — `ict/weekly-profiles-premium-discount.md` (cycle2-wave1 · primary: Core Content Month 07 transcript archived to `vault-app/data/ict-transcripts/` · verdict: canon does NOT forbid Mondays)
 39. [ ] Liquidity voids vs FVGs — delivery expectations
 40. [ ] Red-folder playbooks: CPI/NFP/FOMC at the 10:00 window — stand-down rules
+41. [x] DeltaTrend / QuantPad channel review (13 videos) — `quant/deltatrend-quant-process-event-first-workflow.md`,
+      `quant/deltatrend-monte-carlo-markov-prop-convexity.md`,
+      `quant/deltatrend-guru-quantification-powell-detail.md` (cycle2-deltatrend ·
+      transcripts archived in `vault-app/data/deltatrend-transcripts/`, re-runnable
+      script `vault-app/scripts/fetch-deltatrend-transcripts.ts` · QuantPad flagged as
+      evaluation-candidate-only for the TV-export bottleneck)
 
 ## Guardrails
 
