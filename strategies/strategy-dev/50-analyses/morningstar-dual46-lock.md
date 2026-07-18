@@ -76,6 +76,14 @@ Walk **Tue–Fri**, **09:30 → 13:00** NY. Bias on **5m**, arm check on **1m**.
   at **fixed horizons — end of May walk, then end of Nov–Dec walk** — not mid-month; the
   discretionary sleeve is judged on the same schedule
   ([[../../knowledge/quant/minimum-sample-size-statistical-significance|sample-size research]]).
+- **Limit→marketable conversion rule (standing execution rule, not a geometry change):**
+  limit touched-but-unfilled + setup confirming → convert to marketable, log "converted".
+  CME FIFO makes wick-extreme misses structural and concentrated in the *best* setups;
+  ~0.02R slippage cost vs multi-R recovery. Replay fills count only on trade-through or
+  logged conversion ([[../../knowledge/quant/limit-order-fill-modeling-queue-position|fill research]]).
+- **Bookkeeping:** log realized plan R as **min(5, 100/stop)** — the TP cap quietly cuts
+  R below 5 whenever stop > 20 pts
+  ([[../../knowledge/quant/expectancy-math-wr-rr-capped-payoffs|expectancy research]]).
 
 ## Journal fields (lock)
 
@@ -137,5 +145,5 @@ live also adds slippage/spread/psychology that replay hides, so treat it as a hy
 | Dual46 geometry matches Powell teaching | **LOCKED** for study |
 | Sparse high-quality setups on Jul week | Chart harvest — **promising** |
 | Income / Lab promote / E[$/wk] | **NOT claimed** — waiting for multi-month journal |
-| Fixed 10-MNQ sizing | **Study convention only** — vs a trailing-DD buffer a 33.5-pt stop at 10 MNQ risks ~27% of a $2.5k buffer (above full Kelly on June's n=15). Live sizing must be **fixed-$ risk, contracts flex with stop** — see [[../../knowledge/quant/position-sizing-under-trailing-drawdown\|sizing research]] |
+| Fixed 10-MNQ sizing | **Study convention only** — vs a trailing-DD buffer a 33.5-pt stop at 10 MNQ risks ~27% of a $2.5k buffer (above full Kelly on June's n=15). Live sizing must be **fixed-$ risk, contracts flex with stop** — see [[../../knowledge/quant/position-sizing-under-trailing-drawdown\|sizing research]]. Powell teaches the same unit ("treat a 50K account with $2k drawdown as a $2k account") but runs ~8% of buffer per trade on expendable eval stacks — import his **unit**, not his **level** ([[../../knowledge/powell/powell-risk-trade-management\|Powell risk]]) |
 | Auto PDH/PDL as default | **OFF** for this walk (optional later A/B) |

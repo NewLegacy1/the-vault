@@ -47,7 +47,7 @@ No formal playlists on the channel; the "free course" is effectively these uploa
 
 Shorts/streams (not mined): "Hope this helps" (2026-02-24), live stream (2026-02-13), "Dont do this at home" (2025-10-25), "Interesting candle" (2025-10-01).
 
-**9 of 14 long-form videos have full transcripts extracted** (all 6 strategy/execution videos + 3 psychology videos). Extraction method: `youtube-transcript` npm package via `npx tsx` — script at `vault-app/scripts/fetch-powell-transcripts.ts`, re-runnable for future uploads. Channel RSS for new-video polling: `https://www.youtube.com/feeds/videos.xml?channel_id=UCqFcu-Ln0a4wblcdWdZlrLw`.
+**14 of 14 long-form videos have full transcripts extracted** (wave-2 fetched the remaining 5 — `blowing-all-accounts`, `different-version-of-you`, `break-the-cycle`, `quit-my-job`, `40000-traders-struggle` — via `vault-app/scripts/fetch-powell-wave2.ts`). Extraction method: `youtube-transcript` npm package via `npx tsx` — script at `vault-app/scripts/fetch-powell-transcripts.ts`, re-runnable for future uploads. Channel RSS for new-video polling: `https://www.youtube.com/feeds/videos.xml?channel_id=UCqFcu-Ln0a4wblcdWdZlrLw`.
 
 The "60k" video names its own prerequisites: "the 10:00 a.m. key open video, rejection block video, and obviously also the fib" — i.e. `Y-oqSZmNo4U` (KO + fib) and `a3LzCUZU5ko` (RB). Those three + `AGmRZ9Te9NY` are the free-tier core curriculum for the Dual46 model.
 

@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-status: ACTIVE
+status: CYCLE 1 COMPLETE (2026-07-17 · 20/20 topics · 6 agent-waves · 19 notes + 14 transcripts)
 tags: [knowledge-base, research-charter, multi-agent]
 ---
 # Knowledge Research Charter — multi-agent deep-research loop
@@ -46,10 +46,10 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 4. [x] Sample size & significance — `quant/minimum-sample-size-statistical-significance.md` (wave 2)
 5. [x] Regime detection — `quant/intraday-regime-detection-session-selection.md` (wave 2)
 6. [x] Stop placement — `quant/stop-placement-fixed-structure-volatility.md` (wave 2)
-7. [ ] Limit-order fill modeling: queue position, adverse selection, tick-miss rates
-8. [ ] Expectancy math: WR × RR frontier, capped-R distributions, asymmetry ratios
-9. [ ] Event-study methodology for intraday setups (what we call Stage-0)
-10. [ ] Execution latency cost: reaction time vs pre-staged orders (replay vs live)
+7. [x] Limit-fill modeling — `quant/limit-order-fill-modeling-queue-position.md` (wave 3)
+8. [x] Expectancy / capped-R — `quant/expectancy-math-wr-rr-capped-payoffs.md` (wave 3)
+9. [x] Event-study methodology — `quant/event-study-methodology-intraday-setups.md` (wave 3)
+10. [x] Execution latency — `quant/execution-latency-reaction-time-replay-realism.md` (wave 3) — **quant domain complete (10/10)**
 
 ### ICT concepts (agent B)
 11. [x] NWOG/NDOG — `ict/nwog-ndog-opening-gaps.md` (wave 1)
@@ -58,15 +58,16 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 14. [x] Rejection vs order blocks — `ict/rejection-blocks-vs-order-blocks.md` (wave 2)
 15. [x] Key opens & Po3 — `ict/key-opens-power-of-3.md` (wave 2)
 16. [x] FVG / IFVG / CE — `ict/fvg-ifvg-consequent-encroachment.md` (wave 2)
-17. [ ] Draw on liquidity: PDH/PDL, internal vs external liquidity, intermediate highs/lows
-18. [ ] ICT time macros (9:50–10:10, 10:50–11:10) — mechanics and evidence
+17. [x] Draw on liquidity — `ict/draw-on-liquidity.md` (wave 3)
+18. [x] Time macros — `ict/time-based-macros.md` (wave 3) — **ICT domain complete (8/8)**
 
 ### Powell (agent C)
 19. [x] Powell catalog + RB teachings — `powell/powell-course-catalog.md`,
       `powell/powell-rb-entry-teachings.md` (wave 1 · channel = "Powell trades"
       @Powelltrades · 9/14 transcripts extracted, raw in `vault-app/data/powell-transcripts/`,
       re-runnable script `vault-app/scripts/fetch-powell-transcripts.ts`)
-20. [ ] Powell's risk & trade management: stop conventions, RR targets, session rules
+20. [x] Powell risk & management — `powell/powell-risk-trade-management.md` (wave 2 ·
+      all 14/14 videos now transcribed) — **Powell domain complete · QUEUE COMPLETE 20/20**
 
 ## Guardrails
 

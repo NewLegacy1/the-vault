@@ -12,12 +12,14 @@ The script finds candidates. **You** pick the day bias, then take or skip.
 
 ## Multi-month walk (do this now)
 
-Walk each weekday **09:30 → 13:00** NY. Bias on **5m**; arm check on **1m**. Skip Mondays (SHADOW) or don’t open them.
+Walk each weekday **09:30 → 13:00** NY. Bias on **5m**; arm check on **1m**.
+**Mondays are IN** (decided 07-17 — June Mondays 2W/0L; tag them for a Monday sub-score).
+**Pre-stage the limit** the moment an OTE+KO stack forms — June's misses were latency.
 
 | Order | Month | Why |
 |---|---|---|
-| **1** | **June 2026** | Newest Dual46 blank — **start here today** |
-| **2** | **May 2026** | Second recent month |
+| ~~1~~ | ~~June 2026~~ | **DONE 07-17** — +$16,925 gross @10MNQ · script arms 2W/0L · [[morningstar-dual46-june-week1-harvest]] |
+| **2** | **May 2026** | **← current** |
 | **3** | **Nov → Dec 2025** | New year-half; outside Jul/Oct Lab stand-down |
 | **4** | **Aug → Sep 2025** | Optional “good calendar” stress |
 | Hold | Extra July 2026 | Already seeded — don’t overfit |
@@ -61,8 +63,10 @@ If your trade idea **fights** an empty NWOG, you need a very good reason — or 
 Do this in order. One check per line.
 
 - [ ] **News:** Red folder today? Time ______ · If big one-sided print → skip or only A+ setups  
+- [ ] **10:00-time news?** (releases at 10:00 ET are common) — if yes, don’t rest a limit blind into the print  
 - [ ] **PDH / PDL:** Which is closer / more unfinished? ______  
 - [ ] **Overnight:** Did we already run the obvious draw? If yes, today’s first signal is suspect  
+- [ ] **Consumed liquidity check:** a **filled** NWOG or **already-swept** pool is *no longer a draw* — don’t anchor a reversal on it (this is exactly the 06-09 loss)  
 - [ ] **Open story (Judas):** Did we fake one way then reverse? Which way did we **really** take liquidity? ______  
 
 **Day bias rule:**
@@ -114,8 +118,13 @@ Must match **Day bias**. If not → skip, even if ENTRY prints.
 
 - [ ] Armed tag ≈ `Powell · Cont|Judas · 1RB · OTE+KO` (or `OTE` / `KO` — grade it)  
 - [ ] Entry = RB wick-start · stop beyond RB extreme · TP ≤ 100 pts  
-- [ ] Fill = price **trades through** entry after arm (wick counts)  
-- [ ] Stop size feels sane (~10–25 ideal; wide = smaller effective RR under 100pt cap)  
+- [ ] Fill = price **trades through** entry after arm (wick counts) — touch-no-fill ≠ fill  
+- [ ] **Conversion rule (standing, from 07-17 research):** limit touched but unfilled and the
+      setup is confirming → convert to **marketable** and log “converted”. 1–2 ticks slippage
+      (~0.02R on a 20-pt stop) vs losing a multi-R winner — 06-12 tick-miss was structural
+      (CME FIFO queue at wick extremes), 06-29 market fallback was right  
+- [ ] Stop size feels sane (~10–25 ideal) · **real R = min(5, 100 ÷ stop)** — stop > 20 pts
+      means R < 5, log the real number  
 - [ ] Trade is **with** your bias, not against empty NWOG  
 
 ### D. Final gate (say it out loud)
@@ -140,8 +149,8 @@ Skip the day (or the signal) if **any** of these are true:
 - [ ] Messy chop / no clean leave from 10:00  
 - [ ] You can’t explain the trade in one short sentence  
 - [ ] Already took your 1 trade for the day  
-- [ ] Monday (SHADOW only — don’t take)  
 - [ ] Grade is weak and stop is huge with no confluence  
+- [ ] Reversal idea anchored on a **consumed** level (filled gap / swept pool)  
 
 ---
 
@@ -157,6 +166,9 @@ Fill?: Y / N / no-arm
 Take or skip: ____
 Outcome: WIN / LOSS / no fill / skipped · R ____
 Why: ____
+ATR(14) on 1m at entry: ____ pts        ← May addition (stop/ATR study)
+Session: OR size ____ · first 30m dir ____ (census only)
+NWOG tap? gap size ____ · gap age ____ d · tapped edge/CE/far ____   ← only if NWOG idea
 ```
 
 ---
