@@ -1,551 +1,551 @@
 # How to find tick precision entries everyday
 # https://www.youtube.com/watch?v=Y-oqSZmNo4U
 
-[34:40] All right, boys. We are back.
-[101:20] Um, today I'm going to talk about a
-[133:20] concept that I have never talked about
-[158:39] on YouTube. Um, but it's something that
-[205:20] I use quite frequently. Um, you guys
-[254:40] probably know me as the rejection block
-[285:19] guy, but um, I use this every single day
-[374:40] as well, and it is key opens and the
-[422:39] Fibonacci tool. I'm going to talk about
-[472:00] what they are, how you mark them, why
-[501:20] they work, how you can combine them with
-[544:00] the fib, how to draw the fib correctly,
-[586:40] and risk management, how that plays into
-[646:40] all this. So,
-[684:00] just going to get straight straight into
-[709:19] it. Um, first off, we're going to look
-[770:39] at Monday. We're going to give you guys
-[829:20] going to give you guys two examples.
-[897:20] The first one is a 10:00 a.m. key open
-[966:40] with an order block. And let's talk
-[1006:39] about the fundamentals of key opens.
-[1101:20] So, the way that I use the 10 a.m. key
-[1134:40] open specifically is I use it on the 4
-[1189:20] hour first and foremost. The 10:00 a.m.
-[1256:00] is the 4hour candle open.
-[1325:20] Now, if you look at all these candles on
-[1365:20] the 4hour time frame, what do you
-[1388:00] notice? What do they all have in common?
-[1462:39] They all have wicks
-[1504:00] on the top and on the bottom. Like 97%
-[1573:20] of them do at least.
-[1614:40] So, knowing this, we can go down in time
-[1676:00] frame and we can expect
-[1746:39] our 10:00 a.m. open
-[1800:00] to go in one direction and then for it
-[1841:19] to manipulate in the other direction,
-[1881:20] which on the 4hour time frame is going
-[1912:00] to leave us with a high and low wick.
-[2018:39] Hopefully, you're um you're
-[2062:39] understanding this.
-[2100:00] Okay. Um,
-[2144:00] if not, just watch it a couple times.
-[2183:59] For new new traders, it can be a little
-[2217:20] advanced, but once you get the hang of
-[2241:20] it, I swear to God, it's pretty simple.
-[2300:00] So,
-[2329:20] in this case, right, the 4hour candle
-[2392:00] opens right here. I'm on the five-minute
-[2430:40] chart right now, but it opens right
-[2464:00] here.
-[2492:00] So,
-[2521:20] we're going to put our cursor on this
-[2554:40] candle, and it's going to say
-[2610:40] up there like up here it's going to say
-[2650:40] the opening price which is
-[2701:20] 24887.25
-[2726:39] 25 which is what I've marked here.
-[2781:19] And you can see that we have our
-[2853:20] manipulation leg here,
-[2929:20] right? We go above the uh the 10 a.m.
-[2986:40] opening price, right? And then we
-[3025:19] aggressively sell off. Now, what can we
-[3094:40] do from here? How do I use this key open
-[3128:00] as an entry entry tool?
-[3177:20] Now, what do you notice about this 10
-[3214:39] a.m. key open?
-[3265:20] This candle right here is what you would
-[3303:59] call an order block. Okay, this is an
-[3338:39] order block on the 5-minute chart. Now,
-[3390:40] there are good order blocks and there
-[3412:00] are bad order blocks. How do you
-[3446:40] identify good order block?
-[3488:00] A good order block has very similar
-[3525:19] criteria to a rejection block.
-[3593:19] We either sweep liquidity or we tap into
-[3632:00] a PDA. Here you can see we sweep like a
-[3712:00] bunch of liquidity this high. Okay,
-[3753:20] that's looks bad. Um,
-[3805:19] this we this high we sweep out like
-[3840:00] internal structure.
-[3891:59] Pretty pretty decent order block. I
-[3949:19] would say
-[3979:59] we also tap into like 15inut structure.
-[4025:19] I don't know if there's some 1 hour
-[4044:00] structure here. Maybe that would be
-[4066:40] ideal.
-[4114:39] Yeah, we tap into a 1 hour rejection
-[4161:20] block. So, there you go.
-[4242:40] Rejection blocks are the goat.
-[4305:20] Anyways,
-[4342:40] what else is good about this entry?
-[4381:20] Right, we have our 10 a.m. key open. We
-[4425:20] have our 5m minute order block.
-[4484:00] Now, you can see that
-[4536:00] this rejection block up here, I use
-[4564:00] rejection blocks for everything. I'm
-[4584:00] sorry, but like this is going to get
-[4609:20] tied into key opens. This rejection
-[4649:20] block right here has been mitigated. We
-[4689:20] already tapped into this. That's why I'm
-[4726:40] not worried in this in this case about
-[4778:40] that rejection block getting tapped into
-[4825:20] again.
-[4852:00] Now, I talked about the fib. How are we
-[4881:20] going to incorporate the fib into this?
-[4912:00] Well, the fib is actually pretty easy if
-[4969:20] you know how to use it. And this is how
-[5021:20] I would mark the fib in this case. from
-[5060:00] high to low. When we start retracing,
-[5105:20] I'm gonna draw my fib and I'm gonna see
-[5154:40] that, okay, the fib actually lines up
-[5201:20] perfectly with the 10M key open.
-[5260:00] And this is a really good example
-[5281:20] because we have the 0.79 on the fib,
-[5337:20] which is like the most premium level on
-[5388:00] the fib. This is ideal because if I want
-[5469:20] to take a short here,
-[5510:39] right, I want to have a short limit at
-[5552:00] this 10 a.m. key open. I have a bunch of
-[5581:20] confluences here that tell me, okay, we
-[5625:20] have potential to sell off here.
-[5680:00] Now, what else is good about this setup?
-[5710:39] This setup actually allows me to get
-[5742:40] away with
-[5780:00] minuscule risk.
-[5821:20] So, why is that? Normally, you know,
-[5877:19] let's say you want to target this low as
-[5906:40] a first target. Normally, you know, you
-[5943:59] might think I would want to have my stop
-[5998:39] loss at the high.
-[6040:00] But what's great about this setup is
-[6070:40] that in this case, the rejection lock,
-[6107:59] the most premium PDA has been tapped
-[6161:20] into. We have rebalanced price up here.
-[6231:59] Now, my entry is at the 0.79 level on
-[6302:40] the fib, which is the most premium level
-[6341:19] on the fib. And this order block and
-[6402:40] this 10 a.m. key open line up perfectly,
-[6436:00] which is like
-[6480:00] this is telling me I have probably the
-[6514:40] most premium entry that I'm going to
-[6553:19] get, which means I could get away with a
-[6595:59] 10 to 15 point stop. Like, you might
-[6637:20] want to put it above this high or like
-[6671:59] just have a static 10 to 15 point stop.
-[6768:00] Holy yap. Uh, with a conservative target
-[6817:19] of this first internal low, this would
-[6865:19] leave you with a 6.6
-[6906:40] RR, which is like typically what I would
-[6954:40] go for. I go for like a everything from
-[6986:39] like 1 to 4 to 1 to 6 spot for me.
-[7069:20] So, this
-[7100:00] really decent setup, really good example
-[7130:40] of what a T what a key open can be used
-[7197:20] for.
-[7217:19] I hate when you switch time frames and
-[7242:40] then trading view just assumes you want
-[7264:00] to go to the present time. But so this
-[7321:20] is what the trade would look like on the
-[7371:59] one minute time frame. Not a lot of draw
-[7407:59] down, not a lot of pullbacks. You know,
-[7452:00] these setups can be very volatile
-[7493:19] because you're trading like peak New
-[7517:19] York AM session, which is the most
-[7543:59] volatile session,
-[7590:40] which can be good or bad. Um, it might
-[7640:00] affect your risk in some scenarios.
-[7670:40] Sometimes 10 to 15 point stops can be
-[7725:20] that big and that just doesn't make
-[7752:00] sense to take that trade in that case.
-[7790:40] So because the odds of getting wicked
-[7833:20] out are just too big. But in this case
-[7878:40] it fits pretty well. Now you could be
-[7912:00] safe and you could like have a 27 point
-[7945:20] stop which would still leave you with
-[7968:00] like almost a 1 to four RR. Totally up
-[8016:00] to you how you want to manage your risk.
-[8059:59] Um, for me, I would probably have like a
-[8089:20] 15 point stop. Uh, which would be just
-[8140:00] like something in between
-[8182:40] just like let price breathe a little bit
-[8226:39] because we do have like the most
-[8256:00] volatile session. But if you start using
-[8307:59] key opens, you might notice that we top
-[8341:19] and bottom tick
-[8376:00] very often at these levels and you can
-[8414:39] easily identify
-[8471:59] a good versus a bad key open. It's just
-[8518:40] about confluences, probabilities. If you
-[8549:19] can stack probabilities and you can have
-[8586:40] a like a good lowrisk entry, these
-[8670:40] become very powerful. So that was an
-[8698:39] example using a
-[8735:59] order block and the fib. Now let's look
-[8772:00] at another example from today. That was
-[8817:20] from Monday. Let's look at today.
-[8881:20] So easiest ways to mark them is just go
-[8921:19] on the 1 hour time frame.
-[8984:00] Mark it right there. That's our opening
-[9039:59] price
-[9090:30] [Music]
-[9181:20] and we're going to scale down to the
-[9210:40] five minute again.
-[9274:40] Now this is also gets a little bit more
-[9322:40] complicated because we're going to look
-[9346:40] at lower time frame how to actually draw
-[9398:40] the fib correctly.
-[9448:00] So you see all these legs, right? Down,
-[9501:20] up, down, up, down, up.
-[9545:20] Now, you might think, oh yeah, we're
-[9587:59] just drawing from high to low.
-[9653:20] Not exactly. It's not that simple.
-[9717:20] These little legs, these small legs are
-[9761:20] constantly getting rebalanced, which
-[9791:59] means that from high to low, the
-[9834:40] unbalanced range
-[9884:00] continuously changes. So in this case
-[9934:40] right
-[9963:59] let me
-[9996:00] this leg has already rebalanced to 50%.
-[10069:20] 50% is like my okay that's a new leg now
-[10128:00] I can't use that fib in the same area
-[10160:00] anymore. And now
-[10215:59] this leg has also been rebalanced 50%.
-[10313:20] which I can't really draw it from that
-[10361:20] high now either.
-[10421:19] Make sense? So I can't use this high
-[10446:40] anymore and I can't use this high
-[10467:59] anymore.
-[10508:00] So where I would have to actually draw
-[10537:20] the fib would be this high, right?
-[10585:20] Because this high we have not rebalanced
-[10621:19] anywhere. We start rebalancing down
-[10667:59] here,
-[10696:00] right?
-[10722:40] I can't even Why am I pointing at the
-[10753:20] chart like you see it? Dumbass.
-[10802:40] um we start retracing down here at this
-[10849:19] low. This is where we start retracing.
-[10891:59] So my fib would be drawn from that high
-[10938:40] to that low. Now that would be my new my
-[10997:19] new range in which I'm looking for
-[11042:40] discount, right? Discount being
-[11109:20] 0.5 50%. Equilibrium of the range.
-[11189:20] So we can see again that um on the fib
-[11241:20] we have a key open level which aligns
-[11293:20] perfectly with a discount level on the
-[11342:40] fib which is ideal right the fib is very
-[11436:00] very useful for like
-[11500:00] validating levels if you want obviously
-[11545:20] you can see that we have like gaps here
-[11581:20] we have on the on the one minute we I
-[11629:20] don't know if we have like 15 minute
-[11650:40] structure on this no we
-[11684:00] We have some five-minute structure. We
-[11709:20] have a fivem minute fair value gap. We
-[11769:20] have five minute inverse fair value gap
-[11801:19] which makes a BPR or balance price
-[11856:00] range.
-[11900:00] And again there's a lot of confluences
-[11936:00] here that tells me okay
-[11982:39] huge selloff. Also again look how we
-[12025:19] have that manipulation to the upside
-[12060:00] which leaves us with a 4hour candle
-[12109:20] looking like this. Right? We open, wake
-[12170:40] up, manipulate, in other words,
-[12225:19] and then we come back down. We
-[12254:39] aggressively close on the fivem minute
-[12305:20] below the 10 a.m. key open.
-[12366:40] And then we leave
-[12408:00] the key open itself perfectly in
-[12450:40] discount and perfectly within structure
-[12522:40] price action, right?
-[12576:00] Which is like, hm, okay, nice.
-[12643:59] So, how would this trade look like? This
-[12689:20] scenario is slightly different because
-[12718:40] now we're not getting in at the most
-[12756:00] discounted
-[12800:00] level of the range.
-[12854:39] So, for me, this trade would probably
-[12882:39] look something like this
-[12932:00] where I would I would have it.
-[12994:40] This is a very volatile day, by the way.
-[13026:40] Damn.
-[13049:19] So this would be like the most
-[13085:20] conservative target. But
-[13139:59] another thing we're going to look at
-[13162:40] here first. Let's let's decide our stop
-[13198:40] loss. So if we would look at the 5m
-[13245:20] minute, what a lot of people do is they
-[13286:40] put it above the 5m minute fair rally
-[13314:40] gap, which is fair. That leaves us with
-[13346:40] a 25 point stop, right? Makes sense.
-[13394:40] Perfectly fine. Also, that leaves us
-[13442:40] above the 0.62 62 level on the fib,
-[13500:00] which is the most like I would say
-[13546:40] frequently
-[13573:19] um used level on the fib. That's like
-[13609:20] like that's beginning of OT. Price
-[13648:00] rejects
-[13680:00] 0.62 to the tick a lot, which I would
-[13738:40] want to have my stop loss above this at
-[13770:40] least. Okay,
-[13806:39] but we're going to throw another key
-[13834:39] open into the mix, which is midnight
-[13876:00] open, which is just
-[13929:20] exactly what it sounds like, midnight.
-[13977:19] And we're going to look out look at how
-[14032:00] to actually use midnight open. Now, you
-[14097:19] can use this as the 10 a.m. key open,
-[14141:20] but you can also use it for bias. It
-[14184:00] acts very similar to the 10 a.m. key
-[14226:40] open.
-[14253:19] So, what do you notice here on the 1
-[14296:00] hour? We barely have a wick below
-[14352:00] midnight open, right? Midnight open is
-[14417:20] just this candle.
-[14465:20] 0 0 0 midnight opens. We if you go look
-[14554:39] at the chart, you will see 95% of the
-[14598:40] time we will manipulate either below or
-[14653:19] above midnight open and then we will
-[14685:20] start the actual move.
-[14722:40] If we see this where we have
-[14789:20] no or like barely any manipulation below
-[14846:40] midnight open and we rally like this,
-[14893:20] you can actually use midnight open as a
-[14922:40] target. And that that's exactly what I
-[14954:39] called out today in the Discord because
-[14990:40] a lot of people were in
-[15038:40] in uh some pretty decent looking shorts
-[15091:59] and they just sent screenshots and were
-[15136:00] just asking for targets and I said
-[15160:00] midnight open possible target because we
-[15204:00] had like close to no manipulation below
-[15260:00] midnight and as you can see we
-[15304:00] absolutely just rushed down to midnight
-[15357:20] open and just dumped through it. Right.
-[15406:39] So before market opened we have this
-[15458:39] huge fake move if you will and then that
-[15530:39] leaves like look at this on the one
-[15565:20] minute look at how little
-[15609:20] price has moved below that level that is
-[15680:00] not normal like 90 to 95% of the time
-[15758:39] if this up move was the real move we
-[15794:40] would have a bigger down move below
-[15822:40] midnight open if that makes sense so I
-[15866:40] would say this is probably the secondly
-[15900:00] most used concept that I teach like in
-[15950:40] the discord. Um, rejection locks being
-[15990:40] number one, right? And then key opens
-[16038:40] being number two. So,
-[16084:00] very powerful concept. I do like it a
-[16126:40] lot because it offers a lot of like
-[16165:20] structure and like the t I like the time
-[16224:00] aspect of it, right? 10 a.m. offers like
-[16285:20] a I should be trading at 10 a.m. because
-[16332:00] that's where this setup is going to
-[16361:20] appear most of the time.
-[16404:00] Now, you might see price like tick 10:00
-[16460:00] a.m. and uh and midnight open a lot if
-[16509:20] you go look at the chart, but just know
-[16548:00] that there are there are good and bad
-[16586:39] setups like there is with anything else.
-[16625:19] So, incorporating the fib great tool in
-[16682:39] my opinion to like validate the levels.
-[16728:00] Other than that, just structure, right?
-[16781:20] normal PD rays, uh, rejection blocks,
-[16832:00] order blocks, pre value gaps, inverse
-[16865:20] fair value gaps, all that stuff. So, you
-[16936:00] can get some pretty gnarly win rates
-[16969:20] with this and some pretty good
-[17006:39] riskrewards. That's kind of how I like
-[17042:40] to trade. I don't like to spam trades
-[17069:20] every day. I might take like three
-[17093:20] trades per week and they are just high
-[17149:19] quality trades in my opinion. They're
-[17201:19] high RR and the win rate is pretty good
-[17244:00] because the trade frequency is so low,
-[17288:00] right? I'm not spamming high RR trades.
-[17340:00] That would leave me with like a 20% win
-[17374:40] rate, right? I don't really want that. I
-[17434:39] might look at the chart and I might be
-[17461:19] like, I don't like how this is setting
-[17488:00] up and I just might get off, right? Or I
-[17545:20] might look at it and I'll be like, yeah,
-[17572:00] this looks pretty decent. and then I'll
-[17596:00] actually log in to trade my accounts and
-[17641:20] then I'll wait for the setup to form
-[17704:00] which in my opinion is one of the best
-[17734:40] ways to trade because I'm not constantly
-[17761:19] glued to the chart. Right? Being glued
-[17798:39] to the chart is going to lead to
-[17860:00] getting impatient waiting for your
-[17893:20] setup. You're going to get impatient,
-[17921:20] right?
-[17977:20] And sitting here watching the chart
-[18030:40] waiting for a setup, you might start
-[18069:20] seeing things. you might start seeing
-[18104:00] this looks this looks like a half decent
-[18165:19] setup. I might just take this and get
-[18190:40] off for the day because I'm kind of
-[18213:19] lowkey like tired of sitting here,
-[18264:00] which is like that's what a lot of
-[18297:20] people do. I like to just go on the
-[18370:40] chart at 10 a.m. If there's news at
-[18408:00] 8:30, I'll trade like a data high low
-[18452:00] setup at 8:30 if it appears. If not,
-[18508:00] I'll look at 10 a.m. How is 10 a.m.
-[18540:00] opening? how is structure like forming
-[18575:59] around this area
-[18614:40] and then I'll just take it from there.
-[18637:20] I'll w start watching from there
-[18696:00] and if I don't get what I want to see
-[18748:00] I'll just simply get off the chart. It
-[18805:20] is not that deep. Now we can look at
-[18886:40] a setup from I think it was Tuesday
-[18970:40] or Wednesday. Let's find out.
-[19064:00] Yeah, I think it's from Wednesday
-[19086:40] actually where again you see we have
-[19121:20] this like no manipulation below below
-[19179:59] this 10 a.m. key open, right?
-[19238:40] Which is Oh the 100 key open.
-[19320:00] Um,
-[19362:40] no wick on this hourly candle, which is
-[19402:40] very rare. But so in this case,
-[19474:40] this is optimal, right?
-[19518:40] 10 a.m. opens, we rally. We just rally.
-[19570:40] No manipulation below 10:00 a.m. In this
-[19614:40] case, I would sit on my hands until we
-[19665:19] start coming back to 10 a.m. This would
-[19702:40] either be a long or a short. Depending
-[19756:00] on how we set it up on lower time frame,
-[19786:40] I would use entry triggers, right?
-[19831:59] To like confirm that yes, I can get in
-[19869:20] the trade now.
-[19906:40] But in this case, like yes, we close
-[19950:39] aggressively above 10 a.m., but we have
-[19997:20] no manipulation below it, which means
-[20037:20] I'm not going to long. Longs are out of
-[20078:40] the question. Now, I can find a short
-[20110:40] setup up here and then target 10 a.m.
-[20149:20] open as a pretty obvious target because,
-[20201:20] as I said, like if you look at the 4hour
-[20240:00] candles,
-[20277:20] they very rarely like don't have a upper
-[20342:39] or lower wick. So like in this case
-[20377:20] you'll see on the 4 hour we have an
-[20400:00] upper and lower on the 1 hour we don't
-[20430:40] because we like it's lower time frame
-[20485:20] and then if you go on the five minute we
-[20521:20] can see that we actually got a decent
-[20565:19] looking setup
-[20604:00] right.
-[20630:40] So draw the fib
-[20694:39] and it lines up in OT pretty nicely like
-[20758:40] or if you draw it from here like still
-[20812:00] in that range. I would probably draw
-[20834:40] from here though because that's like the
-[20865:19] unbalanced leg if you will.
-[20925:20] So in this case, I was looking and I was
-[20974:40] waiting and I was thinking, okay, looks
-[21014:40] like I'm going to get an entry here at
-[21058:40] this 10 a.m. key open cuz it is a good
-[21125:20] looking setup, right? We have 15-minute
-[21182:40] gap. We have five minute gap. We have
-[21214:40] like a inverse for value gap. A lot of
-[21257:20] structure telling us that we were going
-[21282:40] to continue being bearish.
-[21341:20] But this little gray box, by the way, is
-[21381:20] an a new week opening gap. It's just an
-[21412:00] indicator new by Lux Algo. If you want
-[21465:19] the settings, it's right there. I just
-[21502:39] have the last three. And um yeah, new
-[21575:59] week opening gaps. You probably know
-[21597:20] what that is. That's just the gap where
-[21629:20] price makes when uh a new week opens.
-[21678:40] So,
-[21706:40] not rocket science, but probably the
-[21753:20] most uh powerful PDA,
-[21801:20] especially if it's like unfilled. It's
-[21834:40] like a guaranteed draw liquidity pretty
-[21865:19] much.
-[21897:20] Anyways, this is not a new week opening
-[21922:40] gap video. Um yeah, in this case, we
-[21981:20] have that new week opening gap in
-[22006:40] discount, right? 0.5
-[22049:20] pretty good level as well. I was
-[22083:59] thinking we're going to come back to
-[22100:00] this 10 a.m. key open level because I've
-[22124:00] seen this happen a bunch of times,
-[22145:20] right? We have the 10 a.m. key open in a
-[22202:39] 5minute gap with other structure and
-[22240:00] it's in OT which is like
-[22290:40] three out of three, right? I want to
-[22321:20] take this take this short. It gets edged
-[22383:59] and um and price keeps playing out. We
-[22431:59] take out so many levels that were
-[22482:40] considered my target at the time with
-[22522:40] this leg right here. I was just like,
-[22546:39] "Okay, I'm not going to trade today."
-[22596:00] Um, price just rallied through all of my
-[22644:00] targets and I didn't get an entry. So,
-[22686:40] that's also fine. That's what I mean by
-[22721:20] low trade frequency. Like, I'm very
-[22748:00] picky with my pick picky with my setups.
-[22794:39] Jesus Christ. Um,
-[22841:20] so like this day I just did not take a
-[22878:40] trade, right? I would have gotten the
-[22933:20] setup too like during lunch, which is
-[22972:00] kind of a drawback for me. I don't love
-[23016:00] trading lunch. I do it sometimes.
-[23062:40] But um yeah, the session was over. The
-[23133:20] prices played out. Didn't get my entry.
-[23169:19] Could have taken a slightly more
-[23193:20] aggressive entry, but then again, like
-[23229:20] my stop would have to be above this,
-[23275:59] which would leave me with like a pretty
-[23324:00] big stop, which would be
-[23372:00] it's not it's not something not
-[23401:20] nothing's wrong with big stops. It's
-[23426:40] just not my thing. So, yeah. No hate
-[23492:00] towards big big stops. low RR. But yeah,
-[23552:00] that's just kind of my trading style.
-[23590:40] Um, high RR, decent win rate, low trade
-[23666:40] frequency. I don't spam trades. So, if
-[23734:40] you want to adapt that trading style,
-[23770:40] feel free. Um, I feel like you get the
-[23817:19] best of both worlds. You get the
-[23868:00] like the speed of normal day trading,
-[23894:39] but you get like the peace of mind of
-[23944:00] like swing tradingish. So yeah, it's
-[23993:20] kind of how I prefer to do it.
-[24042:39] Anyways, that was uh a lot of yap. I
-[24083:59] need a glass of water now. Um
-[24140:00] POW boot camp. Maybe, maybe not. We'll
-[24185:20] see. Um
-[24253:20] let me know in the comments what you
-[24275:59] guys want to see more of. If it's
-[24314:40] psychology, strategy, risk management,
-[24364:00] whatever it is. I just feel like I had
-[24398:39] to make like this video because I see
-[24424:00] people keep trying to teach it and they
-[24458:40] kind of teach it just straight up wrong.
-[24518:40] So, I know this is very advanced. Um,
-[24579:59] watch the video a couple times and
-[24608:00] you'll get the hang of it. Um, but yeah,
-[24725:20] that was pretty much it. So
-[24772:00] bye.
+[0:02] All right, boys. We are back.
+[0:06] Um, today I'm going to talk about a
+[0:08] concept that I have never talked about
+[0:09] on YouTube. Um, but it's something that
+[0:12] I use quite frequently. Um, you guys
+[0:15] probably know me as the rejection block
+[0:17] guy, but um, I use this every single day
+[0:22] as well, and it is key opens and the
+[0:25] Fibonacci tool. I'm going to talk about
+[0:28] what they are, how you mark them, why
+[0:30] they work, how you can combine them with
+[0:32] the fib, how to draw the fib correctly,
+[0:35] and risk management, how that plays into
+[0:38] all this. So,
+[0:41] just going to get straight straight into
+[0:42] it. Um, first off, we're going to look
+[0:46] at Monday. We're going to give you guys
+[0:49] going to give you guys two examples.
+[0:53] The first one is a 10:00 a.m. key open
+[0:58] with an order block. And let's talk
+[1:00] about the fundamentals of key opens.
+[1:06] So, the way that I use the 10 a.m. key
+[1:08] open specifically is I use it on the 4
+[1:11] hour first and foremost. The 10:00 a.m.
+[1:15] is the 4hour candle open.
+[1:19] Now, if you look at all these candles on
+[1:21] the 4hour time frame, what do you
+[1:23] notice? What do they all have in common?
+[1:27] They all have wicks
+[1:30] on the top and on the bottom. Like 97%
+[1:34] of them do at least.
+[1:36] So, knowing this, we can go down in time
+[1:40] frame and we can expect
+[1:44] our 10:00 a.m. open
+[1:48] to go in one direction and then for it
+[1:50] to manipulate in the other direction,
+[1:52] which on the 4hour time frame is going
+[1:54] to leave us with a high and low wick.
+[2:01] Hopefully, you're um you're
+[2:03] understanding this.
+[2:06] Okay. Um,
+[2:08] if not, just watch it a couple times.
+[2:11] For new new traders, it can be a little
+[2:13] advanced, but once you get the hang of
+[2:14] it, I swear to God, it's pretty simple.
+[2:18] So,
+[2:19] in this case, right, the 4hour candle
+[2:23] opens right here. I'm on the five-minute
+[2:25] chart right now, but it opens right
+[2:27] here.
+[2:29] So,
+[2:31] we're going to put our cursor on this
+[2:33] candle, and it's going to say
+[2:36] up there like up here it's going to say
+[2:39] the opening price which is
+[2:42] 24887.25
+[2:43] 25 which is what I've marked here.
+[2:46] And you can see that we have our
+[2:51] manipulation leg here,
+[2:55] right? We go above the uh the 10 a.m.
+[2:59] opening price, right? And then we
+[3:01] aggressively sell off. Now, what can we
+[3:05] do from here? How do I use this key open
+[3:07] as an entry entry tool?
+[3:10] Now, what do you notice about this 10
+[3:12] a.m. key open?
+[3:15] This candle right here is what you would
+[3:18] call an order block. Okay, this is an
+[3:20] order block on the 5-minute chart. Now,
+[3:23] there are good order blocks and there
+[3:24] are bad order blocks. How do you
+[3:26] identify good order block?
+[3:29] A good order block has very similar
+[3:31] criteria to a rejection block.
+[3:35] We either sweep liquidity or we tap into
+[3:37] a PDA. Here you can see we sweep like a
+[3:42] bunch of liquidity this high. Okay,
+[3:45] that's looks bad. Um,
+[3:48] this we this high we sweep out like
+[3:50] internal structure.
+[3:53] Pretty pretty decent order block. I
+[3:56] would say
+[3:58] we also tap into like 15inut structure.
+[4:01] I don't know if there's some 1 hour
+[4:02] structure here. Maybe that would be
+[4:04] ideal.
+[4:06] Yeah, we tap into a 1 hour rejection
+[4:09] block. So, there you go.
+[4:14] Rejection blocks are the goat.
+[4:18] Anyways,
+[4:20] what else is good about this entry?
+[4:22] Right, we have our 10 a.m. key open. We
+[4:25] have our 5m minute order block.
+[4:29] Now, you can see that
+[4:32] this rejection block up here, I use
+[4:33] rejection blocks for everything. I'm
+[4:35] sorry, but like this is going to get
+[4:36] tied into key opens. This rejection
+[4:38] block right here has been mitigated. We
+[4:41] already tapped into this. That's why I'm
+[4:43] not worried in this in this case about
+[4:46] that rejection block getting tapped into
+[4:49] again.
+[4:51] Now, I talked about the fib. How are we
+[4:52] going to incorporate the fib into this?
+[4:54] Well, the fib is actually pretty easy if
+[4:58] you know how to use it. And this is how
+[5:01] I would mark the fib in this case. from
+[5:03] high to low. When we start retracing,
+[5:06] I'm gonna draw my fib and I'm gonna see
+[5:09] that, okay, the fib actually lines up
+[5:12] perfectly with the 10M key open.
+[5:15] And this is a really good example
+[5:16] because we have the 0.79 on the fib,
+[5:20] which is like the most premium level on
+[5:23] the fib. This is ideal because if I want
+[5:28] to take a short here,
+[5:30] right, I want to have a short limit at
+[5:33] this 10 a.m. key open. I have a bunch of
+[5:34] confluences here that tell me, okay, we
+[5:37] have potential to sell off here.
+[5:40] Now, what else is good about this setup?
+[5:42] This setup actually allows me to get
+[5:44] away with
+[5:46] minuscule risk.
+[5:49] So, why is that? Normally, you know,
+[5:52] let's say you want to target this low as
+[5:54] a first target. Normally, you know, you
+[5:56] might think I would want to have my stop
+[5:59] loss at the high.
+[6:02] But what's great about this setup is
+[6:04] that in this case, the rejection lock,
+[6:06] the most premium PDA has been tapped
+[6:09] into. We have rebalanced price up here.
+[6:13] Now, my entry is at the 0.79 level on
+[6:18] the fib, which is the most premium level
+[6:20] on the fib. And this order block and
+[6:24] this 10 a.m. key open line up perfectly,
+[6:26] which is like
+[6:28] this is telling me I have probably the
+[6:30] most premium entry that I'm going to
+[6:33] get, which means I could get away with a
+[6:35] 10 to 15 point stop. Like, you might
+[6:38] want to put it above this high or like
+[6:40] just have a static 10 to 15 point stop.
+[6:46] Holy yap. Uh, with a conservative target
+[6:49] of this first internal low, this would
+[6:51] leave you with a 6.6
+[6:54] RR, which is like typically what I would
+[6:57] go for. I go for like a everything from
+[6:59] like 1 to 4 to 1 to 6 spot for me.
+[7:04] So, this
+[7:06] really decent setup, really good example
+[7:07] of what a T what a key open can be used
+[7:11] for.
+[7:13] I hate when you switch time frames and
+[7:14] then trading view just assumes you want
+[7:15] to go to the present time. But so this
+[7:19] is what the trade would look like on the
+[7:22] one minute time frame. Not a lot of draw
+[7:24] down, not a lot of pullbacks. You know,
+[7:27] these setups can be very volatile
+[7:29] because you're trading like peak New
+[7:31] York AM session, which is the most
+[7:32] volatile session,
+[7:35] which can be good or bad. Um, it might
+[7:38] affect your risk in some scenarios.
+[7:40] Sometimes 10 to 15 point stops can be
+[7:43] that big and that just doesn't make
+[7:45] sense to take that trade in that case.
+[7:47] So because the odds of getting wicked
+[7:50] out are just too big. But in this case
+[7:52] it fits pretty well. Now you could be
+[7:54] safe and you could like have a 27 point
+[7:56] stop which would still leave you with
+[7:58] like almost a 1 to four RR. Totally up
+[8:00] to you how you want to manage your risk.
+[8:03] Um, for me, I would probably have like a
+[8:05] 15 point stop. Uh, which would be just
+[8:08] like something in between
+[8:10] just like let price breathe a little bit
+[8:13] because we do have like the most
+[8:15] volatile session. But if you start using
+[8:18] key opens, you might notice that we top
+[8:20] and bottom tick
+[8:22] very often at these levels and you can
+[8:24] easily identify
+[8:28] a good versus a bad key open. It's just
+[8:31] about confluences, probabilities. If you
+[8:32] can stack probabilities and you can have
+[8:35] a like a good lowrisk entry, these
+[8:40] become very powerful. So that was an
+[8:41] example using a
+[8:44] order block and the fib. Now let's look
+[8:46] at another example from today. That was
+[8:49] from Monday. Let's look at today.
+[8:52] So easiest ways to mark them is just go
+[8:55] on the 1 hour time frame.
+[8:59] Mark it right there. That's our opening
+[9:02] price
+[9:05] [Music]
+[9:10] and we're going to scale down to the
+[9:12] five minute again.
+[9:16] Now this is also gets a little bit more
+[9:19] complicated because we're going to look
+[9:20] at lower time frame how to actually draw
+[9:23] the fib correctly.
+[9:26] So you see all these legs, right? Down,
+[9:30] up, down, up, down, up.
+[9:32] Now, you might think, oh yeah, we're
+[9:35] just drawing from high to low.
+[9:39] Not exactly. It's not that simple.
+[9:43] These little legs, these small legs are
+[9:45] constantly getting rebalanced, which
+[9:47] means that from high to low, the
+[9:50] unbalanced range
+[9:53] continuously changes. So in this case
+[9:56] right
+[9:57] let me
+[9:59] this leg has already rebalanced to 50%.
+[10:04] 50% is like my okay that's a new leg now
+[10:07] I can't use that fib in the same area
+[10:09] anymore. And now
+[10:12] this leg has also been rebalanced 50%.
+[10:18] which I can't really draw it from that
+[10:21] high now either.
+[10:25] Make sense? So I can't use this high
+[10:26] anymore and I can't use this high
+[10:28] anymore.
+[10:30] So where I would have to actually draw
+[10:32] the fib would be this high, right?
+[10:35] Because this high we have not rebalanced
+[10:37] anywhere. We start rebalancing down
+[10:40] here,
+[10:41] right?
+[10:43] I can't even Why am I pointing at the
+[10:45] chart like you see it? Dumbass.
+[10:48] um we start retracing down here at this
+[10:50] low. This is where we start retracing.
+[10:53] So my fib would be drawn from that high
+[10:56] to that low. Now that would be my new my
+[10:59] new range in which I'm looking for
+[11:02] discount, right? Discount being
+[11:06] 0.5 50%. Equilibrium of the range.
+[11:11] So we can see again that um on the fib
+[11:14] we have a key open level which aligns
+[11:17] perfectly with a discount level on the
+[11:20] fib which is ideal right the fib is very
+[11:26] very useful for like
+[11:30] validating levels if you want obviously
+[11:32] you can see that we have like gaps here
+[11:34] we have on the on the one minute we I
+[11:37] don't know if we have like 15 minute
+[11:39] structure on this no we
+[11:41] We have some five-minute structure. We
+[11:42] have a fivem minute fair value gap. We
+[11:46] have five minute inverse fair value gap
+[11:48] which makes a BPR or balance price
+[11:51] range.
+[11:54] And again there's a lot of confluences
+[11:56] here that tells me okay
+[11:58] huge selloff. Also again look how we
+[12:01] have that manipulation to the upside
+[12:03] which leaves us with a 4hour candle
+[12:06] looking like this. Right? We open, wake
+[12:10] up, manipulate, in other words,
+[12:13] and then we come back down. We
+[12:15] aggressively close on the fivem minute
+[12:18] below the 10 a.m. key open.
+[12:22] And then we leave
+[12:24] the key open itself perfectly in
+[12:27] discount and perfectly within structure
+[12:31] price action, right?
+[12:34] Which is like, hm, okay, nice.
+[12:38] So, how would this trade look like? This
+[12:41] scenario is slightly different because
+[12:43] now we're not getting in at the most
+[12:45] discounted
+[12:48] level of the range.
+[12:51] So, for me, this trade would probably
+[12:52] look something like this
+[12:55] where I would I would have it.
+[12:59] This is a very volatile day, by the way.
+[13:01] Damn.
+[13:02] So this would be like the most
+[13:05] conservative target. But
+[13:08] another thing we're going to look at
+[13:09] here first. Let's let's decide our stop
+[13:11] loss. So if we would look at the 5m
+[13:14] minute, what a lot of people do is they
+[13:17] put it above the 5m minute fair rally
+[13:18] gap, which is fair. That leaves us with
+[13:20] a 25 point stop, right? Makes sense.
+[13:23] Perfectly fine. Also, that leaves us
+[13:26] above the 0.62 62 level on the fib,
+[13:30] which is the most like I would say
+[13:32] frequently
+[13:34] um used level on the fib. That's like
+[13:36] like that's beginning of OT. Price
+[13:38] rejects
+[13:40] 0.62 to the tick a lot, which I would
+[13:44] want to have my stop loss above this at
+[13:46] least. Okay,
+[13:48] but we're going to throw another key
+[13:50] open into the mix, which is midnight
+[13:52] open, which is just
+[13:55] exactly what it sounds like, midnight.
+[13:58] And we're going to look out look at how
+[14:01] to actually use midnight open. Now, you
+[14:05] can use this as the 10 a.m. key open,
+[14:08] but you can also use it for bias. It
+[14:11] acts very similar to the 10 a.m. key
+[14:13] open.
+[14:15] So, what do you notice here on the 1
+[14:17] hour? We barely have a wick below
+[14:21] midnight open, right? Midnight open is
+[14:25] just this candle.
+[14:27] 0 0 0 midnight opens. We if you go look
+[14:33] at the chart, you will see 95% of the
+[14:35] time we will manipulate either below or
+[14:39] above midnight open and then we will
+[14:41] start the actual move.
+[14:43] If we see this where we have
+[14:47] no or like barely any manipulation below
+[14:50] midnight open and we rally like this,
+[14:53] you can actually use midnight open as a
+[14:55] target. And that that's exactly what I
+[14:57] called out today in the Discord because
+[14:59] a lot of people were in
+[15:02] in uh some pretty decent looking shorts
+[15:05] and they just sent screenshots and were
+[15:08] just asking for targets and I said
+[15:09] midnight open possible target because we
+[15:12] had like close to no manipulation below
+[15:15] midnight and as you can see we
+[15:18] absolutely just rushed down to midnight
+[15:21] open and just dumped through it. Right.
+[15:24] So before market opened we have this
+[15:27] huge fake move if you will and then that
+[15:31] leaves like look at this on the one
+[15:33] minute look at how little
+[15:36] price has moved below that level that is
+[15:40] not normal like 90 to 95% of the time
+[15:45] if this up move was the real move we
+[15:47] would have a bigger down move below
+[15:49] midnight open if that makes sense so I
+[15:52] would say this is probably the secondly
+[15:54] most used concept that I teach like in
+[15:57] the discord. Um, rejection locks being
+[15:59] number one, right? And then key opens
+[16:02] being number two. So,
+[16:05] very powerful concept. I do like it a
+[16:07] lot because it offers a lot of like
+[16:09] structure and like the t I like the time
+[16:13] aspect of it, right? 10 a.m. offers like
+[16:17] a I should be trading at 10 a.m. because
+[16:19] that's where this setup is going to
+[16:21] appear most of the time.
+[16:24] Now, you might see price like tick 10:00
+[16:27] a.m. and uh and midnight open a lot if
+[16:30] you go look at the chart, but just know
+[16:32] that there are there are good and bad
+[16:35] setups like there is with anything else.
+[16:37] So, incorporating the fib great tool in
+[16:40] my opinion to like validate the levels.
+[16:43] Other than that, just structure, right?
+[16:46] normal PD rays, uh, rejection blocks,
+[16:49] order blocks, pre value gaps, inverse
+[16:51] fair value gaps, all that stuff. So, you
+[16:56] can get some pretty gnarly win rates
+[16:58] with this and some pretty good
+[17:00] riskrewards. That's kind of how I like
+[17:02] to trade. I don't like to spam trades
+[17:04] every day. I might take like three
+[17:05] trades per week and they are just high
+[17:08] quality trades in my opinion. They're
+[17:12] high RR and the win rate is pretty good
+[17:14] because the trade frequency is so low,
+[17:17] right? I'm not spamming high RR trades.
+[17:20] That would leave me with like a 20% win
+[17:22] rate, right? I don't really want that. I
+[17:26] might look at the chart and I might be
+[17:27] like, I don't like how this is setting
+[17:29] up and I just might get off, right? Or I
+[17:32] might look at it and I'll be like, yeah,
+[17:34] this looks pretty decent. and then I'll
+[17:35] actually log in to trade my accounts and
+[17:38] then I'll wait for the setup to form
+[17:42] which in my opinion is one of the best
+[17:44] ways to trade because I'm not constantly
+[17:45] glued to the chart. Right? Being glued
+[17:47] to the chart is going to lead to
+[17:51] getting impatient waiting for your
+[17:53] setup. You're going to get impatient,
+[17:55] right?
+[17:58] And sitting here watching the chart
+[18:01] waiting for a setup, you might start
+[18:04] seeing things. you might start seeing
+[18:06] this looks this looks like a half decent
+[18:09] setup. I might just take this and get
+[18:11] off for the day because I'm kind of
+[18:12] lowkey like tired of sitting here,
+[18:15] which is like that's what a lot of
+[18:17] people do. I like to just go on the
+[18:22] chart at 10 a.m. If there's news at
+[18:24] 8:30, I'll trade like a data high low
+[18:27] setup at 8:30 if it appears. If not,
+[18:30] I'll look at 10 a.m. How is 10 a.m.
+[18:32] opening? how is structure like forming
+[18:34] around this area
+[18:36] and then I'll just take it from there.
+[18:38] I'll w start watching from there
+[18:41] and if I don't get what I want to see
+[18:44] I'll just simply get off the chart. It
+[18:48] is not that deep. Now we can look at
+[18:53] a setup from I think it was Tuesday
+[18:58] or Wednesday. Let's find out.
+[19:03] Yeah, I think it's from Wednesday
+[19:05] actually where again you see we have
+[19:07] this like no manipulation below below
+[19:10] this 10 a.m. key open, right?
+[19:14] Which is Oh the 100 key open.
+[19:19] Um,
+[19:21] no wick on this hourly candle, which is
+[19:24] very rare. But so in this case,
+[19:28] this is optimal, right?
+[19:31] 10 a.m. opens, we rally. We just rally.
+[19:34] No manipulation below 10:00 a.m. In this
+[19:36] case, I would sit on my hands until we
+[19:39] start coming back to 10 a.m. This would
+[19:42] either be a long or a short. Depending
+[19:45] on how we set it up on lower time frame,
+[19:47] I would use entry triggers, right?
+[19:49] To like confirm that yes, I can get in
+[19:52] the trade now.
+[19:54] But in this case, like yes, we close
+[19:57] aggressively above 10 a.m., but we have
+[19:59] no manipulation below it, which means
+[20:02] I'm not going to long. Longs are out of
+[20:04] the question. Now, I can find a short
+[20:06] setup up here and then target 10 a.m.
+[20:08] open as a pretty obvious target because,
+[20:12] as I said, like if you look at the 4hour
+[20:14] candles,
+[20:16] they very rarely like don't have a upper
+[20:20] or lower wick. So like in this case
+[20:22] you'll see on the 4 hour we have an
+[20:24] upper and lower on the 1 hour we don't
+[20:25] because we like it's lower time frame
+[20:29] and then if you go on the five minute we
+[20:31] can see that we actually got a decent
+[20:33] looking setup
+[20:36] right.
+[20:37] So draw the fib
+[20:41] and it lines up in OT pretty nicely like
+[20:45] or if you draw it from here like still
+[20:48] in that range. I would probably draw
+[20:50] from here though because that's like the
+[20:51] unbalanced leg if you will.
+[20:55] So in this case, I was looking and I was
+[20:58] waiting and I was thinking, okay, looks
+[21:00] like I'm going to get an entry here at
+[21:03] this 10 a.m. key open cuz it is a good
+[21:07] looking setup, right? We have 15-minute
+[21:10] gap. We have five minute gap. We have
+[21:12] like a inverse for value gap. A lot of
+[21:15] structure telling us that we were going
+[21:16] to continue being bearish.
+[21:20] But this little gray box, by the way, is
+[21:22] an a new week opening gap. It's just an
+[21:24] indicator new by Lux Algo. If you want
+[21:27] the settings, it's right there. I just
+[21:30] have the last three. And um yeah, new
+[21:34] week opening gaps. You probably know
+[21:35] what that is. That's just the gap where
+[21:37] price makes when uh a new week opens.
+[21:40] So,
+[21:42] not rocket science, but probably the
+[21:45] most uh powerful PDA,
+[21:48] especially if it's like unfilled. It's
+[21:50] like a guaranteed draw liquidity pretty
+[21:51] much.
+[21:53] Anyways, this is not a new week opening
+[21:55] gap video. Um yeah, in this case, we
+[21:58] have that new week opening gap in
+[22:00] discount, right? 0.5
+[22:02] pretty good level as well. I was
+[22:05] thinking we're going to come back to
+[22:06] this 10 a.m. key open level because I've
+[22:07] seen this happen a bunch of times,
+[22:08] right? We have the 10 a.m. key open in a
+[22:12] 5minute gap with other structure and
+[22:14] it's in OT which is like
+[22:17] three out of three, right? I want to
+[22:19] take this take this short. It gets edged
+[22:23] and um and price keeps playing out. We
+[22:25] take out so many levels that were
+[22:28] considered my target at the time with
+[22:31] this leg right here. I was just like,
+[22:32] "Okay, I'm not going to trade today."
+[22:35] Um, price just rallied through all of my
+[22:38] targets and I didn't get an entry. So,
+[22:41] that's also fine. That's what I mean by
+[22:43] low trade frequency. Like, I'm very
+[22:44] picky with my pick picky with my setups.
+[22:47] Jesus Christ. Um,
+[22:50] so like this day I just did not take a
+[22:52] trade, right? I would have gotten the
+[22:56] setup too like during lunch, which is
+[22:58] kind of a drawback for me. I don't love
+[23:00] trading lunch. I do it sometimes.
+[23:03] But um yeah, the session was over. The
+[23:08] prices played out. Didn't get my entry.
+[23:10] Could have taken a slightly more
+[23:11] aggressive entry, but then again, like
+[23:13] my stop would have to be above this,
+[23:16] which would leave me with like a pretty
+[23:19] big stop, which would be
+[23:22] it's not it's not something not
+[23:24] nothing's wrong with big stops. It's
+[23:25] just not my thing. So, yeah. No hate
+[23:29] towards big big stops. low RR. But yeah,
+[23:33] that's just kind of my trading style.
+[23:35] Um, high RR, decent win rate, low trade
+[23:40] frequency. I don't spam trades. So, if
+[23:44] you want to adapt that trading style,
+[23:46] feel free. Um, I feel like you get the
+[23:49] best of both worlds. You get the
+[23:52] like the speed of normal day trading,
+[23:53] but you get like the peace of mind of
+[23:56] like swing tradingish. So yeah, it's
+[23:59] kind of how I prefer to do it.
+[24:02] Anyways, that was uh a lot of yap. I
+[24:05] need a glass of water now. Um
+[24:08] POW boot camp. Maybe, maybe not. We'll
+[24:11] see. Um
+[24:15] let me know in the comments what you
+[24:16] guys want to see more of. If it's
+[24:18] psychology, strategy, risk management,
+[24:21] whatever it is. I just feel like I had
+[24:23] to make like this video because I see
+[24:25] people keep trying to teach it and they
+[24:27] kind of teach it just straight up wrong.
+[24:31] So, I know this is very advanced. Um,
+[24:34] watch the video a couple times and
+[24:36] you'll get the hang of it. Um, but yeah,
+[24:43] that was pretty much it. So
+[24:46] bye.

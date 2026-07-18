@@ -1,643 +1,643 @@
 # The setup that made me 60k in February
 # https://www.youtube.com/watch?v=tNyT7tHOmGI
 
-[32:40] Hello and welcome back again.
-[83:20] So, today we are going to do a variety
-[130:40] of things. I posted a reel yesterday
-[176:00] asking what you guys want more of on
-[230:00] this channel and I listened to
-[290:00] none of it. Uh we're going to do
-[313:20] something completely different. So,
-[340:00] today I'm going to start off by
-[360:40] backtesting one of these strategies that
-[410:40] has been
-[437:20] extremely consistent
-[479:20] and is one of the simplest strategies
-[536:40] that I think you can use and one of the
-[564:00] simplest strategies that I've used and
-[602:00] the confluences, everything.
-[644:40] We're going to go over it. I took a
-[672:40] trade using this today that I'm going to
-[715:20] break down for you guys at the end of
-[744:00] this video.
-[786:00] So, let's just get right into it.
-[829:20] So, first of all, what do we have here?
-[875:20] I'm on the daily time frame marking this
-[919:20] daily rejection block. This is like the
-[958:40] first higher time frame PD array that we
-[993:20] can reverse off of while being down
-[1032:00] here.
-[1045:20] So, naturally we can start looking for
-[1101:20] some longs, right? This is from the
-[1172:40] start of the month, right?
-[1214:40] Also been saying this for a while. I did
-[1278:40] want this to be a market maker buy model
-[1327:20] back to this high.
-[1358:40] We'll see with fundamentals and news and
-[1394:40] all the uncertainties and everything.
-[1436:00] Why am I huge?
-[1493:20] Nice.
-[1527:20] With all the uncertainties, what
-[1553:20] happens? We could very well just keep
-[1601:20] dumping.
-[1634:40] But anyways, that was my bias at the
-[1664:40] time
-[1686:00] of this price action playing out. So,
-[1745:20] I did make a video exactly like this for
-[1796:40] the Discord
-[1830:40] um yesterday,
-[1866:00] but
-[1883:20] I figured this is too important to basic
-[1947:20] not to give to you guys as well.
-[2011:20] Um somehow I managed to rack up 37,000
-[2052:00] subscribers on here
-[2076:00] um with like 13 videos, so
-[2117:20] thank you. Very grateful for that.
-[2167:19] And yeah, let's get into
-[2214:00] the price action. So, this is going to
-[2248:40] be a fib video. Mainly, how to use the
-[2293:20] fib, how to use the fib to validate
-[2328:40] levels, entries,
-[2362:00] all that good stuff.
-[2398:00] Um so, yeah.
-[2430:40] The fib itself, in my opinion, not a
-[2464:00] strategy.
-[2489:20] It is a confluence and a very consistent
-[2563:20] one.
-[2582:39] Um very simple to use if you know how to
-[2616:40] use it. That's what I'm going to show
-[2642:00] you right now.
-[2678:40] And let my
-[2718:00] Let me turn that off.
-[2758:40] So, we can lock in. All right.
-[2792:40] So, when marking the fib, this is what
-[2836:00] you're going to do, right? So, we have
-[2865:59] this leg up. Um what I waited waiting
-[2914:00] for here is just a bearish close. We get
-[2946:00] that right there.
-[2970:00] Right? Um and for the fib to actually be
-[3011:20] valid and for us to know what leg we are
-[3062:00] trading from,
-[3094:40] we need this, right? A higher time frame
-[3128:40] PD array, some sort of liquidity that we
-[3158:00] can sweep, and for us to rebalance in
-[3196:40] the other direction or have a target in
-[3247:20] the other direction like I do
-[3288:40] with the market maker buy model high,
-[3328:40] right? I'm dropping way too much sauce
-[3364:00] in this video, but
-[3396:40] Also, my
-[3422:00] birthday's tomorrow. I'll probably post
-[3447:20] this tomorrow, so my birthday's today.
-[3472:40] Woohoo! So, as a thank you
-[3532:39] to you guys,
-[3553:20] um I'm just going to drop way too much
-[3580:00] sauce in this video.
-[3609:20] But yeah, anyways, this we get this
-[3641:59] bearish close. I can mark my fib, and
-[3693:20] this is the area that we have to work
-[3732:00] with. Now, what happens here?
-[3787:19] Do we tap into discount? No, we don't.
-[3828:00] We make a new high. So, what do I need
-[3866:40] to wait for? A new bearish close. We get
-[3904:40] that right there.
-[3945:20] Boom. What do you guys notice about
-[3968:40] this?
-[3991:20] Right? We have a 5-minute fair value
-[4020:40] gap,
-[4044:00] a 5-minute breaker.
-[4085:20] I'm going to delete this daily cuz it's
-[4112:40] huge and it's messy.
-[4156:00] And we've left some liquidity right
-[4195:20] above
-[4233:20] this area, right? That we're looking at.
-[4260:00] We're looking at
-[4281:20] 0.5 on the fib, 50% discount, right?
-[4326:00] Everyone knows what that is.
-[4357:20] And uh we have this 5-minute fair value
-[4387:20] gap. We have this 5-minute breaker. Some
-[4414:00] of you guys probably know this as a
-[4428:40] unicorn. I used to trade these. I don't
-[4462:40] really do it anymore.
-[4493:20] Um they're too rare, too
-[4543:20] the risk-reward, not a huge fan.
-[4586:00] But anyways, let's keep playing this.
-[4626:00] Um
-[4652:40] So, what ends up happening here is that
-[4676:40] we tap into this discounted PD array,
-[4724:00] right? We sweep this liquidity into this
-[4757:20] 5-minute gap into discount, right?
-[4810:40] So, as you can probably see, it edges
-[4854:40] the discount itself.
-[4890:43] >> [snorts]
-[4924:40] >> Does that mean we can't take the trade?
-[4949:20] No.
-[4968:40] We tap into a discounted PD array and
-[5018:00] sweeping liquidity into there.
-[5060:00] That's fine, okay?
-[5088:40] What we can do though is we can scale
-[5120:40] down in time frames. Let's delete the
-[5154:40] fib
-[5176:00] and these other drawings.
-[5220:40] We can scale down in time frame and we
-[5250:00] can use 1-minute entry triggers to get
-[5310:40] us into the trade.
-[5339:20] All right?
-[5364:40] I use these every single day.
-[5421:20] Um they are great. They have saved me
-[5472:40] from a lot of losses,
-[5502:00] right? Cuz sometimes you probably just
-[5524:40] want to limit a level
-[5558:40] if you're like super high RR goblin,
-[5608:00] whatever. You want to limit everything
-[5638:00] with like a top and bottom ticks
-[5666:40] approach.
-[5698:00] This is the second best thing when it
-[5730:40] comes to risk-reward.
-[5762:00] Uh
-[5771:20] you get you basically use one to five
-[5818:00] minute PD arrays
-[5840:00] to um,
-[5858:00] validate an entry idea.
-[5894:40] And instead of waiting for a
-[5940:00] inverse for value gap, you just use a
-[5968:40] rejection block instead.
-[5996:40] Your win rate is going to be lower than
-[6020:00] a IFVG, but it's going to be your risk
-[6070:40] reward is going to weigh up for it like
-[6128:40] tenfold. All right.
-[6166:00] So, this is how to play them. I think I
-[6201:20] have a video on this already, but
-[6239:20] let's go through it anyways. Uh, you put
-[6283:20] your limit at the beginning of the
-[6332:40] rejection block, right? The rejection
-[6362:40] block gets made
-[6397:20] and the very next candle taps into it.
-[6444:40] You put your entry there, stop loss
-[6478:40] below the rejection block.
-[6522:40] And um,
-[6540:40] yeah. Not rocket science. This is just
-[6578:40] top-down analysis. Start with a bias.
-[6649:20] Go off of, let's say, five minute
-[6678:40] structure in this in this case and I use
-[6718:40] a one minute entry degree to validate
-[6742:00] the idea and get the actual entry, all
-[6772:40] right? So,
-[6814:40] let's say you missed that one, all
-[6853:20] right? Let's try this again.
-[6911:20] At this point we also have some 15
-[6939:20] minute structure that we can go off of,
-[6962:00] so keep that in mind.
-[7006:00] What do we do? We wait for a bearish
-[7043:20] close.
-[7112:00] Holy pump.
-[7151:20] Right, that's our first bearish close.
-[7190:00] We can put our fib there in hopes of a
-[7231:59] retrace. Let's see what happens.
-[7325:09] >> [snorts]
-[7340:40] >> Makes a new high, gives us a new bearish
-[7371:20] close. We can put the fib at that high
-[7407:20] now.
-[7446:00] All right.
-[7515:19] Can we come down to discount? All right,
-[7546:00] we come down to this discount right
-[7574:00] there, okay?
-[7607:20] So,
-[7631:20] right, I need you guys to understand
-[7687:20] this real quick. So, we're going to do a
-[7716:00] little
-[7735:20] psychology lesson in the midst of all
-[7774:00] this.
-[7798:40] So, what happens here is that we get a
-[7822:00] 5-minute entry trigger
-[7862:00] after tapping into discount.
-[7906:40] 5-minute entry trigger is better than a
-[7928:40] 1-minute, by the way.
-[7958:40] So,
-[8000:00] let's just right there.
-[8050:00] Now, what ends up happening here?
-[8100:40] I'm sure you guys saw it, but
-[8152:40] wow, we get stopped out.
-[8211:20] That's insane.
-[8238:00] How could that happen? I thought the win
-[8270:00] rate was 100%. Whoa.
-[8314:00] Wait, we took a loss.
-[8346:40] How are we going to get past this?
-[8392:00] This is This trading stuff is never
-[8416:00] going to work out. Oh my god, we took a
-[8450:00] loss.
-[8563:20] Relax, all right.
-[8606:40] Some of you like to throw away weeks and
-[8672:40] months of progress
-[8704:40] when this happens, all right?
-[8749:20] And um
-[8778:40] it's stupid. It's childish.
-[8838:00] I'm not going to get into that right
-[8856:00] now. If you want to watch psychology
-[8878:00] videos, you can watch some of my other
-[8896:00] videos.
-[8912:00] But anyways, what happens here? We tap
-[8932:00] into discount, give a 5-minute entry
-[8958:40] trigger. Fine, it fails. And then we tap
-[9000:00] into OTE, 0.62 on the fib. Way better
-[9049:20] level, by the way. More discounted,
-[9085:20] higher chance of playing out, higher
-[9120:40] chance of not retracing back down.
-[9183:20] We get another 5-minute entry trigger.
-[9226:40] All right. We're going to try this
-[9248:00] again. The thing about risk high risk
-[9281:20] reward is that we have
-[9319:20] room to fail, all right?
-[9395:20] So, we're going to put this
-[9429:20] right at the
-[9479:20] beginning of this 5-minute entry
-[9512:00] trigger. Stop below, same procedure as
-[9550:40] last time.
-[9581:20] Gets tagged in right there. We can have
-[9605:20] the same target, same internal high.
-[9646:00] We're going to get a 1:8 risk to reward.
-[9675:20] Remember this was also like a 1:8 risk
-[9704:40] to reward by the way. This rejection
-[9730:00] block right here that failed.
-[9774:00] Do we care that that trade failed for a
-[9836:40] total loss of 12 points
-[9908:40] when we can hit a 1:8 risk to reward
-[9951:20] right afterwards?
-[9988:00] No, we don't.
-[10023:20] But the thing is
-[10061:20] some of you when you take that first
-[10080:40] loss, you shift your bias, you do all
-[10107:20] these things because price didn't do
-[10132:00] exactly what you wanted it to do.
-[10168:00] But like if you can just sit on the
-[10192:40] 5-minute time frame, relax, breathe,
-[10224:40] bro.
-[10254:00] It is not that deep. Don't make it that
-[10285:20] deep.
-[10310:40] When you trade high risk reward, which
-[10339:20] I'm assuming some of you guys do if you
-[10367:20] follow my content,
-[10393:20] if you trade this way, take the chances
-[10428:40] that are given to you, all right?
-[10462:40] If you take a loss, don't be afraid to
-[10492:00] take another trade. I usually say take
-[10522:40] max two losses a day,
-[10568:00] two to three trades per day,
-[10603:20] and stop, all right?
-[10638:40] If you take three trades and they're all
-[10669:20] losers, like you're not on side, you're
-[10702:40] offside. Just stop trading for the day.
-[10746:40] It is not that deep. Don't make it that
-[10767:20] deep. Don't blow weeks of progress
-[10830:39] by just emotion, all right? I get it,
-[10868:00] you're angry, you're sad, you're
-[10886:00] impatient, you want the money now, you
-[10906:00] need the money now, you want to quit
-[10920:40] your job, all these things, right?
-[10959:20] But just
-[11006:00] have some intraday patience, all right?
-[11044:00] You're going to get there way faster
-[11099:20] if you can be patient. All right? I
-[11142:00] learned this the very, very hard way.
-[11197:19] I probably spun spent month months too
-[11249:20] long at my job because I kept trying to
-[11294:40] go for home runs, I kept trying to not
-[11334:00] have any losing days.
-[11370:40] And this is not the reality of the
-[11389:20] situation, all right?
-[11423:20] We're not going to We're not going to be
-[11454:00] perfect.
-[11480:39] We need to be patient. We need to take
-[11513:20] the opportunities that are given to us.
-[11562:40] And um
-[11593:20] we need to execute with a calm mind.
-[11678:00] Calm, cool, and collected. All right.
-[11739:20] I I'm sure you guys get the idea by now.
-[11785:20] Um of like fib, entry trigger, PD array,
-[11841:20] all these things, right?
-[11879:20] You want all this stuff to Basically,
-[11925:20] the fib is just like a
-[11982:40] It's a little bit of a map of the leg
-[12037:20] that you are currently in, right?
-[12098:00] Uh
-[12135:20] So, for this, by the way, like for
-[12156:40] example, you have all these PD arrays,
-[12189:20] right?
-[12210:40] You have all these fair value gaps. You
-[12236:40] have the 15-minute time frame, huge fair
-[12276:40] value gaps. Where do I enter? Where is
-[12308:00] the POI? Where is the reversal point?
-[12381:20] Slap the fib on there, and you're going
-[12404:00] to get way more precise levels within
-[12454:40] these PD arrays. All right?
-[12490:00] Like here, for example. Yes, we tap into
-[12526:00] holy
-[12550:00] We tap into the 50-minute 50-minute gap,
-[12587:20] 5-minute gap, blah blah blah.
-[12637:20] But what is going to give us the actual
-[12658:40] conviction that that exact point is
-[12698:00] going to be the reversal?
-[12730:39] And a lot of the times, it's going to be
-[12765:20] the fib.
-[12794:00] So, that's why we use it.
-[12852:00] Um but yeah, I'm sure you get the idea.
-[12901:20] So, we can probably
-[12944:00] move on to the trade that I took today,
-[13012:00] which is not in replay mode.
-[13122:40] Leave. All right.
-[13168:00] So, let's get into this.
-[13219:20] Uh I have videos on all of these
-[13244:40] concepts that I'm about to explain to
-[13270:00] you. So, if you haven't watched those,
-[13293:20] probably watch those first. It's the
-[13318:00] 10:00 a.m. key open video, rejection
-[13357:20] block video, and obviously also the fib.
-[13424:00] So,
-[13484:40] I am watching this
-[13518:00] at the time of this trade on the
-[13573:20] 1-minute time frame.
-[13626:40] Now, I'm going to go ahead and mark out
-[13660:00] my key open of 10:00 a.m., which is
-[13718:40] right there.
-[13756:40] Wait.
-[13788:00] Why is there not a 10:00 a.m. candle?
-[13824:00] That is weird.
-[13845:20] There we go.
-[13890:00] Right there.
-[13907:59] >> [snorts]
-[13929:20] >> All right.
-[13985:20] So,
-[14047:20] 10:00 a.m. I'm sure you guys already
-[14098:00] know
-[14117:20] why I use it, how I use it, the logic
-[14161:20] behind it. So, I'm not going to go too
-[14182:40] deep into that. This is just going to be
-[14202:00] a trade recap
-[14231:20] of the concepts that I've just
-[14288:40] introduced to you. All right.
-[14328:00] So, what do we have here?
-[14373:20] I'm looking at the 1-minute time frame,
-[14399:20] all right?
-[14416:00] First of all, bias.
-[14448:40] What happens at open today? We Judas
-[14506:40] to the upside, Judas swing, fakeout,
-[14541:20] right? And then we dump down and we take
-[14582:00] out all these draws on liquidity, right?
-[14639:20] This one,
-[14672:40] previous week low, I believe.
-[14738:00] Yeah.
-[14762:40] Previous week's low and then also
-[14795:20] obviously previous day low.
-[14862:00] So, naturally,
-[14902:00] after taking all those out,
-[14934:40] being bearish towards those fine, but
-[14963:59] after we take them out, I'm going to
-[15006:00] tend to lean more bullish, especially if
-[15046:00] 10:00 a.m. opens lower like it did here,
-[15091:20] right? 10:00 a.m. opens, opens lower,
-[15137:20] goes wicks down
-[15170:40] by 20 points, that's fine.
-[15211:20] All we want with 10:00 a.m. is a lower
-[15246:00] wick.
-[15264:40] All right? We want this lower wick to
-[15292:00] get put in so that we can distribute
-[15347:19] to the upside.
-[15376:00] Nice.
-[15401:20] That being established, let's look at
-[15436:00] the trade.
-[15470:40] So,
-[15512:40] that's the one-minute time frame. I'm
-[15538:40] going to do this in replay mode as well,
-[15568:40] so that it's going to be easier to
-[15589:20] visualize.
-[15643:20] And by the way, also, so you know I'm
-[15662:40] not full of I'll just put the
-[15682:00] trade on here.
-[15772:00] And I took it on 10 apexes,
-[15816:00] made uh
-[15840:00] 1,200 * 10, so that's $12,000.
-[15944:00] Yeah.
-[15966:40] Let's get on with the breakdown. So, I'm
-[16002:00] watching this, right? 10:00 a.m. opens
-[16030:00] lower, we distribute higher.
-[16077:20] Ideally for me, I want that retrace.
-[16129:20] Right? I want the retrace to come down
-[16164:40] and retest 10:00 a.m.
-[16197:20] This is what I talk about all the time.
-[16218:40] Why do I want this? Because there is a
-[16252:40] bunch of confluences in this area
-[16284:40] telling me that yeah, this could be a
-[16320:40] good area to reverse.
-[16364:16] >> [snorts]
-[16384:40] >> 0.79 on the fib, it doesn't get more
-[16424:40] discounted than that.
-[16452:40] That's a bonus.
-[16485:20] We have a one- and a five-minute
-[16518:00] rejection block. Rejection blocks
-[16564:40] doesn't get more discounted than that.
-[16598:00] That's a bonus.
-[16628:40] And the 10:00 a.m. framework is
-[16670:40] following
-[16692:40] our
-[16724:00] idea, our plan, right? Opens lower,
-[16758:40] starts distributing higher, I want that
-[16786:40] retest.
-[16809:20] I want my entry.
-[16852:40] Right?
-[16876:00] I put my entry at the rejection block,
-[16919:20] the start of the rejection block again,
-[16943:20] so it's at 485, I believe. I'll
-[16994:40] You can probably see by the recording.
-[17028:40] Then I had a 15-point stop just to cover
-[17090:00] the the midpoint, right? This line in
-[17150:00] the PD array.
-[17171:20] I want my stop loss to cover that,
-[17204:40] because that is going to defend me.
-[17239:20] All right?
-[17262:00] That is a sensitive point usually
-[17326:00] within every single PD array.
-[17374:40] So, that is going to my stop in this
-[17421:59] place is in this case is going to be
-[17450:40] somewhat defended. Now, ideally, your
-[17492:00] stop should be at the end of the
-[17528:00] rejection block to cover the entire low
-[17571:20] case there's going to be SMTs, all this
-[17600:00] stuff, but
-[17640:00] I liked this better especially
-[17697:20] I was targeting 605
-[17752:00] right there. It's an unfilled gap. It's
-[17816:40] a old low right there.
-[17864:40] And um yeah. So, this was a 1:8. If I
-[17922:40] did have my stop loss at the low, 1:5
-[17966:00] still very acceptable, but I like this a
-[18014:00] lot more.
-[18041:20] So, we're going to look at what happens
-[18076:00] here.
-[18170:40] Gets tagged in, immediately reacts,
-[18203:20] right? That's a good thing.
-[18238:40] And uh
-[18260:00] I'm not completely sure where I move my
-[18293:20] stop loss. I think after this candle,
-[18342:40] right? This big candle, I move my stop
-[18383:20] loss to this low.
-[18415:20] I'm pretty sure.
-[18447:20] I'll probably
-[18470:00] I'll watch the recording. But, uh yeah.
-[18503:20] And then
-[18539:20] Wow, that was way too fast. But, yeah,
-[18561:20] when price took out this high,
-[18643:20] I moved my stop loss to break even.
-[18696:40] Cuz at that point, there's no like why
-[18728:00] would it come all the way back down
-[18744:00] there?
-[18787:20] At that point, it would just be chop,
-[18812:40] right?
-[18837:20] So, [snorts] that's kind of the
-[18850:40] reasoning behind that.
-[18875:20] And then also midnight open is somewhere
-[18904:00] around here, but I was targeting a
-[18932:00] little bit before that.
-[18973:23] >> [snorts]
-[18980:40] >> So, that was the trade bias, uh
-[19038:00] structure, timing, entry, idea,
-[19093:20] everything.
-[19110:40] All right, so
-[19150:00] um
-[19176:40] yeah.
-[19199:20] Uh the reason I took it on 10 Apexes is
-[19228:00] because after the max payout on the
-[19262:00] other 10,
-[19291:20] I blew them into oblivion. All right.
-[19348:40] And, um, that's fine. That happens.
-[19378:40] After max payout,
-[19414:00] don't really care.
-[19436:00] Um, but yeah, I got them all approved.
-[19506:00] The all 20 got approved, paid out, all
-[19551:20] good, 40,000.
-[19586:40] So, now with these accounts, they are
-[19626:40] almost back to being at max payout
-[19676:00] threshold. All right. So, it's currently
-[19716:00] February 19th. Yesterday was my
-[19754:40] birthday.
-[19790:40] Here we are back at max payout
-[19828:40] threshold. Took a short off of midnight
-[19865:20] open with this liquidity right here.
-[19918:40] And, um,
-[19935:20] yeah.
-[19956:40] Just wanted to throw that in there.
-[19988:40] Also, something I wanted to talk a
-[20012:40] little bit about. If you get 20 Apex
-[20044:00] accounts,
-[20083:20] by the way, they're they literally half
-[20125:20] an hour ago just went back to 90% off
-[20165:20] with Gold Powell, shameless plug.
-[20209:20] So, if you've been thinking about
-[20239:20] getting it, get it now. It's going to
-[20266:40] That's going to be the cheapest it's
-[20285:20] going to be.
-[20322:00] If you get 20 Apex accounts and you get
-[20349:20] the payout,
-[20396:40] your maximum drawdown goes to $2,000,
-[20452:40] right?
-[20470:40] And at that point, you only have to make
-[20498:00] $2,000 over and over and over again in
-[20552:00] order to get max payout on max payout on
-[20582:40] max payout. That's why if you get the
-[20611:20] first max payout, it's going to be way,
-[20640:40] way easier to get the second, third,
-[20666:40] fourth until
-[20696:00] they ban you or put you on live, right?
-[20756:00] But at that point, you won't care cuz
-[20776:40] you would have extracted like
-[20806:40] a couple of six figures from it, so
-[20827:20] you'll be chilling.
-[20871:20] But, uh, yeah. The first time,
-[20904:40] obviously, with the 50K's at least,
-[20931:20] which is what I have, you have to make
-[20952:00] $4,000
-[20984:40] for the first payout.
-[21013:20] But after that, you only have to make
-[21042:00] two. And so, this trade, I made 1,200
-[21076:40] per account. I now only need 800 more
-[21132:40] for another max payout.
-[21175:20] So, gets
-[21201:20] It gets uh pretty easy after a while
-[21240:40] when you know what you're doing, which
-[21264:00] should be motivating to you. All right,
-[21294:40] it's not always going to be hard and
-[21320:00] tedious and
-[21372:00] tight risk management and all this
-[21395:20] stuff, right?
-[21421:20] When you start getting payouts,
-[21456:00] your shoulders going to
-[21482:40] lower a little bit. You're going to take
-[21508:40] it in more chill. You're going to look
-[21536:00] at the market in a bit more of a relaxed
-[21570:00] way.
-[21601:20] You're going to be able to breathe a
-[21619:20] little bit better, right? Your hands are
-[21645:20] not going to be as sweaty and uh and
-[21676:40] things are going to start loosening up.
-[21697:20] You're going to start getting more
-[21712:40] consistent payouts, etc. etc. The worst
-[21767:20] phase to be in
-[21804:40] is the phase where we have no payouts.
-[21830:00] You have no proof that it's actually
-[21868:00] working, right?
-[21908:00] But um
-[21940:40] it it will work if you put in the work.
-[21988:00] All right?
-[22005:20] I've had so many people
-[22041:20] come to me and be like, "Thank you." And
-[22063:20] then show me like 25,000 payouts
-[22122:00] twice.
-[22146:40] And they started trading like months
-[22178:00] ago. And it's like
-[22218:00] it's insane.
-[22244:00] And um if you just go into it with the
-[22282:00] right right mindset, like you go into it
-[22320:40] with the mindset that this can work if I
-[22348:40] follow the rules, I stick to the system,
-[22383:20] all these things.
-[22412:00] I don't tilt, which is what probably
-[22446:00] up most amount of people. They
-[22477:20] tilt and blow weeks of progress
-[22518:40] in um in a day because they get angry,
-[22562:40] right? Because they take a loss. One
-[22591:20] loss too many and then boom,
-[22620:40] everything's gone.
-[22650:40] If you can avoid that, avoid like those
-[22686:00] destruction kinds of days,
-[22734:00] you're good. If you just follow the
-[22754:00] system, you're good. You're going to
-[22768:40] make real
-[22790:00] king money. This video was more like a
-[22860:40] This is probably the setup that I use
-[22884:40] the most to secure like all these max
-[22930:00] payouts with Apex and all these other
-[22954:40] firms.
-[22972:40] So, like why not share it with you guys?
-[23016:40] When I opened this YouTube channel, I
-[23036:00] expect to get that much traction,
-[23082:00] but um
-[23108:40] I do appreciate it a lot, and um I'll
-[23160:00] get more consistent with uploading. Go
-[23189:20] get those max payouts. Apex right now,
-[23226:40] as I said, 90% off, so a 50k is like
-[23263:20] $20. Activation fee is 75.
-[23310:00] So, as I said, I paid like $1,800 or
-[23344:40] something for these 20 accounts. They
-[23370:40] have netted me
-[23394:00] almost $100,000, these accounts alone on
-[23431:20] this cycle.
-[23485:20] So, the RR is kind of like a no-brainer,
-[23516:40] right?
-[23533:20] So, yeah, 90% off with the code PAWEL or
-[23570:40] whatever code you want to use.
-[23612:00] Um
-[23624:40] yeah.
-[23645:20] That was all all really.
-[23672:40] Um until next time. Next video's
-[23704:40] probably going to be a psychology video,
-[23730:40] so
-[23748:00] stay tuned.
+[0:01] Hello and welcome back again.
+[0:05] So, today we are going to do a variety
+[0:07] of things. I posted a reel yesterday
+[0:10] asking what you guys want more of on
+[0:13] this channel and I listened to
+[0:17] none of it. Uh we're going to do
+[0:18] something completely different. So,
+[0:20] today I'm going to start off by
+[0:21] backtesting one of these strategies that
+[0:24] has been
+[0:26] extremely consistent
+[0:28] and is one of the simplest strategies
+[0:32] that I think you can use and one of the
+[0:33] simplest strategies that I've used and
+[0:36] the confluences, everything.
+[0:38] We're going to go over it. I took a
+[0:40] trade using this today that I'm going to
+[0:42] break down for you guys at the end of
+[0:44] this video.
+[0:47] So, let's just get right into it.
+[0:49] So, first of all, what do we have here?
+[0:52] I'm on the daily time frame marking this
+[0:55] daily rejection block. This is like the
+[0:57] first higher time frame PD array that we
+[0:59] can reverse off of while being down
+[1:01] here.
+[1:02] So, naturally we can start looking for
+[1:06] some longs, right? This is from the
+[1:10] start of the month, right?
+[1:12] Also been saying this for a while. I did
+[1:16] want this to be a market maker buy model
+[1:19] back to this high.
+[1:21] We'll see with fundamentals and news and
+[1:23] all the uncertainties and everything.
+[1:26] Why am I huge?
+[1:29] Nice.
+[1:31] With all the uncertainties, what
+[1:33] happens? We could very well just keep
+[1:36] dumping.
+[1:38] But anyways, that was my bias at the
+[1:39] time
+[1:41] of this price action playing out. So,
+[1:44] I did make a video exactly like this for
+[1:47] the Discord
+[1:49] um yesterday,
+[1:51] but
+[1:53] I figured this is too important to basic
+[1:56] not to give to you guys as well.
+[2:00] Um somehow I managed to rack up 37,000
+[2:03] subscribers on here
+[2:04] um with like 13 videos, so
+[2:07] thank you. Very grateful for that.
+[2:10] And yeah, let's get into
+[2:12] the price action. So, this is going to
+[2:14] be a fib video. Mainly, how to use the
+[2:17] fib, how to use the fib to validate
+[2:19] levels, entries,
+[2:21] all that good stuff.
+[2:23] Um so, yeah.
+[2:25] The fib itself, in my opinion, not a
+[2:27] strategy.
+[2:29] It is a confluence and a very consistent
+[2:33] one.
+[2:34] Um very simple to use if you know how to
+[2:37] use it. That's what I'm going to show
+[2:38] you right now.
+[2:40] And let my
+[2:43] Let me turn that off.
+[2:45] So, we can lock in. All right.
+[2:47] So, when marking the fib, this is what
+[2:50] you're going to do, right? So, we have
+[2:51] this leg up. Um what I waited waiting
+[2:54] for here is just a bearish close. We get
+[2:56] that right there.
+[2:58] Right? Um and for the fib to actually be
+[3:00] valid and for us to know what leg we are
+[3:03] trading from,
+[3:05] we need this, right? A higher time frame
+[3:07] PD array, some sort of liquidity that we
+[3:09] can sweep, and for us to rebalance in
+[3:11] the other direction or have a target in
+[3:14] the other direction like I do
+[3:17] with the market maker buy model high,
+[3:19] right? I'm dropping way too much sauce
+[3:21] in this video, but
+[3:23] Also, my
+[3:25] birthday's tomorrow. I'll probably post
+[3:26] this tomorrow, so my birthday's today.
+[3:28] Woohoo! So, as a thank you
+[3:31] to you guys,
+[3:33] um I'm just going to drop way too much
+[3:34] sauce in this video.
+[3:36] But yeah, anyways, this we get this
+[3:38] bearish close. I can mark my fib, and
+[3:41] this is the area that we have to work
+[3:43] with. Now, what happens here?
+[3:47] Do we tap into discount? No, we don't.
+[3:49] We make a new high. So, what do I need
+[3:52] to wait for? A new bearish close. We get
+[3:54] that right there.
+[3:56] Boom. What do you guys notice about
+[3:58] this?
+[3:59] Right? We have a 5-minute fair value
+[4:01] gap,
+[4:02] a 5-minute breaker.
+[4:05] I'm going to delete this daily cuz it's
+[4:06] huge and it's messy.
+[4:09] And we've left some liquidity right
+[4:11] above
+[4:14] this area, right? That we're looking at.
+[4:15] We're looking at
+[4:16] 0.5 on the fib, 50% discount, right?
+[4:19] Everyone knows what that is.
+[4:21] And uh we have this 5-minute fair value
+[4:23] gap. We have this 5-minute breaker. Some
+[4:24] of you guys probably know this as a
+[4:25] unicorn. I used to trade these. I don't
+[4:27] really do it anymore.
+[4:29] Um they're too rare, too
+[4:32] the risk-reward, not a huge fan.
+[4:35] But anyways, let's keep playing this.
+[4:37] Um
+[4:39] So, what ends up happening here is that
+[4:40] we tap into this discounted PD array,
+[4:43] right? We sweep this liquidity into this
+[4:45] 5-minute gap into discount, right?
+[4:48] So, as you can probably see, it edges
+[4:51] the discount itself.
+[4:53] >> [snorts]
+[4:55] >> Does that mean we can't take the trade?
+[4:56] No.
+[4:58] We tap into a discounted PD array and
+[5:01] sweeping liquidity into there.
+[5:03] That's fine, okay?
+[5:05] What we can do though is we can scale
+[5:07] down in time frames. Let's delete the
+[5:09] fib
+[5:10] and these other drawings.
+[5:13] We can scale down in time frame and we
+[5:15] can use 1-minute entry triggers to get
+[5:18] us into the trade.
+[5:20] All right?
+[5:21] I use these every single day.
+[5:25] Um they are great. They have saved me
+[5:28] from a lot of losses,
+[5:30] right? Cuz sometimes you probably just
+[5:31] want to limit a level
+[5:33] if you're like super high RR goblin,
+[5:36] whatever. You want to limit everything
+[5:38] with like a top and bottom ticks
+[5:40] approach.
+[5:41] This is the second best thing when it
+[5:43] comes to risk-reward.
+[5:45] Uh
+[5:46] you get you basically use one to five
+[5:49] minute PD arrays
+[5:50] to um,
+[5:51] validate an entry idea.
+[5:53] And instead of waiting for a
+[5:56] inverse for value gap, you just use a
+[5:58] rejection block instead.
+[5:59] Your win rate is going to be lower than
+[6:01] a IFVG, but it's going to be your risk
+[6:04] reward is going to weigh up for it like
+[6:07] tenfold. All right.
+[6:09] So, this is how to play them. I think I
+[6:12] have a video on this already, but
+[6:14] let's go through it anyways. Uh, you put
+[6:17] your limit at the beginning of the
+[6:19] rejection block, right? The rejection
+[6:21] block gets made
+[6:23] and the very next candle taps into it.
+[6:26] You put your entry there, stop loss
+[6:28] below the rejection block.
+[6:31] And um,
+[6:32] yeah. Not rocket science. This is just
+[6:34] top-down analysis. Start with a bias.
+[6:38] Go off of, let's say, five minute
+[6:40] structure in this in this case and I use
+[6:43] a one minute entry degree to validate
+[6:44] the idea and get the actual entry, all
+[6:46] right? So,
+[6:48] let's say you missed that one, all
+[6:51] right? Let's try this again.
+[6:54] At this point we also have some 15
+[6:56] minute structure that we can go off of,
+[6:57] so keep that in mind.
+[7:00] What do we do? We wait for a bearish
+[7:02] close.
+[7:06] Holy pump.
+[7:09] Right, that's our first bearish close.
+[7:11] We can put our fib there in hopes of a
+[7:13] retrace. Let's see what happens.
+[7:19] >> [snorts]
+[7:20] >> Makes a new high, gives us a new bearish
+[7:22] close. We can put the fib at that high
+[7:24] now.
+[7:26] All right.
+[7:30] Can we come down to discount? All right,
+[7:32] we come down to this discount right
+[7:34] there, okay?
+[7:36] So,
+[7:37] right, I need you guys to understand
+[7:41] this real quick. So, we're going to do a
+[7:42] little
+[7:44] psychology lesson in the midst of all
+[7:46] this.
+[7:47] So, what happens here is that we get a
+[7:49] 5-minute entry trigger
+[7:51] after tapping into discount.
+[7:54] 5-minute entry trigger is better than a
+[7:55] 1-minute, by the way.
+[7:57] So,
+[8:00] let's just right there.
+[8:03] Now, what ends up happening here?
+[8:06] I'm sure you guys saw it, but
+[8:09] wow, we get stopped out.
+[8:12] That's insane.
+[8:14] How could that happen? I thought the win
+[8:16] rate was 100%. Whoa.
+[8:18] Wait, we took a loss.
+[8:20] How are we going to get past this?
+[8:23] This is This trading stuff is never
+[8:24] going to work out. Oh my god, we took a
+[8:27] loss.
+[8:33] Relax, all right.
+[8:36] Some of you like to throw away weeks and
+[8:40] months of progress
+[8:42] when this happens, all right?
+[8:44] And um
+[8:46] it's stupid. It's childish.
+[8:50] I'm not going to get into that right
+[8:51] now. If you want to watch psychology
+[8:52] videos, you can watch some of my other
+[8:53] videos.
+[8:54] But anyways, what happens here? We tap
+[8:55] into discount, give a 5-minute entry
+[8:57] trigger. Fine, it fails. And then we tap
+[9:00] into OTE, 0.62 on the fib. Way better
+[9:02] level, by the way. More discounted,
+[9:05] higher chance of playing out, higher
+[9:07] chance of not retracing back down.
+[9:11] We get another 5-minute entry trigger.
+[9:13] All right. We're going to try this
+[9:14] again. The thing about risk high risk
+[9:16] reward is that we have
+[9:19] room to fail, all right?
+[9:23] So, we're going to put this
+[9:25] right at the
+[9:28] beginning of this 5-minute entry
+[9:30] trigger. Stop below, same procedure as
+[9:33] last time.
+[9:34] Gets tagged in right there. We can have
+[9:36] the same target, same internal high.
+[9:38] We're going to get a 1:8 risk to reward.
+[9:40] Remember this was also like a 1:8 risk
+[9:42] to reward by the way. This rejection
+[9:43] block right here that failed.
+[9:46] Do we care that that trade failed for a
+[9:50] total loss of 12 points
+[9:54] when we can hit a 1:8 risk to reward
+[9:57] right afterwards?
+[9:59] No, we don't.
+[10:01] But the thing is
+[10:03] some of you when you take that first
+[10:04] loss, you shift your bias, you do all
+[10:06] these things because price didn't do
+[10:07] exactly what you wanted it to do.
+[10:10] But like if you can just sit on the
+[10:11] 5-minute time frame, relax, breathe,
+[10:13] bro.
+[10:15] It is not that deep. Don't make it that
+[10:17] deep.
+[10:18] When you trade high risk reward, which
+[10:20] I'm assuming some of you guys do if you
+[10:22] follow my content,
+[10:23] if you trade this way, take the chances
+[10:25] that are given to you, all right?
+[10:27] If you take a loss, don't be afraid to
+[10:29] take another trade. I usually say take
+[10:31] max two losses a day,
+[10:34] two to three trades per day,
+[10:36] and stop, all right?
+[10:38] If you take three trades and they're all
+[10:40] losers, like you're not on side, you're
+[10:42] offside. Just stop trading for the day.
+[10:44] It is not that deep. Don't make it that
+[10:46] deep. Don't blow weeks of progress
+[10:49] by just emotion, all right? I get it,
+[10:52] you're angry, you're sad, you're
+[10:53] impatient, you want the money now, you
+[10:54] need the money now, you want to quit
+[10:55] your job, all these things, right?
+[10:57] But just
+[11:00] have some intraday patience, all right?
+[11:02] You're going to get there way faster
+[11:05] if you can be patient. All right? I
+[11:08] learned this the very, very hard way.
+[11:11] I probably spun spent month months too
+[11:14] long at my job because I kept trying to
+[11:17] go for home runs, I kept trying to not
+[11:20] have any losing days.
+[11:22] And this is not the reality of the
+[11:23] situation, all right?
+[11:25] We're not going to We're not going to be
+[11:27] perfect.
+[11:28] We need to be patient. We need to take
+[11:30] the opportunities that are given to us.
+[11:33] And um
+[11:35] we need to execute with a calm mind.
+[11:40] Calm, cool, and collected. All right.
+[11:44] I I'm sure you guys get the idea by now.
+[11:47] Um of like fib, entry trigger, PD array,
+[11:50] all these things, right?
+[11:52] You want all this stuff to Basically,
+[11:55] the fib is just like a
+[11:58] It's a little bit of a map of the leg
+[12:02] that you are currently in, right?
+[12:05] Uh
+[12:08] So, for this, by the way, like for
+[12:09] example, you have all these PD arrays,
+[12:11] right?
+[12:12] You have all these fair value gaps. You
+[12:14] have the 15-minute time frame, huge fair
+[12:16] value gaps. Where do I enter? Where is
+[12:18] the POI? Where is the reversal point?
+[12:22] Slap the fib on there, and you're going
+[12:24] to get way more precise levels within
+[12:27] these PD arrays. All right?
+[12:29] Like here, for example. Yes, we tap into
+[12:31] holy
+[12:33] We tap into the 50-minute 50-minute gap,
+[12:35] 5-minute gap, blah blah blah.
+[12:38] But what is going to give us the actual
+[12:39] conviction that that exact point is
+[12:41] going to be the reversal?
+[12:43] And a lot of the times, it's going to be
+[12:45] the fib.
+[12:47] So, that's why we use it.
+[12:51] Um but yeah, I'm sure you get the idea.
+[12:54] So, we can probably
+[12:56] move on to the trade that I took today,
+[13:00] which is not in replay mode.
+[13:07] Leave. All right.
+[13:10] So, let's get into this.
+[13:13] Uh I have videos on all of these
+[13:14] concepts that I'm about to explain to
+[13:16] you. So, if you haven't watched those,
+[13:17] probably watch those first. It's the
+[13:19] 10:00 a.m. key open video, rejection
+[13:21] block video, and obviously also the fib.
+[13:25] So,
+[13:29] I am watching this
+[13:31] at the time of this trade on the
+[13:34] 1-minute time frame.
+[13:37] Now, I'm going to go ahead and mark out
+[13:39] my key open of 10:00 a.m., which is
+[13:43] right there.
+[13:45] Wait.
+[13:47] Why is there not a 10:00 a.m. candle?
+[13:49] That is weird.
+[13:50] There we go.
+[13:53] Right there.
+[13:54] >> [snorts]
+[13:55] >> All right.
+[13:59] So,
+[14:02] 10:00 a.m. I'm sure you guys already
+[14:05] know
+[14:07] why I use it, how I use it, the logic
+[14:09] behind it. So, I'm not going to go too
+[14:10] deep into that. This is just going to be
+[14:12] a trade recap
+[14:13] of the concepts that I've just
+[14:17] introduced to you. All right.
+[14:19] So, what do we have here?
+[14:22] I'm looking at the 1-minute time frame,
+[14:23] all right?
+[14:24] First of all, bias.
+[14:26] What happens at open today? We Judas
+[14:30] to the upside, Judas swing, fakeout,
+[14:32] right? And then we dump down and we take
+[14:34] out all these draws on liquidity, right?
+[14:38] This one,
+[14:40] previous week low, I believe.
+[14:44] Yeah.
+[14:45] Previous week's low and then also
+[14:47] obviously previous day low.
+[14:51] So, naturally,
+[14:54] after taking all those out,
+[14:56] being bearish towards those fine, but
+[14:57] after we take them out, I'm going to
+[15:00] tend to lean more bullish, especially if
+[15:02] 10:00 a.m. opens lower like it did here,
+[15:05] right? 10:00 a.m. opens, opens lower,
+[15:08] goes wicks down
+[15:10] by 20 points, that's fine.
+[15:12] All we want with 10:00 a.m. is a lower
+[15:14] wick.
+[15:15] All right? We want this lower wick to
+[15:17] get put in so that we can distribute
+[15:20] to the upside.
+[15:22] Nice.
+[15:24] That being established, let's look at
+[15:26] the trade.
+[15:28] So,
+[15:30] that's the one-minute time frame. I'm
+[15:32] going to do this in replay mode as well,
+[15:34] so that it's going to be easier to
+[15:35] visualize.
+[15:38] And by the way, also, so you know I'm
+[15:39] not full of I'll just put the
+[15:40] trade on here.
+[15:46] And I took it on 10 apexes,
+[15:48] made uh
+[15:50] 1,200 * 10, so that's $12,000.
+[15:56] Yeah.
+[15:58] Let's get on with the breakdown. So, I'm
+[16:00] watching this, right? 10:00 a.m. opens
+[16:01] lower, we distribute higher.
+[16:04] Ideally for me, I want that retrace.
+[16:07] Right? I want the retrace to come down
+[16:09] and retest 10:00 a.m.
+[16:11] This is what I talk about all the time.
+[16:13] Why do I want this? Because there is a
+[16:15] bunch of confluences in this area
+[16:17] telling me that yeah, this could be a
+[16:19] good area to reverse.
+[16:21] >> [snorts]
+[16:23] >> 0.79 on the fib, it doesn't get more
+[16:25] discounted than that.
+[16:27] That's a bonus.
+[16:29] We have a one- and a five-minute
+[16:31] rejection block. Rejection blocks
+[16:33] doesn't get more discounted than that.
+[16:35] That's a bonus.
+[16:37] And the 10:00 a.m. framework is
+[16:40] following
+[16:41] our
+[16:43] idea, our plan, right? Opens lower,
+[16:45] starts distributing higher, I want that
+[16:47] retest.
+[16:48] I want my entry.
+[16:51] Right?
+[16:52] I put my entry at the rejection block,
+[16:55] the start of the rejection block again,
+[16:56] so it's at 485, I believe. I'll
+[16:59] You can probably see by the recording.
+[17:01] Then I had a 15-point stop just to cover
+[17:05] the the midpoint, right? This line in
+[17:09] the PD array.
+[17:10] I want my stop loss to cover that,
+[17:12] because that is going to defend me.
+[17:14] All right?
+[17:15] That is a sensitive point usually
+[17:19] within every single PD array.
+[17:22] So, that is going to my stop in this
+[17:25] place is in this case is going to be
+[17:27] somewhat defended. Now, ideally, your
+[17:29] stop should be at the end of the
+[17:31] rejection block to cover the entire low
+[17:34] case there's going to be SMTs, all this
+[17:36] stuff, but
+[17:38] I liked this better especially
+[17:41] I was targeting 605
+[17:45] right there. It's an unfilled gap. It's
+[17:49] a old low right there.
+[17:51] And um yeah. So, this was a 1:8. If I
+[17:55] did have my stop loss at the low, 1:5
+[17:57] still very acceptable, but I like this a
+[18:00] lot more.
+[18:02] So, we're going to look at what happens
+[18:04] here.
+[18:10] Gets tagged in, immediately reacts,
+[18:12] right? That's a good thing.
+[18:14] And uh
+[18:15] I'm not completely sure where I move my
+[18:17] stop loss. I think after this candle,
+[18:20] right? This big candle, I move my stop
+[18:23] loss to this low.
+[18:24] I'm pretty sure.
+[18:26] I'll probably
+[18:28] I'll watch the recording. But, uh yeah.
+[18:30] And then
+[18:32] Wow, that was way too fast. But, yeah,
+[18:33] when price took out this high,
+[18:38] I moved my stop loss to break even.
+[18:41] Cuz at that point, there's no like why
+[18:43] would it come all the way back down
+[18:44] there?
+[18:47] At that point, it would just be chop,
+[18:48] right?
+[18:50] So, [snorts] that's kind of the
+[18:51] reasoning behind that.
+[18:52] And then also midnight open is somewhere
+[18:54] around here, but I was targeting a
+[18:55] little bit before that.
+[18:58] >> [snorts]
+[18:58] >> So, that was the trade bias, uh
+[19:02] structure, timing, entry, idea,
+[19:05] everything.
+[19:06] All right, so
+[19:09] um
+[19:10] yeah.
+[19:11] Uh the reason I took it on 10 Apexes is
+[19:13] because after the max payout on the
+[19:15] other 10,
+[19:17] I blew them into oblivion. All right.
+[19:20] And, um, that's fine. That happens.
+[19:22] After max payout,
+[19:24] don't really care.
+[19:26] Um, but yeah, I got them all approved.
+[19:30] The all 20 got approved, paid out, all
+[19:33] good, 40,000.
+[19:35] So, now with these accounts, they are
+[19:37] almost back to being at max payout
+[19:40] threshold. All right. So, it's currently
+[19:42] February 19th. Yesterday was my
+[19:45] birthday.
+[19:47] Here we are back at max payout
+[19:49] threshold. Took a short off of midnight
+[19:51] open with this liquidity right here.
+[19:55] And, um,
+[19:56] yeah.
+[19:57] Just wanted to throw that in there.
+[19:59] Also, something I wanted to talk a
+[20:00] little bit about. If you get 20 Apex
+[20:02] accounts,
+[20:05] by the way, they're they literally half
+[20:07] an hour ago just went back to 90% off
+[20:09] with Gold Powell, shameless plug.
+[20:12] So, if you've been thinking about
+[20:14] getting it, get it now. It's going to
+[20:16] That's going to be the cheapest it's
+[20:17] going to be.
+[20:19] If you get 20 Apex accounts and you get
+[20:20] the payout,
+[20:23] your maximum drawdown goes to $2,000,
+[20:27] right?
+[20:28] And at that point, you only have to make
+[20:29] $2,000 over and over and over again in
+[20:33] order to get max payout on max payout on
+[20:34] max payout. That's why if you get the
+[20:36] first max payout, it's going to be way,
+[20:38] way easier to get the second, third,
+[20:40] fourth until
+[20:41] they ban you or put you on live, right?
+[20:45] But at that point, you won't care cuz
+[20:46] you would have extracted like
+[20:48] a couple of six figures from it, so
+[20:49] you'll be chilling.
+[20:52] But, uh, yeah. The first time,
+[20:54] obviously, with the 50K's at least,
+[20:55] which is what I have, you have to make
+[20:57] $4,000
+[20:59] for the first payout.
+[21:00] But after that, you only have to make
+[21:02] two. And so, this trade, I made 1,200
+[21:04] per account. I now only need 800 more
+[21:07] for another max payout.
+[21:10] So, gets
+[21:12] It gets uh pretty easy after a while
+[21:14] when you know what you're doing, which
+[21:15] should be motivating to you. All right,
+[21:17] it's not always going to be hard and
+[21:19] tedious and
+[21:22] tight risk management and all this
+[21:23] stuff, right?
+[21:25] When you start getting payouts,
+[21:27] your shoulders going to
+[21:28] lower a little bit. You're going to take
+[21:30] it in more chill. You're going to look
+[21:32] at the market in a bit more of a relaxed
+[21:34] way.
+[21:36] You're going to be able to breathe a
+[21:37] little bit better, right? Your hands are
+[21:38] not going to be as sweaty and uh and
+[21:40] things are going to start loosening up.
+[21:41] You're going to start getting more
+[21:42] consistent payouts, etc. etc. The worst
+[21:46] phase to be in
+[21:48] is the phase where we have no payouts.
+[21:49] You have no proof that it's actually
+[21:52] working, right?
+[21:54] But um
+[21:56] it it will work if you put in the work.
+[21:59] All right?
+[22:00] I've had so many people
+[22:02] come to me and be like, "Thank you." And
+[22:03] then show me like 25,000 payouts
+[22:07] twice.
+[22:08] And they started trading like months
+[22:10] ago. And it's like
+[22:13] it's insane.
+[22:14] And um if you just go into it with the
+[22:16] right right mindset, like you go into it
+[22:19] with the mindset that this can work if I
+[22:20] follow the rules, I stick to the system,
+[22:23] all these things.
+[22:24] I don't tilt, which is what probably
+[22:26] up most amount of people. They
+[22:28] tilt and blow weeks of progress
+[22:31] in um in a day because they get angry,
+[22:33] right? Because they take a loss. One
+[22:35] loss too many and then boom,
+[22:37] everything's gone.
+[22:39] If you can avoid that, avoid like those
+[22:41] destruction kinds of days,
+[22:44] you're good. If you just follow the
+[22:45] system, you're good. You're going to
+[22:46] make real
+[22:47] king money. This video was more like a
+[22:51] This is probably the setup that I use
+[22:53] the most to secure like all these max
+[22:55] payouts with Apex and all these other
+[22:57] firms.
+[22:58] So, like why not share it with you guys?
+[23:01] When I opened this YouTube channel, I
+[23:02] expect to get that much traction,
+[23:04] but um
+[23:06] I do appreciate it a lot, and um I'll
+[23:09] get more consistent with uploading. Go
+[23:11] get those max payouts. Apex right now,
+[23:13] as I said, 90% off, so a 50k is like
+[23:15] $20. Activation fee is 75.
+[23:18] So, as I said, I paid like $1,800 or
+[23:20] something for these 20 accounts. They
+[23:22] have netted me
+[23:23] almost $100,000, these accounts alone on
+[23:25] this cycle.
+[23:29] So, the RR is kind of like a no-brainer,
+[23:31] right?
+[23:32] So, yeah, 90% off with the code PAWEL or
+[23:34] whatever code you want to use.
+[23:36] Um
+[23:37] yeah.
+[23:38] That was all all really.
+[23:40] Um until next time. Next video's
+[23:42] probably going to be a psychology video,
+[23:43] so
+[23:44] stay tuned.

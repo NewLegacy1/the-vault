@@ -1,0 +1,169 @@
+# The PD-array that makes me 6 figures per month
+# https://www.youtube.com/watch?v=a3LzCUZU5ko
+
+[0:01] All right, boys and girls. There's
+[0:03] probably like three girls, but whatever.
+[0:07] Um, I'm making this video because I feel
+[0:09] like I have to a little bit.
+[0:12] I want to make an official video on
+[0:14] rejection blocks because I see people
+[0:15] keep trying to teach them and they're
+[0:20] just teaching it all wrong. So, if you
+[0:22] want some good information from the
+[0:24] source,
+[0:25] that's what I'm here for. So, I'm not
+[0:28] going to bore you guys with the app too
+[0:30] much. I'm going to get right into the
+[0:31] charts. So, yeah, let's do it.
+[0:36] All right. So, first of all, we're going
+[0:38] to look at an example
+[0:40] and then we're going to jump into a
+[0:42] trade that I took today using a
+[0:44] rejection block.
+[0:47] So, first of all, we're going to get
+[0:49] into the very very basics of how do we
+[0:53] find a reduction block? What classifies
+[0:55] as a rejection block?
+[0:58] So, a rejection block, as I'm sure a lot
+[1:02] of you guys know by now, is a wick. But
+[1:04] it's not just any wick. I'm going to use
+[1:07] this wick as an example. In this case,
+[1:10] I'm going to mark it out like this.
+[1:17] And we can see that it actually ended up
+[1:20] working out. Now, this is not random,
+[1:22] right? Why is this not random? First of
+[1:25] all, for a rejection block to be valid,
+[1:28] we need to have some confirmation in the
+[1:32] form of a candle close.
+[1:34] So, if I'm bearish, I can't just use an
+[1:38] up closed candle with a wick on top of
+[1:40] it because that's not giving me any
+[1:42] confirmation, right? If I'm bearish, I
+[1:45] want to see a fat wick like this and
+[1:48] then I want to see a bearish candle
+[1:50] close.
+[1:52] Now, here we have the very basic setup
+[1:55] of our rejection block, right? But these
+[2:00] closes, if you want to call them that,
+[2:03] they occur all the time, every day, all
+[2:06] day, and they fail a lot. So, what do we
+[2:10] do with that information, right? We can
+[2:12] actually put criteria on the rejection
+[2:15] blocks to make them higher probability.
+[2:18] So, if we pan over to the left of the
+[2:20] chart right here, we can see we have a
+[2:24] bunch of resting liquidity,
+[2:28] right? I'm not going to go over too much
+[2:31] how I use liquidity. I'm going to do a
+[2:33] separate video on that. But
+[2:36] short and sweet, this is liquidity,
+[2:38] right? We're sweeping out a bunch of
+[2:39] liquidity.
+[2:41] Now, you can stop there and say that's a
+[2:43] good good enough reduction block, right?
+[2:45] We swept liquidity and we had a bearish
+[2:47] candle close. You can say that that's
+[2:49] good enough. Your win rate might not be
+[2:51] the best, but technically if you want to
+[2:54] simplify it to that degree, you can now
+[2:59] what can we make what can we do to make
+[3:02] our rejection block even better, even
+[3:04] more powerful, even higher conviction.
+[3:06] Right?
+[3:08] So if you look above these these resting
+[3:12] highs, this resting liquidity right
+[3:14] here, we have a level
+[3:17] in the form of an order block right
+[3:19] above it. Now it doesn't have to be an
+[3:22] order block. It can be a an imbalance,
+[3:25] right? A fair value gap as you guys
+[3:27] know. It can be a key open. It can be
+[3:30] any like level, right? It can be a fib
+[3:32] level. It could be a opening gap. It
+[3:34] could be anything. any PDA. As long as
+[3:37] we have liquidity below, we have those
+[3:39] two confluences stacked together, we can
+[3:42] actually
+[3:44] go and make some killer rejection
+[3:47] blocks. Um, let me just delete those
+[3:50] lines to make this a little bit more
+[3:52] tidy. So, we know now that this this
+[3:56] wick right here, it swept out a bunch of
+[3:58] liquidity and we tapped into a bearish
+[4:01] orderflow level.
+[4:04] So with that information, we can go
+[4:06] ahead and take an entry, right? If you
+[4:10] want to be aggressive, your entry would
+[4:13] be right here. This is what I like to
+[4:17] call an entry trigger entry, right?
+[4:19] We're using this wick as an entry
+[4:23] trigger.
+[4:24] And we're having our stop loss right
+[4:26] above it.
+[4:29] And then for targets, obviously you guys
+[4:31] trade differently. I'm not going to tell
+[4:33] you what to do, but all of this, if we
+[4:36] go to the one minute time frame, is
+[4:40] lower resistance liquidity. So, you can
+[4:43] aim for the very low of the low
+[4:46] resistance liquidity range or you can
+[4:49] aim for internal structure like
+[4:51] imbalances right in this leg or you can
+[4:54] aim for a fib. You can aim for whatever
+[4:56] you guys trade differently uh than me.
+[4:59] As I said, this is an example of a high
+[5:02] probability rejection block and how I
+[5:04] would use it in this case. Now, let's go
+[5:06] into the trade that I took this morning
+[5:09] using a rejection block.
+[5:12] Now, why is this a good enough rejection
+[5:14] block? This was a one minute trade and
+[5:17] my confluences were on the 15 and 5
+[5:20] minute. As you can see, we have a
+[5:22] bullish rejection block right here in
+[5:23] the form of this bullish candle close.
+[5:26] Now,
+[5:28] why is this a valid rejection block?
+[5:30] It's because we tap into some
+[5:32] interesting structure on the left side
+[5:34] of the chart here on multiple different
+[5:36] time frames. And then if we tap into my
+[5:40] bullish level, I want to see a rejection
+[5:42] block getting made for me to enter the
+[5:44] trade. Now, I got a little bit of a
+[5:46] wonky entry on this, but the the risk
+[5:48] was still good, so didn't really matter
+[5:50] to me. Um, as I said before, we have our
+[5:54] stop loss below, right below the order
+[5:56] block. We almost got stopped out. And
+[5:59] then what I aimed for was literally just
+[6:01] the
+[6:03] closest short-term high on the one
+[6:05] minute, which was, in my opinion, the
+[6:08] first place where we could potentially
+[6:11] reverse back to bearish. So,
+[6:16] it can just really be that simple. You
+[6:18] don't really have to over complicate it
+[6:19] that much. You just need a level or some
+[6:22] liquidity. And then you need the actual
+[6:24] rejection block to get formed. Boom.
+[6:26] Smack your entry. Have your stop loss at
+[6:29] the high or low of the rejection block
+[6:31] depending on if you're bullish or
+[6:32] bearish. And then you just aim for some
+[6:35] internal structure or a static RR. It's
+[6:38] up to you. So hopefully you guys found
+[6:41] this um helpful. felt like I had to make
+[6:44] this video because people just teach
+[6:47] like [ __ ] orangutans these days. Um,
+[6:50] and they're not even profitable with
+[6:52] what they're teaching. So, you guys have
+[6:55] seen me post payouts every week for the
+[6:57] past I don't even know. You guys have
+[6:59] seen me post my actual payouts for like
+[7:01] months and months and months. And this
+[7:03] is one of the models that I used to
+[7:07] achieve that. So
+[7:10] yeah, hopefully that was helpful and uh
+[7:12] I'll make some more YouTube videos, so
+[7:15] stay tuned for that. And uh yeah.

@@ -1,411 +1,411 @@
 # Stop getting manipulated
 # https://www.youtube.com/watch?v=WEeXKMzaJjY
 
-[50:40] Welcome back. I've been absent for a
-[89:19] little bit. It's been a while. I've been
-[117:20] in Vietnam. I've been in Norway. Um,
-[190:40] more about that later.
-[237:20] I uh wanted to make this video because I
-[298:40] wanted to make a little video about what
-[332:00] the number one struggles are for most
-[389:19] people when it comes to trading
-[442:40] in general, but in this case, trading
-[473:20] prop firms and trading the NASDAQ. All
-[534:39] right, NASDAQ futures. That's what we're
-[567:59] on.
-[593:20] So, um I'm just going to get straight
-[621:20] into it and then we can talk about all
-[641:20] the later. All right, for the
-[674:40] people here that want to learn trading.
-[711:59] Oh, and by the way, the Apex accounts
-[737:19] that I was talking about um like 26th of
-[790:40] December,
-[817:19] um I just got my second max payout on
-[856:00] them this year. So,
-[936:00] tada.
-[962:40] Yeah. So, now you know I'm not full of
-[996:00] Now, you know I make money. Now,
-[1038:40] listen to what I'm telling you. CPI
-[1068:00] tomorrow. I'm going to be streaming in
-[1094:40] the Discord for free
-[1140:00] um when CPI drops. So, if you want to
-[1192:00] join, I'm going to put the link to the
-[1222:40] free Discord in the description. So,
-[1254:40] that's going to be interesting. Also, I
-[1279:59] got a new car. It's a Ram TRX. We can
-[1326:40] look at it later after we've done the
-[1378:40] learning.
-[1406:40] Now, [clears throat] there's really
-[1448:00] three main struggles. All right. The
-[1497:20] first one is always overleveraging.
-[1549:20] Impatience, right? You're not going to
-[1589:20] get anywhere. News flash. You're not
-[1641:19] going to get anywhere. Trust me, I've
-[1665:20] been there. I've tried it. Didn't get
-[1693:20] anywhere. I blew all the accounts. I got
-[1738:40] into debt
-[1776:00] and I just ended up regretting it later.
-[1823:59] Number two, I'm keeping this very
-[1845:20] simple, by the way. Number two, strategy
-[1890:39] hopping. If you strategy hop, you're not
-[1934:39] collecting a single piece of valuable
-[1969:19] data at all. You're not creating any
-[2006:39] discretion. You can't even back test.
-[2064:00] Everything you're doing is just random.
-[2092:00] you're going to blow everything and
-[2111:59] you're going to get into debt and just
-[2145:20] blow accounts, right?
-[2192:00] Even to just learn how to view the
-[2253:20] market, right? Discretion, how candles
-[2294:40] print, daily highs and lows, daily bias,
-[2347:59] market maker models, how to identify
-[2381:19] everything. If you don't stick to
-[2409:20] something, how are you going to identify
-[2446:40] things? You change strategy every week
-[2490:40] and you expect to get good at all of
-[2528:00] them. No, bro. You have to stick to
-[2566:40] something for 3 months. get really good
-[2593:19] at that thing and then you're going to
-[2613:20] start to develop discretion, right?
-[2676:00] And then you can start mixing in all the
-[2709:20] mechanic entry models, etc., etc.
-[2766:40] Stop trying to find the new gold mine.
-[2844:00] Stop like listening to what people on
-[2889:20] social media are trading.
-[2928:00] Find something that makes sense to you.
-[2970:39] Start learning it. Stick to it. And then
-[3025:19] you're going to make money.
-[3065:20] Cut the noise. All right. Now, number
-[3114:39] three is this one, which this video is
-[3180:00] mainly focused on because it is more
-[3206:40] technical. Stop obsessing over the one
-[3266:40] minute time frame. All right, I'm going
-[3312:00] to spill too much sauce in this video,
-[3358:39] but I'm sick of seeing this We
-[3415:59] need some change. First of all, not
-[3453:20] going to y too much about this. Keeping
-[3484:00] it simple though.
-[3521:20] Bias for me. This is about yesterday.
-[3569:19] All right, we're looking at yesterday's
-[3590:40] price action specifically bias for me.
-[3635:59] Um, relative equal highs up here and
-[3679:59] this looks like a marker maker buy
-[3721:20] model. At least it did until today cuz
-[3759:59] what the is this?
-[3797:20] Anyways, 9:30 market open. All right,
-[3868:00] as you guys know, yesterday we had NFP,
-[3915:59] which is this candle right here. And
-[3977:20] what NFP usually does is that it makes a
-[4030:40] move and it makes that move until market
-[4059:59] opens and then we usually reverse that
-[4090:39] move. All right, CPI is the opposite.
-[4133:20] CPI usually makes a move and it usually
-[4181:19] just keeps making that move for the
-[4223:59] entire day. That is at least what the
-[4285:20] probabilities are like.
-[4326:40] So, knowing this information, going into
-[4378:40] market open, being short biased was more
-[4430:40] than fair, and I wanted to talk a little
-[4476:00] bit about entry triggers. All right, I
-[4524:00] do have some videos about this,
-[4569:20] but it was about time I made a better
-[4617:20] video about this. All right, so as you
-[4656:00] guys know, we have our key opens. I do
-[4718:40] have videos about this.
-[4758:40] Probably not going to make any more. I'm
-[4782:40] not going to try to over complicate
-[4806:40] this. But anyways, this is our 10 a.m.
-[4850:40] key open, right? And then we got
-[4878:40] midnight open
-[4926:40] as well
-[4965:19] right there
-[5049:20] right at our 10 a.m. open. So, I'm not
-[5093:20] going to mark both.
-[5174:39] But yeah, let's look at market open and
-[5204:00] what it did and what we could have done
-[5240:00] and what we could have prevented. So,
-[5297:20] short bias down to this low. I was live
-[5340:00] in the Discord. Um, when we swept out
-[5388:00] this pre-market high, I was kind of
-[5414:40] like, we should go to 940s or sorry,
-[5454:40] 240s.
-[5494:40] 340s. My bad. My brain just farted.
-[5560:00] Which is just this 15minute gap. It's
-[5618:40] not any 15-minute gap. It is a 15-minute
-[5656:00] gap with no bottom wick. All right.
-[5709:20] These are super sus.
-[5760:00] We want to see these get taken.
-[5816:00] Having a candle with no bottom wick is
-[5865:19] extremely rare that it just leaves it
-[5921:20] and never comes back. All right, little
-[5961:20] pro tip. This goes mostly for 4hour
-[6022:40] candles. That's why I use the 4our key
-[6070:40] open or the 10 a.m. key open.
-[6128:00] But yeah, anyways,
-[6165:19] entry triggers off of these levels. Now,
-[6197:20] if you were not short biased, you wanted
-[6241:19] um longs. After we tap into this 340
-[6280:00] level,
-[6306:40] we get a beautiful one minute entry
-[6334:40] trigger, right? Which we can use
-[6426:40] and it is a valid trade setup. It is a
-[6471:59] valid riskreward, all that stuff.
-[6506:40] Whatever you want to target. If you want
-[6543:59] if you wanted to be greedy and target
-[6569:20] something crazy, then yes, you would
-[6606:40] have gotten break even.
-[6648:00] So, this is like the first setup of the
-[6677:19] day.
-[6695:59] And um
-[6741:19] I'm going to delete that. Now I'm just
-[6764:00] going to go over every single entry
-[6789:20] trigger that we got down to this NFP and
-[6833:20] after it. All right.
-[6874:39] Then we get this one which fine. It
-[6921:20] plays out for a little
-[6994:40] 50 point moveish
-[7038:39] which is good. You can definitely take
-[7069:20] profit at 50 points. I do that
-[7098:39] sometimes.
-[7124:00] Definitely a valid trade. probably me I
-[7170:40] would have gotten break even on this as
-[7194:40] well would have moved my stop loss to
-[7221:20] break even after we tap into this one
-[7250:39] minute gap that is a place where we
-[7298:39] could potentially reverse
-[7345:20] now after this 10 a.m. And we manipulate
-[7402:40] up like this and we have a lower target
-[7450:39] like this NFP low, right?
-[7510:39] Boom. Looking for shorts. Now, first one
-[7586:39] minute entry trigger after this
-[7619:59] manipulation leg is this never gets
-[7653:19] tapped back into. Fair enough. Next one
-[7707:59] is this. Now, I don't like this because
-[7743:59] it didn't tap into the 10 a.m. key open
-[7792:00] again, which I prefer that it does, but
-[7825:20] it did play out either way.
-[7877:19] down to NFP low and it would have looked
-[7971:59] like this.
-[8013:20] Right
-[8066:40] now, you can use the CE, you can use the
-[8093:19] beginning of them. Uh the reduction
-[8122:40] blocks
-[8149:20] I just gauge the risk. This one is 15
-[8206:40] points of risk. Um and 50 points of
-[8262:39] target. So risk-to-reward not that
-[8302:40] great. One to three. I would probably
-[8330:40] look to use the CE on this one. get a
-[8359:59] way better risk-to-reward. 10point stop,
-[8422:40] 5.7
-[8447:59] RR, way better. All right.
-[8501:20] Or you can just hold runners. Up to you.
-[8546:40] So, here's where it gets interesting.
-[8618:40] If you were long buy still, also this
-[8654:39] one minute entry trigger would have
-[8674:39] gotten stopped out. Now, this one is
-[8721:19] where it gets interesting. We tap we tap
-[8756:00] into uh we sweep NFP low, right? We
-[8815:59] create this little tiny one minute
-[8845:20] rejection block. Gets absolutely ran
-[8896:00] through.
-[8924:00] And then we tap into the new week
-[8965:20] opening gap. Make a one minute rejection
-[9000:00] lock. Gets absolutely ran through. It
-[9044:00] gets a little reaction. Not enough to go
-[9080:00] break even. So it gets ran through.
-[9129:20] And then we get this one which also
-[9190:40] delivers for like
-[9236:00] 30 40 points, but it gets ran through.
-[9315:59] And then this one is nasty. This one is
-[9369:20] like
-[9397:19] bottom of the move low of day and you
-[9428:00] get manipulated like this
-[9476:00] brutal. How can we prevent this?
-[9525:19] Obviously this one comes next which ends
-[9570:40] up playing out for a low of day.
-[9621:19] But how can we prevent this? It is
-[9656:00] extremely simple.
-[9798:40] very very simple
-[9848:00] right so
-[9896:00] as I said this is where I would look for
-[9941:20] shorts yesterday after we sweep out pre
-[9980:00] pre-market highs and we have that NFP
-[10029:20] low as a target right data lows are like
-[10126:40] almost as powerful as equal highs and
-[10158:39] lows in terms of a draw liquidity so
-[10222:40] Yeah,
-[10250:40] that's why I would have targeted that.
-[10291:59] Now, this fivem minute entry trigger,
-[10334:39] fiveminute rejection block is a little
-[10366:40] bit big. If we look at the low to high,
-[10436:00] it is like 40 points big. All right,
-[10500:00] this doesn't give us the best
-[10530:39] riskto-reward in the world, to put it
-[10586:40] that way.
-[10626:40] Down to data low, it gives us a 3.8,
-[10680:00] which is not bad.
-[10721:19] But you would probably have to d-risk a
-[10745:20] little bit. Probably d-risk by half
-[10777:20] because the stop is almost 50 points
-[10818:40] which not my uh not my thing. So,
-[10909:20] two things you could have done to um
-[10980:00] make this a better trade is to hold
-[11017:20] runners past NFP low obviously
-[11093:20] and you could have used the 25%
-[11157:20] of the reduction block which does end up
-[11205:20] playing out for a
-[11269:20] 5.6 six or the CE which is also really
-[11337:20] good but it would have gotten edged and
-[11377:20] you would not have gotten in the trade.
-[11408:00] So it's kind of up to you what you want
-[11436:00] to uh what you pref what you prefer if
-[11487:59] is it worse to get edged not get in the
-[11521:19] trade or is it worse to take a
-[11560:00] lowriskreward trade up to you.
-[11645:20] So
-[11676:00] after that there is not a single bullish
-[11738:40] entry trigger after we sweep NFP low. We
-[11805:20] in fact sweep out
-[11842:40] London low
-[11885:20] and tap into the new week opening gap
-[11914:40] and then we get a fiveminute entry
-[11962:40] trigger right here which ends up playing
-[12018:40] out and it ends up being low of day.
-[12081:20] Now, see how we just cut through all
-[12125:19] that noise on the one minute time frame
-[12212:00] with one click. Target whatever you want
-[12261:20] here. You can target 10 a.m. Target
-[12312:00] imbalances in this leg, whatever.
-[12341:20] Everything you do here is going to be
-[12358:39] good riskreward, right? The first
-[12389:20] potential TP is like 6.5 riskreward. All
-[12452:00] right, [sighs]
-[12497:19] but see how we just cut through all of
-[12534:39] this noise by just changing time frames,
-[12606:39] right?
-[12636:00] All of this noise. And we're going to
-[12670:40] look at today's price action. It's kind
-[12700:00] kind of similar actually, [sighs]
-[12746:40] right?
-[12772:00] This one you would not have taken
-[12793:20] because it's so close to NFP low. So,
-[12834:39] we're not trying to take bullish trades
-[12872:00] right before the draw liquidity is met.
-[12902:40] That's stupid.
-[12933:20] And then same thing on the three minute.
-[12962:40] First entry trigger ends up playing out
-[12990:40] for low of day, right?
-[13065:20] Pretty simple. Now let's look at today's
-[13138:40] price action. Today was kind of um
-[13221:19] interesting,
-[13249:19] but it wasn't nonsensical, if that's
-[13305:20] even a word.
-[13356:00] Right? So we're going to do the same
-[13385:20] thing. We're going to go in the 1 minute
-[13405:20] time frame
-[13436:00] and our focus for this is going to be 10
-[13497:19] a.m. open cuz today we didn't have an
-[13541:20] obvious draw liquidity like NFP low.
-[13576:00] Also, we have CPI tomorrow which makes
-[13621:19] today slightly lower probability.
-[13687:59] Um market open started chopping. We
-[13726:40] dumped chopped dumped chopped dumped.
-[13805:20] Not my favorite price action in the
-[13828:00] world. All right.
-[13858:39] So, when 10:00 a.m. opens, we manipulate
-[13905:20] both sides and we just chop around
-[13962:40] looking at the one minute time frame.
-[13989:20] This looks horrible, right? You can't
-[14037:20] tell me this is good price action. All
-[14066:40] right? You just can't. There's nothing
-[14106:39] you can say to make me believe that this
-[14148:00] is good price action.
-[14200:00] Good.
-[14232:00] Understandable. Right now, once again,
-[14278:40] how do we cut through all this noise?
-[14324:00] It's pretty simple. Oh, didn't
-[14354:39] mean to swear. My bad. It is pretty darn
-[14409:20] simple. All right.
-[14453:19] 10 a.m. opens. Manipulate both sides.
-[14530:39] Buy is skewed. Right. What can we do?
-[14606:39] First five minute entry trigger after 10
-[14665:20] a.m. opens.
-[14700:00] What does it do?
-[14737:40] [snorts]
-[14763:59] It plays out,
-[14800:00] right?
-[14846:40] Now depending on where you put your stop
-[14882:39] on this and your takeprofit obviously
-[14938:40] this is not a trade that I would take
-[14966:40] personally 2.3 riskreward
-[15028:00] I don't love it so this would either be
-[15065:20] like a static 10p pointer or I would
-[15097:19] just put it here to cover the he most
-[15146:40] likely would have done this 15 point
-[15178:40] stop is acceptable also we are covering
-[15213:20] the C of this 5minute which um makes our
-[15265:20] stop a decent validation point also
-[15329:20] covers oops
-[15373:19] also covers the um 79 on the fib which
-[15452:00] is the most discounted [sighs]
-[15498:40] area of this leg. So that's good. This
-[15556:00] is a uh decent trade. Now you can target
-[15625:19] the first internal high uh which is also
-[15676:00] in this 5m minute order block that
-[15715:59] printed. So I think that's a good trade,
-[15760:00] good takerit.
-[15790:40] um it would have been a one two 3.8
-[15843:59] which is acceptable. I uh usually just
-[15901:19] tell everyone don't take anything lower
-[15941:20] than one one to three. Um 1 to three and
-[16001:19] up is like pretty good for prop firms.
-[16076:00] One to three to one to six is like the
-[16124:00] sweet spot for me at least.
-[16172:00] Rarely take one to threes. I'm not going
-[16197:19] to lie. Um my personal lowest is like 1
-[16249:19] to four. I get questions a lot of like
-[16297:19] how can I get stopped out list? How can
-[16326:40] I increase my win rate
-[16380:00] and it is pretty simple. Now, is this
-[16448:00] going to require five times more
-[16477:19] patience? Yes, it is. Is it also going
-[16552:00] to give you a win rate that is probably
-[16591:59] five times as high? Yes, it is. So, it's
-[16648:00] kind of up to you. I would say if you
-[16673:19] can afford to go heavy risk on the
-[16736:00] funded accounts then by all means use
-[16772:00] the one minute. I use the one minute a
-[16806:39] lot. I just like to validate them pretty
-[16890:40] hard so that I um don't get like these
-[16952:00] entries. Okay,
-[17001:19] five minutes are great. You can even
-[17029:19] take one minute entry triggers out of
-[17077:20] five minutes. Like just wait for five
-[17109:19] minute confirmation and then like bet.
-[17137:20] I'm going to look for a one minute
-[17156:00] entry. It's like a little hybrid. Um,
-[17227:59] so yeah,
-[17267:59] if you guys were able to follow all
-[17298:39] this, you probably just learned a lot.
-[17338:39] And um, that is a good thing. But, um,
-[17385:20] yeah, we can do a little car tour. Maybe
-[17421:20] just give you like a little cold start,
-[17457:19] too. Here she is. Now, you might wonder
-[17524:00] what this is. SLS Rally. Hello. I was at
-[17581:20] an event last weekend with this truck
-[17618:40] and I was basically just sending
-[17668:00] it.
-[17936:17] [laughter]
-[18001:20] Now we can do a little cold start. might
-[18042:39] die from the fumes, but let's try. Let's
-[18097:20] put the exhaust pipes outside.
-[18310:40] The setup. Um, yeah, I love this car.
-[18365:19] It's probably the favorite car I've ever
-[18388:00] had. Um, the Aston Martin, I still have
-[18433:20] it, but the window is broken, so I have
-[18460:00] to take it to the shop. And hopefully
-[18497:20] that's fixed in like a week. So
-[18554:40] hopefully that video was helpful. Go get
-[18594:39] that payout. Preserve some capital.
-[18634:40] Don't go into debt. And have some fun
-[18677:20] with it.
+[0:03] Welcome back. I've been absent for a
+[0:05] little bit. It's been a while. I've been
+[0:07] in Vietnam. I've been in Norway. Um,
+[0:11] more about that later.
+[0:14] I uh wanted to make this video because I
+[0:17] wanted to make a little video about what
+[0:19] the number one struggles are for most
+[0:23] people when it comes to trading
+[0:26] in general, but in this case, trading
+[0:28] prop firms and trading the NASDAQ. All
+[0:32] right, NASDAQ futures. That's what we're
+[0:34] on.
+[0:35] So, um I'm just going to get straight
+[0:37] into it and then we can talk about all
+[0:38] the later. All right, for the
+[0:40] people here that want to learn trading.
+[0:42] Oh, and by the way, the Apex accounts
+[0:44] that I was talking about um like 26th of
+[0:47] December,
+[0:49] um I just got my second max payout on
+[0:51] them this year. So,
+[0:56] tada.
+[0:57] Yeah. So, now you know I'm not full of
+[0:59] Now, you know I make money. Now,
+[1:02] listen to what I'm telling you. CPI
+[1:04] tomorrow. I'm going to be streaming in
+[1:05] the Discord for free
+[1:08] um when CPI drops. So, if you want to
+[1:11] join, I'm going to put the link to the
+[1:13] free Discord in the description. So,
+[1:15] that's going to be interesting. Also, I
+[1:16] got a new car. It's a Ram TRX. We can
+[1:19] look at it later after we've done the
+[1:22] learning.
+[1:24] Now, [clears throat] there's really
+[1:26] three main struggles. All right. The
+[1:29] first one is always overleveraging.
+[1:32] Impatience, right? You're not going to
+[1:35] get anywhere. News flash. You're not
+[1:38] going to get anywhere. Trust me, I've
+[1:39] been there. I've tried it. Didn't get
+[1:41] anywhere. I blew all the accounts. I got
+[1:44] into debt
+[1:46] and I just ended up regretting it later.
+[1:49] Number two, I'm keeping this very
+[1:50] simple, by the way. Number two, strategy
+[1:53] hopping. If you strategy hop, you're not
+[1:56] collecting a single piece of valuable
+[1:58] data at all. You're not creating any
+[2:00] discretion. You can't even back test.
+[2:03] Everything you're doing is just random.
+[2:05] you're going to blow everything and
+[2:06] you're going to get into debt and just
+[2:08] blow accounts, right?
+[2:11] Even to just learn how to view the
+[2:15] market, right? Discretion, how candles
+[2:17] print, daily highs and lows, daily bias,
+[2:20] market maker models, how to identify
+[2:22] everything. If you don't stick to
+[2:24] something, how are you going to identify
+[2:26] things? You change strategy every week
+[2:29] and you expect to get good at all of
+[2:31] them. No, bro. You have to stick to
+[2:34] something for 3 months. get really good
+[2:35] at that thing and then you're going to
+[2:36] start to develop discretion, right?
+[2:40] And then you can start mixing in all the
+[2:42] mechanic entry models, etc., etc.
+[2:46] Stop trying to find the new gold mine.
+[2:50] Stop like listening to what people on
+[2:53] social media are trading.
+[2:55] Find something that makes sense to you.
+[2:58] Start learning it. Stick to it. And then
+[3:01] you're going to make money.
+[3:03] Cut the noise. All right. Now, number
+[3:06] three is this one, which this video is
+[3:10] mainly focused on because it is more
+[3:12] technical. Stop obsessing over the one
+[3:16] minute time frame. All right, I'm going
+[3:18] to spill too much sauce in this video,
+[3:21] but I'm sick of seeing this We
+[3:24] need some change. First of all, not
+[3:27] going to y too much about this. Keeping
+[3:29] it simple though.
+[3:31] Bias for me. This is about yesterday.
+[3:34] All right, we're looking at yesterday's
+[3:35] price action specifically bias for me.
+[3:38] Um, relative equal highs up here and
+[3:40] this looks like a marker maker buy
+[3:43] model. At least it did until today cuz
+[3:45] what the is this?
+[3:47] Anyways, 9:30 market open. All right,
+[3:52] as you guys know, yesterday we had NFP,
+[3:54] which is this candle right here. And
+[3:58] what NFP usually does is that it makes a
+[4:01] move and it makes that move until market
+[4:03] opens and then we usually reverse that
+[4:05] move. All right, CPI is the opposite.
+[4:08] CPI usually makes a move and it usually
+[4:10] just keeps making that move for the
+[4:13] entire day. That is at least what the
+[4:17] probabilities are like.
+[4:19] So, knowing this information, going into
+[4:22] market open, being short biased was more
+[4:25] than fair, and I wanted to talk a little
+[4:28] bit about entry triggers. All right, I
+[4:31] do have some videos about this,
+[4:34] but it was about time I made a better
+[4:37] video about this. All right, so as you
+[4:39] guys know, we have our key opens. I do
+[4:43] have videos about this.
+[4:45] Probably not going to make any more. I'm
+[4:46] not going to try to over complicate
+[4:48] this. But anyways, this is our 10 a.m.
+[4:51] key open, right? And then we got
+[4:52] midnight open
+[4:55] as well
+[4:57] right there
+[5:02] right at our 10 a.m. open. So, I'm not
+[5:05] going to mark both.
+[5:10] But yeah, let's look at market open and
+[5:12] what it did and what we could have done
+[5:14] and what we could have prevented. So,
+[5:17] short bias down to this low. I was live
+[5:20] in the Discord. Um, when we swept out
+[5:23] this pre-market high, I was kind of
+[5:24] like, we should go to 940s or sorry,
+[5:27] 240s.
+[5:29] 340s. My bad. My brain just farted.
+[5:33] Which is just this 15minute gap. It's
+[5:37] not any 15-minute gap. It is a 15-minute
+[5:39] gap with no bottom wick. All right.
+[5:42] These are super sus.
+[5:45] We want to see these get taken.
+[5:48] Having a candle with no bottom wick is
+[5:51] extremely rare that it just leaves it
+[5:55] and never comes back. All right, little
+[5:57] pro tip. This goes mostly for 4hour
+[6:01] candles. That's why I use the 4our key
+[6:04] open or the 10 a.m. key open.
+[6:07] But yeah, anyways,
+[6:09] entry triggers off of these levels. Now,
+[6:11] if you were not short biased, you wanted
+[6:14] um longs. After we tap into this 340
+[6:16] level,
+[6:18] we get a beautiful one minute entry
+[6:20] trigger, right? Which we can use
+[6:25] and it is a valid trade setup. It is a
+[6:28] valid riskreward, all that stuff.
+[6:30] Whatever you want to target. If you want
+[6:32] if you wanted to be greedy and target
+[6:34] something crazy, then yes, you would
+[6:36] have gotten break even.
+[6:38] So, this is like the first setup of the
+[6:40] day.
+[6:41] And um
+[6:44] I'm going to delete that. Now I'm just
+[6:45] going to go over every single entry
+[6:47] trigger that we got down to this NFP and
+[6:50] after it. All right.
+[6:52] Then we get this one which fine. It
+[6:55] plays out for a little
+[6:59] 50 point moveish
+[7:02] which is good. You can definitely take
+[7:04] profit at 50 points. I do that
+[7:05] sometimes.
+[7:07] Definitely a valid trade. probably me I
+[7:10] would have gotten break even on this as
+[7:11] well would have moved my stop loss to
+[7:13] break even after we tap into this one
+[7:15] minute gap that is a place where we
+[7:17] could potentially reverse
+[7:20] now after this 10 a.m. And we manipulate
+[7:24] up like this and we have a lower target
+[7:27] like this NFP low, right?
+[7:30] Boom. Looking for shorts. Now, first one
+[7:35] minute entry trigger after this
+[7:37] manipulation leg is this never gets
+[7:39] tapped back into. Fair enough. Next one
+[7:42] is this. Now, I don't like this because
+[7:44] it didn't tap into the 10 a.m. key open
+[7:47] again, which I prefer that it does, but
+[7:49] it did play out either way.
+[7:52] down to NFP low and it would have looked
+[7:58] like this.
+[8:00] Right
+[8:04] now, you can use the CE, you can use the
+[8:05] beginning of them. Uh the reduction
+[8:07] blocks
+[8:08] I just gauge the risk. This one is 15
+[8:12] points of risk. Um and 50 points of
+[8:15] target. So risk-to-reward not that
+[8:18] great. One to three. I would probably
+[8:19] look to use the CE on this one. get a
+[8:21] way better risk-to-reward. 10point stop,
+[8:25] 5.7
+[8:26] RR, way better. All right.
+[8:30] Or you can just hold runners. Up to you.
+[8:32] So, here's where it gets interesting.
+[8:37] If you were long buy still, also this
+[8:39] one minute entry trigger would have
+[8:40] gotten stopped out. Now, this one is
+[8:43] where it gets interesting. We tap we tap
+[8:45] into uh we sweep NFP low, right? We
+[8:48] create this little tiny one minute
+[8:50] rejection block. Gets absolutely ran
+[8:53] through.
+[8:55] And then we tap into the new week
+[8:57] opening gap. Make a one minute rejection
+[9:00] lock. Gets absolutely ran through. It
+[9:02] gets a little reaction. Not enough to go
+[9:04] break even. So it gets ran through.
+[9:07] And then we get this one which also
+[9:11] delivers for like
+[9:14] 30 40 points, but it gets ran through.
+[9:18] And then this one is nasty. This one is
+[9:22] like
+[9:23] bottom of the move low of day and you
+[9:25] get manipulated like this
+[9:28] brutal. How can we prevent this?
+[9:31] Obviously this one comes next which ends
+[9:34] up playing out for a low of day.
+[9:37] But how can we prevent this? It is
+[9:39] extremely simple.
+[9:47] very very simple
+[9:50] right so
+[9:53] as I said this is where I would look for
+[9:56] shorts yesterday after we sweep out pre
+[9:58] pre-market highs and we have that NFP
+[10:01] low as a target right data lows are like
+[10:07] almost as powerful as equal highs and
+[10:09] lows in terms of a draw liquidity so
+[10:13] Yeah,
+[10:15] that's why I would have targeted that.
+[10:17] Now, this fivem minute entry trigger,
+[10:20] fiveminute rejection block is a little
+[10:22] bit big. If we look at the low to high,
+[10:26] it is like 40 points big. All right,
+[10:30] this doesn't give us the best
+[10:31] riskto-reward in the world, to put it
+[10:35] that way.
+[10:37] Down to data low, it gives us a 3.8,
+[10:40] which is not bad.
+[10:43] But you would probably have to d-risk a
+[10:44] little bit. Probably d-risk by half
+[10:46] because the stop is almost 50 points
+[10:49] which not my uh not my thing. So,
+[10:54] two things you could have done to um
+[10:58] make this a better trade is to hold
+[11:01] runners past NFP low obviously
+[11:05] and you could have used the 25%
+[11:09] of the reduction block which does end up
+[11:12] playing out for a
+[11:16] 5.6 six or the CE which is also really
+[11:20] good but it would have gotten edged and
+[11:22] you would not have gotten in the trade.
+[11:24] So it's kind of up to you what you want
+[11:26] to uh what you pref what you prefer if
+[11:29] is it worse to get edged not get in the
+[11:31] trade or is it worse to take a
+[11:33] lowriskreward trade up to you.
+[11:38] So
+[11:40] after that there is not a single bullish
+[11:44] entry trigger after we sweep NFP low. We
+[11:48] in fact sweep out
+[11:50] London low
+[11:53] and tap into the new week opening gap
+[11:54] and then we get a fiveminute entry
+[11:57] trigger right here which ends up playing
+[12:01] out and it ends up being low of day.
+[12:04] Now, see how we just cut through all
+[12:07] that noise on the one minute time frame
+[12:12] with one click. Target whatever you want
+[12:15] here. You can target 10 a.m. Target
+[12:18] imbalances in this leg, whatever.
+[12:20] Everything you do here is going to be
+[12:21] good riskreward, right? The first
+[12:23] potential TP is like 6.5 riskreward. All
+[12:27] right, [sighs]
+[12:29] but see how we just cut through all of
+[12:32] this noise by just changing time frames,
+[12:36] right?
+[12:38] All of this noise. And we're going to
+[12:40] look at today's price action. It's kind
+[12:42] kind of similar actually, [sighs]
+[12:44] right?
+[12:46] This one you would not have taken
+[12:47] because it's so close to NFP low. So,
+[12:50] we're not trying to take bullish trades
+[12:52] right before the draw liquidity is met.
+[12:54] That's stupid.
+[12:56] And then same thing on the three minute.
+[12:57] First entry trigger ends up playing out
+[12:59] for low of day, right?
+[13:03] Pretty simple. Now let's look at today's
+[13:08] price action. Today was kind of um
+[13:13] interesting,
+[13:14] but it wasn't nonsensical, if that's
+[13:18] even a word.
+[13:21] Right? So we're going to do the same
+[13:23] thing. We're going to go in the 1 minute
+[13:24] time frame
+[13:26] and our focus for this is going to be 10
+[13:29] a.m. open cuz today we didn't have an
+[13:32] obvious draw liquidity like NFP low.
+[13:34] Also, we have CPI tomorrow which makes
+[13:37] today slightly lower probability.
+[13:41] Um market open started chopping. We
+[13:43] dumped chopped dumped chopped dumped.
+[13:48] Not my favorite price action in the
+[13:49] world. All right.
+[13:51] So, when 10:00 a.m. opens, we manipulate
+[13:54] both sides and we just chop around
+[13:57] looking at the one minute time frame.
+[13:59] This looks horrible, right? You can't
+[14:02] tell me this is good price action. All
+[14:04] right? You just can't. There's nothing
+[14:06] you can say to make me believe that this
+[14:08] is good price action.
+[14:12] Good.
+[14:13] Understandable. Right now, once again,
+[14:16] how do we cut through all this noise?
+[14:19] It's pretty simple. Oh, didn't
+[14:21] mean to swear. My bad. It is pretty darn
+[14:24] simple. All right.
+[14:27] 10 a.m. opens. Manipulate both sides.
+[14:31] Buy is skewed. Right. What can we do?
+[14:36] First five minute entry trigger after 10
+[14:39] a.m. opens.
+[14:42] What does it do?
+[14:44] [snorts]
+[14:45] It plays out,
+[14:48] right?
+[14:50] Now depending on where you put your stop
+[14:52] on this and your takeprofit obviously
+[14:56] this is not a trade that I would take
+[14:58] personally 2.3 riskreward
+[15:01] I don't love it so this would either be
+[15:03] like a static 10p pointer or I would
+[15:05] just put it here to cover the he most
+[15:08] likely would have done this 15 point
+[15:10] stop is acceptable also we are covering
+[15:12] the C of this 5minute which um makes our
+[15:15] stop a decent validation point also
+[15:19] covers oops
+[15:22] also covers the um 79 on the fib which
+[15:27] is the most discounted [sighs]
+[15:29] area of this leg. So that's good. This
+[15:33] is a uh decent trade. Now you can target
+[15:37] the first internal high uh which is also
+[15:40] in this 5m minute order block that
+[15:42] printed. So I think that's a good trade,
+[15:45] good takerit.
+[15:47] um it would have been a one two 3.8
+[15:50] which is acceptable. I uh usually just
+[15:54] tell everyone don't take anything lower
+[15:56] than one one to three. Um 1 to three and
+[16:00] up is like pretty good for prop firms.
+[16:04] One to three to one to six is like the
+[16:07] sweet spot for me at least.
+[16:10] Rarely take one to threes. I'm not going
+[16:11] to lie. Um my personal lowest is like 1
+[16:14] to four. I get questions a lot of like
+[16:17] how can I get stopped out list? How can
+[16:19] I increase my win rate
+[16:22] and it is pretty simple. Now, is this
+[16:26] going to require five times more
+[16:28] patience? Yes, it is. Is it also going
+[16:33] to give you a win rate that is probably
+[16:35] five times as high? Yes, it is. So, it's
+[16:38] kind of up to you. I would say if you
+[16:40] can afford to go heavy risk on the
+[16:44] funded accounts then by all means use
+[16:46] the one minute. I use the one minute a
+[16:48] lot. I just like to validate them pretty
+[16:53] hard so that I um don't get like these
+[16:57] entries. Okay,
+[17:00] five minutes are great. You can even
+[17:01] take one minute entry triggers out of
+[17:04] five minutes. Like just wait for five
+[17:06] minute confirmation and then like bet.
+[17:08] I'm going to look for a one minute
+[17:09] entry. It's like a little hybrid. Um,
+[17:13] so yeah,
+[17:16] if you guys were able to follow all
+[17:17] this, you probably just learned a lot.
+[17:20] And um, that is a good thing. But, um,
+[17:23] yeah, we can do a little car tour. Maybe
+[17:25] just give you like a little cold start,
+[17:27] too. Here she is. Now, you might wonder
+[17:31] what this is. SLS Rally. Hello. I was at
+[17:34] an event last weekend with this truck
+[17:37] and I was basically just sending
+[17:40] it.
+[17:56] [laughter]
+[18:00] Now we can do a little cold start. might
+[18:02] die from the fumes, but let's try. Let's
+[18:05] put the exhaust pipes outside.
+[18:18] The setup. Um, yeah, I love this car.
+[18:21] It's probably the favorite car I've ever
+[18:23] had. Um, the Aston Martin, I still have
+[18:26] it, but the window is broken, so I have
+[18:27] to take it to the shop. And hopefully
+[18:29] that's fixed in like a week. So
+[18:33] hopefully that video was helpful. Go get
+[18:35] that payout. Preserve some capital.
+[18:38] Don't go into debt. And have some fun
+[18:40] with it.
