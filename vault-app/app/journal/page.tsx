@@ -142,22 +142,20 @@ export default function JournalPage() {
     setShotErr("");
   };
 
+  // Newest-logged first (walk months run backwards in time, so date sort
+  // buried fresh May rows under June — looked like saves were failing).
+  // Legacy rows have no loggedAt; array position is their true log order.
   const rows = journal
-    .filter((j) => {
+    .map((j, idx) => ({ j, idx }))
+    .filter(({ j }) => {
       if (!filterAcct) return true;
       if (filterAcct === MORNINGSTAR_STUDY_ID) {
         return j.accountId === MORNINGSTAR_STUDY_ID || j.strategy === "Morningstar";
       }
       return j.accountId === filterAcct;
     })
-    // Newest-logged first (walk months run backwards in time, so date sort
-    // buried fresh May rows under June — looked like saves were failing).
-    .sort(
-      (a, b) =>
-        (b.loggedAt ?? "").localeCompare(a.loggedAt ?? "") ||
-        b.date.localeCompare(a.date) ||
-        b.id.localeCompare(a.id)
-    );
+    .sort((a, b) => (b.j.loggedAt ?? "").localeCompare(a.j.loggedAt ?? "") || b.idx - a.idx)
+    .map(({ j }) => j);
 
   const dualRows = rows.filter((j) => j.dualVersion === "Dual46" || j.strategy === "Morningstar");
   const takes = dualRows.filter((j) => j.direction !== "skip");

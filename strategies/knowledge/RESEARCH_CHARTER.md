@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-status: CYCLE 1 COMPLETE (2026-07-17 · 20/20 topics · 6 agent-waves · 19 notes + 14 transcripts)
+status: CYCLE 3 ACTIVE (2026-07-18 · 30 topics · 3 lanes × 10 · cycle 1 = 20/20 · cycle 2 = 14/21 done, open items carried into cycle 3)
 tags: [knowledge-base, research-charter, multi-agent]
 ---
 # Knowledge Research Charter — multi-agent deep-research loop
@@ -112,6 +112,79 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
       transcripts archived in `vault-app/data/deltatrend-transcripts/`, re-runnable
       script `vault-app/scripts/fetch-deltatrend-transcripts.ts` · QuantPad flagged as
       evaluation-candidate-only for the TV-export bottleneck)
+
+## Cycle protocol (repeatable — how new cycles spawn)
+
+When the user says "queue another research cycle" (or a cycle's lanes are exhausted):
+
+1. **Harvest first:** orchestrator re-reads the latest walk harvest, kill lessons, and the
+   newest knowledge notes' APPLICATION sections. New topics must trace to a finding or an
+   open question — never filler.
+2. **Draft 30 topics, 10 per lane**, into a new `## Topic queue — CYCLE N` section here.
+   Standing lanes (rename as findings dictate):
+   **A = Quant / stats** · **B = Execution & prop ops** · **C = ICT / Powell / strategy**.
+3. **Launch 3 agents in parallel**, one per lane. Each agent: work topics in listed order,
+   write one charter-format note per topic (or merge tightly-related ones, saying so),
+   check off its own queue items with file paths, and obey the guardrails below.
+4. **Orchestrator closes the wave:** dedupe, sync checkboxes, surface the 3–5 findings that
+   change what we do, and fold walk-relevant items into the daily checklist.
+
+## Topic queue — CYCLE 3 (30 · added 2026-07-18 · findings-driven)
+
+### Lane A — Quant / stats deepening (agent A)
+42. [ ] Regime-switching Monte Carlo: Markov transition matrix over vol regimes vs i.i.d.
+      reshuffle — implementation math for upgrading the path MC (DeltaTrend finding)
+43. [ ] Eval timeout & fee-drag modeling: monthly-fee bleed + time-outs for low-WR/high-RR
+      shapes (DeltaTrend's Powell build: ~55% timeout) — extend the scorecard math
+44. [ ] Bayesian Beta-binomial updating of small-sample WR month over month (carry-over #31)
+45. [ ] Vol-regime dependence: VIX vs setup frequency/quality; May-vs-June 2026 vol context
+      (carry-over #32)
+46. [ ] Time stops for retracement entries: max holding time research (carry-over #28)
+47. [ ] Stationarity & era-splitting for small intraday event studies (his ES sweep: significant
+      2023, dead pooled 2022–25) — protocol for Stage-0 event EV
+48. [ ] Feature lag audits & leakage checks: contemporaneous vs predictive (the 78× R² collapse)
+49. [ ] Benchmark discipline: naive baselines (random-entry same-exit, buy-hold) as mandatory
+      scorecard columns
+50. [ ] Small-sample drawdown inference: bootstrap vs analytic bounds for 20–40 trade samples
+51. [ ] Multiple-testing & selection bias across candidate sleeves: how many killed Track-B ideas
+      before a "surviving" edge is just noise (relates to kill-lessons doctrine)
+
+### Lane B — Execution & prop ops (agent B) — NEW LANE for the replay→live transition
+52. [ ] Replay→live calibration protocol: measuring the one-tick-candle advantage; pre-registered
+      metrics for the first N live-sim sessions
+53. [ ] Slippage & fill quality on MNQ market orders in the 9:50–10:10 window: expected ticks,
+      measurement protocol (feeds the conversion rule's real-R bookkeeping)
+54. [ ] Order types on prop platforms (Tradovate / ProjectX / Rithmic): server-side brackets,
+      stop-limit vs stop-market, OCO reliability during prints
+55. [ ] News-print microstructure: MNQ spread/depth at 8:30 & 10:00 releases — quantified
+      stand-down windows (pairs with red-folder playbooks in lane C)
+56. [ ] Payout cadence optimization across funded accounts: withdraw-vs-buffer math per firm
+57. [ ] Prop rule-change watch 2026: TopStep / TPT / Apex consistency & DLL updates since the
+      landscape note (quant/prop-firm-landscape-2026.md)
+58. [ ] Data-feed discrepancies: TradingView vs Tradovate/Rithmic prints — same-setup divergence
+      risk for a 1m RB strategy
+59. [ ] Pre-staged limits vs hotkey execution: published human-latency chains; best practice for
+      the arm→limit workflow (June misses were latency)
+60. [ ] US prop payout taxes & entity basics (1099 vs LLC, estimated payments) — informational
+61. [ ] Multi-account copier execution *mechanics* deep-dive: divergence stats for limit entries
+      (extends quant/trade-copiers-prop-accounts.md toward practice)
+
+### Lane C — ICT / Powell / strategy deepening (agent C)
+62. [ ] ICT market-maker buy/sell models — full sequence template (carry-over #34)
+63. [ ] SMT divergence NQ/ES — refresh for the archived Vault SMT script (carry-over #37)
+64. [ ] Liquidity voids vs FVGs — delivery expectations (carry-over #39)
+65. [ ] Red-folder playbooks: CPI/NFP/FOMC at the 10:00 window — stand-down rules (carry-over #40)
+66. [ ] Structural-target sleeve evidence: Powell's structural TPs (internal H/L, gaps) vs fixed
+      1:5/100pt — assemble the post-May Stage-0 case, both directions
+67. [ ] 5m vs 1m entry trigger: Powell's evolved 5m preference (DeltaTrend note) — what he says,
+      where each wins; post-May question only
+68. [ ] NWOG published statistics: gap size / age / fill-rate numbers from any citable backtests —
+      calibrate the sleeve census columns
+69. [ ] Monday HTF-discount-array flag validation: the "Tuesday drive" template config vs June+May
+      Monday ledger rows
+70. [ ] ICT one-shot-one-kill & daily-bias models vs Dual46's one-trade cadence — alignment audit
+71. [ ] Powell/DeltaTrend new-upload sweep: transcribe anything new since 07-17/07-18; diff Powell
+      uploads against SOP §16 transcript log
 
 ## Guardrails
 
