@@ -17,6 +17,8 @@ Walk each weekday **09:30 → 13:00** NY. Bias on **5m**; arm check on **1m**.
 **Monday nuance (ICT canon, flag not veto):** in a bullish week with an unreached HTF
 discount array *below* Monday's range, canon expects Tuesday to drive down into it —
 a Monday **long** in that spot fights the template; note it in the journal if you take it.
+The exact 4-cell scoring protocol lives in `ict/monday-htf-discount-array-flag.md`; per that
+note the 06-29 NWOG tap was likely template-**CONSISTENT** (array tapped Monday = flag dead).
 **Pre-stage the limit** the moment an OTE+KO stack forms — June's misses were latency.
 **May 2026 calendar:** clean month, no roll — except **Mon May 25 Memorial Day** (13:00 ET
 halt, thin holiday tape) → skip it, count as holiday not as a Monday data point.
@@ -68,7 +70,10 @@ If your trade idea **fights** an empty NWOG, you need a very good reason — or 
 Do this in order. One check per line.
 
 - [ ] **News:** Red folder today? Time ______ · If big one-sided print → skip or only A+ setups  
-- [ ] **10:00-time news?** (releases at 10:00 ET are common) — if yes, don’t rest a limit blind into the print  
+- [ ] **10:00-time news?** (releases at 10:00 ET are common) — if yes, don’t rest a limit blind into the print.
+      **Measured stand-down:** makers pull ~2 min before a 10:00 print and the book normalizes ~9 min
+      after → **never convert a limit to marketable inside T−2min→T+1min** of a 10:00 release; on
+      tier-1 release days **cancel unfilled entry limits at 9:58** (source: `quant/ops-news-print-microstructure-stand-down.md`)  
 - [ ] **PDH / PDL:** Which is closer / more unfinished? ______  
 - [ ] **Overnight:** Did we already run the obvious draw? If yes, today’s first signal is suspect  
 - [ ] **Consumed liquidity check:** a **filled** NWOG or **already-swept** pool is *no longer a draw* — don’t anchor a reversal on it (this is exactly the 06-09 loss)  
@@ -173,8 +178,10 @@ Outcome: WIN / LOSS / no fill / skipped · R ____
 Why: ____
 ATR(14) on 1m at entry: ____ pts        ← May addition (stop/ATR study)
 Entry time (NY): ____                   ← for the 9:50–10:10 window question
+MFE: peaked at ____ R before exit   ← May addition (structural-TP decision: does median MFE beat +5R?)
+5m confirm present? Y / N            ← May addition (Powell hybrid-trigger question)
 Session: OR size ____ · first 30m dir ____ (census only)
-NWOG tap? gap size ____ · gap age ____ d · tapped edge/CE/far ____   ← only if NWOG idea
+NWOG tap? gap size ____ · gap age ____ d · tapped edge/CE/far ____ · gap = ____ ×dailyATR · day-of-week ____   ← only if NWOG idea (Monday tap rows scored separately — published gap data shows Monday is the genuine-move outlier)
 News: auto-matched in the app from the calendar — glance at F7 NEWS to confirm it agrees with FF
 ```
 

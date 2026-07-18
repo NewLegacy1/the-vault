@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-status: CYCLE 3 ACTIVE (2026-07-18 · 30 topics · 3 lanes × 10 · cycle 1 = 20/20 · cycle 2 = 14/21 done, open items carried into cycle 3)
+status: CYCLE 3 COMPLETE (2026-07-18 · 30/30 · lanes A quant · B exec-ops · C ICT/Powell · cycle-2 remainder closed)
 tags: [knowledge-base, research-charter, multi-agent]
 ---
 # Knowledge Research Charter — multi-agent deep-research loop
@@ -99,13 +99,13 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 
 ### ICT / Powell deepening (agent C)
 33. [x] Powell psychology videos (already transcribed) → `powell/powell-trading-psychology.md` (cycle2-wave1)
-34. [ ] ICT market-maker buy/sell models — full sequence template
+34. [x] ICT market-maker buy/sell models — covered by cycle 3 item 62 → `ict/market-maker-buy-sell-models.md`
 35. [x] ICT Silver Bullet (10–11 window) — `ict/silver-bullet.md` (cycle2-wave1 · primary: 2023 Mentorship SB lecture transcript)
 36. [x] ICT premium/discount (equilibrium) bias framing — covered in `ict/weekly-profiles-premium-discount.md` (cycle2-wave1)
-37. [ ] SMT divergence (NQ/ES) — refresh for the archived Vault SMT script
+37. [x] SMT divergence (NQ/ES) — covered by cycle 3 item 63 → `ict/smt-divergence-nq-es.md`
 38. [x] ICT weekly profiles — `ict/weekly-profiles-premium-discount.md` (cycle2-wave1 · primary: Core Content Month 07 transcript archived to `vault-app/data/ict-transcripts/` · verdict: canon does NOT forbid Mondays)
-39. [ ] Liquidity voids vs FVGs — delivery expectations
-40. [ ] Red-folder playbooks: CPI/NFP/FOMC at the 10:00 window — stand-down rules
+39. [x] Liquidity voids vs FVGs — covered by cycle 3 item 64 → `ict/liquidity-voids-vs-fvgs.md`
+40. [x] Red-folder playbooks: CPI/NFP/FOMC at the 10:00 window — covered by cycle 3 item 65 → `ict/red-folder-playbooks-1000-window.md`
 41. [x] DeltaTrend / QuantPad channel review (13 videos) — `quant/deltatrend-quant-process-event-first-workflow.md`,
       `quant/deltatrend-monte-carlo-markov-prop-convexity.md`,
       `quant/deltatrend-guru-quantification-powell-detail.md` (cycle2-deltatrend ·

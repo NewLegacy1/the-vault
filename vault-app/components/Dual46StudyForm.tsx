@@ -23,6 +23,12 @@ type Dual46Form = {
   nwogTapLoc: "near-edge" | "ce" | "far-edge" | "";
   atrPts: string;
   entryTime: string;
+  /** MFE in R before exit (structural-TP study). */
+  mfeR: string;
+  /** 5m confirmation at the 1m trigger — null = unset (Powell hybrid-trigger study). */
+  fiveMinConfirm: boolean | null;
+  /** Daily ATR in points (normalizes NWOG gap to ×dATR). */
+  dailyAtrPts: string;
   weekBias: "long" | "short" | "none";
   dayBias: "long" | "short" | "none";
   armed: boolean;
@@ -49,6 +55,9 @@ function emptyDual46(date = todayStr()): Dual46Form {
     nwogTapLoc: "",
     atrPts: "",
     entryTime: "",
+    mfeR: "",
+    fiveMinConfirm: null,
+    dailyAtrPts: "",
     weekBias: "none",
     dayBias: "none",
     armed: false,
@@ -130,6 +139,9 @@ function toEntry(f: Dual46Form, news: ReturnType<typeof autoRedFolder>): Journal
     nwogTapLoc: f.nwogTapLoc || undefined,
     atrPts: num(f.atrPts),
     entryTime: f.entryTime.trim() || undefined,
+    mfeR: num(f.mfeR),
+    fiveMinConfirm: f.fiveMinConfirm ?? undefined,
+    dailyAtrPts: num(f.dailyAtrPts),
     redFolder: news.redFolder,
     redFolderTime: news.time,
     redFolderEvent: news.event,
@@ -460,6 +472,35 @@ export function Dual46StudyForm({ onSave }: Props) {
             value={f.entryTime}
             onChange={(e) => setF({ ...f, entryTime: e.target.value })}
             placeholder="9:52"
+            style={{ width: 70 }}
+          />
+        </label>
+        <label className="fld">
+          MFE (R)
+          <input
+            value={f.mfeR}
+            onChange={(e) => setF({ ...f, mfeR: e.target.value })}
+            placeholder="peak R"
+            style={{ width: 70 }}
+          />
+        </label>
+        <div>
+          <div className="dim small" style={{ marginBottom: 4 }}>
+            5m confirm
+          </div>
+          {chip(f.fiveMinConfirm === true, "Y", () =>
+            setF({ ...f, fiveMinConfirm: f.fiveMinConfirm === true ? null : true })
+          )}
+          {chip(f.fiveMinConfirm === false, "N", () =>
+            setF({ ...f, fiveMinConfirm: f.fiveMinConfirm === false ? null : false })
+          )}
+        </div>
+        <label className="fld">
+          Daily ATR (pts)
+          <input
+            value={f.dailyAtrPts}
+            onChange={(e) => setF({ ...f, dailyAtrPts: e.target.value })}
+            placeholder="pts"
             style={{ width: 70 }}
           />
         </label>

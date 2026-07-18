@@ -112,6 +112,10 @@ export interface JournalEntry {
   nwogTapLoc?: "near-edge" | "ce" | "far-edge";
   /** ATR(14) on 1-min at entry, in points (May-walk logging). */
   atrPts?: number;
+  /** 5m confirmation present at the 1m trigger (Powell hybrid-trigger study). */
+  fiveMinConfirm?: boolean;
+  /** Daily ATR in points at the session (normalizes NWOG gap size to ×dATR). */
+  dailyAtrPts?: number;
   /** Entry (or tap) time HH:MM NY — needed for the 9:50–10:10 NWOG window question. */
   entryTime?: string;
   weekBias?: "long" | "short" | "none";

@@ -20,6 +20,12 @@ type EditState = {
   nwogTapLoc: "near-edge" | "ce" | "far-edge" | "";
   atrPts: string;
   entryTime: string;
+  /** MFE in R before exit (structural-TP study). */
+  mfeR: string;
+  /** 5m confirmation at the 1m trigger — null = unset. */
+  fiveMinConfirm: boolean | null;
+  /** Daily ATR in points (normalizes NWOG gap to ×dATR). */
+  dailyAtrPts: string;
   stopPts: string;
   planRr: string;
   notes: string;
@@ -52,6 +58,9 @@ function fromEntry(j: JournalEntry): EditState {
     nwogTapLoc: j.nwogTapLoc ?? "",
     atrPts: j.atrPts != null ? String(j.atrPts) : "",
     entryTime: j.entryTime ?? "",
+    mfeR: j.mfeR != null ? String(j.mfeR) : "",
+    fiveMinConfirm: j.fiveMinConfirm ?? null,
+    dailyAtrPts: j.dailyAtrPts != null ? String(j.dailyAtrPts) : "",
     stopPts: j.stopPts != null ? String(j.stopPts) : "",
     planRr: j.planRr != null ? String(j.planRr) : "",
     notes: j.notes ?? "",
@@ -133,6 +142,9 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
       nwogTapLoc: f.nwogTapLoc || undefined,
       atrPts: num(f.atrPts),
       entryTime: f.entryTime.trim() || undefined,
+      mfeR: num(f.mfeR),
+      fiveMinConfirm: f.fiveMinConfirm ?? undefined,
+      dailyAtrPts: num(f.dailyAtrPts),
       ...(news
         ? { redFolder: news.redFolder, redFolderTime: news.time, redFolderEvent: news.event }
         : {}),
@@ -299,6 +311,35 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
               value={f.entryTime}
               onChange={(e) => setF({ ...f, entryTime: e.target.value })}
               placeholder="9:52"
+              style={{ width: 70 }}
+            />
+          </label>
+          <label className="fld">
+            MFE (R)
+            <input
+              value={f.mfeR}
+              onChange={(e) => setF({ ...f, mfeR: e.target.value })}
+              placeholder="peak R"
+              style={{ width: 70 }}
+            />
+          </label>
+          <div>
+            <div className="dim small" style={{ marginBottom: 4 }}>
+              5m confirm
+            </div>
+            {chip(f.fiveMinConfirm === true, "Y", () =>
+              setF({ ...f, fiveMinConfirm: f.fiveMinConfirm === true ? null : true })
+            )}
+            {chip(f.fiveMinConfirm === false, "N", () =>
+              setF({ ...f, fiveMinConfirm: f.fiveMinConfirm === false ? null : false })
+            )}
+          </div>
+          <label className="fld">
+            Daily ATR (pts)
+            <input
+              value={f.dailyAtrPts}
+              onChange={(e) => setF({ ...f, dailyAtrPts: e.target.value })}
+              placeholder="pts"
               style={{ width: 70 }}
             />
           </label>
