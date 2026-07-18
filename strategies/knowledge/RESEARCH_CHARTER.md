@@ -151,10 +151,15 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
       (cycle3-laneA · verdict: formal break tests powerless at n=40–200 — use pre-registered
       calendar-year era vector + 30-event rolling EV + regime-overlap KS check; era-consistency
       scorecard field; symmetric guard: one hot block carrying pooled EV → BLOCK)
-48. [ ] Feature lag audits & leakage checks: contemporaneous vs predictive (the 78× R² collapse)
-49. [ ] Benchmark discipline: naive baselines (random-entry same-exit, buy-hold) as mandatory
-      scorecard columns
-50. [ ] Small-sample drawdown inference: bootstrap vs analytic bounds for 20–40 trade samples
+48. [x] Feature lag audits & leakage — `quant/feature-lag-audits-data-leakage.md` (cycle3-laneA ·
+      verdict: 8-row L-checklist mandatory at Stage-0; exposure is upstream in Pine (same-bar entries,
+      security() lookahead), not in analyze-event-study.ts; automate the lagged-correlation test)
+49. [x] Benchmark discipline — `quant/benchmark-discipline-naive-baselines.md` (cycle3-laneA ·
+      verdict: 3 mandatory columns — vsRandom pctile / vsBuyHold $Δ / vsFlip (already in script);
+      Dual46 itself never benchmarked vs time-matched buy-hold — post-May item)
+50. [x] Small-sample drawdown inference — `quant/small-sample-drawdown-inference.md` (cycle3-laneA ·
+      verdict: at n=20–40 bootstrap MDD is plug-in-biased 1.5–5× optimistic — go parametric: Beta
+      posterior on WR × empirical win sizes; bootstrap demoted to labeled lower-bound cross-check)
 51. [ ] Multiple-testing & selection bias across candidate sleeves: how many killed Track-B ideas
       before a "surviving" edge is just noise (relates to kill-lessons doctrine)
 
@@ -171,13 +176,14 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
       two-phase rule: retain everything until floor-lock, then hold ~8R cushion and sweep every window — the account is a pipe, not a vault)
 57. [x] Prop rule-change watch 2026 — `quant/ops-prop-rule-change-watch-2026.md` (c3-laneB ·
       Topstep 4/28 cap cut ($2k/50K Std) + MLL→$0 after 1st payout · Apex $85/mo looks STALE (4.0 = one-time activation, $0/mo) — re-rank before purchase)
-58. [ ] Data-feed discrepancies: TradingView vs Tradovate/Rithmic prints — same-setup divergence
-      risk for a 1m RB strategy
-59. [ ] Pre-staged limits vs hotkey execution: published human-latency chains; best practice for
-      the arm→limit workflow (June misses were latency)
-60. [ ] US prop payout taxes & entity basics (1099 vs LLC, estimated payments) — informational
-61. [ ] Multi-account copier execution *mechanics* deep-dive: divergence stats for limit entries
-      (extends quant/trade-copiers-prop-accounts.md toward practice)
+58. [x] Data-feed discrepancies — `quant/ops-data-feed-discrepancies-tv-vs-execution.md` (c3-laneB ·
+      ±1 tick at wick extremes & bar boundaries, no published rate → house protocol · fix free: chart specific contract via TV-Tradovate connection, score fills off execution T&S)
+59. [x] Pre-staged limits vs hotkey execution — `quant/ops-prestaged-limits-vs-hotkey-execution.md` (c3-laneB ·
+      human chain 1–3 s unplanned vs ~0 pre-staged · one-variable-at-trigger workflow, no confirm dialogs, 1 hotkey (conversion only) · buy nothing)
+60. [x] US prop payout taxes & entity basics — `quant/ops-prop-payout-taxes-entity-basics.md` (c3-laneB ·
+      ordinary SE income NOT 1256 · sweep 30%/payout to tax account, quarterly 1040-ES · no entity until ~$60–80k/yr net · start expense ledger NOW · not tax advice)
+61. [x] Copier limit-entry divergence mechanics — `quant/ops-copier-limit-entry-divergence-mechanics.md` (c3-laneB ·
+      pre-staged resting limits are latency-EXEMPT → Orders Mode + per-account conversion fallback dominates · vendor slippage tables 0.1–3 ticks by copier class)
 
 ### Lane C — ICT / Powell / strategy deepening (agent C)
 62. [x] ICT market-maker buy/sell models — `ict/market-maker-buy-sell-models.md` (cycle3-laneC ·
@@ -191,10 +197,12 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 65. [x] Red-folder playbooks — `ict/red-folder-playbooks-1000-window.md` (cycle3-laneC · decision
       table built; Powell: NFP reverses at open (friendly), CPI trends all day (hostile to fades);
       FOMC morning + day-before-NFP = consensus stand-downs; 10:00-slot prints = arm-delay question)
-66. [ ] Structural-target sleeve evidence: Powell's structural TPs (internal H/L, gaps) vs fixed
-      1:5/100pt — assemble the post-May Stage-0 case, both directions
-67. [ ] 5m vs 1m entry trigger: Powell's evolved 5m preference (DeltaTrend note) — what he says,
-      where each wins; post-May question only
+66. [x] Structural-target sleeve evidence — `powell/structural-target-sleeve-evidence.md` (cycle3-laneC ·
+      Powell sanctions BOTH structural and static-RR; deciding evidence = May ledger MFE column
+      (nearly free); pre-register 4 assumptions if promoted; NWOG sleeve should be structural-TP anyway)
+67. [x] 5m vs 1m entry trigger — `powell/5m-vs-1m-entry-trigger.md` (cycle3-laneC · DeltaTrend
+      paraphrase overstated: Powell still uses 1m daily; real teaching = hybrid (5m confirm → 1m
+      entry); ledger boolean `5m_confirm_present?` decides before any sim)
 68. [ ] NWOG published statistics: gap size / age / fill-rate numbers from any citable backtests —
       calibrate the sleeve census columns
 69. [ ] Monday HTF-discount-array flag validation: the "Tuesday drive" template config vs June+May
