@@ -94,8 +94,8 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
       lockout on script-loss days)
 30. [x] Streak math — `quant/losing-streak-math.md` (c2w2 · **63% chance of a 4-loss streak
       in first 100 trades at 65% WR** · 8R trailing buffer ≈ 1.3% blow-up vs ~28% at 5R)
-31. [ ] Bayesian (Beta-binomial) updating of small-sample WR month over month
-32. [ ] Vol-regime dependence: VIX levels vs setup frequency/quality; May-vs-June 2026 vol context
+31. [x] Bayesian WR updating — closed in cycle 3 → `quant/bayesian-beta-binomial-win-rate-updating.md` (see item 44)
+32. [x] Vol-regime dependence — closed in cycle 3 → `quant/vol-regime-dependence-setup-frequency.md` (see item 45)
 
 ### ICT / Powell deepening (agent C)
 33. [x] Powell psychology videos (already transcribed) → `powell/powell-trading-psychology.md` (cycle2-wave1)
@@ -160,8 +160,10 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 50. [x] Small-sample drawdown inference — `quant/small-sample-drawdown-inference.md` (cycle3-laneA ·
       verdict: at n=20–40 bootstrap MDD is plug-in-biased 1.5–5× optimistic — go parametric: Beta
       posterior on WR × empirical win sizes; bootstrap demoted to labeled lower-bound cross-check)
-51. [ ] Multiple-testing & selection bias across candidate sleeves: how many killed Track-B ideas
-      before a "surviving" edge is just noise (relates to kill-lessons doctrine)
+51. [x] Multiple-testing & selection bias — `quant/multiple-testing-selection-bias-sleeves.md`
+      (cycle3-laneA · verdict: at k=14 Track-B trials, ~51% odds a "significant" survivor is noise —
+      add k counter to kill-lessons header, k-adjusted CI or OOS replication to promote, best-of-(k+1)
+      random baseline; kills need no deflation, only survivors) — **lane A complete (10/10)**
 
 ### Lane B — Execution & prop ops (agent B) — NEW LANE for the replay→live transition
 52. [x] Replay→live calibration protocol — `quant/ops-replay-live-calibration-protocol.md` (c3-laneB ·
@@ -203,13 +205,19 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 67. [x] 5m vs 1m entry trigger — `powell/5m-vs-1m-entry-trigger.md` (cycle3-laneC · DeltaTrend
       paraphrase overstated: Powell still uses 1m daily; real teaching = hybrid (5m confirm → 1m
       entry); ledger boolean `5m_confirm_present?` decides before any sim)
-68. [ ] NWOG published statistics: gap size / age / fill-rate numbers from any citable backtests —
-      calibrate the sleeve census columns
-69. [ ] Monday HTF-discount-array flag validation: the "Tuesday drive" template config vs June+May
-      Monday ledger rows
-70. [ ] ICT one-shot-one-kill & daily-bias models vs Dual46's one-trade cadence — alignment audit
-71. [ ] Powell/DeltaTrend new-upload sweep: transcribe anything new since 07-17/07-18; diff Powell
-      uploads against SOP §16 transcript log
+68. [x] NWOG published statistics — `ict/nwog-published-statistics.md` (cycle3-laneC · no true-NWOG
+      study exists; best adjacent data: size dominates (78→8% fill by ×ATR bin), Mon lowest DOW fill
+      53.9%, CE-touch ~76% is near-baseline; census needs ×ATR column + DOW split; age decay = Vault exclusive)
+69. [x] Monday HTF-discount-array flag — `ict/monday-htf-discount-array-flag.md` (cycle3-laneC ·
+      canon supports the flag but with 3 escape hatches (Wed variants, array-tapped-Monday, news weeks);
+      06-29 likely FLAG_DEAD i.e. template-consistent; exact 4-cell scoring protocol defined, ≥10-Monday
+      pre-registered decision rule)
+70. [x] One-shot-one-kill & daily-bias audit — `ict/one-shot-one-kill-daily-bias-audit.md` (cycle3-laneC ·
+      Dual46 = day-scale port of OSOK; OSOK itself uses a FIXED objective (point for AGAINST in
+      structural-TP debate); 10-row stand-down table, 3 new zero-cost journal columns)
+71. [x] Powell/DeltaTrend new-upload sweep — logged in `powell/powell-course-catalog.md` (§Upload-sweep
+      log, cycle3-laneC · NO new uploads on either channel; archives complete 14/14 + 13/13; Powell ~7
+      weeks silent; bonus: ICT 2023 MMXM lecture transcript archived to `vault-app/data/ict-transcripts/`)
 
 ## Guardrails
 

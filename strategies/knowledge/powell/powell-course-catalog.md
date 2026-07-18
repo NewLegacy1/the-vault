@@ -47,6 +47,9 @@ No formal playlists on the channel; the "free course" is effectively these uploa
 
 Shorts/streams (not mined): "Hope this helps" (2026-02-24), live stream (2026-02-13), "Dont do this at home" (2025-10-25), "Interesting candle" (2025-10-01).
 
+**Upload-sweep log:**
+- **2026-07-18 (cycle3-laneC):** yt-dlp listing of `@Powelltrades` videos + shorts and `@deltatrendtrading` videos (no streams tab on either). **No new uploads.** Powell latest = Top 5 Mistakes (2026-05-31, ✅ transcribed); newest short = 2026-02-24 (old). DeltaTrend latest = Is Orderflow Imbalance Tradable? (2026-06-24) and stop trading like an idiot pt. 2 (2026-06-23) — both already in `vault-app/data/deltatrend-transcripts/`. Nothing to transcribe; transcript archive remains complete at 14/14 Powell + 13/13 DeltaTrend. Powell is now ~7 weeks silent (vs his ~1–2/month average) — check again next cycle.
+
 **14 of 14 long-form videos have full transcripts extracted** (wave-2 fetched the remaining 5 — `blowing-all-accounts`, `different-version-of-you`, `break-the-cycle`, `quit-my-job`, `40000-traders-struggle` — via `vault-app/scripts/fetch-powell-wave2.ts`). Extraction method: `youtube-transcript` npm package via `npx tsx` — script at `vault-app/scripts/fetch-powell-transcripts.ts`, re-runnable for future uploads. Channel RSS for new-video polling: `https://www.youtube.com/feeds/videos.xml?channel_id=UCqFcu-Ln0a4wblcdWdZlrLw`.
 
 The "60k" video names its own prerequisites: "the 10:00 a.m. key open video, rejection block video, and obviously also the fib" — i.e. `Y-oqSZmNo4U` (KO + fib) and `a3LzCUZU5ko` (RB). Those three + `AGmRZ9Te9NY` are the free-tier core curriculum for the Dual46 model.
