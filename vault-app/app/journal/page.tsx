@@ -34,6 +34,16 @@ const SKIP_REASONS: { id: SkipReason; label: string }[] = [
   { id: "other", label: "Other" },
 ];
 
+/** Render NWOG read — new two-dim fields first, legacy single value as fallback. */
+function nwogLabel(j: JournalEntry): string {
+  if (j.nwogPos != null || j.nwogFilled != null) {
+    const pos = j.nwogPos ?? "?";
+    const state = j.nwogFilled == null ? "" : j.nwogFilled ? " · filled" : " · unfilled";
+    return pos + state;
+  }
+  return j.nwog ?? "—";
+}
+
 function emptyLive() {
   return {
     mode: "live" as JournalLogMode,
@@ -428,6 +438,8 @@ export default function JournalPage() {
                 <th>Did</th>
                 <th>Tag</th>
                 <th>Src</th>
+                <th>NWOG</th>
+                <th>News</th>
                 <th>Fill</th>
                 <th>Out</th>
                 <th>Stop</th>
@@ -466,6 +478,14 @@ export default function JournalPage() {
                     </td>
                     <td className="small dim">{j.structureTag ?? acctLabel(j.accountId, j.strategy)}</td>
                     <td className="small dim">{j.entrySource ?? "—"}</td>
+                    <td className="small dim">{nwogLabel(j)}</td>
+                    <td className={"small " + (j.redFolder === "yes" ? "warn" : "dim")}>
+                      {j.redFolder === "yes"
+                        ? `${j.redFolderEvent ?? "red"}${j.redFolderTime ? ` ${j.redFolderTime}` : ""}`
+                        : j.redFolder === "no"
+                          ? "—"
+                          : "?"}
+                    </td>
                     <td className="small dim">{j.fillStatus ?? "—"}</td>
                     <td
                       className={
@@ -507,7 +527,7 @@ export default function JournalPage() {
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={13} className="dim">
+                  <td colSpan={15} className="dim">
                     Nothing logged yet — paste a chart above and hit Log.
                   </td>
                 </tr>

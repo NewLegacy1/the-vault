@@ -22,6 +22,7 @@ type Dual46Form = {
   nwogGapPts: string;
   nwogTapLoc: "near-edge" | "ce" | "far-edge" | "";
   atrPts: string;
+  entryTime: string;
   weekBias: "long" | "short" | "none";
   dayBias: "long" | "short" | "none";
   armed: boolean;
@@ -47,6 +48,7 @@ function emptyDual46(date = todayStr()): Dual46Form {
     nwogGapPts: "",
     nwogTapLoc: "",
     atrPts: "",
+    entryTime: "",
     weekBias: "none",
     dayBias: "none",
     armed: false,
@@ -119,7 +121,17 @@ function toEntry(f: Dual46Form, news: ReturnType<typeof autoRedFolder>): Journal
       f.dayBias === "long" ? "long" : f.dayBias === "short" ? "short" : "neutral",
     weekBias: f.weekBias,
     dayBias: f.dayBias,
-    nwog: f.nwog,
+    // Legacy single-value field kept in sync for old readers.
+    nwog: f.nwogFilled && f.nwogPos === "inside" ? "filled" : f.nwogPos,
+    nwogPos: f.nwogPos,
+    nwogFilled: f.nwogFilled,
+    nwogGapPts: num(f.nwogGapPts),
+    nwogTapLoc: f.nwogTapLoc || undefined,
+    atrPts: num(f.atrPts),
+    entryTime: f.entryTime.trim() || undefined,
+    redFolder: news.redFolder,
+    redFolderTime: news.time,
+    redFolderEvent: news.event,
     pathBModel: f.pathBModel,
     pathBGrade: f.pathBGrade,
     stopPts: stopPts != null && Number.isFinite(stopPts) ? stopPts : undefined,
@@ -158,6 +170,7 @@ export function Dual46StudyForm({ onSave }: Props) {
   const [busy, setBusy] = useState("");
   const [tagPaste, setTagPaste] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+  const dayNews = useDayNews(f.date);
 
   const ingestText = useCallback((text: string) => {
     const p = parseDual46Tag(text);
@@ -219,10 +232,11 @@ export function Dual46StudyForm({ onSave }: Props) {
       return;
     }
     setErr("");
-    onSave(toEntry(f));
+    onSave(toEntry(f, autoRedFolder(dayNews)));
     setF((prev) => ({
       ...emptyDual46(prev.date),
-      nwog: prev.nwog,
+      nwogPos: prev.nwogPos,
+      nwogFilled: prev.nwogFilled,
       weekBias: prev.weekBias,
       dayBias: prev.dayBias,
     }));
@@ -254,11 +268,23 @@ export function Dual46StudyForm({ onSave }: Props) {
         </p>
       )}
 
-      <div className="frm-row">
+      <div className="frm-row" style={{ alignItems: "flex-end" }}>
         <label className="fld">
           Date
           <input type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />
         </label>
+        <div className="small" style={{ paddingBottom: 6 }}>
+          {dayNews.length ? (
+            <span className="warn">
+              News auto-matched:{" "}
+              {dayNews
+                .map((e) => `${e.time || "?"} ${e.title}${e.impact === "high" ? " (RED)" : ""}`)
+                .join(" · ")}
+            </span>
+          ) : (
+            <span className="dim">No calendar events for this date — logs as red folder: no</span>
+          )}
+        </div>
       </div>
 
       <div
@@ -361,11 +387,18 @@ export function Dual46StudyForm({ onSave }: Props) {
       <div className="frm-row" style={{ alignItems: "flex-start" }}>
         <div>
           <div className="dim small" style={{ marginBottom: 4 }}>
-            NWOG
+            NWOG · price is
           </div>
-          {(["above", "below", "filled", "inside"] as const).map((v) =>
-            chip(f.nwog === v, v, () => setF({ ...f, nwog: v }))
+          {(["above", "inside", "below"] as const).map((v) =>
+            chip(f.nwogPos === v, v, () => setF({ ...f, nwogPos: v }))
           )}
+        </div>
+        <div>
+          <div className="dim small" style={{ marginBottom: 4 }}>
+            Gap state
+          </div>
+          {chip(!f.nwogFilled, "unfilled", () => setF({ ...f, nwogFilled: false }))}
+          {chip(f.nwogFilled, "filled", () => setF({ ...f, nwogFilled: true }))}
         </div>
         <div>
           <div className="dim small" style={{ marginBottom: 4 }}>
@@ -387,6 +420,48 @@ export function Dual46StudyForm({ onSave }: Props) {
             )
           )}
         </div>
+      </div>
+
+      <div className="accent small" style={{ letterSpacing: 1, marginTop: 8 }}>
+        CENSUS (optional — NWOG taps + volatility)
+      </div>
+      <div className="frm-row" style={{ alignItems: "flex-start" }}>
+        <label className="fld">
+          Gap size (pts)
+          <input
+            value={f.nwogGapPts}
+            onChange={(e) => setF({ ...f, nwogGapPts: e.target.value })}
+            style={{ width: 80 }}
+          />
+        </label>
+        <div>
+          <div className="dim small" style={{ marginBottom: 4 }}>
+            Tap location
+          </div>
+          {(["near-edge", "ce", "far-edge"] as const).map((v) =>
+            chip(f.nwogTapLoc === v, v === "ce" ? "CE" : v, () =>
+              setF({ ...f, nwogTapLoc: f.nwogTapLoc === v ? "" : v })
+            )
+          )}
+        </div>
+        <label className="fld">
+          ATR(14) 1-min
+          <input
+            value={f.atrPts}
+            onChange={(e) => setF({ ...f, atrPts: e.target.value })}
+            placeholder="pts"
+            style={{ width: 70 }}
+          />
+        </label>
+        <label className="fld">
+          Entry time (NY)
+          <input
+            value={f.entryTime}
+            onChange={(e) => setF({ ...f, entryTime: e.target.value })}
+            placeholder="9:52"
+            style={{ width: 70 }}
+          />
+        </label>
       </div>
 
       <div className="accent small" style={{ letterSpacing: 1, marginTop: 8 }}>
@@ -414,7 +489,18 @@ export function Dual46StudyForm({ onSave }: Props) {
             chip(f.dualOutcome === v, v, () => setF({ ...f, dualOutcome: v }))
           )}
         </div>
+        <div>
+          <div className="dim small" style={{ marginBottom: 4 }}>
+            Fill
+          </div>
+          {(["yes", "converted", "no", "no-arm"] as const).map((v) =>
+            chip(f.fillStatus === v, v, () => setF({ ...f, fillStatus: v }))
+          )}
+        </div>
       </div>
+      <p className="small dim" style={{ marginTop: 0 }}>
+        converted = limit turned marketable under the conversion rule — log real entry price in notes.
+      </p>
       <div className="frm-row">
         <label className="fld">
           Stop

@@ -110,6 +110,8 @@ export interface JournalEntry {
   nwogTapLoc?: "near-edge" | "ce" | "far-edge";
   /** ATR(14) on 1-min at entry, in points (May-walk logging). */
   atrPts?: number;
+  /** Entry (or tap) time HH:MM NY — needed for the 9:50–10:10 NWOG window question. */
+  entryTime?: string;
   weekBias?: "long" | "short" | "none";
   dayBias?: "long" | "short" | "none";
   /** Cont = same side as leave · Judas = reverse */

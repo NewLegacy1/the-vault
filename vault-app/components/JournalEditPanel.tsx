@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { compressChartShot } from "@/lib/journal-shot";
 import { formatPlanRr, parsePlanRr } from "@/lib/morningstar/parse-plan-rr";
 import { JournalEntry } from "@/lib/types";
+import { autoRedFolder, useDayNews } from "@/lib/use-day-news";
 
 type EditState = {
   date: string;
@@ -12,14 +13,31 @@ type EditState = {
   pathBModel: "Cont" | "Judas" | "—";
   pathBGrade: "OTE+KO" | "OTE" | "KO" | "—";
   dualOutcome: "WIN" | "LOSS" | "no fill" | "skipped" | "";
-  fillStatus: "yes" | "no" | "no-arm" | "";
+  fillStatus: "yes" | "no" | "no-arm" | "converted" | "";
+  nwogPos: "above" | "below" | "inside" | "";
+  nwogFilled: boolean | null;
+  nwogGapPts: string;
+  nwogTapLoc: "near-edge" | "ce" | "far-edge" | "";
+  atrPts: string;
+  entryTime: string;
   stopPts: string;
   planRr: string;
   notes: string;
   shots: string[];
 };
 
+/** Map legacy single-value nwog onto the new two-dimension read. */
+function legacyNwog(j: JournalEntry): { pos: EditState["nwogPos"]; filled: boolean | null } {
+  if (j.nwogPos != null || j.nwogFilled != null) {
+    return { pos: j.nwogPos ?? "", filled: j.nwogFilled ?? null };
+  }
+  if (j.nwog === "filled") return { pos: "inside", filled: true };
+  if (j.nwog) return { pos: j.nwog, filled: null };
+  return { pos: "", filled: null };
+}
+
 function fromEntry(j: JournalEntry): EditState {
+  const nwog = legacyNwog(j);
   return {
     date: j.date,
     direction: j.direction,
@@ -28,6 +46,12 @@ function fromEntry(j: JournalEntry): EditState {
     pathBGrade: j.pathBGrade ?? "—",
     dualOutcome: j.dualOutcome ?? "",
     fillStatus: j.fillStatus ?? "",
+    nwogPos: nwog.pos,
+    nwogFilled: nwog.filled,
+    nwogGapPts: j.nwogGapPts != null ? String(j.nwogGapPts) : "",
+    nwogTapLoc: j.nwogTapLoc ?? "",
+    atrPts: j.atrPts != null ? String(j.atrPts) : "",
+    entryTime: j.entryTime ?? "",
     stopPts: j.stopPts != null ? String(j.stopPts) : "",
     planRr: j.planRr != null ? String(j.planRr) : "",
     notes: j.notes ?? "",
@@ -45,6 +69,7 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
   const [f, setF] = useState<EditState>(() => fromEntry(entry));
   const [shotErr, setShotErr] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
+  const dayNews = useDayNews(f.date);
 
   const addShot = useCallback(async (file: File) => {
     setShotErr("");
@@ -75,12 +100,18 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
   const save = () => {
     const stopPts = f.stopPts !== "" ? parseFloat(f.stopPts) : undefined;
     const planRr = parsePlanRr(f.planRr);
+    const num = (s: string) => {
+      const n = parseFloat(s);
+      return s !== "" && Number.isFinite(n) ? n : undefined;
+    };
     const rMultiple =
       f.dualOutcome === "WIN" && planRr != null
         ? planRr
         : f.dualOutcome === "LOSS"
           ? -1
           : entry.rMultiple;
+    // Backfill news from the calendar when the entry never had a red-folder read.
+    const news = entry.redFolder == null ? autoRedFolder(dayNews) : null;
     onSave({
       ...entry,
       date: f.date,
@@ -90,6 +121,21 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
       pathBGrade: f.pathBGrade,
       dualOutcome: f.dualOutcome || undefined,
       fillStatus: f.fillStatus || undefined,
+      nwogPos: f.nwogPos || undefined,
+      nwogFilled: f.nwogFilled ?? undefined,
+      nwog:
+        f.nwogPos === ""
+          ? entry.nwog
+          : f.nwogFilled && f.nwogPos === "inside"
+            ? "filled"
+            : f.nwogPos,
+      nwogGapPts: num(f.nwogGapPts),
+      nwogTapLoc: f.nwogTapLoc || undefined,
+      atrPts: num(f.atrPts),
+      entryTime: f.entryTime.trim() || undefined,
+      ...(news
+        ? { redFolder: news.redFolder, redFolderTime: news.time, redFolderEvent: news.event }
+        : {}),
       stopPts: stopPts != null && Number.isFinite(stopPts) ? stopPts : undefined,
       planRr,
       rMultiple,
@@ -186,7 +232,7 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
             <div className="dim small" style={{ marginBottom: 4 }}>
               Fill
             </div>
-            {(["yes", "no", "no-arm"] as const).map((v) =>
+            {(["yes", "converted", "no", "no-arm"] as const).map((v) =>
               chip(f.fillStatus === v, v, () => setF({ ...f, fillStatus: v }))
             )}
           </div>
@@ -198,6 +244,78 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
               chip(f.dualOutcome === v, v, () => setF({ ...f, dualOutcome: v }))
             )}
           </div>
+        </div>
+
+        <div className="frm-row" style={{ alignItems: "flex-start" }}>
+          <div>
+            <div className="dim small" style={{ marginBottom: 4 }}>
+              NWOG · price is
+            </div>
+            {(["above", "inside", "below"] as const).map((v) =>
+              chip(f.nwogPos === v, v, () => setF({ ...f, nwogPos: f.nwogPos === v ? "" : v }))
+            )}
+          </div>
+          <div>
+            <div className="dim small" style={{ marginBottom: 4 }}>
+              Gap state
+            </div>
+            {chip(f.nwogFilled === false, "unfilled", () =>
+              setF({ ...f, nwogFilled: f.nwogFilled === false ? null : false })
+            )}
+            {chip(f.nwogFilled === true, "filled", () =>
+              setF({ ...f, nwogFilled: f.nwogFilled === true ? null : true })
+            )}
+          </div>
+          <label className="fld">
+            Gap size (pts)
+            <input
+              value={f.nwogGapPts}
+              onChange={(e) => setF({ ...f, nwogGapPts: e.target.value })}
+              style={{ width: 80 }}
+            />
+          </label>
+          <div>
+            <div className="dim small" style={{ marginBottom: 4 }}>
+              Tap location
+            </div>
+            {(["near-edge", "ce", "far-edge"] as const).map((v) =>
+              chip(f.nwogTapLoc === v, v === "ce" ? "CE" : v, () =>
+                setF({ ...f, nwogTapLoc: f.nwogTapLoc === v ? "" : v })
+              )
+            )}
+          </div>
+          <label className="fld">
+            ATR(14) 1-min
+            <input
+              value={f.atrPts}
+              onChange={(e) => setF({ ...f, atrPts: e.target.value })}
+              placeholder="pts"
+              style={{ width: 70 }}
+            />
+          </label>
+          <label className="fld">
+            Entry time (NY)
+            <input
+              value={f.entryTime}
+              onChange={(e) => setF({ ...f, entryTime: e.target.value })}
+              placeholder="9:52"
+              style={{ width: 70 }}
+            />
+          </label>
+        </div>
+
+        <div className="small" style={{ marginBottom: 8 }}>
+          {dayNews.length ? (
+            <span className="warn">
+              News for {f.date}:{" "}
+              {dayNews
+                .map((e) => `${e.time || "?"} ${e.title}${e.impact === "high" ? " (RED)" : ""}`)
+                .join(" · ")}
+              {entry.redFolder == null && " — will save onto this entry"}
+            </span>
+          ) : (
+            <span className="dim">No calendar events found for {f.date}</span>
+          )}
         </div>
 
         <label className="fld" style={{ maxWidth: "100%" }}>
