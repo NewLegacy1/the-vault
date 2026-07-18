@@ -69,6 +69,37 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 20. [x] Powell risk & management — `powell/powell-risk-trade-management.md` (wave 2 ·
       all 14/14 videos now transcribed) — **Powell domain complete · QUEUE COMPLETE 20/20**
 
+## Topic queue — CYCLE 2 (20 · added 2026-07-17)
+
+### Instrument / prop landscape (agent A)
+21. [ ] MNQ vs NQ: cost per unit risk (commissions+spread as % of stop), fill quality,
+      sizing granularity under fixed-$ risk — is 10 MNQ ≡ 1 NQ worth switching?
+22. [ ] MNQ microstructure: spread/book depth, behavior at 09:30/10:00, slippage for
+      small market orders (feeds the conversion rule)
+23. [ ] Prop-firm landscape 2026: Apex/TPT/others — trailing DD mechanics (EOD vs
+      intraday), consistency rules, payout policies, multi-account stacking economics
+24. [ ] Trade copiers across prop accounts: firm policies, risks, practical setups
+25. [ ] Contract roll dates & session structure gotchas for a 09:30–13:00 strategy
+
+### Strategy / stats deepening (agent B)
+26. [ ] MFE/MAE exit analysis: partials vs full TP at capped 1:5
+27. [ ] Break-even stop moves & trailing — evidence for/against (Powell uses BE)
+28. [ ] Time stops for retracement entries: max holding time research
+29. [ ] Daily loss limits & circuit breakers: quantified benefit for discretionary traders
+30. [ ] Streak math at ~65–70% WR: expected losing runs per 100 trades (psych prep)
+31. [ ] Bayesian (Beta-binomial) updating of small-sample WR month over month
+32. [ ] Vol-regime dependence: VIX levels vs setup frequency/quality; May-vs-June 2026 vol context
+
+### ICT / Powell deepening (agent C)
+33. [ ] Powell psychology videos (already transcribed) → trading-psychology rules note
+34. [ ] ICT market-maker buy/sell models — full sequence template
+35. [ ] ICT Silver Bullet (10–11 window) — overlaps our macro window
+36. [ ] ICT premium/discount (equilibrium) bias framing
+37. [ ] SMT divergence (NQ/ES) — refresh for the archived Vault SMT script
+38. [ ] ICT weekly profiles (e.g. Tuesday expansion) — do they support Monday inclusion?
+39. [ ] Liquidity voids vs FVGs — delivery expectations
+40. [ ] Red-folder playbooks: CPI/NFP/FOMC at the 10:00 window — stand-down rules
+
 ## Guardrails
 
 - Knowledge notes **never** override the Dual46 freeze or hard stops in
