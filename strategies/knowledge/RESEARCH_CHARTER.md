@@ -88,12 +88,12 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 32. [ ] Vol-regime dependence: VIX levels vs setup frequency/quality; May-vs-June 2026 vol context
 
 ### ICT / Powell deepening (agent C)
-33. [ ] Powell psychology videos (already transcribed) → trading-psychology rules note
+33. [x] Powell psychology videos (already transcribed) → `powell/powell-trading-psychology.md` (cycle2-wave1)
 34. [ ] ICT market-maker buy/sell models — full sequence template
-35. [ ] ICT Silver Bullet (10–11 window) — overlaps our macro window
-36. [ ] ICT premium/discount (equilibrium) bias framing
+35. [x] ICT Silver Bullet (10–11 window) — `ict/silver-bullet.md` (cycle2-wave1 · primary: 2023 Mentorship SB lecture transcript)
+36. [x] ICT premium/discount (equilibrium) bias framing — covered in `ict/weekly-profiles-premium-discount.md` (cycle2-wave1)
 37. [ ] SMT divergence (NQ/ES) — refresh for the archived Vault SMT script
-38. [ ] ICT weekly profiles (e.g. Tuesday expansion) — do they support Monday inclusion?
+38. [x] ICT weekly profiles — `ict/weekly-profiles-premium-discount.md` (cycle2-wave1 · primary: Core Content Month 07 transcript archived to `vault-app/data/ict-transcripts/` · verdict: canon does NOT forbid Mondays)
 39. [ ] Liquidity voids vs FVGs — delivery expectations
 40. [ ] Red-folder playbooks: CPI/NFP/FOMC at the 10:00 window — stand-down rules
 

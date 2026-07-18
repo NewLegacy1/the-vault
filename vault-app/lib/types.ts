@@ -98,8 +98,18 @@ export interface JournalEntry {
   chartShots?: string[];
 
   // ── Dual46 Path B day-study (additive · optional) ─────────────────
-  /** NWOG read: unfilled above / below / filled / inside */
+  /** Legacy single-value NWOG read (kept for old rows) — use nwogPos + nwogFilled going forward. */
   nwog?: "above" | "below" | "filled" | "inside";
+  /** Price at 9:30 relative to the NWOG — independent of fill state. */
+  nwogPos?: "above" | "below" | "inside";
+  /** Gap already filled (CE traded through) — June finding: still viable as S/R. */
+  nwogFilled?: boolean;
+  /** NWOG gap size in points (census column). */
+  nwogGapPts?: number;
+  /** Where price tapped the gap. */
+  nwogTapLoc?: "near-edge" | "ce" | "far-edge";
+  /** ATR(14) on 1-min at entry, in points (May-walk logging). */
+  atrPts?: number;
   weekBias?: "long" | "short" | "none";
   dayBias?: "long" | "short" | "none";
   /** Cont = same side as leave · Judas = reverse */
@@ -108,7 +118,8 @@ export interface JournalEntry {
   pathBGrade?: "OTE+KO" | "OTE" | "KO" | "—";
   stopPts?: number;
   planRr?: number;
-  fillStatus?: "yes" | "no" | "no-arm";
+  /** converted = limit turned marketable per the conversion rule (tag real R). */
+  fillStatus?: "yes" | "no" | "no-arm" | "converted";
   /** WIN / LOSS / no fill / skipped */
   dualOutcome?: "WIN" | "LOSS" | "no fill" | "skipped";
   /** Dual46 freeze stamp */

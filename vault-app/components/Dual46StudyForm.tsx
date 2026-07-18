@@ -11,10 +11,17 @@ import {
 import { formatPlanRr, parsePlanRr } from "@/lib/morningstar/parse-plan-rr";
 import { todayStr } from "@/lib/store";
 import { JournalEntry, MORNINGSTAR_STUDY_ID, uid } from "@/lib/types";
+import { autoRedFolder, useDayNews } from "@/lib/use-day-news";
 
 type Dual46Form = {
   date: string;
-  nwog: "above" | "below" | "filled" | "inside";
+  /** Price vs NWOG at 9:30 — independent of fill state. */
+  nwogPos: "above" | "below" | "inside";
+  /** Gap already filled (CE traded through) — can still be viable. */
+  nwogFilled: boolean;
+  nwogGapPts: string;
+  nwogTapLoc: "near-edge" | "ce" | "far-edge" | "";
+  atrPts: string;
   weekBias: "long" | "short" | "none";
   dayBias: "long" | "short" | "none";
   armed: boolean;
@@ -25,7 +32,7 @@ type Dual46Form = {
   direction: "long" | "short" | "skip";
   stopPts: string;
   planRr: string;
-  fillStatus: "yes" | "no" | "no-arm";
+  fillStatus: "yes" | "no" | "no-arm" | "converted";
   dualOutcome: "WIN" | "LOSS" | "no fill" | "skipped";
   notes: string;
   shots: string[];
@@ -35,7 +42,11 @@ type Dual46Form = {
 function emptyDual46(date = todayStr()): Dual46Form {
   return {
     date,
-    nwog: "filled",
+    nwogPos: "inside",
+    nwogFilled: true,
+    nwogGapPts: "",
+    nwogTapLoc: "",
+    atrPts: "",
     weekBias: "none",
     dayBias: "none",
     armed: false,
@@ -80,9 +91,13 @@ function dualGradeLetter(grade: Dual46Form["pathBGrade"]): JournalEntry["grade"]
   return "-";
 }
 
-function toEntry(f: Dual46Form): JournalEntry {
+function toEntry(f: Dual46Form, news: ReturnType<typeof autoRedFolder>): JournalEntry {
   const stopPts = f.stopPts !== "" ? parseFloat(f.stopPts) : undefined;
   const planRr = parsePlanRr(f.planRr);
+  const num = (s: string) => {
+    const n = parseFloat(s);
+    return s !== "" && Number.isFinite(n) ? n : undefined;
+  };
   const tag =
     f.armed && f.pathBModel !== "—"
       ? `Powell · ${f.pathBModel} · 1RB · ${f.pathBGrade}`
