@@ -1,0 +1,207 @@
+# Is Orderflow Imbalance Tradable?
+# https://www.youtube.com/watch?v=IHZLyff3FgE
+
+[0:00] This is one of the most cited research
+[0:01] results in quantitative finance. This
+[0:03] paper from 2011 says that about 2/3 of
+[0:06] every price movement can be explained by
+[0:08] order book imbalance. That's the
+[0:10] imbalance between the number of buyers
+[0:11] at the best bid and the number of
+[0:13] sellers at the best ask. Today, we're
+[0:14] going to reproduce it entirely from
+[0:16] scratch and then answer the one question
+[0:18] that really matters, which is whether or
+[0:19] not you can trade it. Here I have the
+[0:21] paper and its figures in LaTeX format.
+[0:23] It doesn't really matter what format
+[0:24] it's in. It can be a PDF. And we're
+[0:25] going to drag it into our new Quantpedia
+[0:27] project. The interesting thing about
+[0:29] this paper and about order flow
+[0:30] imbalance is that it treats a canceled
+[0:32] sell order and a new buy order as the
+[0:34] same thing. Because order flow imbalance
+[0:36] just measures the delta between the
+[0:37] total number of buyers at the best bid
+[0:39] and the total number of sellers at the
+[0:41] best ask. So, if a seller walks away or
+[0:43] a new buyer comes along, that has the
+[0:45] same impact on the order flow imbalance.
+[0:48] And the paper says that that number,
+[0:49] order flow imbalance, explains about 65%
+[0:52] of where price goes in the very near
+[0:54] term. Okay, so let's test it. The most
+[0:55] difficult part by far about reproducing
+[0:57] a paper like this as a retail trader
+[0:59] would be getting your hands on the data.
+[1:01] We don't just need tick data, meaning
+[1:02] trade level data, for years and years of
+[1:04] history on these US stocks, but we also
+[1:06] need to know the best bid and ask. Okay,
+[1:09] so Quantpedia just read the entire paper
+[1:11] and then decided how it would reproduce.
+[1:13] It's also determined exactly how it's
+[1:14] going to map this onto available data.
+[1:16] It's asking us a couple questions. How
+[1:17] much of the paper should I reproduce?
+[1:19] The core result, that's all that we care
+[1:20] about. Uh and then which stock universe
+[1:22] and window should I run on? Let's do 10
+[1:24] to 15 names just to save some time.
+[1:26] Okay, so what we're doing right now is
+[1:27] just reproducing the core findings of
+[1:30] this paper. But after that, I want to
+[1:32] clarify something interesting about this
+[1:34] paper in particular, and that's going to
+[1:36] inform our next steps from there. So,
+[1:38] Quantpedia is dealing with millions and
+[1:40] millions of rows of data, and it decided
+[1:42] in its original plan, if you remember,
+[1:44] that it was going to chunk the data.
+[1:46] Streaming the data in chunks is an
+[1:47] architectural decision that Quantpedia
+[1:49] knew to make so that it wouldn't OOM the
+[1:50] workspace, meaning run out of memory.
+[1:52] Because Quantpedia is familiar with the
+[1:54] size of the data that's going to be
+[1:55] served from the data API. QuantPad has
+[1:57] just finished up and it looks like our
+[1:59] results are shockingly actually similar
+[2:01] to the research papers. We've perfectly
+[2:03] reproduced it in a single prompt, no
+[2:05] less. So, the paper got 65% meaning that
+[2:08] the order flow imbalance accounts for
+[2:10] 65% of the variability in the price
+[2:13] change and we got 63%. QuantPad also
+[2:16] puts forth a hypothesis about why our
+[2:18] results are slightly different from the
+[2:19] papers. We found that order flow
+[2:21] imbalance explains less of the
+[2:22] variability in price change for high
+[2:25] price names. Cat, JP Morgan, Apple,
+[2:27] these trade at $200 to $350 with a very
+[2:31] thin displayed top of book depth. It
+[2:32] says that this pattern is similar to
+[2:34] what was observed in the original paper,
+[2:35] also. I'm going to ask QuantPad to
+[2:37] produce one more visual just so that we
+[2:38] can see all of the symbols at once and
+[2:40] then I'm going to get to something a
+[2:40] little bit more important. While
+[2:42] QuantPad works on this, I'll explain
+[2:43] what we're going to do next. So, this
+[2:45] paper looks at price variability and
+[2:47] order book imbalance for the same
+[2:49] 10-second window. They found that order
+[2:51] book imbalance explains 65% of the price
+[2:53] movement in the same 10-second window in
+[2:56] which the order book imbalance was
+[2:57] computed. That's not really that
+[2:59] interesting. That's not a
+[3:00] forward-looking signal, though. Our
+[3:01] visual is done here. They're looking at
+[3:03] a price move that happened within a
+[3:04] 10-second window and then the order book
+[3:06] imbalance from within that same window.
+[3:07] It's not a predictive signal. It's two
+[3:09] things that happen at the same time and
+[3:11] then they analyze them in retrospect and
+[3:13] say, "Yeah, the order book imbalance
+[3:14] does explain 65% of the variability in
+[3:17] the price." Not order book imbalance
+[3:19] explains the price movement that will
+[3:21] happen in the next time step, in the
+[3:23] next bin. So, that's what we're going to
+[3:25] test right now. Is this something
+[3:26] actually tradeable? Does it have any
+[3:27] predictive value or is it just a
+[3:29] non-tradeable kind of intuitive fact
+[3:32] that they formalized in this research
+[3:34] paper? Okay, here's our second visual
+[3:35] from QuantPad. I'll just blow this up
+[3:37] over here. Okay, I'll blow that up on
+[3:38] the screen there or there and now we're
+[3:40] going to ask QuantPad to test whether
+[3:41] this is actually tradeable. Run the
+[3:43] regression again, but lag the imbalance
+[3:48] by one bin to see if I haven't been
+[3:51] opening any of the files that Quantpedia
+[3:53] has been creating, but obviously this is
+[3:54] just like a normal IDE where we can open
+[3:57] up files in the middle. I kind of just
+[3:59] didn't want to crowd our view. We can
+[4:00] view spreadsheets, obviously. We can
+[4:02] view these parquet files that Quantpedia
+[4:04] downloaded of the price information and
+[4:07] everything, but I'll just clear that out
+[4:08] and blow up the chat here. In
+[4:10] Quantpedia, we can also add follow-up
+[4:11] messages. So, if I have something that I
+[4:12] want to send after this, but I don't
+[4:14] want to have to wait by my computer for
+[4:15] Quantpedia to finish, I can just send a
+[4:17] second message to do or something. Send
+[4:21] it and we'll queue it like that. I can
+[4:22] send it now to interrupt or I can edit
+[4:24] it and I can delete it here. If I wanted
+[4:27] to go back and edit a previous message,
+[4:29] I can just click it to edit it. I can
+[4:30] select the model that I'm going to send
+[4:32] that message with, and then I can also,
+[4:34] when I send it, I get the option to
+[4:35] revert the workspace to the snapshot of
+[4:37] all of our files taken here when I sent
+[4:39] this message. I can also revert to a
+[4:42] previous snapshot just by clicking this
+[4:43] button here. And we have snapshots of
+[4:46] the workspace for every single message
+[4:47] that I've sent before this. It's kind of
+[4:48] how file versioning works on Quantpedia.
+[4:50] Wow, guys. Okay, so this is not very
+[4:52] surprising, but look at the difference
+[4:54] in the R squareds here. The explanatory
+[4:56] power collapses by 78 times the moment
+[4:58] you lag the imbalance by a single
+[5:00] 10-second bin. The detail confirms it's
+[5:02] noise and not a tradeable signal. The
+[5:03] strong contemporaneous R squared is a
+[5:05] statement about price formation, not
+[5:07] prediction. So, the phenomenon studied
+[5:09] in and explained by this paper does not
+[5:11] have predictive value. It just explains
+[5:13] how price evolves. It's intuitive,
+[5:15] really, if you think about it, that
+[5:16] order book imbalance would change
+[5:17] prices, but actually, I remember that
+[5:20] was something that ICT lovers used to
+[5:22] hate me for saying. About a year ago,
+[5:24] people actually used to vehemently
+[5:25] disagree with me that buying and selling
+[5:27] pressure moves market prices, which is
+[5:29] absolutely ridiculous, but our research
+[5:31] here and this paper obviously disputes
+[5:33] that. And it says that order book
+[5:35] imbalance, otherwise known as buying and
+[5:37] selling pressure, is the mechanism by
+[5:39] which price changes. If the order book
+[5:40] gets imbalanced so that there are many
+[5:42] buyers and few sellers, then sellers
+[5:44] have more price setting power. In the
+[5:45] inverse case, the opposite is true. They
+[5:47] set the price higher and then eventually
+[5:48] an ask gets hit and price moves up.
+[5:51] In the inverse case, the opposite is
+[5:52] true. So, we can put that debate to bed,
+[5:54] not that it ever should have been a
+[5:55] debate, and we can also say that this
+[5:57] paper does not have a signal. The paper
+[5:59] doesn't describe a trading signal. It
+[6:01] just describes a mechanism. But, we were
+[6:03] able to perfectly reproduce that
+[6:04] research paper with just one prompt and
+[6:06] spending $0 on market data. Other
+[6:09] financial research papers can serve as
+[6:11] very strong jumping-off points for real
+[6:13] strategies. This didn't happen to be one
+[6:14] of them, but on to the next in-depth

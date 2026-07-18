@@ -1,0 +1,235 @@
+# Build Your Own Trading Strategy — Ivy League Quant
+# https://www.youtube.com/watch?v=fIEwVmJJ06s
+
+[0:00] In 1987, a desk at Morgan Stanley
+[0:02] reportedly made $50 million in a single
+[0:04] year, which was huge for the time. And
+[0:06] that was because a Columbia University
+[0:08] computer science student figured out
+[0:09] pairs trading for the first time. This
+[0:11] was super lucrative for Morgan Stanley
+[0:13] for a short stretch of time when they
+[0:14] were the only people who knew about it
+[0:16] and the only people capable of doing it
+[0:17] with their computer infrastructure. But
+[0:19] then just a couple years later, the edge
+[0:21] completely tapered off and evaporated.
+[0:23] This is because traders at Morgan
+[0:24] Stanley left to create dehaw and two
+[0:26] sigma and some other giants. And as more
+[0:28] capital flooded into this trade, it got
+[0:30] crowded and the edge evaporated. This
+[0:31] phenomenon of an edge evaporating after
+[0:33] it's publicized is not a one-off at all.
+[0:35] And actually, that's the way that
+[0:36] markets are supposed to work. You're
+[0:37] never supposed to have an edge. If
+[0:39] market prices perfectly represented the
+[0:42] value of an asset at every single moment
+[0:44] in time, there would be no way to get an
+[0:46] edge. That would be an efficient market.
+[0:48] And assuming that you're trading a real
+[0:49] edge, every single trade you take is
+[0:51] bringing the market closer to
+[0:53] efficiency. If you have an edge that
+[0:54] accurately tells you the price of an
+[0:56] asset is too high, you short it and that
+[0:57] brings its price a little bit closer to
+[0:59] what it should be. If you have an edge
+[1:00] that tells you an asset is too
+[1:01] inexpensive, you buy it and that brings
+[1:03] the price up a little bit closer to fair
+[1:04] value. As more people find out about an
+[1:06] edge, they're going to crowd into the
+[1:08] same trades until the price of the asset
+[1:10] converges to the perceived fair value.
+[1:12] This happens with edge after edge after
+[1:14] edge after edge after edge after edge
+[1:17] after edge after edge after edge after
+[1:19] edge. And the mispricings get smaller
+[1:21] and smaller and smaller and smaller and
+[1:22] smaller. This will happen until the edge
+[1:24] is completely gone and the strategy no
+[1:27] longer makes money. And this brings me
+[1:28] to an interesting point. There are lots
+[1:30] of edges that you can find today if you
+[1:32] analyze them in a really, really naive
+[1:33] way. You could look at a super basic and
+[1:35] antiquated pairs trade and analyze it as
+[1:38] if you were trading a strategy that had
+[1:40] no slippage and no transaction costs or
+[1:42] something like that. That's not
+[1:43] realistic at all and think that you
+[1:45] could find an edge there. But the truth
+[1:46] is, of course, that with any well-known
+[1:48] trade like that, the moat is latency. If
+[1:50] you're analyzing some public and obvious
+[1:52] strategy and you think you have an edge,
+[1:54] most likely you're just analyzing it in
+[1:56] a way that's not comparable to the real
+[1:58] world, for example, no slippage, no
+[2:00] transaction fees, or you're seeing
+[2:01] instantaneous mispricings that are arbed
+[2:03] out by high frequency trading firms.
+[2:05] This brings me over here to the idea
+[2:06] that an anomaly or an edge will not
+[2:08] actually attract arbitrage capital to
+[2:10] arbit it out if it's not really
+[2:11] profitable to trade. As the authors of
+[2:13] this paper point out, you see this a lot
+[2:14] in academia where authors of academic
+[2:16] papers will say that they've found an
+[2:18] edge but neglect to consider transaction
+[2:20] costs or slippage or things that you
+[2:22] encounter in the real world when you
+[2:23] actually try to capitalize on that edge.
+[2:25] So if we estimate the effect of
+[2:26] statistical bias to be about 10% in
+[2:28] research papers that claim to have found
+[2:30] edges in financial markets, then this
+[2:32] paper which analyzes the effects of
+[2:34] publication on the returns of edges
+[2:35] which were published estimates that they
+[2:37] decline by about 25% after publication.
+[2:40] Meaning a private edge returning 100%
+[2:42] per period would lose 25% of those
+[2:45] returns after publication with this 25%
+[2:47] being due to other traders who started
+[2:49] trading the published strategy. And any
+[2:51] remaining returns of these strategies
+[2:53] are likely just artifacts of the things
+[2:54] that we talked about before. This is why
+[2:56] real profitable proprietary trading
+[2:59] strategies are hidden from the public by
+[3:01] all sorts of legal protections. And
+[3:02] breaking these legal protections to
+[3:04] trade with or publicize a private
+[3:06] trading strategy is punished very
+[3:07] harshly. This was unsealed in January of
+[3:09] 2025. A research developer and
+[3:11] quantitative trader at a quantitative
+[3:13] trading firm ran away with the source
+[3:14] code from that firm. He tried to trade
+[3:16] on his own using one or more of their
+[3:17] proprietary trading strategies and the
+[3:19] FBI came after him and got him. So, if
+[3:21] keeping your edge private is so
+[3:22] critically important to it not decaying,
+[3:25] then why are all these YouTubers posting
+[3:27] their strategy for the entire world to
+[3:28] see? Why does TJR post a new video every
+[3:31] couple days sharing his entire strategy
+[3:33] in depth? any edge he has would surely
+[3:36] decay almost immediately. And the common
+[3:38] retail rebuttal to that is, "Oh, quant
+[3:40] firms wouldn't want to trade these
+[3:41] strategies. Their position sizes are too
+[3:43] large, and they wouldn't be lucrative
+[3:44] for larger firms." That's not true. TJR
+[3:46] and these other traders trade some of
+[3:48] the most liquid securities in the entire
+[3:50] world, sometimes with more than a
+[3:52] trillion dollars traded in a single day.
+[3:53] The strategies do not require
+[3:55] sophisticated HFT infrastructure and
+[3:57] could be fully automated. I am fully
+[3:59] aware that these strategies aren't
+[4:00] mechanical, but that does not mean they
+[4:02] can't be automated with neural networks.
+[4:03] it would be very easy. But let's
+[4:04] actually drop the idea of institutions
+[4:06] trading these strategies at all for one
+[4:08] second. How have TJR's 1.2 million
+[4:10] followers not armed this out yet? If
+[4:12] they do have a positive edge here,
+[4:13] they're executing, which means they're
+[4:15] pushing price closer to what should be
+[4:16] its true value, right? And people can
+[4:18] pile into these trades and scale and
+[4:19] scale and scale until price converges to
+[4:21] its perceived fair value. So, if the
+[4:23] strategy is working, why haven't they?
+[4:25] Well, maybe they are fully extracting
+[4:26] some alpha and then the battle becomes
+[4:27] latency like we talked about before. So
+[4:29] assuming TJR strategy works, sharing it
+[4:31] would make it a battle of latency like
+[4:33] we saw in those dozen examples that
+[4:34] became dominated by HFT firms. HFT firms
+[4:37] with colllocated servers and specialized
+[4:39] fiber optic cables for faster connection
+[4:41] to the exchanges. But TJR trades from
+[4:43] his bedroom in Bickl Miami on his phone.
+[4:45] So what's going on?
+[4:49] This isn't just another day trading
+[4:50] course. This is the day trading
+[4:52] blueprint that helped me go from a
+[4:53] literally the entire trading industry.
+[4:57] Maybe it has something to do with his
+[4:58] high ticket course that you need to book
+[5:00] a call with a closer to purchase. The
+[5:02] point of the video is this. If you don't
+[5:05] create the edge yourself or have to sign
+[5:08] an NDA or some legally binding document
+[5:11] to keep it secret, it is If
+[5:13] the trading strategy is public or for
+[5:16] sale, it is a scam. TJR says he sells
+[5:18] his strategy to make some extra money on
+[5:20] the side. If he had a strategy with an
+[5:22] edge on some of the most liquid assets
+[5:25] in the world, the most scalable assets
+[5:28] in the entire world, why wouldn't he
+[5:31] scale it to tens of millions or hundreds
+[5:33] of millions of dollars? Why would he
+[5:35] still be trading on his phone alone? Why
+[5:37] are you not safeguarding this edge with
+[5:39] your life and out raising money from
+[5:41] investors to build a fund? Why are you
+[5:43] not hiring quantitative developers on
+[5:45] NDAs to build out a programmatic
+[5:47] implementation of your strategy? These
+[5:48] are the steps you would take if you had
+[5:50] the edge that you say you have. Nobody
+[5:52] would have any idea what your strategy
+[5:54] is. The entire way that retail has been
+[5:56] made to understand trading is
+[5:58] fundamentally wrong from the very first
+[6:00] step. Everybody is starting from step
+[6:02] two, choosing an influencer whose
+[6:04] strategy they want to copy and learn. If
+[6:06] the strategy is public, it doesn't work
+[6:08] in the first place. Step one is building
+[6:10] the strategy from scratch. Discovering
+[6:13] unique and novel relationships between
+[6:14] features that you engineer. noticing
+[6:16] something that other people don't
+[6:17] notice. And if and when you find
+[6:19] something, then from the very beginning,
+[6:21] you're silent. Any narrative other than
+[6:23] that is sickeningly incorrect. But
+[6:25] nobody wants you to know that. Under
+[6:27] videos that I've posted exposing ICT or
+[6:29] TJR, I coded TJR strategy a while back
+[6:32] and another guy named Justin Worlin. And
+[6:33] I get these comments under them. If ICT
+[6:36] concepts don't work, then what does?
+[6:38] Something proprietary. Nothing you're
+[6:39] going to find online. If you can find it
+[6:41] published, it doesn't work. If
+[6:43] somebody's selling it to you, it doesn't
+[6:45] work. you have to build it yourself.
+[6:47] Since this information is somehow almost
+[6:49] impossible to find on the internet
+[6:52] because it's just flooded with videos of
+[6:54] gurus, I'm going to go step by step from
+[6:56] step zero to step done. From zero, not
+[6:59] one buying a guru's course, but step
+[7:01] zero, obtaining data, pre-processing it,
+[7:03] engineering features, everything all the
+[7:05] way through properly testing and
+[7:07] deploying. Nobody should ever buy a
+[7:09] course again after this. They should
+[7:10] create their own strategies. And nobody
+[7:12] should ever trade a strategy that does
+[7:14] not truly have an edge because they'll
+[7:15] know how to test it properly.

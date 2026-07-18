@@ -1,0 +1,466 @@
+# How To: Monte Carlo Simulation
+# https://www.youtube.com/watch?v=jGhk-uSrtII
+
+[0:00] You just completed a back testing
+[0:01] session, whether discretionary and
+[0:03] manual or programmatic, and you're up 8
+[0:05] and 1/2% by the end of the session. You
+[0:07] run to deploy the strategy in a real
+[0:08] market, and somehow you wind up over
+[0:10] here, down 20% after 100 trades,
+[0:13] wondering what went wrong. It's very
+[0:14] common in the retail world to blame
+[0:16] psychology or discipline at this point
+[0:18] because they don't understand path
+[0:20] dependence. People are not aware that
+[0:22] your back test is just one realization
+[0:24] of a stochastic process, and trade
+[0:26] ordering matters. Plucking trade returns
+[0:28] from the exact same distribution that
+[0:30] generated your original back test file
+[0:32] can yield vastly different equity paths
+[0:34] if they're sampled in a different order.
+[0:36] This is why every institution and every
+[0:38] serious trader uses Monte Carlo
+[0:40] simulation. Because had you Monte
+[0:41] Carlo'd your strategy before taking it
+[0:43] live, you would know the edge is
+[0:44] fragile. You would have obtained
+[0:45] confidence intervals for the average
+[0:47] return per trade, and noticed that you
+[0:48] couldn't even say with 90% probability
+[0:50] that your strategy makes money on
+[0:52] average per trade. This strategy's per
+[0:53] trade expected value has a 90%
+[0:55] confidence interval of negative .26 to
+[0:57] positive .47. It spans zero, so you
+[1:00] can't say that this strategy is
+[1:02] statistically distinguishable from a
+[1:04] strategy with no edge. Monte Carlo
+[1:05] simulation would have revealed this
+[1:07] before you risked real capital trading
+[1:09] the strategy, and I'm going to teach you
+[1:10] three different methods of Monte Carlo
+[1:12] simulation. The through line between the
+[1:13] three methods I'm going to explain, each
+[1:15] of which has their own strengths and
+[1:16] weaknesses and times that they should be
+[1:17] used and times that they should not be
+[1:19] used, is that Monte Carlo simulation
+[1:20] basically shows you alternate realities.
+[1:22] A singular back test is one realization
+[1:24] of a stochastic process. Monte Carlo
+[1:26] shows you many. This lets you explore
+[1:27] the impact of path dependence on your
+[1:29] equity curve, which impacts drawdown
+[1:31] distributions, final equity
+[1:32] distributions, run-up distributions,
+[1:34] variance, things like this. Constructing
+[1:36] alternate equity paths from a back test
+[1:37] is one way of using Monte Carlo, but we
+[1:39] can use it anytime we need to figure out
+[1:40] probabilities that don't have an
+[1:42] analytic solution. We just need to brute
+[1:44] force repeat over and over again some
+[1:46] sort of draw from a world of outcomes.
+[1:49] In financial engineering, this is really
+[1:50] important when it comes to things like
+[1:52] path dependent options, like an Asian
+[1:54] option or something. And on Quant Pad,
+[1:55] we also use uh Monte Carlo simulation to
+[1:58] treat prop firm account challenges and
+[2:00] funded phases like a structured product,
+[2:02] and model out the probability of you
+[2:04] passing, probability of you getting a
+[2:05] payout, the expected value for
+[2:07] attempting an account challenge, etc.
+[2:09] All of these things that don't have
+[2:10] analytic solutions can be figured out
+[2:11] via Monte Carlo. Okay, the first type of
+[2:13] Monte Carlo simulation is a basic
+[2:15] reshuffling Monte Carlo. These are
+[2:16] extremely powerful. Basically, we take
+[2:18] the distribution of trade outcomes. So,
+[2:20] say these are the original eight trades
+[2:22] in your back test, right? -2.8%, 3.3%,
+[2:25] 2.8%, blah blah blah. And then, from
+[2:28] this distribution, as we construct each
+[2:29] alternative equity path, we sample from
+[2:32] this original distribution of trade
+[2:34] returns uh with replacement. So, we will
+[2:36] randomly draw one of these outcomes. So,
+[2:39] maybe we get the 2.8 from here, and it
+[2:41] goes into the first trade of our
+[2:43] resampled equity path. And then we draw
+[2:45] again randomly. Say we pull the -1.5.
+[2:48] That goes next in our reshuffled equity
+[2:50] path, etc., etc., until we've created
+[2:53] one full equity path using the original
+[2:55] trade distribution from the actual back
+[2:57] test with replacement. And then we do
+[2:59] this thousands or tens of thousands or
+[3:00] hundreds of thousands of times. Now we
+[3:02] can see how the random chance of the
+[3:04] order in which we took each of these
+[3:06] trade returns in our original real
+[3:08] equity path from the back test can
+[3:10] impact the characteristics of
+[3:12] alternative equity paths that had
+[3:13] different luck or random chance in the
+[3:16] order that they drew the returns per
+[3:18] trade. And you can see that this equity
+[3:20] path produces a much larger maximum
+[3:22] drawdown and a slightly different final
+[3:24] account balance. It's the exact same
+[3:25] underlying distribution of trades, so
+[3:27] the distribution of trades with the same
+[3:29] win rate, the same variance, the same
+[3:31] mean, etc., but it can produce a wildly
+[3:34] different equity path because it's
+[3:35] dependent on the order in which these
+[3:37] trades are drawn, and that can be
+[3:38] completely random. You construct an
+[3:40] alternative equity path like this many
+[3:41] times, and you wind up with something
+[3:43] like this, where we can look at
+[3:44] percentiles of outcomes, drawdown
+[3:46] distributions, ending account balance
+[3:48] distributions, and so on. Now, instead
+[3:50] of having a sample size of just our one
+[3:52] back test from our back test file, we
+[3:54] have thousands or tens of thousands that
+[3:56] can tell us a lot more than one
+[3:58] individual back test about how much
+[4:00] money we're at risk, what we [music]
+[4:01] stand to win, what we stand to lose, how
+[4:03] fragile or robust our edge is. In this
+[4:05] particular case, 64% of the reshuffled
+[4:08] paths had a less severe max drawdown
+[4:10] than our real back test path here. Okay,
+[4:13] but you might be thinking about how I
+[4:14] just said that we were going to draw
+[4:15] randomly from the distribution of
+[4:17] original trades with replacement, and
+[4:19] thinking, "Well, actually, trades might
+[4:21] be correlated with the trade that came
+[4:22] before them." It's likely because of a
+[4:24] regime dependence that the ordering of
+[4:25] trades in the original real back test
+[4:27] actually has some meaning, and we can't
+[4:29] just accurately resample completely
+[4:31] randomly from from this distribution
+[4:33] without thinking about what trade came
+[4:35] before the one that we're drawing now.
+[4:36] That's where regime switching Monte
+[4:38] Carlo comes into play. When we think
+[4:39] about the fact that a strategy performs
+[4:41] differently in different regimes, the
+[4:43] distribution of trade returns in a calm
+[4:44] and trending regime might be entirely
+[4:46] different than the distribution of trade
+[4:47] returns when we're trading in a volatile
+[4:49] and choppy regime. We need to model that
+[4:51] in the way that we draw trades from the
+[4:52] original distribution. The first thing
+[4:54] that we do is we classify each trade
+[4:56] into a regime, meaning that in our
+[4:57] original back test file, where we show
+[4:59] trade excursions, each trade's P&L, its
+[5:01] time, entry and exit price, etc., we
+[5:03] need one more characteristic to be
+[5:04] tagged, and that's some sort of regime
+[5:07] algorithm. So, whatever, we define some
+[5:09] sort of algorithm to uh characterize the
+[5:11] regime in which the trade was taken. So,
+[5:13] the trade taken here is tagged with the
+[5:15] choppy and volatile regime tag. The
+[5:16] trade taken here is tagged with the calm
+[5:18] and trending regime tag, etc. So, that's
+[5:20] just one more column in the spreadsheet
+[5:22] file of our back test, you can imagine.
+[5:24] So, now that every trade from the back
+[5:25] test file has been classified into its
+[5:27] respective regime, here we're just using
+[5:28] two different regimes, calm and
+[5:29] volatile, we need to look at the two
+[5:31] different distributions of trades. We
+[5:33] separate the trades out from one big
+[5:34] distribution of all the back test file's
+[5:36] trade returns into two different, or in
+[5:39] your case, however many different uh
+[5:40] market regimes you consider, trade
+[5:42] distributions. So, we look at just the
+[5:45] trades taken in the calm regime, and we
+[5:47] look at the distribution of their
+[5:48] returns here. Then we look at just the
+[5:50] trades taken in the volatile regime and
+[5:52] their return distribution here. So, we
+[5:54] have different distributions separated
+[5:56] out by what regime the trade was taken
+[5:59] in. So, all these trades here, here,
+[6:01] here, here, their returns are in this
+[6:03] distribution. All of these trades taken
+[6:06] in green in the calm regime, their
+[6:08] returns are shown in this distribution.
+[6:10] Okay, so now we know that we're going to
+[6:11] draw some trades from here and draw some
+[6:13] trades from here, just like we did
+[6:15] earlier in the reshuffling Monte Carlo,
+[6:17] in order to construct these alternative
+[6:18] equity paths, right? But how do we know
+[6:20] when to pick from each regime? Do we
+[6:21] just flip-flop back and forth uh 50%
+[6:24] chance of picking from here, 50% chance
+[6:26] of picking from here? No, the first
+[6:27] thing that we need to do is figure out
+[6:29] what the transition probabilities are
+[6:30] between these two uh different
+[6:32] distributions, these two different
+[6:34] market regimes. So, we go and we look at
+[6:37] the transitions from trade to trade
+[6:39] between regimes. So, in the original
+[6:41] back test file, we have calm trade, calm
+[6:43] trade, calm trade, calm, calm, calm,
+[6:45] volatile, volatile, volatile, volatile,
+[6:46] volatile, calm, calm, calm, calm. We
+[6:48] count the transitions between trades
+[6:50] from one market state to the next, and
+[6:52] we have seven calm to calm transitions,
+[6:54] one volatile to calm, one calm to
+[6:57] volatile, and five volatile to volatile.
+[6:59] So, then we construct this transition
+[7:01] matrix. This is just defining the
+[7:03] transitions we observed as percentages,
+[7:05] so that we know what percent probability
+[7:07] we have of transitioning from calm to
+[7:09] calm, or from calm to vol, from vol to
+[7:12] calm, from volatile to volatile. Now
+[7:14] that we have the transition matrix
+[7:15] constructed, we can start sampling
+[7:17] trades, and we know with what
+[7:18] probability to jump between these two
+[7:20] distributions as we construct the
+[7:22] alternative equity paths. So, now that
+[7:23] we have the transition matrix, and we
+[7:25] know with what probability we move from
+[7:27] each distribution to the next, we can
+[7:29] start by randomly selecting which
+[7:30] distribution we're going to start by
+[7:32] picking from, which market regime we're
+[7:33] going to start our resampled equity path
+[7:36] in. So, we essentially just flip a
+[7:37] weighted coin, basically randomly decide
+[7:39] using these probabilities which market
+[7:41] regime we're going to start in. Say we
+[7:43] drew calm for the first one, then we
+[7:45] come to the calm distribution.
+[7:46] Obviously, this is all computerized. I
+[7:48] don't want to give the impression that
+[7:48] this is like something we're doing
+[7:50] manually, but we come to this
+[7:51] distribution, randomly select trade from
+[7:53] here, then we tack it onto the resampled
+[7:55] equity path. So, that could be this
+[7:56] trade right here. Then again, with these
+[7:58] probabilities, we look at what's our
+[8:00] probability of transitioning from calm,
+[8:02] the market regime that we're in right
+[8:03] now, to calm? 87.5%.
+[8:06] To volatile is 12.5%. Let's say randomly
+[8:09] we get the 12.5%, and we transition to
+[8:12] the volatile regime. Then we now pick
+[8:14] from this distribution, pick another
+[8:15] trade, add it onto the resampled equity
+[8:18] path. And so, we have this
+[8:19] >> [music]
+[8:19] >> downward excursion on the equity path
+[8:22] right here. And then we come back here.
+[8:24] What's our chance of going from volatile
+[8:26] to calm? 16.7. From volatile to
+[8:29] volatile? Again, [music] 83.3%. So,
+[8:31] let's say we landed on this one this
+[8:33] time. Then we select again from the
+[8:35] volatile distribution, tack it on. Then
+[8:36] we come again.
+[8:37] >> [music]
+[8:37] >> We're in volatile. What's our chance of
+[8:38] going to calm? 16.7. Back to volatile?
+[8:41] 83.3% chance. Then we randomly select
+[8:43] again. Let's say we got calm, this
+[8:45] 16.7%. Then we come back to the calm
+[8:46] distribution, select a trade, tack it
+[8:48] on, etc. [music] And now we have a
+[8:50] regime aware resampled equity path. Now,
+[8:53] this is going to preserve the clustering
+[8:55] structure of trade returns from
+[8:57] different distributions. And another
+[8:58] thing that we could do is determine this
+[9:00] transition matrix using a longer data
+[9:03] set from the same asset for these
+[9:06] different regime transition
+[9:07] probabilities. Okay, so the two methods
+[9:08] of resampling that I just described,
+[9:10] which are regime switching Monte Carlo
+[9:12] and just reshuffling, might have you
+[9:13] thinking, "Okay, we have some
+[9:15] distribution of trade returns, right?
+[9:17] But what if the real life distribution
+[9:20] of trade returns has fatter tails or
+[9:22] more extreme cases than just what we've
+[9:24] observed in our back test?" Our back
+[9:26] test file might have a discrete
+[9:30] trade distribution that looks something
+[9:31] like this, right? And we're resampling
+[9:33] from here, pick one here, pick one here,
+[9:34] pick one here, etc. But you're thinking,
+[9:36] "What about these fat tails
+[9:40] over here and over here that we didn't
+[9:41] observe in our back test, but that could
+[9:43] appear in real life?" What if we want to
+[9:45] account for these? That's when we use a
+[9:46] parametric Monte Carlo simulation. So,
+[9:48] we basically take our trade
+[9:49] distribution, our discrete trade
+[9:51] distribution, which might look like
+[9:54] >> [music]
+[9:54] >> uh
+[9:57] this, and we fit it to a normal
+[9:59] distribution.
+[10:00] A normal Okay, you're just going to have
+[10:03] to pretend it's a normal distribution or
+[10:04] like a student's t distribution or
+[10:06] something that that fits it nicely and
+[10:09] takes into account these tails that
+[10:11] might not be included in your actual
+[10:12] observed trade data and then we sample
+[10:15] from there from this continuous
+[10:16] distribution here. For the retail
+[10:18] trading use case, this often does not
+[10:20] make that much sense because you're
+[10:21] going to place stop loss orders at
+[10:23] extreme outliers or take profit orders
+[10:26] at extreme outliers. You would never
+[10:27] even be able to sustain a loss, let's
+[10:29] say, over here if it's not observed in
+[10:31] your large backtest file, but sometimes
+[10:34] in other cases this makes more sense.
+[10:36] So, you definitely don't want to use a
+[10:37] parametric approach if your trade
+[10:39] distribution looks something like this.
+[10:40] Like it could not be
+[10:43] accurately represented at all by some
+[10:45] continuous distribution. I just wanted
+[10:46] to talk about this briefly because it
+[10:48] can show you some important things like
+[10:49] the probability of ruin or the maximum
+[10:51] drawdown, maximum run-up, and things
+[10:53] like this that you might not see if
+[10:55] you're not considering these tail events
+[10:56] that could potentially happen but aren't
+[10:58] represented in your actual observed
+[11:00] data. So, now you know about this. Okay,
+[11:03] so hopefully now you understand why a
+[11:05] singular backtest should never ever be
+[11:08] how you validate a strategy or throw
+[11:10] away a strategy because backtests are a
+[11:12] stochastic process, trade returns are a
+[11:14] stochastic process, you're drawing from
+[11:16] a distribution of a random variable, and
+[11:18] path dependence matters. You can have a
+[11:20] positive p&l in your backtest and then
+[11:22] deploy it live and have massive drawdown
+[11:24] or a completely different return
+[11:26] distribution from what you observed in
+[11:28] the backtest. You can observe a positive
+[11:30] p&l in a backtest and then deploy it
+[11:32] live and have results that look nothing
+[11:33] like that backtest equity curve that you
+[11:35] observed before. This is why Monte Carlo
+[11:37] simulation is extremely important for
+[11:39] determining the probability that you
+[11:40] actually have an edge in distinguishing
+[11:42] your strategy's results from just a
+[11:44] random and edgeless strategy. It'll
+[11:46] reveal things about the probabilities of
+[11:48] different terminal p&ls, different
+[11:50] maximum run-ups, maximum drawdowns, etc.
+[11:52] It's extremely important for
+[11:53] understanding the risk that you're
+[11:55] exposing yourself to and the probability
+[11:57] that you actually have a real robust
+[11:59] edge. Monte Carlo simulation can be used
+[12:01] for other things like pricing
+[12:02] derivatives or treating prop firm
+[12:04] accounts, which are super popular among
+[12:06] retail traders as structured products,
+[12:08] to model out your percentage chance of
+[12:09] passing, your percentage chance of
+[12:11] taking a payout, average payout amount,
+[12:13] etc. So, we looked at these different
+[12:15] types of Monte Carlo simulation for
+[12:17] resampling a backtest. We looked at
+[12:19] reshuffling, drawing from the original
+[12:21] trades with replacement to construct
+[12:23] different equity paths and demonstrate
+[12:25] their path dependence. We said the
+[12:27] shortcoming of this is that sometimes
+[12:28] trade ordering is not completely random.
+[12:30] We can't just pull from this
+[12:32] distribution, the original distribution
+[12:33] of trades,
+[12:34] >> [music]
+[12:34] >> completely randomly because trade return
+[12:36] distributions cluster. So, we came over
+[12:39] here to talk about regime switching
+[12:40] Monte Carlo, which takes this into
+[12:41] account. We classify every trade from
+[12:43] the backtest into a regime and tag it
+[12:45] with that. Then we construct different
+[12:47] distributions of trades from different
+[12:48] regimes. Then we get the transition
+[12:51] probabilities between regimes. Once we
+[12:53] have a transition matrix between
+[12:54] different regimes, we know how to
+[12:56] construct a new resampled equity path.
+[12:59] So, we start in one regime by picking at
+[13:01] randomly using these probabilities,
+[13:03] sample from here. Then we look to see if
+[13:05] we're going to change regimes randomly
+[13:07] based on these probabilities, and then
+[13:09] we select again from the new regime that
+[13:10] we might have transitioned to. The
+[13:12] transition matrix tells us with what
+[13:14] probability we draw from each of our
+[13:16] different regime distributions. There
+[13:18] could be more than two. And then our
+[13:20] regime distributions give us the actual
+[13:22] trade returns that we sample from when
+[13:24] we're sampling a trade of this regime
+[13:26] and then we tack it on to our resampled
+[13:28] equity path here. We do this thousands
+[13:30] or tens of thousands, hundreds of
+[13:31] thousands, or millions of times to get a
+[13:33] bunch of resampled equity paths that are
+[13:35] regime aware. This preserves the
+[13:37] clustering of trades that almost every
+[13:39] single trading strategy exhibits because
+[13:40] almost every single trading strategy is
+[13:42] regime dependent. Retail traders already
+[13:44] implicitly know this because they'll
+[13:46] say, "Oh, I don't trade when the market
+[13:48] feels choppy or feels this way or looks
+[13:50] this way." But the regimes that they're
+[13:52] describing often times can actually be
+[13:53] quantified and then could produce really
+[13:56] meaningful and helpful statistics that
+[13:58] would help them trade a lot better.
+[13:59] That's why this is so important and
+[14:01] that's why you need to start doing it
+[14:02] today. If you're even a remotely serious
+[14:04] trader, you already have a bunch of
+[14:06] backtest data, but you're just probably
+[14:08] not doing the right stuff with it to
+[14:10] actually make it meaningful and help you
+[14:12] validate or throw out or optimize a
+[14:14] trading strategy. So, please implement
+[14:17] this.

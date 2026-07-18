@@ -1,0 +1,933 @@
+# I Coded Powell Trades' Strategy | Pt. 1
+# https://www.youtube.com/watch?v=u8zyK0p3Jek
+
+[0:00] Okay, coding trading influencer
+[0:01] strategies and putting them through an
+[0:02] institutional validation pipeline part
+[0:05] Powell trades. This is probably like the
+[0:07] most requested video I've gotten. I
+[0:09] can't post anything without a million
+[0:10] people commenting when is the Powell
+[0:12] video coming. And the reason it's been
+[0:13] taking so long is partially because one,
+[0:15] my job is not making content, obviously.
+[0:17] You guys, I'm so busy. But also because
+[0:19] the first time I tried to do this, I
+[0:21] based my implementation off of his
+[0:22] course, which he made probably like over
+[0:24] a year ago. Somebody sent his course to
+[0:26] me. It's like 25 videos. I went through
+[0:28] it. It's extremely convoluted. I I
+[0:30] I think he kind of like talks about his
+[0:33] course maybe not being the best, like
+[0:34] his old course. It constantly
+[0:36] contradicts itself. It introduces like
+[0:38] three different entry models that are
+[0:40] based on completely different things and
+[0:41] sometimes negate each other. It's just
+[0:43] absolutely like jumbled nonsense sort of
+[0:46] when you actually put it up to a
+[0:47] microscope and try to build it into a
+[0:50] decision tree. No hate to Powell. I'm
+[0:52] not saying that he did this
+[0:53] intentionally to make it difficult to
+[0:54] actually quantify his rules, but that's
+[0:56] just the way that the course came out.
+[0:58] And this was years ago. I'm sure it's
+[0:59] probably not like his current course,
+[1:01] but whatever. We'll see. So, what I've
+[1:02] decided to do for this video in order to
+[1:04] ensure that we can actually do a good
+[1:05] faith implementation of one of his
+[1:07] strategies at least. We're going to code
+[1:09] it this strategy. The setup that made me
+[1:11] 60k in February. This is a 25-minute
+[1:14] YouTube video where he's introducing one
+[1:15] strategy, he says. So, we're going to
+[1:17] build this strategy step-by-step. I'm
+[1:19] going to walk through it with you guys
+[1:20] here so that you see any assumptions I
+[1:22] have to make because I'm fairly certain
+[1:24] that I'll have to make at least some
+[1:25] because some of the stuff in this video,
+[1:26] I'm sure will be kind of ambiguous and
+[1:28] we're going to have to quantify it to
+[1:30] get the rules nailed down. Uh so, I want
+[1:32] you guys to hear any assumptions that I
+[1:33] actually have to make. And then after we
+[1:35] build the strategy and do an initial
+[1:37] backtest, we're going to optimize it in
+[1:39] whatever way makes the most sense once
+[1:40] we see those results. Then we will Monte
+[1:43] Carlo it on some popular prop firms
+[1:44] including the one that he uses, which I
+[1:46] think is Apex or Alpha or something.
+[1:48] We'll figure that out and backtest it on
+[1:50] their rule set to see exactly the pass
+[1:52] probability for uh prop firm funded
+[1:54] account challenges, the net expected
+[1:56] value for funded account challenges,
+[1:58] etc. And then uh from there we can
+[2:01] actually deploy it live on a prop firm
+[2:03] just for fun. I'll keep you guys updated
+[2:05] on TikTok if we if we wind up doing that
+[2:06] after this video. So, let's just get
+[2:09] right into it. We'll start watching this
+[2:10] video, build it out piece by piece, and
+[2:12] I'll walk you guys through any
+[2:13] assumptions we have to make to nail down
+[2:14] the rules.
+[2:16] Hello and welcome back again.
+[2:19] So, today we are going to do a variety
+[2:22] of things. I posted a reel yesterday
+[2:24] asking what you guys want more of on
+[2:28] this channel and I listened to
+[2:31] none of it. Uh we're going to do
+[2:33] something completely different. So,
+[2:34] today I'm going to start off by
+[2:36] backtesting one of these strategies that
+[2:39] has been
+[2:40] extremely consistent and is one of the
+[2:43] simplest strategies that I think you can
+[2:45] use and one of the simplest strategies
+[2:47] that I've used. And the confluence is
+[2:48] everything. We're going to go over it. I
+[2:50] took a trade using this today that I'm
+[2:52] going to break down for you guys at the
+[2:54] end of this video.
+[2:55] So, let's just get right into it. So,
+[2:58] first of all, what do we have here? I am
+[3:00] on the daily time frame marking this
+[3:01] daily rejection block. This is like the
+[3:03] first higher time frame PD array that we
+[3:04] can reverse off of well Okay, let's just
+[3:07] start a running note here of little
+[3:09] ideas that we're jotting down before we
+[3:11] structure them into the actual decision
+[3:13] tree of the strategy. The first thing
+[3:14] that he mentioned is that he's on the
+[3:15] one-day time frame starting what he
+[3:17] refers to as top-down analysis.
+[3:19] Uh and he's marking a daily rejection
+[3:21] block. So, that's this right here. It's
+[3:24] a range-based PD array according to this
+[3:27] uh online influencer you're probably
+[3:29] familiar with named ICT or the inner
+[3:31] circle trader. So, he says that he marks
+[3:34] out this uh daily time frame rejection
+[3:36] block. And I'm wondering, does he also
+[3:39] mark out any and all one-day range-based
+[3:42] PD arrays? So, we'll see if he mentions
+[3:45] an- anything about that like fair value
+[3:46] gaps or breaker blocks or any of these
+[3:48] other ICT confluences or does he just
+[3:51] mark out rejection blocks on the one-day
+[3:53] time frame? Let's see if he says that in
+[3:54] the video.
+[3:56] I'll be down here. So, naturally we can
+[3:58] start looking for some longs, right?
+[4:01] Okay, so he just said naturally we start
+[4:03] looking for some longs. So, that means
+[4:05] that if we have tapped into, but I'm
+[4:08] assuming not
+[4:09] like ran fully through or invalidated a
+[4:12] high time frame meaning one-day time
+[4:14] frame
+[4:15] PD array
+[4:17] rejection blocks until we hear
+[4:18] otherwise. Maybe he'll include some
+[4:20] other ones like fair value gaps or
+[4:21] whatever. That sets our bias, which
+[4:23] direction we're trading in. So, if we've
+[4:24] tapped into one of these, that's our
+[4:25] bias. So,
+[4:27] this sets bias. So, we're going to need
+[4:30] some sort of state that's uh constantly
+[4:33] being emitted from the high time frame
+[4:35] PD arrays like plus one for a positive
+[4:37] bias if we've tapped into something but
+[4:39] haven't invalidated it yet, zero if
+[4:41] we've invalidated and haven't tapped
+[4:42] into something else yet, negative one if
+[4:44] we've tapped into something above and
+[4:46] our bias is negative. So, that's what
+[4:48] I'm thinking so far.
+[4:50] So, this is going to be a fib video.
+[4:52] Mainly, how to use the fib, how to use
+[4:53] the fib to validate levels, entries, all
+[4:56] that good stuff.
+[4:57] Um
+[4:58] Okay, so he says this is going to be a
+[4:59] fib video.
+[5:02] And yeah, let's get into
+[5:04] validate levels, entries, all that good
+[5:06] stuff.
+[5:08] a fib video. Mainly, how to use the fib,
+[5:10] how to use the fib to validate levels,
+[5:11] entries,
+[5:13] Okay, that's giving us a little bit of
+[5:14] context about how he's going to use the
+[5:15] fib later on in this video. Let's wait
+[5:17] for him to give some more detail about
+[5:18] that.
+[5:19] >> all that good stuff.
+[5:20] Um so, yeah. The fib itself, in my
+[5:22] opinion, not a strategy. It is a
+[5:24] confluence and a very consistent
+[5:27] one. Um very simple to use if you know
+[5:29] how to use it. That's what I'm going to
+[5:31] show you right now.
+[5:32] And let my
+[5:34] let me turn that on.
+[5:35] So, we can lock in. All right. So, when
+[5:38] marking the fib, this is what you're
+[5:39] going to do, right? So, we have this leg
+[5:41] up. Um what I'm wait- waiting for here
+[5:42] is just a bearish close. We get that
+[5:44] right there.
+[5:44] >> Okay, so he looks to mark out the fib
+[5:46] once we've tapped into a higher time
+[5:48] frame PD array. He still hasn't said if
+[5:50] that's just rejection blocks that he
+[5:51] plots or if he plots all range-based PD
+[5:53] arrays. But he waits for a leg reacting
+[5:56] to a tap into that PD array. So, what
+[5:58] we'll have to do is have some sort of
+[6:00] state from the high time frame PD
+[6:02] arrays. That state would have flipped to
+[6:04] positive one right here as soon as we
+[6:06] tap into this. And then once we get that
+[6:09] state non-zero, we're going to have to
+[6:11] be waiting for a leg in the opposite
+[6:12] direction. So, we wait for a Yeah, we're
+[6:15] going to need a leg up anytime the high
+[6:17] time frame PD array state is one and
+[6:22] we're going to wait for a leg down
+[6:23] anytime it's negative one. So, we wait
+[6:26] for high time frame PD array state
+[6:30] non-zero,
+[6:32] then leg
+[6:33] reacting to that PD array tap. And this
+[6:37] is on the five-minute time frame, which
+[6:39] is what he's on right now. Okay, and
+[6:41] then he's going to plot the fib I'm
+[6:42] assuming from this pivot low to this
+[6:44] pivot high.
+[6:45] Right? Um and for the fibs to actually
+[6:47] be valid and for us to know what leg we
+[6:49] are trading from, we need this, right? A
+[6:52] higher time frame PD array, some sort of
+[6:53] liquidity that we can sweep and for us
+[6:55] to rebalance in the other direction or
+[6:56] have a target in the other direction
+[6:58] like I do with the market maker buy my
+[7:00] old high, right? Dropping way too much
+[7:02] sauce in this video, but
+[7:04] Also, my
+[7:05] birthday's tomorrow. I'll probably post
+[7:06] this tomorrow. So, my birthday's today.
+[7:07] Woo! So, as a thank you
+[7:10] to you guys, um I'm just going to drop
+[7:11] way too much sauce in this video.
+[7:13] But yeah, anyways. This we get this
+[7:14] bearish close, I can mark my fib. And
+[7:17] this is the area that we have to work
+[7:18] with. Now, what happens here?
+[7:20] Do we tap into discount? No, we don't.
+[7:22] We make a new high. So, what do I need
+[7:24] to wait for? A new bearish close. We get
+[7:26] that right there. Okay, so he's going to
+[7:28] extend up the fib every time we set a
+[7:30] new pivot high on the five-minute, I
+[7:33] guess. Boom. What do you guys
+[7:34] >> Right. Okay, so
+[7:38] or
+[7:39] Okay.
+[7:41] notice about this.
+[7:42] Right? We have a five-minute fair value
+[7:43] gap,
+[7:44] a five-minute breaker.
+[7:46] I'm going to delete
+[7:47] Okay, I wonder if these will be
+[7:49] relevant. Mark
+[7:51] keep this daily cuz it's huge and it's
+[7:53] messy.
+[7:54] And we've left some liquidity right
+[7:56] above
+[7:57] this area, right? We're looking at We're
+[7:59] looking at
+[8:00] Hm. He's also marking five-minute pivot
+[8:03] lows
+[8:05] if high time frame PD array state is
+[8:09] plus one
+[8:11] and highs.
+[8:14] Okay.
+[8:15] If I have the fib, 50% discount, right?
+[8:17] Everyone knows what that is.
+[8:18] And uh we have this five-minute fair
+[8:19] value gap and a breaker. Some of you
+[8:21] guys might know this as a unicorn. I
+[8:22] used to trade these. I don't really do
+[8:23] it anymore.
+[8:24] Um they're too rare to the risk reward,
+[8:27] not a huge fan. But anyways, let's keep
+[8:29] playing this.
+[8:30] Um
+[8:31] So, what ends up happening here is that
+[8:32] we tap into this discounted PD array,
+[8:34] right? We sweep this liquidity into this
+[8:36] five-minute gap into
+[8:37] discount, right?
+[8:39] So, as you can probably see, it edges
+[8:41] the discount itself. Yeah.
+[8:44] Does that mean we can't take the trade?
+[8:45] No. Okay, so
+[8:48] uh
+[8:50] We tap into a discounted PD array and
+[8:53] sweeping liquidity into there. That's
+[8:54] fine, okay. We just added a note about
+[8:57] tolerating not actually going beneath
+[9:00] the discount level or above the discount
+[9:01] level for a long entry or a short entry
+[9:04] respectively because he just said you
+[9:05] don't actually need to move past this
+[9:08] discount level. You can edge it. So, if
+[9:10] that's just a few ticks in either
+[9:11] direction of tolerance.
+[9:13] What we can do though is we can scale
+[9:15] down in time frames. Let's delete the
+[9:16] fib and these other drawings. We can
+[9:19] scale
+[9:21] down in time frame and we can use
+[9:22] one-minute entry triggers to get us into
+[9:25] the trade. All right.
+[9:26] I use these every single day.
+[9:29] Um they are great. They have saved me
+[9:31] from a lot of losses, right? Cuz
+[9:33] sometimes you probably just want to
+[9:34] limit a level. If you're like super high
+[9:36] RR goblin, whatever, you want to limit
+[9:38] everything with like a top and bottom
+[9:39] ticks approach.
+[9:41] This is the second best thing when it
+[9:42] comes to risk reward.
+[9:44] Uh you get You basically use one two
+[9:46] five-minute PD arrays
+[9:47] to um validate an entry idea. And
+[9:50] instead of waiting for a inverse fair
+[9:52] value gap, you just use a rejection
+[9:53] block instead. Your win rate is is to be
+[9:55] lower than a IFVG, but it's going to be
+[9:57] your risk reward is going to weigh up
+[9:58] for it like
+[10:00] tenfold. All right.
+[10:01] So, this is how to play them. I think I
+[10:03] had a video on this already, but let's
+[10:05] go through it anyways. Uh you put your
+[10:06] limit at the beginning of the rejection
+[10:09] block, right? Rejection block gets made
+[10:11] and the very next candle taps into it.
+[10:13] You put your entry there, stop loss
+[10:15] below the rejection block.
+[10:17] And um yeah, not rocket science. This is
+[10:19] just top-down analysis. Start with the
+[10:21] bias.
+[10:22] Go off of, let's say, 5-minute structure
+[10:24] in this in this case, and I use a
+[10:25] 1-minute entry trigger to validate the
+[10:26] idea and get the actual entry. All
+[10:27] right. So,
+[10:29] let's say you missed that one. All
+[10:31] right. Let's try this again.
+[10:33] At this point, we also have some
+[10:34] 15-minute structure we can go off of, so
+[10:36] keep that in mind.
+[10:37] What do we do? We wait for a bearish
+[10:39] close. Mhm, holy pumps.
+[10:42] Right, that's our first bearish close.
+[10:44] We can put our fib there in hopes of a
+[10:46] retrace. Let's see what happens.
+[10:48] Hold on. You just moved the bottom of
+[10:50] the fib from the bottom of the Was it
+[10:53] at the bottom of this full leg, right?
+[10:55] Before? Yeah, it was at the exact bottom
+[10:58] of that leg, and now all of a sudden
+[10:59] you're anchoring the fib to a different
+[11:01] pivot low here.
+[11:03] Why are you doing that? That rule is
+[11:05] completely inconsistent. Right here, we
+[11:07] show the fib anchored at the bottom of
+[11:10] this leg that tapped into this high time
+[11:11] frame PD array, right? And then he
+[11:13] iterates it up once once a new pivot low
+[11:18] is set, right? So, here a new pivot low
+[11:20] is set, right? New pivot low is set, but
+[11:23] he moves only the top of the fib up and
+[11:25] not the bottom of the fib up. Then later
+[11:28] on in the video,
+[11:30] we make a new
+[11:32] leg up,
+[11:34] and he draws a new fib, but instead of
+[11:36] going
+[11:37] anchor it down here, move it up. If we
+[11:40] set a new pivot low and a new pivot
+[11:41] high, we iterate up just the top of the
+[11:44] fib. We move it up to the newest pivot
+[11:46] high, and we don't move the
+[11:48] the base of the fib up to the most
+[11:50] recent pivot low. Instead of doing what
+[11:52] he did just a little bit earlier in the
+[11:53] video, now he's anchoring the fib down
+[11:56] here at this other pivot low and setting
+[11:58] the top of the fib to this pivot high.
+[12:00] That's inconsistent with no explanation.
+[12:03] So, good thing we're not going to have
+[12:05] to do that because we're not going to
+[12:06] miss an entry, obviously, because this
+[12:07] is going to be computerized. We're not
+[12:09] going to have this issue, but I mean,
+[12:10] come on, what is that? Like this is
+[12:12] totally hindsight bias, right? Like
+[12:14] you're in replay mode here. You know
+[12:16] what happened, and now all of a sudden
+[12:17] you're changing the rules that you're
+[12:19] applying to your strategy with no
+[12:21] explanation.
+[12:21] >> in hopes of a retrace. Let's see what
+[12:23] happens.
+[12:25] Makes a new high, gives us a new bearish
+[12:26] close. We can put the
+[12:28] Okay, now we're back to what you were
+[12:29] doing before. We're just moving up the
+[12:31] top of the fib, but not the bottom. So,
+[12:33] why is it different? Is it different
+[12:34] because you
+[12:34] >> high now. know what happens here? All
+[12:36] right.
+[12:38] Can we come down to discount? All right,
+[12:39] we come down to this discount right
+[12:41] there. Okay.
+[12:42] Right, but you wouldn't have come down
+[12:43] to discount had you anchored the fib
+[12:45] down here, but you already knew that cuz
+[12:46] you're in replay mode.
+[12:47] >> So, right, I need you guys to understand
+[12:50] this real quick. So, we're going to do a
+[12:51] little psychology lesson in the midst of
+[12:54] all this.
+[12:55] Okay, I'm going to pause right there,
+[12:56] and we're going to start building a
+[12:57] little bit of this. Let's first build
+[12:59] the 1-day time frame rejection blocks
+[13:02] with state management in Pine Script.
+[13:04] I'm building in Pine Script so that you
+[13:05] guys can set it up, just plug and play
+[13:08] to test it or change it yourself. Let me
+[13:11] build that quickly, test it out in
+[13:13] TradingView, get everything working
+[13:14] nicely, and then I'll explain it to you.
+[13:15] So, we're going to take that,
+[13:17] paste it into TradingView,
+[13:19] and see
+[13:22] what we have so far. Okay, so we have
+[13:24] 1-day rejection blocks plotted here. We
+[13:25] have the states uh coloring the
+[13:28] background of the chart. So, right here
+[13:30] we'd be looking for longs cuz we would
+[13:32] tap down into this active daily
+[13:36] rejection block here. Then we're looking
+[13:38] for longs. So, in
+[13:41] Powell's strategy, we'd be looking like
+[13:43] this. Is this fib set up? Okay.
+[13:47] Uh yeah. So, we'd be
+[13:50] following this leg up, extending,
+[13:52] extending like this until we tap down
+[13:54] and Oh, this is pretty similar to the
+[13:56] case that he gave us till we edge
+[13:58] discount here. Edge discount. Uh and
+[14:01] then we'd be looking for a low time
+[14:03] frame 1-minute
+[14:06] entry trigger.
+[14:07] Um
+[14:09] so,
+[14:11] let's find where that was.
+[14:13] This can be our sort of
+[14:15] area that we're studying for an entry if
+[14:18] one is presented here. Okay, so we would
+[14:20] have had this here order block,
+[14:23] uh and we would have tapped into that,
+[14:26] taken our trade here,
+[14:28] um
+[14:30] the stop here, targeting 5-minute
+[14:33] highs, probably. Maybe targeting uh
+[14:37] market open or targeting these highs up
+[14:40] here.
+[14:41] So, this trade would have been a win.
+[14:43] Okay, now we just need to continue
+[14:45] building out the rest of this. So, the
+[14:46] next thing I suppose
+[14:49] I'm going to build. Let me actually just
+[14:50] check this one more time.
+[14:53] Okay. Interesting.
+[14:56] Okay, yeah. So, it looks like we're
+[14:57] keeping just one rejection block active
+[15:00] at a time. So, as soon as the this
+[15:02] rejection block forms on the next bar,
+[15:04] we stop plotting this one. We want to be
+[15:06] able to consider multiple rejection
+[15:10] blocks
+[15:11] with the same polarity at the same time.
+[15:14] We'd assume
+[15:16] that's what our issue is, isn't it?
+[15:18] Okay, yeah. So, it looks like our
+[15:20] original code only tracks the latest
+[15:23] order block of each polarity, the
+[15:26] bullish or bearish order block. So,
+[15:29] Quant Phi is changing that right now.
+[15:30] This is why it's important to build in
+[15:32] pieces. Guys, you don't want to try to
+[15:34] build something all at once. Break it
+[15:35] into modules if you're building some
+[15:36] sort of stateful strategy and test each
+[15:38] one one by one. Saves you so much time
+[15:40] debugging. Okay, so let's drop the
+[15:43] revised version into here.
+[15:46] Verify that we've solved that problem.
+[15:49] So, I suppose this should Yeah, exactly.
+[15:51] Okay.
+[15:52] There we go. So, that that problem is
+[15:54] solved. I guess it's not really a
+[15:55] problem. It was just a lack of
+[15:56] specificity on my part. So, module one,
+[15:59] the 1-day rejection blocks that emit
+[16:03] states, that part is done. Now, let's
+[16:06] build the next part. Let's
+[16:08] go back to our notepad. What are we
+[16:09] building next?
+[16:11] The
+[16:13] fib I think I'll probably like to build
+[16:15] next.
+[16:16] Um
+[16:19] Okay, so once the high time frame PD
+[16:21] array state is non-zero, right? Then the
+[16:23] 5-minute leg reacting to that tap, we
+[16:27] are extending a fib from the base of
+[16:29] that. Okay, this is going to be kind of
+[16:30] interesting.
+[16:32] How do we want to do this?
+[16:34] As soon as the state flips in like the
+[16:36] positive case, as soon as the state
+[16:38] flips plus one, that means we're in a
+[16:40] high time frame rejection block that's
+[16:42] giving us a bullish bias. So, then we're
+[16:44] going to be monitoring for a swing low,
+[16:47] like a pivot low on the 5-minute time
+[16:49] frame that's made inside of the range of
+[16:53] the rejection block, right? Because we
+[16:54] want pivot low. Then as soon as we get
+[16:56] the pivot low, we anchor the fib there
+[16:59] and start extending it up. I mean, I
+[17:02] guess we could wait until we get a down
+[17:04] close candle to start plotting it, but I
+[17:05] think it would look nicer, and it's not
+[17:07] going to affect the actual logic at all
+[17:08] if we Yeah, okay, I think I know what we
+[17:10] want to do. I'll show you guys in a
+[17:11] second. Okay, so we've built that. Let's
+[17:13] drop it into TradingView.
+[17:16] Oh, right. This is kind of an edge case
+[17:18] I forgot to think about. If we keep
+[17:20] extending up away from the PD array, but
+[17:22] then we never tap down into discount,
+[17:25] what happens? We could theoretically
+[17:26] just extend this forever. You guys
+[17:28] understand what I'm saying? So, if you
+[17:30] tapped down into, let's uh draw this
+[17:33] really quickly, right? So, like if you
+[17:35] had this high time frame PD array, and
+[17:38] then you tapped down into it, right? And
+[17:41] then we draw this fib here from here to
+[17:43] here.
+[17:45] Okay, then you saw Powell was extending
+[17:48] it upwards. If we moved off if that leg
+[17:50] continued up, right? So, then we extend
+[17:53] it upwards. And if this leg came down
+[17:56] beneath the 0.5 level into the discount
+[17:59] level, we would stop extending this fib,
+[18:01] and it would be like considered dormant,
+[18:03] right? Like the code would stop
+[18:04] monitoring it to see if it needs to be
+[18:05] extended up to the next swing high. But
+[18:08] what if we never retrace 50% of the
+[18:12] range of this
+[18:14] leg here, right? Then will we just
+[18:17] continue extending this fib for all
+[18:21] eternity? And it will until the high
+[18:23] time frame PD array state changes, and
+[18:25] then it becomes dormant by default. If
+[18:27] we never tap down into discount here,
+[18:29] um and you see that's what happened here
+[18:32] with this really big one. So, we have to
+[18:34] make an assumption
+[18:37] about when Powell would stop extending
+[18:39] this and stop looking for a trade off
+[18:41] the reaction of some high time frame PD
+[18:43] array. We could use some raw distance.
+[18:45] We could use some multiple of this
+[18:47] range. Like, okay, at no more than one,
+[18:50] two times that range would we ever take
+[18:52] a trade. But then we have the edge case
+[18:54] where we get some really small 1-day
+[18:56] rejection block. We could use some
+[18:58] average true range multiple, maybe if we
+[19:01] want to be volatility dependent. Let's
+[19:03] go back and look at Powell's video and
+[19:04] see if he dress addresses this. I'm
+[19:06] assuming he definitely will not address
+[19:09] this. He should, but he probably
+[19:11] definitely will not.
+[19:11] >> So, what happens here is that we get a
+[19:12] 5-minute entry trigger after tapping at
+[19:15] the discount.
+[19:16] 5-minute entry trigger is better than a
+[19:17] 1-minute, by the way. So,
+[19:20] let's just right there.
+[19:21] >> [snorts]
+[19:22] >> Now, what ends up happening here?
+[19:24] I'll show you guys outside, but
+[19:26] wow, we get stopped out.
+[19:29] That's insane. How could that
+[19:32] All right.
+[19:34] So,
+[19:35] 10:00 a.m. I'm sure you guys already
+[19:38] know why
+[19:39] >> from 24 to 40. Okay.
+[19:42] 2
+[19:44] 24
+[19:45] 4 4 minus 22 24 240 or 240. Okay, so he
+[19:53] lets that get into about a percent
+[19:54] there. He's on the 5-minute.
+[19:57] Mhm.
+[19:58] Okay. Yeah, this seems reasonable to me.
+[20:01] That was just This is kind of an edge
+[20:03] case here where we have this huge pump,
+[20:05] and so we don't even get the smallest
+[20:07] retracement back into here. Seems
+[20:08] reasonable. It's also ensure that we
+[20:10] have the historical ones plotted still
+[20:13] visible so that we can audit what went
+[20:15] on with older ones. Okay, right. So,
+[20:18] boom, we tap down into this high time
+[20:20] frame 1-day rejection block. Then we
+[20:23] initiate a reactionary move to that. We
+[20:26] start moving the other direction. Plot
+[20:28] the fib. It extends up, extends up,
+[20:30] extends up till we come down and tap
+[20:32] into right here, this discount zone. And
+[20:35] down here is where we'd be looking to
+[20:36] take the trade moving that way. We
+[20:38] probably would have used
+[20:40] on the 5-minute fair value gap here as
+[20:43] our entry trigger. Then we would have
+[20:45] taken this trade uh
+[20:48] from right here.
+[20:50] Set this here. Targeted 5-minute high.
+[20:54] Right. Okay, something like that. So,
+[20:55] the next thing we have to build is
+[20:58] detection of these 5-minute entry
+[21:01] triggers. He said 5-minute I don't know
+[21:03] if you guys got that part of the video,
+[21:04] but he said 5-minute entry triggers are
+[21:05] better than 1-minute entry triggers. So,
+[21:07] I guess first we'll build out 5-minute
+[21:10] entry trigger detection. I'm going to
+[21:11] build this and then I'm going to come
+[21:12] back to you guys and explain it. Okay.
+[21:14] Now we've got these plotted. Now we just
+[21:16] need one more state
+[21:19] to be tracked.
+[21:21] Uh I might open a new chat. Uh no, I
+[21:23] won't. Okay.
+[21:25] Now we just need to actually enter and
+[21:28] implement the risk protocol, which was
+[21:29] really simple.
+[21:31] It's basically
+[21:33] just limit at the beginning of the
+[21:37] of at the beginning of the lower time
+[21:39] frame entry trigger range. Stop loss
+[21:41] below it. Take profit at a 5-minute
+[21:43] pivot high or low, depending on which
+[21:45] direction we're trading. So, let's build
+[21:48] that really quickly. What we have right
+[21:49] now
+[21:50] is high time frame rejection block
+[21:53] detection, right? Then we have a state
+[21:55] flip when we tap into one of these high
+[21:57] time frame 1-day rejection blocks,
+[21:59] right? So, like Powell said, now our
+[22:01] bias is bullish as soon as we tap into
+[22:03] this. we're essentially like scaling
+[22:05] down to the 5-minute chart. We start
+[22:07] plotting this fib level that's
+[22:09] extending, extending, extending as price
+[22:10] moves.
+[22:11] And then as soon as we tap down uh
+[22:14] beneath the 0.5 level, we are looking
+[22:17] for a tap into one of these lower time
+[22:20] frame PD arrays. Okay, what I'm electing
+[22:22] to do here is uh Powell says that we're
+[22:25] going to target a 5-minute high or low,
+[22:28] right? But we don't just want to target
+[22:30] the most recent 5-minute high or low. We
+[22:33] want to target the nearest 5-minute high
+[22:35] or low that falls within some viable
+[22:38] range of distance from entry. So, we
+[22:40] don't want to choose a really, really
+[22:42] far away 5-minute high as a target for a
+[22:45] long trade or a really, really close
+[22:46] one. We want to scan just within some
+[22:49] logical range for a 5-minute high that's
+[22:53] within a reasonable distance from entry
+[22:56] and choose that as our target for the
+[22:59] trade. And if there is none, then we set
+[23:01] our take profit at the closer side of
+[23:03] that range. Okay, perfect. Perfect. We
+[23:06] get the long here.
+[23:09] On this uh and then we set our
+[23:13] Mhm.
+[23:14] Why are we setting our take profit here?
+[23:25] Mhm. What's going on here?
+[23:28] Okay, the problem I think we're seeing
+[23:30] here is it looks like we will still
+[23:33] enter off of these range-based 5-minute
+[23:36] PD arrays even if we wick beyond them
+[23:39] because the only
+[23:41] criteria we were using for muting these
+[23:43] entry signals was if we closed beyond
+[23:45] them. Yeah, we need to add a filter
+[23:47] where we're not allowed to immediately
+[23:48] enter off of an order block or a fair
+[23:51] value gap that was just created. We need
+[23:53] to wait for at least one bar after that
+[23:56] in order to enter. Right. Okay. Nice.
+[23:59] This is much better.
+[24:01] Long. Exactly. Okay, guys, if you
+[24:03] remember back to the beginning of the
+[24:04] video when we designated this Take this
+[24:07] off. This as our setup that we were
+[24:09] looking for to make sure that we There's
+[24:11] a perfect Powell setup.
+[24:13] And we wanted to make sure that we
+[24:14] nailed this, right? This fair value gap.
+[24:17] Enter off of here. Remember, we circled
+[24:19] it, pointed it upwards. We wanted to
+[24:21] say,
+[24:21] "This is a perfect entry."
+[24:23] This should be caught by
+[24:25] our programmatic implementation. Okay,
+[24:27] we've got that caught. We have figured
+[24:29] out the spam entries and exits.
+[24:32] We get this long off of Okay, we tap
+[24:35] into this 1-day rejection block. That
+[24:39] sets our bias. If you guys can see the
+[24:41] background here green, looking for a
+[24:42] long trade. Then we start extending the
+[24:44] fib up.
+[24:47] Tap into this
+[24:49] fair value gap here.
+[24:51] Tap into that
+[24:53] for this trade here.
+[24:55] Okay.
+[24:58] That looks correct to me.
+[25:01] Uh
+[25:02] Now what the hell is happening here?
+[25:04] Short off of this.
+[25:07] That one's a being loss.
+[25:11] Short off of this. Take another loss.
+[25:14] Yeah. Just trying to get short all
+[25:16] through here.
+[25:18] These are valid entries based on what
+[25:20] Powell has described.
+[25:22] Ironically, the only thing is that I'm
+[25:24] sure Powell has some rule where he only
+[25:26] takes a specified number of trades a day
+[25:29] at maximum.
+[25:31] So, we'll have to build that.
+[25:33] Shorting off of here.
+[25:36] Okay.
+[25:38] Interesting.
+[25:40] Yeah, we're going to have to build some
+[25:41] rules for not overtrading.
+[25:45] Wondering if we should also implement a
+[25:47] small
+[25:48] buffer that we can tune to allow the
+[25:50] stop loss to be a little bit further
+[25:52] past
+[25:54] the edge
+[25:55] of that 5-minute PD array that we enter
+[25:57] off of. I want to see what exactly
+[25:59] Powell is saying. Powell is doing
+[26:01] exactly that. Okay, we'll build that.
+[26:02] Okay, so we've got that built.
+[26:04] We have that built and implemented. We
+[26:05] can look at the most recent trading day.
+[26:06] We took three trades here. So, we took a
+[26:07] short here. It looks like we tapped up
+[26:08] into this daily rejection block. That
+[26:08] set our bias state to negative looking
+[26:09] for short trades. Then we started
+[26:10] extending this fib, extending this fib.
+[26:11] We tapped down into discount. We came up
+[26:12] here, tapped into discount. Uh then we
+[26:12] created this 5-minute fair value gap
+[26:13] that we tapped up into. That was our
+[26:14] 5-minute entry trigger. We set the stop
+[26:15] loss just beyond the far edge of the
+[26:16] fair value gap and then set our take
+[26:17] profit at recent 5-minute uh pivot high
+[26:18] or low. Which was there. We could get
+[26:19] more aggressive, maybe set it down
+[26:19] there.
+[26:20] We can experiment with that in a second
+[26:22] uh
+[26:22] setting the minimal R multiple to
+[26:24] something higher.
+[26:25] Then we took this trade after down into
+[26:28] daily block daily block. Um we started
+[26:33] extending our fib. Tapped down into
+[26:36] discount and into this right here, this
+[26:40] uh 5-minute fair value gap. Tapped into
+[26:42] there.
+[26:43] Put the stop loss just below the far
+[26:45] side of the bullish 5-minute fair value
+[26:47] gap. Set our profit at these 5-minute
+[26:50] highs.
+[26:51] Um exited here for a win again. And then
+[26:55] we took another long trade off of this
+[26:58] of a 5-minute fair value gap as we were
+[27:01] in this daily rejection block as we
+[27:03] tapped into this daily rejection block
+[27:05] for a second time. Um and then we
+[27:07] targeted these 5-minute highs, I
+[27:09] suppose, up here. And that's that for
+[27:12] the most recent trading day. a little
+[27:14] bit of a regime analysis on the Powell
+[27:16] strategy 5-year test file
+[27:19] was able to do this for us. So, sample
+[27:22] optimized
+[27:23] filter which meaningfully
+[27:26] our profit
+[27:27] and
+[27:28] very reduced maximum
+[27:31] sample. You can see here. In sample
+[27:34] our net
+[27:35] was 16,685
+[27:37] dollars. And once we applied the filter
+[27:40] we were
+[27:41] in the sample. We
+[27:43] the win rate by about 10%. Uh the
+[27:46] average return we increased to 93
+[27:49] dollars 68 dollars. And our maximum
+[27:52] drawdown
+[27:53] from negative 25,750
+[27:56] dollars. Then out of sample, we
+[27:58] maintained that good performance. Cut
+[28:01] off maximum drawdown super meaningfully.
+[28:04] So, out of sample raw our maximum was
+[28:07] negative
+[28:08] 16,000 dollars. And then applied the
+[28:11] regime was only about 2,000 dollars
+[28:14] average return
+[28:16] went up to 700 dollars 55 dollars. And
+[28:19] our rate increased
+[28:21] about a percent here. So, our net PNL
+[28:24] increased about 4,000 dollars. Once we
+[28:26] applied that regime filter. So, running
+[28:28] reshuffling Monte Carlo optimized the
+[28:32] filtered sample back of
+[28:35] we
+[28:36] optimized
+[28:37] We have a 22.42% chance passing when we
+[28:40] run
+[29:45] >> just optimized a second ago, we have a
+[29:47] 22.42%
+[29:48] chance of passing when we run it on a
+[29:50] Topstep $150,000 account. Then, once
+[29:52] we've passed an account, we have about a
+[29:54] 25% chance of making a payout with a
+[29:57] $206
+[29:59] net expected value when you net out the
+[30:02] challenge fees per account. Mean payout
+[30:04] value is about $1,100, and the average
+[30:06] amount of time to a payout after passing
+[30:08] is about 10 days. The most likely case
+[30:10] when approaching a prop firm account
+[30:11] challenge with this Powell strategy
+[30:12] implementation that we've just built is
+[30:14] timing out the strategy, actually timing
+[30:16] out. So, that's about a 55% chance.
+[30:18] That's because this strategy trades so
+[30:20] infrequently, or wins so infrequently, I
+[30:22] should say. It has a low win rate with
+[30:24] winners that are much larger than the
+[30:26] losers, but that means that sometimes it
+[30:28] can be a while before you see a
+[30:30] substantial run-up that would pass a
+[30:32] prop firm account challenge for you. So,
+[30:33] is this a strategy that technically
+[30:35] makes money over time on prop firm
+[30:37] accounts? Yes, it is. We have positive
+[30:39] net expected value on funded account
+[30:41] challenges with this strategy. Is it
+[30:42] something that we'd want to trade in
+[30:44] real life with live capital? Definitely
+[30:46] not. And I'm sure people who have
+[30:47] rigorously studied Powell's strategy
+[30:49] will have some things to say about our
+[30:50] implementation here. I'm sure there are
+[30:52] some things that he omitted in that
+[30:53] video. There were some things that we
+[30:55] had to make assumptions on in order to
+[30:57] actually nail down the rules because he
+[30:59] was ambiguous or contradictory at
+[31:01] points. But there you go, guys. That's a
+[31:03] first pass at Powell's strategy that he
+[31:05] covers in this video here. If you want
+[31:07] to see the code in Pine Script or the
+[31:09] Python script that we used to find the
+[31:10] optimal regime filter, or you think that
+[31:12] I did something wrong and you want to
+[31:13] edit it, you can do all of that See all
+[31:15] of that inside of Quant Pad. I will
+[31:16] upload it to the social library a little
+[31:18] bit later. When I initially started
+[31:19] building Powell's strategy based on his
+[31:21] old course, I actually built a different
+[31:23] strategy that's sort of inspired by his,
+[31:25] but is not exactly the same as his.
+[31:28] That's this one right here, and I think
+[31:29] I would prefer deploying this on a prop
+[31:31] firm funded account if we were actually
+[31:33] going to do that. I will probably keep
+[31:35] you guys updated on TikTok,
+[31:37] um, if we're going to deploy one of
+[31:40] these live on a prop firm account. I
+[31:41] don't know. You guys can let me know in
+[31:42] the comments if you actually want to see
+[31:43] me do that. Um, let me just
+[31:46] drag this in. So, here's what the other
+[31:48] Powell inspired strategy looks like
+[31:50] deployed on the same Topstep 150K
+[31:52] accounts. Um, you can see much higher
+[31:55] net expected value, uh, a little bit
+[31:57] longer time to first payout, but greater
+[31:59] mean payout, and much greater payout
+[32:01] probability and pass probability. So, I
+[32:04] feel like this would be a little bit
+[32:04] more interesting to actually deploy on
+[32:07] the, uh, Topstep accounts or any funded
+[32:10] account if we're going to do that, but
+[32:11] you guys can let me know in the
+[32:12] comments. I'm not going to do it right
+[32:13] now. I'll I'll read the comments and do
+[32:15] whatever you guys want me to.

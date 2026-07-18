@@ -158,7 +158,7 @@ Skip the day (or the signal) if **any** of these are true:
 
 ```
 Date: ____
-NWOG: unfilled above / below / filled / inside
+NWOG: price above / inside / below · gap unfilled / FILLED (both — filled gap can still be S/R)
 Week bias: L / S / none
 Day bias: L / S / none
 Script arm?: Y / N · Cont / Judas · grade ____ · stop pts ____ · plan RR ____
@@ -167,8 +167,10 @@ Take or skip: ____
 Outcome: WIN / LOSS / no fill / skipped · R ____
 Why: ____
 ATR(14) on 1m at entry: ____ pts        ← May addition (stop/ATR study)
+Entry time (NY): ____                   ← for the 9:50–10:10 window question
 Session: OR size ____ · first 30m dir ____ (census only)
 NWOG tap? gap size ____ · gap age ____ d · tapped edge/CE/far ____   ← only if NWOG idea
+News: auto-matched in the app from the calendar — glance at F7 NEWS to confirm it agrees with FF
 ```
 
 ---

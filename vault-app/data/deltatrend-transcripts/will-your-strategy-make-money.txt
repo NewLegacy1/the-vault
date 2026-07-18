@@ -1,0 +1,297 @@
+# Will Your Trading Strategy MAKE MONEY?
+# https://www.youtube.com/watch?v=MCnFrUxZARU
+
+[0:00] win rate or average RR. Which is a
+[0:02] better metric to evaluate your trading
+[0:03] performance? Well, for some reason,
+[0:05] these seem to be the only two metrics
+[0:07] considered by social media traders to
+[0:08] evaluate performance. And it's really
+[0:10] silly. They don't do the job of expected
+[0:12] value, which answers the question of
+[0:13] whether or not you make money in a
+[0:15] singular number. But then they also
+[0:16] don't do the descriptive job of some
+[0:18] sort of Monte Carlo simulation,
+[0:20] something that actually explains path
+[0:21] dependency and volatility of equity
+[0:23] paths and draw down. So, let me explain
+[0:25] these two metrics so we can get out of
+[0:26] this weird, really unhelpful middle
+[0:28] ground that people are so hung up on
+[0:30] with win rate and average RR. The first
+[0:32] metric, expected value, explains the
+[0:34] average outcome of some random variable
+[0:36] over a bunch of repetitions. In the
+[0:38] context of trading, that random variable
+[0:39] is most often the return per trade. So,
+[0:41] over very many trades, what's the
+[0:43] average return per trade that I'm going
+[0:45] to achieve? That's what the expected
+[0:46] value tells us. If my expected return
+[0:48] per trade is negative, that means that
+[0:50] over very many trades, the average
+[0:52] return per trade will converge to that
+[0:54] negative number. In other words, over a
+[0:55] long time period, I will not make money.
+[0:57] If my expected return per trade is
+[0:59] positive, that means that over very many
+[1:01] trades, I expect to make money. If my
+[1:02] expected return per trade net of fees is
+[1:05] zero, that means that over very many
+[1:06] trades, I expect to neither win nor lose
+[1:08] money. Now, just because our expected
+[1:10] value is zero or negative, does that
+[1:12] mean that we can never be in profit?
+[1:14] Definitely not because of variance. In
+[1:16] the same way that if you assigned a
+[1:17] value of plus one to a heads coin flip
+[1:19] and minus one to a tails coin flip, the
+[1:21] expected value of flipping the coins
+[1:23] many times over would be zero. But
+[1:24] nonetheless, over many coin flips,
+[1:26] you're bound to hit winning streaks and
+[1:28] losing streaks where you look like
+[1:29] you're in profit or you look like you're
+[1:30] losing even though the expected value is
+[1:32] zero. This is starting to get at the
+[1:33] idea of why path dependence is important
+[1:35] and we're going to get to that in a
+[1:36] second, but first let me just give you
+[1:37] the formula for expected value. Okay. So
+[1:39] really what we're doing when we find the
+[1:40] expected value of a discrete random
+[1:42] variable like return per trade is we're
+[1:44] summing everything the variable could be
+[1:46] times the probability of it being that
+[1:47] thing. So for trading we can simplify
+[1:49] that. We have our wins and we have our
+[1:51] losses. So we do this. We just take the
+[1:53] probability of a win. So that's your win
+[1:55] rate times the average return per
+[1:57] winning trade. So you bucket all your
+[1:58] winning trades together. Find the
+[2:00] average winning trade value and you
+[2:02] multiply those together minus the
+[2:04] probability of you losing. So that's
+[2:05] just the inverse of your win
+[2:07] probability, your win rate. And then you
+[2:08] multiply that by the average value of a
+[2:10] losing trade for you. Okay, cool. So,
+[2:12] you found your historical expected
+[2:13] value. That tells you in one number
+[2:15] whether you expect to make or lose money
+[2:17] over time. But that's really not that
+[2:18] descriptive. We can address that problem
+[2:20] by bootstrapping confidence intervals
+[2:22] for our expected value. And maybe we'll
+[2:23] do that in the next video. But let's get
+[2:25] to path dependence. Because when traders
+[2:26] on social media get hung up on win rate
+[2:28] and average RR, what they're trying to
+[2:30] do is use them as proxies for answering
+[2:32] these other questions. Like the
+[2:33] questions of how volatile is your equity
+[2:35] path? How much draw down can I expect to
+[2:37] incur trading this strategy? How likely
+[2:39] is it that after trading this strategy
+[2:41] for say 40 trades, will I be net
+[2:43] negative? You might be wondering, if I
+[2:44] trade this strategy for 1,000 trades,
+[2:46] what's the probability of me incurring a
+[2:48] draw down of more than 15%. If I trade
+[2:51] this strategy for one year, what's the
+[2:52] distribution of final account balances I
+[2:54] can expect? For the retail day traders,
+[2:56] if I deploy this strategy on a prop firm
+[2:58] account, what are the chances that I'll
+[2:59] hit my draw down limit before I hit the
+[3:01] profit target? The thing that all those
+[3:02] questions have in common that isn't
+[3:04] answered by win rate or average RR or
+[3:06] even expected value is that they're path
+[3:08] dependent. So they depend on the
+[3:09] ordering of trades which can't be backed
+[3:11] out from this what is really collapsed
+[3:13] information about the return
+[3:14] distribution. So we have to look at the
+[3:16] return distribution. This distribution
+[3:18] is where all the information comes from
+[3:20] before we collapse it into these other
+[3:22] statistics. Okay. So your win rate is
+[3:24] just what you get when you sum how many
+[3:27] occurrence how many observations do we
+[3:28] have on this side of the distribution?
+[3:30] How many observations do we have on this
+[3:31] side of the distribution? How many
+[3:32] trades did you have a positive return?
+[3:34] How many negative return? Your expected
+[3:36] value is just the mean
+[3:39] of this distribution. Okay, but the key
+[3:41] to answering all of these much more
+[3:44] complex problems, right? Like how much
+[3:45] draw down am I likely to incur? What's
+[3:47] the distribution of final account
+[3:49] balances after this many trades or this
+[3:51] many days? If I approach a prop from
+[3:53] account challenge with this, how likely
+[3:54] am I to pass? That all comes from
+[3:56] resampling from this distribution in
+[3:58] simulation. That's how we introduce
+[4:00] randomness to the ordering of trades and
+[4:02] explore other outcomes and define these
+[4:04] probabilities of more complicated
+[4:05] scenarios. We run a simulation where we
+[4:07] construct these Monte Carlo equity paths
+[4:10] by plucking one trade randomly out of
+[4:12] this distribution with a replacement and
+[4:14] adding its return here to the equity
+[4:16] path. Okay? And then we select another
+[4:18] one. Maybe we got this one over here.
+[4:19] Boom. Maybe we got this one here. Boom.
+[4:22] This one here. And then we've
+[4:24] constructed one alternative equity path
+[4:25] here. And then we do it thousands more
+[4:27] times. tens of thousands, hundreds of
+[4:29] thousands, millions more times. And now
+[4:31] we can ask all sorts of probabilistic
+[4:33] questions. We can find the probabilities
+[4:34] of achieving any ending account balance
+[4:36] after a certain number of trades or a
+[4:38] certain number of trading days. We can
+[4:39] find the probability of incurring any
+[4:41] amount of draw down or any amount of
+[4:43] runup a certain number of trades or days
+[4:45] into trading the strategy. We can
+[4:46] simulate barrier problems like a barrier
+[4:48] option or a prop from account challenge
+[4:50] and find our exact probability of
+[4:51] passing. So this is really the
+[4:53] uncolapsed information from a back test
+[4:55] or a list of historical trades and it
+[4:57] explicitly answers these questions that
+[4:59] people are kind of trying to proxy with
+[5:00] these metrics like win rate and average
+[5:02] RR that are so popular and so often
+[5:05] cited on social media for some reason.
+[5:07] So there is some more technique to
+[5:08] resampling trades, Monte Carlo
+[5:10] simulation and bootstrapping your
+[5:11] statistics. But I'm sure you can find a
+[5:13] lot of that information on YouTube or in
+[5:14] textbooks. If you happen to use Trading
+[5:16] View for your back testing, either in
+[5:18] replay mode or by using the strategy
+[5:20] back tester for Pinescript, then
+[5:21] QuampPad already has all of this set up.
+[5:23] But I don't want to discourage you from
+[5:24] doing the research yourself and building
+[5:26] a Monte Carlo simulation yourself, maybe
+[5:28] with the help of AI. On the topic of
+[5:29] Quampad, I wanted to give a small
+[5:30] update. As you guys know, it's still in
+[5:32] public beta, which means it's not
+[5:33] finished yet. The purpose of this phase
+[5:34] is letting just a few users try it out
+[5:36] and figuring out what they like, what
+[5:38] they don't like, and what they want
+[5:39] built. The idea is to collect all this
+[5:41] information really early on from people
+[5:43] who are actually using the product. And
+[5:44] then that steers the road map and
+[5:46] decides where we're allocating money to
+[5:47] actually build things. So here's what I
+[5:49] noticed. A lot of people want the
+[5:50] strategy building workflow to be
+[5:52] allin-one. They don't want to have to go
+[5:53] from page to page and start new
+[5:55] conversations. They want the AI to know
+[5:57] everything from start to finish. They
+[5:59] want to be able to ideulate on the
+[6:00] strategy with the AI, then pull in
+[6:02] market data and start doing research and
+[6:04] collecting actual data. Then they want
+[6:06] to be able to prototype the strategy
+[6:07] maybe in Python or Pinescript or other
+[6:09] platform specific purpose-based
+[6:11] languages which are coming later. And
+[6:12] then they want to be able to back test
+[6:14] the strategy. Get a back test file of
+[6:16] any kind and then not have to do the
+[6:18] analysis of that back test by
+[6:19] themselves. They want to be in the exact
+[6:21] same place with the AI and be able to
+[6:23] drag that back test file in so the AI
+[6:25] can see not only the strategy that
+[6:26] they've prototyped and the entire
+[6:28] conversation they've had about
+[6:29] ideulating on the strategy and also the
+[6:31] market research they've done, but now
+[6:32] the AI can also see that back test file.
+[6:35] This is such an exciting direction for
+[6:36] the platform because that's going to be
+[6:37] absolutely incredible. It presents some
+[6:39] unique and actually pretty new
+[6:40] engineering challenges because the AI
+[6:42] has to be able to manage a virtual file
+[6:44] system. It needs to be able to see, read
+[6:46] from, write to, lint, etc. multiple
+[6:48] files at the same time. I'm not going to
+[6:50] disclose any of the technical details of
+[6:51] the approach we're taking to that. But
+[6:53] what I will say is I have brought in top
+[6:55] talent. Like I said, this is a
+[6:56] relatively new engineering problem to
+[6:58] solve and not many people are super
+[6:59] super well-versed in it. So I got in
+[7:00] contact of a handful of senior engineers
+[7:02] who have years of experience in this
+[7:04] exact field which itself is only a
+[7:06] couple years old. So that was very
+[7:07] difficult. We hired the one best fit for
+[7:08] the job. So, he's now working with us at
+[7:10] Quantad. As of this point today, I think
+[7:12] a rough timeline might be 5 to 6 weeks
+[7:14] from now till we ship the actual
+[7:15] production ready version. But, this is
+[7:17] going to be absolutely incredible. I am
+[7:19] so grateful for all of the feedback from
+[7:21] the public beta because this has
+[7:22] completely steered the direction of the
+[7:24] product. So, essentially what the AI
+[7:25] component of the platform is going to
+[7:26] become is an online AI powered IDE
+[7:29] infused with market data at no
+[7:31] additional cost to users and specific
+[7:33] expertise in all of these niche
+[7:35] scripting languages for all of these
+[7:36] platforms. everybody uses like Trading
+[7:38] View or Ninja Trader. And that'll be in
+[7:40] addition to the existing community
+[7:41] library aspect where people are able to
+[7:43] collaborate on research or scripts. And
+[7:45] there's a small handful of other really
+[7:46] cool things that I'm going to keep in
+[7:47] the vault until we get a little bit
+[7:48] closer to launching those. But I just
+[7:50] wanted to give this update mainly to
+[7:51] people who are or were beta users of
+[7:53] Quampad and just say thank you so much
+[7:55] for all of the feedback and shaping the
+[7:57] product. I'll check in with another
+[7:58] product update in probably a month or a
+[8:00] month and a half once we've launched
+[8:01] this real kind of an overhaul. And of
+[8:03] course, shortly thereafter, it'll be
+[8:05] really, really exciting to move out of
+[8:06] public beta with the real finished
+[8:08] product. So, to every current and past
+[8:09] Quantpad beta participant, thank you so
+[8:12] much for all of the feedback. Thank you
+[8:13] for using things. Thank you for breaking
+[8:15] things. And most of all, thank you for
+[8:16] being one of the people who wants to
+[8:17] come in early when you know not
+[8:19] everything is finished and give the
+[8:20] input that's going to turn Quampad into
+[8:22] the best tool for all of

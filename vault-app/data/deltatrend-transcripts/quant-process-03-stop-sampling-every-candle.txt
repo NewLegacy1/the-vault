@@ -1,0 +1,345 @@
+# STOP Sampling EVERY CANDLE (The Quant Process 03)
+# https://www.youtube.com/watch?v=Zu4sL5u-WyU
+
+[0:00] So you're building a trading strategy
+[0:01] and the idea is to trade off of some
+[0:02] sort of event. So whether that's a
+[0:04] breakout, some sort of news drop,
+[0:06] earnings release, macroeconomic event,
+[0:09] >> [music]
+[0:09] >> uh some sort of liquidity anomaly,
+[0:11] anything. So the general idea is that
+[0:13] you measure outcomes of that event which
+[0:16] can differ from event to event. The same
+[0:18] exact event can produce different
+[0:20] outcomes each time. So then you
+[0:21] contextualize those outcomes with
+[0:23] different features that you think might
+[0:25] play into why the outcomes differ. So
+[0:28] maybe that's like the time of day or the
+[0:30] day's relative volume or other features
+[0:32] that have to do with that particular
+[0:35] event that happened. Then you use a
+[0:36] computer to try to quantify and
+[0:38] understand that multi-dimensional
+[0:39] relationship and build a model that
+[0:41] tells you when the event will have
+[0:42] certain outcomes. From there, you design
+[0:44] the rest of the strategy. So signal
+[0:46] processing and then actually placing
+[0:47] bets [music] and managing those bets. So
+[0:49] that's the risk protocol. And then you
+[0:50] test and deploy it. But how do you know
+[0:52] which events to base your research
+[0:54] around in the first place? These are
+[0:55] called event defining features and
+[0:56] they're what this video is about. In the
+[0:58] last video, we did an overview of
+[0:59] feature engineering and we described
+[1:01] event defining features briefly. We
+[1:03] defined contextualizing features which
+[1:05] are meant to color the events that
+[1:07] actually occur and try to describe why
+[1:09] their outcomes differ from occurrence to
+[1:12] occurrence. Then we also talked about
+[1:14] outcome features or ways of measuring
+[1:15] outcomes or labels. In this video, we're
+[1:17] going to talk explicitly about the first
+[1:19] type of feature event defining features.
+[1:21] So, what bars are actually worth
+[1:22] considering events? Why is it important
+[1:24] to have good events and how do we build
+[1:26] an event defining feature and then we'll
+[1:28] go through a couple examples. The job of
+[1:29] an event defining feature is to say that
+[1:31] this timestamp is a decision point and
+[1:34] we're going to include it in the
+[1:35] experiment and do research around it. So
+[1:37] when we sample at random times instead
+[1:38] of actually defining events, if we just
+[1:40] try to forecast future price or a
+[1:42] certain outcome at every single bar,
+[1:44] we're just trying to forecast noise and
+[1:45] we're inevitably going to have really
+[1:47] low accuracy. The entire point of
+[1:48] defining events is so that we try to
+[1:50] model something that actually has a
+[1:51] learnable outcome. So if we try to model
+[1:53] the future price or some sort of other
+[1:56] outcome like a double barrier or
+[1:57] something of every single bar throughout
+[1:59] the day when we have no information,
+[2:00] we're just trying to forecast normal
+[2:02] intraday price movement with no sort of
+[2:04] catalyst. If we define events as some
+[2:06] specific like micro structure anomaly,
+[2:09] then maybe we can forecast what usually
+[2:11] happens after that based on some other
+[2:12] contextualizing features. If we define
+[2:14] an event as some sort of news release,
+[2:16] maybe we can use other contextualizing
+[2:17] features as confluences to try to
+[2:19] forecast the outcome of that. We need to
+[2:21] tread the line though between defining
+[2:22] events that are too frequent to the
+[2:24] point where we're just forecasting noise
+[2:26] because it's not actually an informative
+[2:27] event or defining events that are too
+[2:29] infrequent like once every year where
+[2:31] we're not going to have a reasonable
+[2:32] sample size to actually do our
+[2:33] experiment. Okay, let's think of some
+[2:34] examples of events just so that you can
+[2:36] get an idea what might constitute an
+[2:38] event defining feature. We could have
+[2:39] something like a breakout candle which
+[2:40] as you know is just an expansion through
+[2:42] a level that we think is significant. We
+[2:44] could have a sweep of a prior session
+[2:45] high or low like we used in the last
+[2:47] video. We could have something like a
+[2:48] new day opening gap, a new week opening
+[2:50] gap. We could have something like uh
+[2:52] volatility or regime based events. So
+[2:55] something like a volatility spike or a
+[2:58] volatility compression and then
+[2:59] expansion. We could have micro structure
+[3:01] based events like the ones that I
+[3:02] defined in my Tik Tok video on trading
+[3:04] level three data. We could consider
+[3:05] crosset events like spread deviations
+[3:07] and things like that. We can consider
+[3:09] news, something that has nothing to do
+[3:10] with the data on the chart or in the
+[3:12] order book. So something like earnings
+[3:13] or CPI or FOMC. [music]
+[3:15] Generally speaking, just like any input
+[3:17] in a trading model, the better you
+[3:19] interpret the information or the harder
+[3:21] the information is to find one of those
+[3:24] two things, the more likely you are to
+[3:26] find an edge. That obviously doesn't
+[3:27] mean you should go looking for the most
+[3:28] niche event that you could possibly come
+[3:30] up with because in that case, it's
+[3:32] probably not anything genuinely [music]
+[3:33] informative, but it does mean that you
+[3:35] should actually try to think of
+[3:36] something deeper than just some like
+[3:38] canonical example like some of the ones
+[3:40] that I've given here. Or if you do
+[3:41] choose some popular event defining
+[3:43] feature, of course you have to build a
+[3:45] better model around it. So you either
+[3:46] have to contextualize it with better and
+[3:48] harder to obtain data or you have to
+[3:51] interpret and and back out the
+[3:53] relationship between that data better
+[3:55] than other people are. The point is it's
+[3:56] either better data or better
+[3:58] interpretation for [music] you. For HFT
+[4:00] firms, it can be better execution, but
+[4:02] for us it's one of those two things in
+[4:03] 99% of cases. So in the previous video,
+[4:06] we looked at a simple event defining
+[4:07] feature which was a sweep of a previous
+[4:09] day high or low. I think this time I
+[4:11] want to show a classic example in
+[4:12] quantitative finance which is just a
+[4:14] cumulative sum. So we're basically just
+[4:15] summing the returns per candle. One
+[4:17] bucket for positive, one bucket for
+[4:19] negative. And when one bucket is big
+[4:20] enough, we say that something
+[4:22] non-trivial just happened and it's worth
+[4:24] marking as an event. It's basically just
+[4:25] a movement detector that tells us enough
+[4:27] movement has occurred in one direction
+[4:28] for it to be considered an event. So we
+[4:30] coded this once in Pine Script just to
+[4:32] visualize it nicely on a trading view
+[4:33] chart and then we also coded the exact
+[4:35] same thing in Python just [music] to get
+[4:36] some statistics. Now, when you see this,
+[4:38] these signals are not meant to be
+[4:39] considered a trading strategy. These are
+[4:41] completely raw, unfiltered,
+[4:43] non-ontextualized. [music]
+[4:45] They're not even signals. They're just
+[4:46] events. But I posted a short video a
+[4:48] couple days ago about event defining
+[4:50] features. And people just thought that
+[4:51] [music] the triangles on the chart mean
+[4:53] that we think we have a trading
+[4:54] strategy. That's not true at all. The
+[4:56] goal here, like we said, is just to
+[4:57] define an event that is non-trivial,
+[5:00] something that might have a learnable
+[5:01] pattern if we contextualize it with
+[5:03] enough information and learn a
+[5:05] relationship. These signals are not us
+[5:06] thinking that we have something with
+[5:08] predictive value. It's just the start of
+[5:09] an experiment. We're just defining
+[5:11] what's in scope for a study that we're
+[5:13] about to do instead of sampling every
+[5:14] bar randomly and trying to forecast
+[5:16] noise. Okay. So, when we pull this up on
+[5:18] a Bitcoin 1-day chart, you can kind of
+[5:20] get an idea of when this signal fires.
+[5:22] So, instead of using a fixed threshold
+[5:24] for the cumulative sum, we're using an
+[5:26] average true rangebased one. So, that
+[5:28] means the event's only going to fire
+[5:29] when cumulative movement exceeds some
+[5:31] volatility normalized threshold. So,
+[5:33] it's a movement that's big relative to
+[5:35] what's been happening recently. The
+[5:36] reason we're doing this is because in a
+[5:38] high volatility regime, you would just
+[5:39] get spammed with events. And we just
+[5:41] want to normalize that so that we get
+[5:42] events that are more evenly distributed.
+[5:44] So again, these are not buy and sell
+[5:46] signals. These are just event flags.
+[5:48] We're just saying there was a meaningful
+[5:49] amount of cumulative downwards movement
+[5:51] here, a meaningful [music] amount of
+[5:52] cumulative upwards movement here. These
+[5:54] are just timestamps. These are just bars
+[5:57] that are in scope for our experiment.
+[5:59] We're not saying that [music] we think
+[5:59] these have predictive value. We're not
+[6:01] saying that we're going to trade on
+[6:02] these. The green ones don't mean long.
+[6:04] The red ones don't mean short. They're
+[6:05] just saying what periods of time do we
+[6:07] actually want to look at to see if we
+[6:09] [music] can actually build a model of
+[6:10] what's going to happen in the future. We
+[6:12] could lower this threshold and get a lot
+[6:14] more events. Then we have a lot more
+[6:15] time stamps, a lot more bars that are in
+[6:17] scope for our experiment. Or we could be
+[6:19] a lot more picky
+[6:21] and get far fewer events that are in
+[6:24] scope for our experiment. If we make
+[6:26] this a stupidly low multiple, then every
+[6:29] single bar pretty much is in scope for
+[6:31] our experiment and they probably don't
+[6:32] have any meaning or don't have much
+[6:33] meaning. When the events are too
+[6:35] frequent, we're essentially just trying
+[6:36] to forecast random noise. We're
+[6:38] forecasting based on bars that have no
+[6:40] actual catalyst. And making the
+[6:42] threshold super high is equally as
+[6:45] useless because we have so few events
+[6:47] that we actually don't have a big enough
+[6:48] sample to build a meaningful model.
+[6:50] Okay, so now we're looking at the exact
+[6:51] same feature but just in Python. First,
+[6:53] same thing as we did in Trading View.
+[6:54] We're just plotting these events on a
+[6:56] price chart. And again, these are not
+[6:57] signals. These triangles just represent
+[6:59] these events where we're saying, "Okay,
+[7:00] the market has moved enough for us to
+[7:02] care." Okay. So, just to get a better,
+[7:03] more visual idea of how cumulative sum
+[7:05] works for a second, we see both of the
+[7:06] buckets here upwards and downward
+[7:08] pressure. So, we're building upward,
+[7:10] building upward, building upward
+[7:11] pressure, and then we hit our threshold
+[7:13] and we reset. And that plots our upward
+[7:14] pressure event right here on the reset.
+[7:16] Okay. So, this just shows the results of
+[7:17] a parameter sweep. So like I was doing
+[7:19] on the trading view chart when I was
+[7:20] varying the average true range multiple
+[7:22] and our events were becoming more dense
+[7:24] or [music] more diffuse. So we a lot of
+[7:27] events like one at pretty much every bar
+[7:29] and then I spaced them out to the point
+[7:30] where I said we weren't even able to get
+[7:31] a valid sample size. So you can see the
+[7:33] relationship that that sensitivity
+[7:34] parameter has with the frequency of our
+[7:36] events here. Okay. Now let's see if our
+[7:37] event actually has any raw predictive
+[7:39] value if we just look at the forward
+[7:41] returns after up and down events. Before
+[7:43] we look at this actually we have to
+[7:44] understand something. The sample size
+[7:46] here is really small, which means that
+[7:48] the median and the shape of these box
+[7:49] plots can change a lot just from
+[7:51] randomness. Just for the sake of the
+[7:52] experiment, though, we'll look at it
+[7:53] anyway. So, for the 1-day forward
+[7:55] returns, everything looks to be
+[7:56] clustered right around zero. There's
+[7:58] nothing really dramatic here at all. For
+[8:00] the 5-day forward returns, all the
+[8:01] medians are shifted positive, but the
+[8:03] plots overlap a lot. And also, I think
+[8:05] 2024 was a big bullish year for Bitcoin.
+[8:07] So, this isn't surprising at all. This
+[8:08] is nothing noteworthy. And we can also
+[8:10] see that random isn't far away. Over 20
+[8:12] days, everything is pretty positive,
+[8:14] including random. So, we have to be
+[8:15] aware obviously of the drift of Bitcoin
+[8:17] especially in 2024. So, we have to
+[8:19] understand that what we're looking at
+[8:20] right here doesn't mean that our signal
+[8:22] has any sort of edge or is predicting
+[8:24] these returns. But just like I said, and
+[8:25] I can't say this explicitly enough, this
+[8:28] is not a strategy. These are events.
+[8:30] These are just timestamps that tell us
+[8:31] notable windows to look at when we start
+[8:34] experimenting. And that's why the next
+[8:35] step is contextualizing features because
+[8:37] the same event can have entirely
+[8:39] different outcomes based on what else is
+[8:41] going on in the world. a strong trend, a
+[8:43] crash, something in the middle of the
+[8:44] night when there's really little
+[8:46] volatility, something when news happens.
+[8:48] These are all different contextualizing
+[8:50] features that can change the outcome of
+[8:52] the same event. And what we're doing
+[8:54] right here is just averaging those all
+[8:55] together like an idiot and assuming that
+[8:57] there's nothing in here to be
+[8:58] discovered. This would be like if I
+[9:00] asked you to as accurately as you could
+[9:02] predict the height of a human being and
+[9:05] you only looked at one feature. You only
+[9:06] said uh like where are they from. You
+[9:09] could have asked how old they are, what
+[9:11] gender they are, what their ethnicity
+[9:12] is, the height of their parents, all
+[9:14] these other things. It would help you
+[9:15] make a much more accurate prediction,
+[9:17] but instead you just averaged all these
+[9:18] things together. You predicted the
+[9:19] person's height using a univariate model
+[9:21] where you just look at where people are
+[9:23] from and what the average height is
+[9:24] there. You're missing out on a bunch of
+[9:25] additional context that could enrich
+[9:27] your model and make it a lot better at
+[9:29] actually predicting the person's height.
+[9:30] That's a rough analogy, but you
+[9:31] understand what I'm saying. That's why
+[9:32] the next step is contextualizing
+[9:34] features, and that's what we're going to
+[9:35] talk about in the next video. So this
+[9:36] episode is not about finding an edge.
+[9:38] It's about where to start looking for an
+[9:40] edge events. What's in scope for our
+[9:42] experiment? What are we going to try to
+[9:44] build our model around?

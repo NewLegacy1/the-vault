@@ -1,0 +1,340 @@
+# I Coded This Daytrading Guru's Strategy — Here's the Truth
+# https://www.youtube.com/watch?v=QhGoLgWyUrw
+
+[0:00] You probably clicked on this video
+[0:01] because the title sounds unique and new,
+[0:03] but that in and of itself is a huge
+[0:05] problem.
+[0:08] The internet seems to have a limitless
+[0:10] surplus of trading content being spat
+[0:12] out all the time by these gurus
+[0:14] promising to teach you how to trade. And
+[0:16] each one of them is selling you a
+[0:17] different course or mentorship revolving
+[0:19] around their own personal convoluted
+[0:20] amalgam of baseless ICT confluences. The
+[0:23] very idea of learning to trade is flawed
+[0:25] at its core because it implies that
+[0:27] you're pursuing some static goal. And
+[0:29] once you learn how to trade once and for
+[0:31] all, it's a skill that you'll be able to
+[0:33] use to make money indefinitely. That's
+[0:35] not the case at all. And the proof is in
+[0:36] the very nature of markets themselves.
+[0:38] Alpha decay is an axiomatic principle in
+[0:40] quant finance. It describes the idea
+[0:42] that when a strategy is widely adopted,
+[0:43] the market adjusts and the inefficiency
+[0:45] that created the alpha in the first
+[0:47] place disappears. The truth is that
+[0:48] markets constantly evolve and finding
+[0:50] alpha is immeasurably more difficult
+[0:52] than any guru tries to convince you. But
+[0:54] I doubt they even know that in the first
+[0:55] place. I posted my first ever Tik Tok
+[0:57] video about 9 months ago and told this
+[0:59] truth. It got over 100,000 likes, but
+[1:01] most of the comments came from people
+[1:02] infuriated with the message of the
+[1:04] video. As I've continued to post
+[1:06] educational videos regarding math,
+[1:07] derivatives, arbitrage, and trading in
+[1:09] general, I've exposed a few more trading
+[1:11] influencers scams and continually been
+[1:13] met with comments to the effect of, "You
+[1:15] haven't studied this person's strategy
+[1:16] enough to say that it doesn't work. I've
+[1:18] back tested this person's strategy
+[1:20] manually over, you know, insert some
+[1:22] ridiculously small sample size trades
+[1:25] and proved that it works. I'm going to
+[1:26] address all these comments once and for
+[1:28] all in this series. If you watched my
+[1:29] TikTok, then you know that in this
+[1:31] series, we're going to be implementing
+[1:32] Trading Guru strategies
+[1:33] programmatically. Not only am I going to
+[1:35] convert their strategies to code and
+[1:37] back test them over thousands of trades
+[1:38] to get accurate performance statistics,
+[1:40] I'm going to teach you how to do the
+[1:41] same. For whatever reason, I received a
+[1:43] bunch of comments on the announcement
+[1:44] video for this series from people
+[1:45] claiming that it's impossible to
+[1:47] implement discretion in a programmatic
+[1:48] trading strategy. These people confuse
+[1:50] hard- coding trading rules with
+[1:52] programmatic trading in general. Later
+[1:54] in this series, we'll use artificial
+[1:55] neural networks to emulate discretionary
+[1:57] attributes of trading strategies and
+[1:59] eliminate certain hard-coded rules, but
+[2:00] we won't do that just yet. In this
+[2:02] video, I'm going to explain how I
+[2:03] watched one YouTube video from a day
+[2:04] trading guru who you guys suggested
+[2:06] named Justin Worlin, and in just a few
+[2:08] hours implemented it programmatically,
+[2:10] back tested it over thousands of trades,
+[2:12] and got some reliable performance
+[2:13] metrics to see how the thing really
+[2:15] works. Typically, when you implement a
+[2:17] trading strategy programmatically, it
+[2:19] starts as a novel idea with really well-
+[2:20] definfined rules. But in our case today,
+[2:22] we're starting from the words of a
+[2:23] YouTube guru and a kind of ambiguous
+[2:26] YouTube video. So step one is
+[2:27] deciphering and parsing what he's saying
+[2:29] from conversational English more into
+[2:31] pseudo code and the logic that we're
+[2:33] going to need to eventually implement in
+[2:34] the program. In case you were wondering,
+[2:36] this is the YouTube video of his that I
+[2:37] watched. The first pillar of a
+[2:38] programmatic trading strategy is the
+[2:40] data prep-processing. So that's the
+[2:42] features that we want to derive from the
+[2:43] raw market data itself. So we have to
+[2:45] think about what market data we start
+[2:46] with. And he just looks at charts. So
+[2:48] all he has is open, high, low, and
+[2:50] close. And you might say, "Oh, well,
+[2:52] sometimes he has, you know, insert some
+[2:54] random indicator, the RSI." Well, that's
+[2:56] just based off of price and time. It's
+[2:58] just a formula that's derived from open,
+[3:00] high, low, close data, right? So, this
+[3:03] is all the data he starts with. He
+[3:04] doesn't start with any like
+[3:05] macroeconomic data or any like esoteric
+[3:08] weird data. He just starts with open,
+[3:10] high, low, and close prices. But he uses
+[3:12] two different time frames. He uses a
+[3:14] high time frame for detecting liquidity,
+[3:16] liquidity. So he uses that to find high
+[3:18] time frame fair value gaps and high time
+[3:19] frame swing highs and lows. Then he also
+[3:21] uses low time frame data for some other
+[3:23] things. Then we transform that market
+[3:25] data in order to find these things. The
+[3:27] high time frame liquidity. Then the low
+[3:28] time frame manipulation leg. So that's
+[3:30] when we sweep liquidity. It's the leg
+[3:32] from swing low to high or high to low
+[3:34] that swept that liquidity. And then we
+[3:36] look at the low time frame fair value
+[3:37] gaps. And if they become inverted then
+[3:39] we look at low time frame inverted fair
+[3:41] value gaps. That's all derived from low
+[3:42] and high time frame open high low close
+[3:44] data. That's all we take for raw market
+[3:46] data. And this is what we have to
+[3:47] transform it into programmatically. The
+[3:49] next pillar is signal generation. So the
+[3:51] actual trade setup in his case. These
+[3:53] are the attributes of the signal. We
+[3:55] have a sweep of high time frame
+[3:57] liquidity. We see that on a lower time
+[3:58] frame. Then we identify a low time frame
+[4:01] manipulation leg. That's the leg that
+[4:02] swept the liquidity from swing low to
+[4:04] high or high to low. Then we identify
+[4:06] all the fair value gaps within that
+[4:07] manipulation leg. So we have to do that
+[4:09] retroactively in our program. Or at
+[4:10] least that's how I chose to do it when I
+[4:12] implemented it. And then we monitor for
+[4:14] low time frame inversions of low time
+[4:16] frame manipulation leg fair value gaps.
+[4:18] So any manipulation leg fair value gap
+[4:19] the fair value gap that was created
+[4:21] during the manipulation leg in the
+[4:22] direction of the manipulation leg we
+[4:24] monitor to see if that's inverted. If
+[4:25] that's the case then we fire the signal
+[4:27] to go long or to go short. But we don't
+[4:29] go yet because the third pillar is
+[4:30] signal processing and execution. So this
+[4:32] is how we know how and when to actually
+[4:34] act on the signals. So what we do here
+[4:36] is if a fair value gap is inverted from
+[4:38] the manipulation leg, we check our
+[4:39] arrays of high time frame liquidity for
+[4:41] nearby liquidity. And by nearby, he just
+[4:43] uses the term nearby, which is very
+[4:45] qualitative, but we need something
+[4:46] quantitative because it's a quantitative
+[4:48] trading strategy that we're trying to
+[4:49] implement. So, we say within some
+[4:51] userdefined parameter percentage of the
+[4:54] 14-day rolling average true range, we
+[4:57] need high time frame liquidity within
+[4:58] that range of the entry price. The last
+[5:00] pillar is the risk protocol. That's take
+[5:02] profit and stop loss in our case here.
+[5:04] It's very simple. So once we uh verify
+[5:06] that there's high time frame liquidity
+[5:08] uh within our target range then we first
+[5:11] check that the RR of the trade is within
+[5:13] our parameters. So one to one reward to
+[5:15] risk or better and if it's not then we
+[5:17] adjust the stop loss. Once this is done
+[5:19] we go ahead and actually execute the
+[5:20] trade and we set our takeprofit at the
+[5:22] high time frame liquidity from those
+[5:23] rays that we've been storing. We put our
+[5:25] stop loss just past the high time frame
+[5:27] liquidity with a small buffer. or if we
+[5:29] don't have high time frame liquidity to
+[5:30] set the stop loss just beyond within our
+[5:32] risk parameters, then we set the stop
+[5:33] loss arbitrarily just to make the RR
+[5:35] what it's supposed to be. I took that
+[5:37] logic that we outlined there and then I
+[5:38] implemented it programmatically in
+[5:40] Trading View's Pine language. I didn't
+[5:41] use Python or C++ to do this because I
+[5:43] want to be easily democratizable. You
+[5:45] can literally just copy paste this code
+[5:47] into your Trading View Pine editor and
+[5:49] use it yourself. Okay, let's go ahead
+[5:50] and apply this to the chart. I built in
+[5:52] a lot of UI components just to make it
+[5:54] easier to see what we're doing. But what
+[5:56] I think is cooler and more relevant are
+[5:57] the inputs that I built in. So the user
+[5:59] can pick their high time frame. That's
+[6:01] the one that is used to detect
+[6:03] liquidity. So we use the 15-minute time
+[6:04] frame. So that's the time frame that
+[6:06] we're using to detect, for example,
+[6:07] these high time frame for value gaps or
+[6:09] these swing highs and lows that count as
+[6:11] resting liquidity. Then we have the low
+[6:13] time frame that we use to detect the
+[6:14] manipulation leg and the manipulation
+[6:16] leg for value gaps. Uh the pivot lengths
+[6:18] for detecting the swing highs and lows.
+[6:20] Just some cosmetic adjustments, colors
+[6:22] and things. Bars to highlight after
+[6:24] sweep. This is important. This defines
+[6:25] how long after a liquidity sweep that
+[6:27] manipulation leg is eligible to trigger
+[6:29] a trade entry. Because for example, if
+[6:31] liquidity is swept and then we chop
+[6:32] around or continue down or continue up
+[6:34] but don't sweep any more resting
+[6:36] liquidity, then those fair value gaps
+[6:37] from the initial manipulation leg aren't
+[6:39] still valid for a trade entry. This is
+[6:40] another cosmetic thing, just how many
+[6:42] previous manipulation legs we want to
+[6:43] plot the fair value gaps for. This is
+[6:45] where the user can tune the percentages
+[6:46] of the 14-day average true range that we
+[6:48] use to look in for liquidity. So, for
+[6:50] example, if you look at this short
+[6:52] trade, you can see that the take-profit
+[6:54] is set right here at the top of this
+[6:55] high time frame fair value gap. And the
+[6:57] reason that we took that trade is
+[6:58] because first we check to make sure that
+[7:00] there's resting liquidity in the
+[7:01] direction of the trade within 50% of the
+[7:03] 14-day average true range. You can also
+[7:05] set the max distance to opposite
+[7:07] liquidity where we'd set the stop loss.
+[7:08] And if there's no resting liquidity
+[7:10] within this percentage of the average
+[7:12] true range, then we set it either at
+[7:14] this percentage of the average true
+[7:15] range or to make the risk-to-reward one.
+[7:18] If that's not there, then I also added a
+[7:20] stop buffer. So, we don't set our stop
+[7:22] directly on the liquidity if there is
+[7:24] some. We actually set it 1% of the
+[7:26] average true range above or below that
+[7:28] to add a small buffer. Let's zoom in and
+[7:30] look at this long example here. So, we
+[7:32] came down and we swept this high time
+[7:35] frame fair value gap from the 15-minute
+[7:36] time frame. Um, and then we created this
+[7:38] manipulation leg, which is highlighted
+[7:40] in purple. During this manipulation leg,
+[7:41] we created these two blue fair value
+[7:43] gaps in the direction of the
+[7:44] manipulation leg. Then we came up uh
+[7:47] bounced off of this uh high time frame
+[7:49] fair value gap inverted this
+[7:51] manipulation leg fair value gap and then
+[7:53] entered a long trade. We set our
+[7:54] takeprofit at this resting liquidity
+[7:56] here from this previous high and we set
+[7:58] our stop to make the risk-to-reward one
+[8:00] to one because there was no resting
+[8:01] liquidity closer. Now that you have an
+[8:02] idea of how it works, let's look at the
+[8:04] properties for when we back test. I'm
+[8:06] trying to sort of emulate the day trader
+[8:07] behavior of using a prop firm account
+[8:09] and then risking 1% of it. are setting
+[8:12] your stop loss such that you risk 1% of
+[8:14] your total to total equity. So I think
+[8:16] this is a pretty close approximation.
+[8:18] Use a $100,000 account. Each trade is
+[8:20] 90% of equity, but our stop losses are
+[8:23] so tight that that constitutes what is
+[8:25] this? Yeah, you know, half a percent of
+[8:27] total equity about no pyramiding. So
+[8:30] we're not taking concurrent orders. I'll
+[8:31] give them a small benefit by saying no
+[8:33] commission, no slippage. Okay, this is
+[8:34] what you guys have been waiting for.
+[8:36] Let's do 2015 to 2025. This might time
+[8:39] out. I'm not sure.
+[8:41] Okay, this time now let's try like 2018
+[8:44] to present day. Let's go 2018 Jan 1 to
+[8:48] present day. Okay, from 2018 to 2025 the
+[8:51] strategy returned 107% which might sound
+[8:54] good, right? It looks like it's a
+[8:55] profitable strategy, which technically
+[8:56] it is. It isn't a losing strategy, but
+[9:00] until you realize that just holding the
+[9:02] NASDAQ 100 would have yielded 311%
+[9:05] returns. That's nearly three times the
+[9:06] profit by doing absolutely nothing. Now,
+[9:09] let's talk risk. The sharp ratio is
+[9:10] 0.165. This tells us how much return
+[9:12] we're getting per unit risk. Usually
+[9:14] anything below one is weak. Below 0.5 is
+[9:17] generally uninvestable and this is
+[9:19] nearly zero. So this is terrible. The
+[9:21] sortino ratio is.33. This is similar to
+[9:24] the sharp ratio but it only looks at
+[9:25] downside risk. This is still terrible.
+[9:27] So yeah, this strategy made money but so
+[9:29] did the market and a lot more with way
+[9:31] less stress, way less risk and way more
+[9:34] reward. This back test took place over 7
+[9:36] years and it has 3,500 trades in it.
+[9:38] This should show you that a couple
+[9:39] cherrypicked examples that you see on
+[9:41] the guy's YouTube channel doesn't show
+[9:42] you the actual long-term performance.
+[9:44] For example, I could show you this and
+[9:46] only post that or this one right here.
+[9:48] That looks pretty nice, right? But when
+[9:49] we actually consider the long-term
+[9:50] performance, almost all of these will
+[9:52] fall apart. In the next video, we're not
+[9:53] just going to copy a strategy blindly.
+[9:55] We're going to pick one, tear it apart,
+[9:56] and try to optimize it. Parameter
+[9:58] tuning, robust entry logic, and we'll
+[10:01] try to implement a risk protocol that
+[10:02] performs better under volatility. So, if
+[10:04] you guys want to stop following blindly
+[10:05] and start engineering real strategies,
+[10:07] I'll see you in the next

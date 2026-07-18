@@ -1,0 +1,839 @@
+# Turning Data Into Meaning (The Quant Process 02)
+# https://www.youtube.com/watch?v=TEVRiSNxs50
+
+[0:00] Hi guys, I'm Thomas. I'm a student
+[0:01] studying applied physics at Columbia
+[0:03] University and I have a passion for
+[0:04] quantitative finance. And this is the
+[0:06] first real episode in a series I'm doing
+[0:08] called the quant process where I'm
+[0:09] explaining to retail traders the
+[0:11] endto-end process of creating a
+[0:13] quantitative trading strategy and
+[0:15] especially testing it rigorously before
+[0:17] deployment. My goal is to not only
+[0:19] explain a more institutional framework
+[0:21] for thinking through the strategy
+[0:22] generation, testing and deployment
+[0:24] process, but to also explain the tools
+[0:26] and methodologies that should be used
+[0:27] therein. I think regardless of whether
+[0:29] you're entering quantitative finance
+[0:30] with no idea for a strategy that you'd
+[0:32] like to create or with an idea of a
+[0:34] strategy you'd like to build, but you
+[0:35] want to build it programmatically, the
+[0:37] appropriate place to start is with
+[0:38] feature engineering. Before we jump
+[0:40] right into things, I'll give you a
+[0:41] highle overview of what we're about to
+[0:43] do. I'm going to explain what a feature
+[0:44] is, which at a very basic level is just
+[0:46] some raw data collapsed to be just some
+[0:49] idea that you care about, some feature
+[0:51] that you care about. We'll get more into
+[0:52] that in a second. I'll give a very
+[0:53] intuitive realworld explanation of what
+[0:55] a feature is which will give you some
+[0:56] intuition behind why feature engineering
+[0:59] is so important. Then I'll explain a
+[1:01] trading example of feature engineering.
+[1:03] Then I'll explain feature types. So
+[1:06] feature types by purpose or by value
+[1:08] which will give you some intuition
+[1:10] regarding how to actually create
+[1:11] features for yourself or transform ideas
+[1:14] that you are thinking of into features.
+[1:16] Then I'll go through exactly how to
+[1:18] build a feature, the exact logic tree
+[1:20] for building a feature. Then we'll go
+[1:21] through one or two examples so that you
+[1:23] can understand how to build a feature
+[1:24] yourself. Okay, let's start with what is
+[1:26] a feature. This is a word that is kind
+[1:29] of high context and people use it in
+[1:30] machine learning and in academia a lot,
+[1:32] but if you don't watch these videos or
+[1:34] read these things, then it kind of
+[1:35] sounds like a weird word. I'll explain
+[1:37] it like this. So, let's zoom into a
+[1:38] trading context for a second and think
+[1:41] of what the goal is with trading.
+[1:44] Generally speaking, outside of
+[1:45] arbitrage, the goal with trading is to
+[1:47] use current or past information to make
+[1:51] predictions about the future. I guess in
+[1:53] a more technical sense, you could say
+[1:54] that we want to find a relationship or
+[1:55] some array of relationships that tells
+[1:58] us that one distribution in the realm of
+[2:00] future possibilities differs from
+[2:02] another under specific conditions. Okay,
+[2:04] so how do we find relationships between
+[2:05] what's going on now and what might
+[2:07] happen in the future? The first thing
+[2:09] you need to do is get some data. So
+[2:12] let's just imagine I gather up a bunch
+[2:13] of candlestick data. So open, high, low,
+[2:15] close price data. So four pieces of
+[2:17] information per candle plus a time
+[2:19] stamp, right? And then I try to build a
+[2:20] model using that raw data to predict
+[2:23] future data of the same price. That's
+[2:25] going to be a terrible model if we just
+[2:27] use the raw data and the target or or
+[2:29] the outcome that we're looking to
+[2:31] predict is the open, low, high, and
+[2:34] close value of the next candle, right?
+[2:36] And if you're a trader who trades
+[2:37] charts, you might immediately object to
+[2:38] that and say, "What do you mean I can't
+[2:39] build a good model off of open, high,
+[2:41] low, close price data from candles like
+[2:44] I see on my chart. I actually plot trend
+[2:46] lines and then I look at the daily
+[2:48] volatility in the previous days range
+[2:50] and then I have this model that looks at
+[2:52] uh the RSI and then also I look at the
+[2:55] relative volume of the day. Those are
+[2:57] features. Those are all transforms of
+[2:59] the data on your chart, the open, high,
+[3:00] low, close data except for the volume.
+[3:03] So your trend line is a transform of
+[3:04] that data. Your volatility indicator is
+[3:06] a transform of that data. The previous
+[3:07] day's average true range is a transform
+[3:09] of that data. Those are all features and
+[3:11] they tell you something that you think
+[3:12] is meaningful to the performance of your
+[3:14] model. Feature engineering is about
+[3:16] transforming raw data. Whatever raw data
+[3:18] you bring in into meaningful features.
+[3:21] So things that you actually care about
+[3:23] that you think will influence the
+[3:24] performance of your model or that you
+[3:25] think have some predictive power over a
+[3:27] given financial variable. It's about
+[3:29] taking an unclear relationship between
+[3:31] raw data and outcomes and making it
+[3:33] clear by transforming that raw data into
+[3:35] meaningful features that actually are
+[3:36] related to the outcomes in an
+[3:38] extractable way. I think it's very hard
+[3:40] to talk about these things and to
+[3:41] understand them for the first time
+[3:42] without using examples. So let me give
+[3:43] you just a very intuitive real world
+[3:45] example before we jump into a trading
+[3:47] one. Imagine I want to predict flight
+[3:49] costs like airline flight costs and I
+[3:52] have some raw data. So, the date of the
+[3:54] flight, the date that the flight is
+[3:55] departing, the date that the ticket is
+[3:57] purchased, the origin temperature, the
+[4:00] temperature of the place where you're
+[4:01] taking off, and the temperature of the
+[4:02] place where you're landing. If I gave
+[4:03] you a human this data, and said that I
+[4:05] want you to predict ticket prices, you
+[4:08] might intuitively yourself say something
+[4:09] like, "Oh, well, I think probably when
+[4:12] the flight date is very close to the
+[4:13] purchase date, meaning the person
+[4:14] purchased the ticket right before the
+[4:16] plane took off, it's probably more
+[4:17] expensive. And when the origin
+[4:20] temperature is much lower than the
+[4:22] destination temperature, the flight is
+[4:24] probably more expensive because the
+[4:25] person's flying from uh somewhere cold
+[4:27] to somewhere warm. And probably if the
+[4:29] flight date is around a holiday, the
+[4:31] flight is going to be more expensive as
+[4:33] well. You just performed feature
+[4:34] engineering mentally. And if I gave you
+[4:36] some training data like this data here
+[4:38] and the outcomes that go along with it,
+[4:40] you'd start performing multi-dimensional
+[4:42] pattern recognition in your head just
+[4:44] like a machine learning model. But
+[4:45] machines don't work that way where they
+[4:47] can do that intermediary step of feature
+[4:48] engineering themselves. So you have
+[4:50] these ideas of things that you think
+[4:52] matter but you don't know exactly how
+[4:54] they matter and you can't mentally
+[4:56] construct them into an optimal model to
+[4:58] predict outcomes in your head. A machine
+[5:00] can do that but you just have to do the
+[5:02] step of feature engineering transforming
+[5:04] this raw data into meaningful features
+[5:07] like these. Is this a holiday window?
+[5:10] So, is this flight date within a holiday
+[5:12] window around Christmas or around winter
+[5:15] break or whatever it is? The temperature
+[5:16] difference, the days until the flight as
+[5:18] well. That's a feature that we think is
+[5:19] meaningful. And sometimes we'll be
+[5:21] wrong. Obviously, we'll create features
+[5:22] that have no predictive power over
+[5:24] financial variables or over ticket price
+[5:26] in this particular case. But we engineer
+[5:28] features that we think are meaningful.
+[5:30] Okay, let's move on to a trading
+[5:31] example. Imagine we have some raw data.
+[5:33] So, time, open, high, low, close data,
+[5:36] candlestick data. And in an uptrend, we
+[5:38] want to be able to say whether a 1-hour
+[5:40] candle will constitute a reversal, a
+[5:42] continuation, or nothing. This is a
+[5:45] 1-hour chart. Say we were at this point
+[5:47] in time, and I asked you to predict
+[5:49] whether this candle would constitute a
+[5:51] continuation, or a reversal of this move
+[5:54] upwards. Would you just consider the
+[5:56] open, high, low, and close values of
+[5:59] this candle right here to answer that
+[6:00] question? Probably not. Intuitively,
+[6:02] you're probably thinking something like,
+[6:03] "Oh, this candle has a very big wick,
+[6:05] and it looks like we're trending a
+[6:07] little bit sideways here, and the
+[6:09] average true range over the last few
+[6:10] bars is very large." Looking at this
+[6:12] chart, your brain is engineering all of
+[6:14] these features and trying to understand
+[6:16] the relationship between them and the
+[6:18] future outcome, but obviously, it's not
+[6:20] optimal like a computer would be. So, we
+[6:22] come over here and we engineer features
+[6:24] that we think are meaningful. So, the
+[6:25] upper wick percentage, how large is the
+[6:28] upper wick of the candle relative to the
+[6:29] body of the candle? the average true
+[6:31] range over the last 14 bars. So, how
+[6:33] large are these bars ranging on average?
+[6:35] Trendiness. So, is this a very strong
+[6:37] trend that we're in or is it kind of
+[6:38] choppy? And the volatility regime maybe
+[6:40] you'd consider as well. The idea of
+[6:42] feature engineering is to take these
+[6:44] ideas that we just saw on the chart with
+[6:46] our eyes where we said, "Oh, this looks
+[6:48] like the wick is a little bit big and
+[6:49] it's kind of trending sideways a little
+[6:51] bit." We describe these qualitatively.
+[6:53] And the goal of feature engineering is
+[6:55] to turn these things quantitative. to
+[6:57] turn these handwaving ideas like, "Oh,
+[6:59] this wick is pretty big compared to the
+[7:01] body into real numbers that we can
+[7:03] analyze. This allows us to move from
+[7:04] super naive and terrible relationship
+[7:07] exploration using our eyes and our human
+[7:10] brains to analyzing relationships
+[7:13] quantitatively using a computer. And
+[7:15] then we'll also move on to using machine
+[7:17] learning to do that multi-dimensional
+[7:19] pattern recognition. How can different
+[7:20] features in synthesis with each other
+[7:22] forecast outcomes? and how do we build
+[7:24] the optimal model off of that
+[7:26] multi-dimensional relationship. So
+[7:28] you'll notice that of these features we
+[7:29] engineered, some of them are numbers and
+[7:30] then we also have these flags, these
+[7:32] sort of categories or buckets over here
+[7:34] for the volatility regime. You'll also
+[7:35] notice that we used buckets for the
+[7:37] labels which are also technically a
+[7:39] feature. So let's get a sense of the
+[7:40] universe of features, the different
+[7:42] feature types broken down by purpose,
+[7:44] what they're actually used for, and by
+[7:46] value, the type of value that they hold.
+[7:47] Let's start by breaking them down by
+[7:49] value. So we'll start with continuous
+[7:51] features. This is the world of things
+[7:52] like average true range or realized
+[7:54] volatility or RSI for example, distance
+[7:57] to a simple moving average, distance to
+[7:59] a relevant level, uh VWOP, you name it.
+[8:02] If I think the distance between price
+[8:04] and the previous day's low has some sort
+[8:06] of predictive value in the context of my
+[8:08] model, that'll be a feature. But that
+[8:09] would likely be a feature that we
+[8:10] normalize. And we'll talk about this a
+[8:12] little bit more probably in the next
+[8:13] video or later in this one. But when you
+[8:15] have features that depend for example on
+[8:17] price like that, you don't want the
+[8:19] scale of them to dominate the model.
+[8:21] When we talk about the difference
+[8:22] between price and the previous days low
+[8:24] having some sort of predictive value
+[8:26] over another financial variable, do we
+[8:28] really care about the raw dollar
+[8:30] difference between these two levels?
+[8:32] Probably not. Because for example, if we
+[8:34] zoom back 10 years ago on the S&P, that
+[8:37] dollar difference is going to be much
+[8:39] smaller on average than if we come to
+[8:41] present day when the price of the S&P is
+[8:43] much larger. So that dollar difference
+[8:44] is going to be greater. Has the
+[8:46] relationship really changed? Probably
+[8:47] not. So more likely we'd want to
+[8:49] normalize that to percentages or
+[8:51] something like that because it's the
+[8:52] relative difference that really matters
+[8:53] for that feature. And if we don't
+[8:55] account for the change in scale, then
+[8:57] different feature whatever bad things
+[8:59] can happen. We'll talk about that more
+[9:00] in a little bit. So let's move on to
+[9:01] binary or boolean features. So these are
+[9:03] true or false or zero or one features.
+[9:05] So these are things like uh flags or
+[9:07] events. So for example, something like
+[9:09] are we in regular trading hours or is
+[9:11] the regime mean reverting or is there
+[9:13] news today or something like did this
+[9:16] bar set a high compared to yesterday's
+[9:19] high of day? One if yes, zero if no. Was
+[9:22] this bar over two times the average true
+[9:24] range over the last 14 periods? One for
+[9:27] yes, zero for no. So these are very
+[9:28] often used for labeling events. So
+[9:30] something like um an ICT trader might
+[9:33] say something like uh was liquidity
+[9:36] swept this bar or was this bar a fair
+[9:38] value gap tap something like that that
+[9:40] would be a a boolean or binary feature a
+[9:42] yes or no. Then we have ordinal
+[9:44] features. So these are things uh that we
+[9:46] create buckets for. So we might rank the
+[9:48] volatility regime between one and five.
+[9:50] So really low volatility higher higher
+[9:52] higher very high volatility. We might
+[9:54] rank the trend strength bucketed from
+[9:57] weak to strong or the day's news impact
+[9:59] ranked from one to three something like
+[10:01] this. So we want it to be discreet but
+[10:03] we don't want it to be boolean because
+[10:04] we want more than two options. We'll use
+[10:06] something like this. Okay let's zoom out
+[10:08] and talk about features based on their
+[10:10] purpose. So we have event defining
+[10:12] features. So for example like I was
+[10:14] talking about before in my example for
+[10:16] the boolean uh data type for a feature a
+[10:19] breakout candle. Was this candle a
+[10:20] breakout? Yes or no? That's an event
+[10:22] defining feature. earnings release or a
+[10:24] new session high. And so the purpose of
+[10:25] these is to define which moments are
+[10:27] part of the actual experiment. If we
+[10:28] wanted to answer the question of does
+[10:30] wicking below the previous day's low
+[10:31] have any predictive value over forward
+[10:33] returns for example, then we would
+[10:35] obviously need to label the bars that
+[10:38] wick below the previous day's low so
+[10:39] that we know what bars are part of the
+[10:41] actual experiment. So that's a feature
+[10:42] technically. Then we have contextual
+[10:44] features which we saw some of earlier
+[10:45] like volatility regime, trend strength,
+[10:48] time of day encoding. The purpose of
+[10:49] these is to try to explain why the same
+[10:51] event might behave differently across
+[10:53] different situations. So say we just
+[10:54] have these features, the breakout candle
+[10:57] and forward returns. And we were trying
+[10:59] to establish a relationship. We can't
+[11:01] really do much with that. For example,
+[11:02] say you think that when a level is
+[11:06] passed through by a candle that closes
+[11:08] at its high, so a candle with no wick on
+[11:10] the top or a level is closed below by a
+[11:12] candle with no wick on the bottom, maybe
+[11:14] you think that breakout is more likely
+[11:16] to be a true breakout or have some
+[11:18] predictive power over forward returns.
+[11:20] Then you would engineer that feature. So
+[11:22] you would engineer how big is the top or
+[11:25] bottom wick, the wick on the breakout
+[11:26] side relative to the body of the candle.
+[11:28] Maybe they're meant to contextualize the
+[11:30] events using whatever information you
+[11:32] think is meaningful or could possibly
+[11:34] explain why the event behaves
+[11:35] differently in different circumstances.
+[11:37] This is a lot of what retail traders
+[11:39] tend to call discretion. They'll see
+[11:41] these features that they sort of
+[11:42] engineer in their heads without ever
+[11:44] actually quantifying. like for example
+[11:46] maybe trend volatility wickediness of
+[11:49] candles something like this and they'll
+[11:51] formulate maybe like a daily bias or
+[11:53] they'll just get a feeling a feeling
+[11:55] that a trade is going to work or not
+[11:56] work because of this pattern recognition
+[11:59] that they have between features they've
+[12:00] engineered in their heads qualitatively
+[12:02] but never actually quantified and the
+[12:04] outcome of the trade. So they'll get a
+[12:06] feeling that this is a good trade or a
+[12:08] feeling that this is a bad trade that I
+[12:09] shouldn't take and they'll call it
+[12:10] discretion. And then actually a lot of
+[12:12] people comment on my videos and say you
+[12:14] can't program discretion. But in reality
+[12:16] all your discretion is is just the amalg
+[12:19] it's just a multi-dimensional pattern
+[12:22] between features that you've engineered
+[12:24] mentally but haven't actually quantified
+[12:26] and the outcomes of your trades. So it
+[12:28] pretty much everything is programmable.
+[12:29] My point being that contextual features
+[12:31] are supposed to be anything that you
+[12:33] think could explain why outcomes are
+[12:35] different when the same event occurs.
+[12:37] What's different and meaningful between
+[12:40] different occurrences of the event and
+[12:42] their outcomes? Then we have reference
+[12:43] features. So for example, prior session
+[12:45] highs or lows, sixmonth low, all-time
+[12:47] high. These are things that these are
+[12:49] features that we engineer that probably
+[12:50] are not going to be fed to the model or
+[12:52] actually influence the way that we're
+[12:53] taking our trades, but they're just
+[12:54] there to derive other features in
+[12:56] relation to them. But the reason we have
+[12:58] these is because when I describe a
+[12:59] feature like for example I think we were
+[13:01] talking about continuous features and I
+[13:02] said the distance to previous session
+[13:05] low. Well, you can't define that feature
+[13:07] without already having a reference
+[13:09] feature for the prior session low.
+[13:10] Otherwise there's there's no low to
+[13:13] compute the difference between. Then we
+[13:14] have outcomes. So we need to label our
+[13:17] outcomes. What actually happened? Some
+[13:18] examples of this could be a barrier
+[13:20] based outcome. So something like the
+[13:21] event happens and then we define
+[13:23] outcomes based on which one of two
+[13:25] barriers similar to a stop-loss and a
+[13:27] take-profit are hit first or a time
+[13:29] barrier. Or we could label outcomes
+[13:30] based on forward returns. So for
+[13:32] example, when the event happens, we are
+[13:34] looking at the next 10 bars of returns
+[13:37] or the next 5 hours of returns or the
+[13:39] next two weeks of returns, whatever it
+[13:40] is. Or similarly, we could look at
+[13:42] forward volatility. The purpose of these
+[13:43] is to define what happened after the
+[13:45] event. And this is the thing that we're
+[13:46] trying to predict. Okay, let's move on.
+[13:48] How to build a feature. At this point,
+[13:50] we've talked about what a feature is.
+[13:51] We've given a realworld intuitive
+[13:53] example of features using uh the example
+[13:56] of predicting airline ticket prices and
+[13:59] we've looked at a trading example as
+[14:01] well. Then we've described how to
+[14:02] categorize features by their value types
+[14:05] and also by their purpose. We've also
+[14:07] talked a little bit about the very
+[14:08] misunderstood retail idea of discretion,
+[14:10] which is really just mental feature
+[14:12] engineering and multi-dimensional
+[14:13] pattern recognition in disguise. If you
+[14:15] can transcribe the features that you
+[14:17] consider mentally in your own discretion
+[14:19] into actual quantitative features, then
+[14:22] a computer can do that multi-dimensional
+[14:24] pattern recognition better than your
+[14:25] human brain can. So let's move on to how
+[14:27] to actually build a feature. Let's go
+[14:30] through this little logic tree that I
+[14:31] put together. Keeping in mind that the
+[14:33] goal of feature engineering is to
+[14:34] collapse raw data into the thing we
+[14:36] actually care about in the right data
+[14:38] type. So the first thing we have to ask
+[14:40] ourselves is what do we care about? some
+[14:42] examples, urgency, rejection, regime,
+[14:44] distance, imbalance, etc. What raw data
+[14:47] contains traces of that thing? So, for
+[14:50] example, say we're building an intraday
+[14:52] breakout trading strategy. And the
+[14:54] things we care about are rejection. So,
+[14:57] whether that level is going to be
+[14:58] rejected or not, and we care about um
+[15:02] momentum, maybe we care about market
+[15:05] regime. So, are we in a choppy or a
+[15:06] trending regime? I think that influences
+[15:08] how these breakouts are are going to
+[15:11] move. Let's take that last example that
+[15:12] I just said, the regime, whether we're
+[15:14] trending or choppy, because I think
+[15:16] that's something important and I want to
+[15:17] engineer a feature or some features
+[15:18] around it so that we can actually
+[15:20] quantify the relationship between the
+[15:23] market regime trending or or mean
+[15:25] reverting, let's say, and the success
+[15:27] rate of breakouts. We could look at
+[15:29] something like the efficiency of the
+[15:30] trend or the slope of some moving
+[15:32] average to see how steep the trend is.
+[15:34] Things like this, these are all features
+[15:36] that are going to be derived from price.
+[15:37] We can calculate them directly just from
+[15:39] that price data on our screen. We don't
+[15:41] need any volume data, time data,
+[15:43] economic data, news, etc. What kind of
+[15:45] information should our feature be? So,
+[15:47] let's go with this same example that
+[15:49] we're talking about um the market regime
+[15:51] as it relates to trendiness. You don't
+[15:53] necessarily have to get this right the
+[15:55] first time. You can iterate, but you
+[15:57] might go with continuous at first and
+[15:59] look at, for example, the efficiency of
+[16:01] the trend and see how that influences uh
+[16:03] the success of breakouts. Or like I
+[16:05] mentioned before, you might be looking
+[16:06] to classify the market into mean
+[16:08] reverting or trending. So that might be
+[16:09] a binary feature. Or if you wanted to
+[16:11] engineer an ordinal feature, it could be
+[16:14] -2 for strong downward trend, negative
+[16:16] -1 for downwards trend, zero for mean
+[16:20] reverting or choppy. You understand the
+[16:21] point. The idea is to think about what
+[16:23] about the information actually matters.
+[16:26] So do we just care whether the market
+[16:28] can be classified as mean reverting or
+[16:30] trending? Is that the only thing we care
+[16:31] about? or do we care about exactly how
+[16:34] efficient the trend is? Or do we care
+[16:36] about whether it's trending strongly,
+[16:38] trending lightly, or chopping? And we
+[16:41] could well iterate through all three of
+[16:42] those ideas and see which one has the
+[16:44] most bearing over the outcomes of our
+[16:47] breakout strategy. The next thing we
+[16:48] have to think about is what
+[16:49] transformation makes that concept
+[16:51] explicit. So let's say at the previous
+[16:52] step we chose to build a continuous
+[16:54] feature and the feature we chose was the
+[16:57] slope of the simple moving average. When
+[16:58] we talk about the slope of the moving
+[17:00] average, the thing that I'm thinking
+[17:01] about that might matter is just how
+[17:04] upwards is it pointing, how downwards is
+[17:06] it pointing, right? That would be the
+[17:07] qualitative way probably to describe
+[17:09] what you think matters about that
+[17:10] feature. So, does the actual number
+[17:13] which can be
+[17:15] blown up with the scale of the price of
+[17:17] the asset itself actually matter or do
+[17:20] we just care really about how steeply
+[17:22] it's pointing down? How steeply it's
+[17:23] pointing up? Probably the latter. So,
+[17:25] we're going to want to normalize that
+[17:26] feature. The way I explained that was
+[17:28] probably not very intuitive and sounded
+[17:30] definitely more complicated than it
+[17:32] actually is, but I'm kind of struggling
+[17:34] to find an elegant way to put this. So,
+[17:36] I'm just going to show you an example.
+[17:39] Okay, I
+[17:42] just made us this little indicator
+[17:45] to almost doxed myself there.
+[17:49] Okay, so
+[17:51] here's an indicator that we're looking
+[17:52] at that shows the slope of a moving
+[17:55] average. Let me actually also um pull
+[17:58] up. Okay, so this indicator reports the
+[18:01] slope of the moving average. When the
+[18:02] moving average is pointed very steeply
+[18:04] upwards, this will be higher. When it's
+[18:06] pointed downwards, this will be lower.
+[18:08] When it's pointed directly sideways,
+[18:10] it'll be at this midline at zero. When
+[18:12] we report the raw slope of the simple
+[18:15] moving average, we're looking at how
+[18:16] much it moved in dollars divided by the
+[18:18] change in time. When the asset is very
+[18:20] expensive, the slope is going to have
+[18:23] wilder swings than when the asset is
+[18:25] very cheap. So that means that the slope
+[18:27] of this moving average if we report it
+[18:29] raw is dependent also on the price of
+[18:32] the asset. But what if we zoom out and
+[18:35] look as this same symbol gets cheaper
+[18:38] further back in time? The swings are
+[18:40] less large. the feature that we're
+[18:42] thinking about is something that should
+[18:44] not get much more erratic as the asset
+[18:46] gets more expensive because that really
+[18:47] has nothing to do with the idea that we
+[18:49] were trying to capture in the future.
+[18:51] Right? So that's where normalization
+[18:53] comes into play. So if we transform this
+[18:54] to normalized or percentage based then
+[18:57] we see throughout history as the price
+[18:59] of the asset is really deflated or
+[19:01] really inflated it's not changing how
+[19:05] rangy this moving average slope is. Now
+[19:09] that we've normalized the feature to
+[19:10] look at the moving average slope in
+[19:12] terms of percentage instead of raw
+[19:15] dollar values, the range of it becomes
+[19:19] much more steady throughout time. And
+[19:21] now it really captures the idea that we
+[19:23] were trying to capture when we decided
+[19:25] to engineer this feature, which is just
+[19:27] how steep is the moving average, how
+[19:29] sharp is the moving average. If for some
+[19:31] reason that didn't click with you, just
+[19:32] look up feature normalization for
+[19:36] financial machine learning will probably
+[19:37] pull up the best results. Okay, let's
+[19:39] think about something else like a ratio.
+[19:40] Maybe I won't go in such great depth on
+[19:43] this, but for example, say we want to
+[19:46] identify if a breakout was violent or
+[19:49] something. Maybe we'll say like a
+[19:52] breakout is violent when it looks like
+[19:56] this one where it's where we have this
+[19:58] like range here and the average true
+[20:00] range gets much lower and then boom it
+[20:02] breaks out and the average true range
+[20:04] all of a sudden ticks up a bunch, right?
+[20:05] We'll call that like an aggressive
+[20:06] breakout. So say we wanted to engineer a
+[20:08] feature that can determine like that
+[20:11] that can rank the aggression of a
+[20:13] breakout. So that would be something
+[20:15] like
+[20:17] uh to put it in more qualitative English
+[20:21] terms, the range that we saw really
+[20:24] recently is much greater than the range
+[20:26] that we saw over a little bit of a
+[20:28] larger window. So the range that we saw
+[20:30] right here is much bigger than the range
+[20:33] average range that we were seeing back
+[20:34] here over this longer window. So what we
+[20:37] might look at is a ratio of two average
+[20:41] true ranges. one over a short window and
+[20:43] one over a longer window like this
+[20:46] because just uh for example
+[20:50] creating two features that are those two
+[20:52] individual average true ranges doesn't
+[20:55] uh doesn't effectively collapse the
+[20:59] relationship that we're thinking about
+[21:01] and that we're trying to capture in a
+[21:02] feature. So what would is if we just
+[21:04] used a ratio. So a short average true
+[21:07] range uh and a long average true range
+[21:11] and seeing what the ratio of them is. So
+[21:13] um that would tell us the the short
+[21:17] window average true range is much larger
+[21:19] than the long window average true range
+[21:21] and we just uh broke through a level. So
+[21:23] that that's a feature that captures like
+[21:25] this is a violent move that just
+[21:26] happened. Differences um you can
+[21:28] understand this one probably also. So
+[21:30] something like uh the distance between
+[21:33] price and a simple moving average like
+[21:35] the one that we have on the screen right
+[21:36] here we might think is a feature that
+[21:38] indicates the uh beginning of a trend,
+[21:43] an acceleration of a trend, something
+[21:45] like that. So that's an example of when
+[21:47] we would use a difference and we'd
+[21:48] probably also normalize this because we
+[21:50] probably care about the percentage
+[21:51] difference between the price and the
+[21:53] average true range. Okay, so encoding is
+[21:55] is a broader sect of transformation that
+[21:57] describes when we do more than one of
+[21:59] these things or these things in tandem
+[22:01] with another thing. So I'll give you an
+[22:03] example. We just talked about that
+[22:05] feature that is percentage distance from
+[22:08] a simple moving average to price right
+[22:10] now. Say I wanted to build a feature
+[22:12] that describes how far price is from
+[22:14] this moving average relative to normal.
+[22:16] I would want to use something like a
+[22:18] zcore. So instead of trying to explain
+[22:20] this one, I'm just going to build an
+[22:21] example again.
+[22:28] So let's just quickly look at this
+[22:32] indicator. The idea that this captures
+[22:34] now is how rare the normalized distance
+[22:37] between price and this simple moving
+[22:39] average is how rare it is. So when the
+[22:41] zcore is at three that means this
+[22:44] distance this relative distance almost
+[22:46] never happens. When the zcore is around
+[22:49] zero it means this is very very normal.
+[22:51] So the point is this feature that we've
+[22:52] engineered captures the rarity of the
+[22:56] normalized difference between the simple
+[22:58] moving average and price. That's an
+[23:00] example of encoding. If that doesn't
+[23:01] make sense, I'll do some explicit
+[23:02] examples of different types of encoding
+[23:04] in the next video. But I think that'll
+[23:07] do for now and we'll keep moving. Okay,
+[23:08] looks like I duplicated what type of
+[23:10] data should it be. We already talked
+[23:11] about this up here. The features that we
+[23:12] built briefly here and then visualized
+[23:13] with indicators were contextual
+[23:15] features. So maybe for this Python
+[23:18] example, we'll do an event defining a
+[23:20] feature. Something like a
+[23:23] sweep of a previous session high. I know
+[23:25] people love to talk about sweeps of
+[23:27] highs. So maybe like a a wick above a
+[23:29] high or something like that. And then
+[23:31] maybe while we're at it, we'll also do
+[23:34] um an outcome feature. So something like
+[23:38] uh we'll maybe use a double barrier
+[23:40] feature to define the outcomes of our
+[23:43] event that we build. Okay. So, I'm going
+[23:45] to use quantpad to build this feature.
+[23:48] Okay. Previous day low and previous day
+[23:52] high sweeps.
+[23:55] Let me write this prompt.
+[24:04] Okay, I just realized that I didn't
+[24:06] specify the symbol or the date range
+[24:07] that I wanted to look at, but it shows
+[24:10] ES and 2023. All of 2023. Okay, so I've
+[24:12] just run this. Let's look for the plots.
+[24:15] Okay, so I think visualizing and
+[24:17] validating your features, making sure
+[24:19] that they are exactly what you want them
+[24:21] to be is extremely important in feature
+[24:24] engineering. My point being always
+[24:25] visualize some examples of your
+[24:26] features. So here's an example of a
+[24:28] sweep of the previous day's low. So we
+[24:30] wick below, come back up, and this was
+[24:32] labeled as plus one. So that was a sweep
+[24:35] of a low. Here is one that was labeled
+[24:37] as minus one. So this is a sweep of a
+[24:39] high. We wicked above uh came back down
+[24:42] and closed and then we wound up breaking
+[24:43] through and it was not a reversal. The
+[24:45] other one, wow, the other one actually
+[24:46] was totally a reversal. That's pretty
+[24:48] coincidental. Okay, now before we come
+[24:50] up and look at the statistics of the
+[24:52] barrier labeled outcomes of these
+[24:54] events, I also meant to ask also for the
+[24:56] barriers to be plotted. It would be
+[24:58] great to see the barriers that we used
+[25:00] to label the outcome of this event.
+[25:02] Okay, so now for both events, we have
+[25:04] the double barriers plotted. This one
+[25:06] hit the top barrier. This one hit the
+[25:08] top barrier as well. And these are
+[25:10] average true range based. And we could
+[25:11] tune the average true range multiple,
+[25:13] but I'm not going to do that. Now, now
+[25:14] that we've verified this behavior, let's
+[25:16] go and look at the statistics up here.
+[25:18] We actually have a lesser number of
+[25:19] events than I figured we would get in
+[25:21] one full year, but we'll still go
+[25:23] through the statistics and then we can
+[25:24] run it once more with maybe 5 years of
+[25:26] data. Okay, so the expected value of
+[25:27] each case tells us the average return of
+[25:30] each case. So in the bearish case, it is
+[25:32] negative, price goes down. In the
+[25:33] bullish case, it is positive, price goes
+[25:36] up. But that's what we observed just in
+[25:37] this experiment which could have luck
+[25:39] involved. So we use confidence intervals
+[25:41] to better answer the question, how
+[25:42] likely is it that the true expected
+[25:44] value of each of these cases falls
+[25:45] within a given range? For the bullish
+[25:47] case, there's a 95% chance the true
+[25:49] expected value lies within this range
+[25:51] which contains a negative number. So
+[25:52] we're forced to call the bullish case
+[25:54] statistically indistinguishable from
+[25:56] zero, whereas the bearish case is all
+[25:58] negative. So this is a statistically
+[26:00] significant negative expected value. Now
+[26:02] like I said, this sample size is modest.
+[26:04] So, let's go back up here and adjust the
+[26:08] date range. Let's go all the way from
+[26:10] 2023 to 2025 or we'll do maybe from 2022
+[26:14] to 2025. In this larger sample, we have
+[26:17] 512 events. So, we are still looking h
+[26:22] that's interesting. Over this larger
+[26:24] window of time and this different
+[26:25] sample, the 95% confidence interval of
+[26:28] the expected value of the bearish case
+[26:29] is no longer negative at both bounds. So
+[26:32] we know the expected value was
+[26:33] statistically negative in the year 2023
+[26:36] that we tested initially but over this
+[26:37] larger window we can't say the same. So
+[26:39] we have one event that seems to lead to
+[26:41] different outcomes over different time
+[26:43] periods that we test. So how do we
+[26:45] explain the variability and outcomes of
+[26:47] the same event? That's exactly what
+[26:49] contextual features are for. And this is
+[26:52] starting to get at the bigger picture.
+[26:53] We have a well- definfined event. We
+[26:55] have a well- definfined outcome. And we
+[26:56] have a systematic and quantitative way
+[26:58] of measuring how that event affects the
+[27:00] outcome. Now we have to see what happens
+[27:02] when we condition on other things to
+[27:04] contextualize those trades. What else
+[27:06] might matter in predicting the outcome
+[27:08] of this event? Is it the previous day's
+[27:10] range? Is it the size of the wick in
+[27:13] comparison to the body that wicks
+[27:14] through? Is it any number of other
+[27:16] things? And then we can start to build
+[27:18] features for all of those to
+[27:19] contextualize the events. We can use
+[27:21] statistical analysis and machine
+[27:22] learning to uncover these
+[27:24] multi-dimensional and nonlinear
+[27:26] relationships that might exist.
+[27:27] different contextual features which
+[27:29] together with each other might help
+[27:30] predict outcomes of this event better.
+[27:33] As we engineer more meaningful features,
+[27:35] the goal is to paint a more vivid
+[27:36] picture about what actually matters in
+[27:38] predicting these outcomes. And this is
+[27:40] what begins the real process of
+[27:42] developing a quantitative trading
+[27:44] strategy.

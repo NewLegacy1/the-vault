@@ -1,0 +1,268 @@
+# Quant Trading: Markov Chains & Steady States
+# https://www.youtube.com/watch?v=vQ9n4SaFxHE
+
+[0:00] Seeing an application to quant finance
+[0:01] makes it a little bit more interesting.
+[0:03] My name is Thomas and I'm a physics
+[0:04] student at Columbia and I'm going to try
+[0:05] to give you the most intuitive
+[0:06] explanation of marov chains and how to
+[0:09] find the steadystate vector of a marov
+[0:11] chain. Let's start by talking about what
+[0:12] a marov chain actually is. So it's a
+[0:14] mathematical model that explains a
+[0:16] series of events or transitions between
+[0:19] states where the probability of ending
+[0:21] up in any state is only dependent on the
+[0:23] current state. I think that always
+[0:24] sounds pretty complicated when you hear
+[0:26] it for the first time, but with a really
+[0:27] simple example, it'll make a lot of
+[0:29] sense. Let's start off by trying to
+[0:30] visualize a simple situation where we're
+[0:31] trying to figure out what somebody's
+[0:33] going to have for lunch and then we'll
+[0:34] look at how to model it with a marov
+[0:36] chain. So in the marov chain sort of
+[0:37] framework, each one of these lunches is
+[0:39] considered a state and at each time step
+[0:41] we can be in one state. So that's like
+[0:43] every lunch we can have one of these
+[0:45] things and we transition between those
+[0:47] states with some probability. Let's say
+[0:49] every time our person has pizza for
+[0:50] lunch, the probability that they have a
+[0:52] salad for lunch tomorrow is maybe 40%.
+[0:56] Let's say the probability that they have
+[0:57] pizza again is 20%. And the remaining
+[1:00] 40% is that they'll have a burger the
+[1:05] next day. Maybe when they have a salad,
+[1:07] they go back to pizza with 50%
+[1:10] probability. 50% 0% 10% 30% 60%
+[1:13] probability. Now think about if we
+[1:14] started in the pizza state. So the
+[1:16] person had pizza today, right? We know
+[1:18] the probability of them ending up in any
+[1:20] one of these three states at the next
+[1:22] time step, right? Because we have all
+[1:23] the probabilities right here. And then
+[1:25] maybe we could just go another time step
+[1:27] further by using those probabilities
+[1:28] again and then again and then again. But
+[1:31] it's really difficult to do that in this
+[1:32] sort of directed graph sort of
+[1:34] visualization. So let's put it into a
+[1:36] different framework and use matrices to
+[1:38] represent all this same information in a
+[1:40] way that we can actually manipulate
+[1:41] using math. Okay, what we're looking at
+[1:42] right here is what's called a transition
+[1:44] matrix. And it shows us the
+[1:45] probabilities of transitioning from any
+[1:47] one state to another. Just like our
+[1:49] directed graph here, but we just put it
+[1:51] inside of a matrix. That way given any
+[1:53] present state we can determine the
+[1:55] probabilities of transitioning to any of
+[1:57] the next state. When the present state
+[1:59] is burger what's the probability of us
+[2:02] transitioning to burger again? It's 6 or
+[2:06] 60%. When our current state is burger
+[2:08] what's the probability of us
+[2:09] transitioning to pizza? It is 10%. And
+[2:14] from burger to salad we have 30%. Notice
+[2:18] that the sum of this row is going to be
+[2:20] one because we have to go somewhere.
+[2:21] Let's go ahead and fill this in for the
+[2:22] other states. Now, using this completed
+[2:24] transition matrix, when we're in any
+[2:26] present state, we can determine the
+[2:28] probability of ending up in any one of
+[2:30] our three states at the next state. If
+[2:31] our person ate pizza for lunch today,
+[2:33] then we're looking at this column of the
+[2:35] matrix to determine the probabilities of
+[2:36] our person eating any one of our three
+[2:38] meals for the next meal. If they ate
+[2:40] pizza today, there's a 40% chance of
+[2:41] them having a burger at the next time
+[2:43] step. There's a 20% chance of them
+[2:45] having pizza at the next time step
+[2:47] again. And there's a 40% chance of them
+[2:49] having salad at the next time step. To
+[2:51] be clear, this is exactly the
+[2:52] information that we have right here. We
+[2:53] just put it in a different format so
+[2:55] that we can actually use it to do some
+[2:56] math.
+[2:58] Okay, let's move back to sort of a more
+[3:00] quantitative finance type of framework.
+[3:02] Let's say that each one of these states
+[3:03] now represents a market regime and we
+[3:05] want to determine the probability of
+[3:07] being in any one of these three regimes
+[3:09] at a given time step from now. The way
+[3:11] we're going to represent the
+[3:12] probabilities of being in any state at a
+[3:14] given time step is by using something
+[3:16] called a state vector. The state vector
+[3:17] after m transitions just lists the
+[3:20] probabilities of us being in any one of
+[3:22] our states. So for us, the state vector
+[3:24] would look a little bit like this. We
+[3:25] only have three states. So in our
+[3:27] previous example, these would be burger,
+[3:29] pizza, and salad. So if I told you that
+[3:31] today we were in regime 2, and I want
+[3:33] you to find the probability of us being
+[3:35] in any one of these three regimes in 3
+[3:38] days from now, what are we going to do?
+[3:39] Let's start by writing down the state
+[3:41] vector for right now. We're in state
+[3:43] two. So that means there's a 100%
+[3:45] probability that we're going to be in
+[3:46] state 2 at the time right now. At time
+[3:48] zero, meaning right now, there's a 0%
+[3:50] chance we're going to be in state one
+[3:52] because we're not there. There's a 100%
+[3:54] chance that we're going to be in state
+[3:55] two because we are there. And there's a
+[3:57] 0% chance that we're going to be in
+[3:59] state three because we're not there.
+[4:00] That's pretty simple. So what are the
+[4:02] probabilities that we're going to be in
+[4:03] any one of these three states tomorrow?
+[4:05] What we're really asking for is the
+[4:06] state vector at time one. How do we find
+[4:08] that? Okay, let me just ask you to flash
+[4:10] back to our previous example. Right? We
+[4:12] are in state two right now. So what are
+[4:14] we looking at in our transition matrix?
+[4:16] Do you remember? We're looking at
+[4:20] this column right here to find our
+[4:21] probabilities of ending up in any one of
+[4:23] these states at the next time step. So
+[4:25] intuitively we know that if at time zero
+[4:27] we're in state 2, the state vector that
+[4:30] describes the probability of being in
+[4:31] any one of the next states should just
+[4:34] be this column of the matrix, which is
+[4:36] what we get when we multiply the
+[4:37] transition matrix and our original state
+[4:39] vector. Right? We take this state vector
+[4:41] and lay it down sideways on here. All of
+[4:43] these disappear because they're
+[4:44] multiplied by the zeros. And then all we
+[4:46] get is the entries from this column. So
+[4:48] tomorrow here are the probabilities of
+[4:50] us being in each market regime. 20%
+[4:52] chance regime 1, 40% chance regime 2,
+[4:54] 40% chance regime 3. Now, how do we find
+[4:57] the next time steps probability
+[4:59] distribution? Well, now since we're not
+[5:00] sure which regime we're going to be in,
+[5:02] we know that we can't just take one of
+[5:03] these columns, right? Because there's a
+[5:06] 20% chance that we should be looking at
+[5:07] this column. there's a 40% chance we
+[5:09] should be looking at this column and a
+[5:11] 40% chance we should be looking at this
+[5:12] column because those are the respective
+[5:14] probabilities of ending up in state 1 2
+[5:16] and three. Right? So what we can do is
+[5:19] just get the weighted probabilities
+[5:21] after two steps. What's our probability
+[5:23] of ending up in state one? Well, we know
+[5:24] after one step there's a 20% chance of
+[5:27] us being in state one, right? So there's
+[5:30] a 20% chance that we should be looking
+[5:31] at this column and that this would be
+[5:34] our probability of transitioning to
+[5:35] state one again. If that makes sense.
+[5:37] There's a 40% chance that after one time
+[5:39] step, we would be looking right here to
+[5:41] find our probability of transitioning
+[5:43] into state one. Because there's a 40%
+[5:45] chance that we would be in state two
+[5:46] after one time step. And there's also a
+[5:48] 40% chance that we would be in state
+[5:50] three after one time step. And that we
+[5:51] would be looking right here for our
+[5:53] probability of transitioning into state
+[5:55] one for the next time step. So now we're
+[5:56] thinking about our conditional
+[5:58] probability of transitioning into state
+[5:59] one. So now we have to weight each one
+[6:01] of these probabilities by the
+[6:03] probability that we would even be in
+[6:04] each one of these states, if that makes
+[6:06] sense. So we can just multiply this
+[6:07] matrix by this matrix and add up all of
+[6:10] these weighted probabilities. Add up all
+[6:12] of these weighted probabilities and
+[6:14] these weighted probabilities. Then we
+[6:15] get our conditional probability of being
+[6:17] in any one of those states at the second
+[6:19] time step. So now after two time steps,
+[6:21] here are our probabilities of being in
+[6:23] each one of these three states. We have
+[6:25] a 34% chance of being in state one, 38%
+[6:28] chance of being in state two, and a 28%
+[6:30] chance of being in state three. And if
+[6:32] we wanted to find our probabilities of
+[6:33] being in any state after three time
+[6:35] steps, we would just take this matrix,
+[6:36] multiply it here again, four time steps,
+[6:39] take the resultant matrix, multiply it
+[6:41] here again. Now, if we keep doing that,
+[6:42] are these probabilities ever going to
+[6:44] stop changing? Does there exist a steady
+[6:47] state for this system where the
+[6:48] probability distribution stops changing?
+[6:51] Let's think about what a steady state
+[6:52] would mean mathematically. That would
+[6:54] just mean that if we had some state
+[6:55] vector S and then we multiplied it by
+[6:58] the transition matrix, it would just
+[7:00] equal the state vector again because
+[7:01] it's not changing when we do another
+[7:03] transition. And if you've taken linear
+[7:05] algebra, you know that we can just say
+[7:06] this by using the identity matrix minus
+[7:09] our transition matrix
+[7:12] times the state vector. The steady state
+[7:14] vector is zero.
+[7:22] I'm realizing now that I picked pretty
+[7:23] bad numbers, but whatever.
+[7:37] Okay, now that we've solved the linear
+[7:38] system normally, we have to choose this
+[7:40] parameter t. And how should we choose it
+[7:41] to find a unique solution? Well,
+[7:43] remember the one thing that we know
+[7:44] about state vectors. We have to be
+[7:46] somewhere, right? which means that they
+[7:48] have to sum to one. So let's choose this
+[7:50] parameter such that our state vector
+[7:51] sums to one.
+[7:54] And that's it. We're done. This is the
+[7:55] steady state vector of our markoff
+[7:57] chain. What this means is that after a
+[7:58] very large number of transitions, this
+[8:00] is where the state vector will settle.
+[8:02] In the context of our market regime
+[8:04] example, this tells us what percentage
+[8:05] of our time we would spend in each
+[8:07] market regime, which could help with a
+[8:08] lot of things, namely portfolio design.
+[8:11] And we could set our base exposure from
+[8:12] these long run state odds. So, I hope
+[8:14] maybe this was a more intuitive
+[8:15] walkthrough than whatever you might have
+[8:17] gotten in school. And I also hope that
+[8:18] seeing an application to Quant Finance
+[8:20] makes it a little bit more interesting.
+[8:21] If you're interested in Quant Finance,
+[8:22] you can follow my page for more videos
+[8:24] like this. And if you have any
+[8:25] questions, you can leave them in the
+[8:26] comments and I'll try to respond to
