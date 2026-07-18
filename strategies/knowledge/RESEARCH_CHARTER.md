@@ -132,10 +132,12 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 ## Topic queue — CYCLE 3 (30 · added 2026-07-18 · findings-driven)
 
 ### Lane A — Quant / stats deepening (agent A)
-42. [ ] Regime-switching Monte Carlo: Markov transition matrix over vol regimes vs i.i.d.
-      reshuffle — implementation math for upgrading the path MC (DeltaTrend finding)
-43. [ ] Eval timeout & fee-drag modeling: monthly-fee bleed + time-outs for low-WR/high-RR
-      shapes (DeltaTrend's Powell build: ~55% timeout) — extend the scorecard math
+42. [x] Regime-switching Monte Carlo — `quant/regime-switching-monte-carlo.md` (cycle3-laneA ·
+      verdict: i.i.d. reshuffle is fine for EV but optimistic 1.5–5× on drawdown/bust tails under
+      vol regimes; 2-state day-tag Markov upgrade specced for `monte-carlo.ts`, reuses `markov-occupancy.ts`)
+43. [x] Eval timeout & fee-drag — `quant/eval-timeout-fee-drag-modeling.md` (cycle3-laneA ·
+      verdict: engine already computes timeoutRate/weeksToPass — surface 4 timeout columns on the
+      scorecard; IG analytic triage kills fee-bleeders at Stage-0; TopStep 2025 cohort: 16.8%/attempt)
 44. [ ] Bayesian Beta-binomial updating of small-sample WR month over month (carry-over #31)
 45. [ ] Vol-regime dependence: VIX vs setup frequency/quality; May-vs-June 2026 vol context
       (carry-over #32)
@@ -150,10 +152,10 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
       before a "surviving" edge is just noise (relates to kill-lessons doctrine)
 
 ### Lane B — Execution & prop ops (agent B) — NEW LANE for the replay→live transition
-52. [ ] Replay→live calibration protocol: measuring the one-tick-candle advantage; pre-registered
-      metrics for the first N live-sim sessions
-53. [ ] Slippage & fill quality on MNQ market orders in the 9:50–10:10 window: expected ticks,
-      measurement protocol (feeds the conversion rule's real-R bookkeeping)
+52. [x] Replay→live calibration protocol — `quant/ops-replay-live-calibration-protocol.md` (c3-laneB ·
+      pre-registered 7-metric sheet, 20-session gate · re-score May/June ledger trade-through FIRST or live will fake edge-decay)
+53. [x] Slippage & fill quality 9:50–10:10 — `quant/ops-mnq-slippage-market-orders-open.md` (c3-laneB ·
+      1–2 ticks normal / 3–5 release-adjacent · convert via aggressive limit not market · implementation-shortfall TCA protocol)
 54. [ ] Order types on prop platforms (Tradovate / ProjectX / Rithmic): server-side brackets,
       stop-limit vs stop-market, OCO reliability during prints
 55. [ ] News-print microstructure: MNQ spread/depth at 8:30 & 10:00 releases — quantified
@@ -170,7 +172,9 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
       (extends quant/trade-copiers-prop-accounts.md toward practice)
 
 ### Lane C — ICT / Powell / strategy deepening (agent C)
-62. [ ] ICT market-maker buy/sell models — full sequence template (carry-over #34)
+62. [x] ICT market-maker buy/sell models — `ict/market-maker-buy-sell-models.md` (cycle3-laneC ·
+      primary 2023 "last lecture" transcript archived · verdict: context lens only, least
+      mechanizable ICT concept; Dual46 = right-side fragment; log 1st- vs 2nd-stage entries)
 63. [ ] SMT divergence NQ/ES — refresh for the archived Vault SMT script (carry-over #37)
 64. [ ] Liquidity voids vs FVGs — delivery expectations (carry-over #39)
 65. [ ] Red-folder playbooks: CPI/NFP/FOMC at the 10:00 window — stand-down rules (carry-over #40)
