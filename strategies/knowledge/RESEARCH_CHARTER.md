@@ -75,15 +75,25 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 21. [x] MNQ vs NQ — `quant/mnq-vs-nq-instrument-comparison.md` (c2w1) — **verdict: stay MNQ**
 22. [x] MNQ microstructure — `quant/mnq-microstructure-ny-open.md` (c2w1)
 23. [x] Prop landscape 2026 — `quant/prop-firm-landscape-2026.md` (c2w1)
-24. [ ] Trade copiers across prop accounts: firm policies, risks, practical setups
-25. [ ] Contract roll dates & session structure gotchas for a 09:30–13:00 strategy
+24. [x] Trade copiers — `quant/trade-copiers-prop-accounts.md` (c2w2 · self-copy OK at
+      Apex/Topstep/MFFU, banned-in-practice at TPT · fill divergence = the real risk for limit entries)
+25. [x] Contract rolls & session gotchas — `quant/contract-rolls-session-gotchas.md` (c2w2 ·
+      walk audit: May 2026 clean except Memorial Day 5/25 halt · Sep + Dec 2025 contain roll
+      weeks (roll Thu 9/11 & 12/11, quad-witch 9/19 & 12/19) · Nov 2025 Thanksgiving thin ·
+      Aug 2025 clean)
 
 ### Strategy / stats deepening (agent B)
-26. [ ] MFE/MAE exit analysis: partials vs full TP at capped 1:5
-27. [ ] Break-even stop moves & trailing — evidence for/against (Powell uses BE)
+26. [x] MFE/MAE exit analysis — `quant/mfe-mae-exit-analysis.md` (c2w2 · e-ratio method ·
+      scaling out raises WR optics but cuts expectancy · defines May-walk MFE/MAE logging)
+27. [x] Break-even & trailing stops — `quant/break-even-and-trailing-stops.md` (c2w2 ·
+      BE-at-1R sits at the *minimum* of published performance sweeps; retracement entries
+      most damaged · closed-form adoption rule from the MFE/MAE ledger)
 28. [ ] Time stops for retracement entries: max holding time research
-29. [ ] Daily loss limits & circuit breakers: quantified benefit for discretionary traders
-30. [ ] Streak math at ~65–70% WR: expected losing runs per 100 trades (psych prep)
+29. [x] Daily loss limits — `quant/daily-loss-limits-circuit-breakers.md` (c2w2 ·
+      Dual46's one-trade/day already is the circuit breaker · missing rule = disc-sleeve
+      lockout on script-loss days)
+30. [x] Streak math — `quant/losing-streak-math.md` (c2w2 · **63% chance of a 4-loss streak
+      in first 100 trades at 65% WR** · 8R trailing buffer ≈ 1.3% blow-up vs ~28% at 5R)
 31. [ ] Bayesian (Beta-binomial) updating of small-sample WR month over month
 32. [ ] Vol-regime dependence: VIX levels vs setup frequency/quality; May-vs-June 2026 vol context
 

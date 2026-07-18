@@ -118,6 +118,7 @@ export default function JournalPage() {
     const entry: JournalEntry = {
       id: uid(),
       date: f.date,
+      loggedAt: new Date().toISOString(),
       accountId: acct,
       direction: f.direction,
       morningBias: f.morningBias,
@@ -149,7 +150,14 @@ export default function JournalPage() {
       }
       return j.accountId === filterAcct;
     })
-    .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+    // Newest-logged first (walk months run backwards in time, so date sort
+    // buried fresh May rows under June — looked like saves were failing).
+    .sort(
+      (a, b) =>
+        (b.loggedAt ?? "").localeCompare(a.loggedAt ?? "") ||
+        b.date.localeCompare(a.date) ||
+        b.id.localeCompare(a.id)
+    );
 
   const dualRows = rows.filter((j) => j.dualVersion === "Dual46" || j.strategy === "Morningstar");
   const takes = dualRows.filter((j) => j.direction !== "skip");

@@ -14,7 +14,12 @@ The script finds candidates. **You** pick the day bias, then take or skip.
 
 Walk each weekday **09:30 → 13:00** NY. Bias on **5m**; arm check on **1m**.
 **Mondays are IN** (decided 07-17 — June Mondays 2W/0L; tag them for a Monday sub-score).
+**Monday nuance (ICT canon, flag not veto):** in a bullish week with an unreached HTF
+discount array *below* Monday's range, canon expects Tuesday to drive down into it —
+a Monday **long** in that spot fights the template; note it in the journal if you take it.
 **Pre-stage the limit** the moment an OTE+KO stack forms — June's misses were latency.
+**May 2026 calendar:** clean month, no roll — except **Mon May 25 Memorial Day** (13:00 ET
+halt, thin holiday tape) → skip it, count as holiday not as a Monday data point.
 
 | Order | Month | Why |
 |---|---|---|

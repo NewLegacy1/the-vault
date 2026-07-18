@@ -52,6 +52,8 @@ export const MORNINGSTAR_STUDY_ID = "study:morningstar";
 export interface JournalEntry {
   id: string;
   date: string;
+  /** ISO timestamp when the entry was logged — review table sorts newest-logged first. */
+  loggedAt?: string;
   accountId: string;
   direction: "long" | "short" | "skip";
   grade: "A+" | "B" | "C" | "-";

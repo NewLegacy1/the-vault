@@ -115,6 +115,7 @@ function toEntry(f: Dual46Form, news: ReturnType<typeof autoRedFolder>): Journal
   return {
     id: uid(),
     date: f.date,
+    loggedAt: new Date().toISOString(),
     accountId: MORNINGSTAR_STUDY_ID,
     direction: f.direction,
     morningBias:
