@@ -72,12 +72,9 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 ## Topic queue — CYCLE 2 (20 · added 2026-07-17)
 
 ### Instrument / prop landscape (agent A)
-21. [ ] MNQ vs NQ: cost per unit risk (commissions+spread as % of stop), fill quality,
-      sizing granularity under fixed-$ risk — is 10 MNQ ≡ 1 NQ worth switching?
-22. [ ] MNQ microstructure: spread/book depth, behavior at 09:30/10:00, slippage for
-      small market orders (feeds the conversion rule)
-23. [ ] Prop-firm landscape 2026: Apex/TPT/others — trailing DD mechanics (EOD vs
-      intraday), consistency rules, payout policies, multi-account stacking economics
+21. [x] MNQ vs NQ — `quant/mnq-vs-nq-instrument-comparison.md` (c2w1) — **verdict: stay MNQ**
+22. [x] MNQ microstructure — `quant/mnq-microstructure-ny-open.md` (c2w1)
+23. [x] Prop landscape 2026 — `quant/prop-firm-landscape-2026.md` (c2w1)
 24. [ ] Trade copiers across prop accounts: firm policies, risks, practical setups
 25. [ ] Contract roll dates & session structure gotchas for a 09:30–13:00 strategy
 
