@@ -88,7 +88,7 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 27. [x] Break-even & trailing stops — `quant/break-even-and-trailing-stops.md` (c2w2 ·
       BE-at-1R sits at the *minimum* of published performance sweeps; retracement entries
       most damaged · closed-form adoption rule from the MFE/MAE ledger)
-28. [ ] Time stops for retracement entries: max holding time research
+28. [x] Time stops — closed in cycle 3 → `quant/time-stops-retracement-entries.md` (see item 46)
 29. [x] Daily loss limits — `quant/daily-loss-limits-circuit-breakers.md` (c2w2 ·
       Dual46's one-trade/day already is the circuit breaker · missing rule = disc-sleeve
       lockout on script-loss days)
@@ -138,12 +138,19 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 43. [x] Eval timeout & fee-drag — `quant/eval-timeout-fee-drag-modeling.md` (cycle3-laneA ·
       verdict: engine already computes timeoutRate/weeksToPass — surface 4 timeout columns on the
       scorecard; IG analytic triage kills fee-bleeders at Stage-0; TopStep 2025 cohort: 16.8%/attempt)
-44. [ ] Bayesian Beta-binomial updating of small-sample WR month over month (carry-over #31)
-45. [ ] Vol-regime dependence: VIX vs setup frequency/quality; May-vs-June 2026 vol context
-      (carry-over #32)
-46. [ ] Time stops for retracement entries: max holding time research (carry-over #28)
-47. [ ] Stationarity & era-splitting for small intraday event studies (his ES sweep: significant
-      2023, dead pooled 2022–25) — protocol for Stage-0 event EV
+44. [x] Bayesian Beta-binomial WR updating — `quant/bayesian-beta-binomial-win-rate-updating.md`
+      (cycle3-laneA · verdict: June 10/15 ⇒ WR 95% CI [0.42, 0.86] — point estimates overstate; May
+      posterior = June prior exactly; add posterior line to monthly harvest + optional MC p-sampling)
+45. [x] Vol-regime dependence — `quant/vol-regime-dependence-setup-frequency.md` (cycle3-laneA ·
+      verdict: May (mean 17.2, smooth) vs June (17.1, two spike clusters to 22.2) — vol-of-vol not
+      level; log vixPrevClose + or30ratio per walk day; "different vol month" excuse pre-killed)
+46. [x] Time stops for retracement entries — `quant/time-stops-retracement-entries.md` (cycle3-laneA ·
+      verdict: 567k-backtest sweep says time exits ≤ neutral, short ones harmful — the 13:00 flat rule
+      already is the defensible time stop; log 3 timestamps/trade so 2×-median-MFE check is free)
+47. [x] Stationarity & era-splitting — `quant/stationarity-era-splitting-event-studies.md`
+      (cycle3-laneA · verdict: formal break tests powerless at n=40–200 — use pre-registered
+      calendar-year era vector + 30-event rolling EV + regime-overlap KS check; era-consistency
+      scorecard field; symmetric guard: one hot block carrying pooled EV → BLOCK)
 48. [ ] Feature lag audits & leakage checks: contemporaneous vs predictive (the 78× R² collapse)
 49. [ ] Benchmark discipline: naive baselines (random-entry same-exit, buy-hold) as mandatory
       scorecard columns
@@ -156,13 +163,14 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
       pre-registered 7-metric sheet, 20-session gate · re-score May/June ledger trade-through FIRST or live will fake edge-decay)
 53. [x] Slippage & fill quality 9:50–10:10 — `quant/ops-mnq-slippage-market-orders-open.md` (c3-laneB ·
       1–2 ticks normal / 3–5 release-adjacent · convert via aggressive limit not market · implementation-shortfall TCA protocol)
-54. [ ] Order types on prop platforms (Tradovate / ProjectX / Rithmic): server-side brackets,
-      stop-limit vs stop-market, OCO reliability during prints
-55. [ ] News-print microstructure: MNQ spread/depth at 8:30 & 10:00 releases — quantified
-      stand-down windows (pairs with red-folder playbooks in lane C)
-56. [ ] Payout cadence optimization across funded accounts: withdraw-vs-buffer math per firm
-57. [ ] Prop rule-change watch 2026: TopStep / TPT / Apex consistency & DLL updates since the
-      landscape note (quant/prop-firm-landscape-2026.md)
+54. [x] Order types on prop platforms — `quant/ops-order-types-prop-platforms.md` (c3-laneB ·
+      all 3 stacks have server-side OCO but TopstepX default (Position Brackets) must be switched to Auto-OCO · stop-MARKET always · 6-item kill-test gate)
+55. [x] News-print microstructure — `quant/ops-news-print-microstructure-stand-down.md` (c3-laneB ·
+      measured: makers pull T−2min, trough at print, normal by T+9min · stand down T−2m→T+1m, NEVER convert inside it · 10:00 tier-1 releases hit ~4–8 days/mo)
+56. [x] Payout cadence optimization — `quant/ops-payout-cadence-withdraw-vs-buffer.md` (c3-laneB ·
+      two-phase rule: retain everything until floor-lock, then hold ~8R cushion and sweep every window — the account is a pipe, not a vault)
+57. [x] Prop rule-change watch 2026 — `quant/ops-prop-rule-change-watch-2026.md` (c3-laneB ·
+      Topstep 4/28 cap cut ($2k/50K Std) + MLL→$0 after 1st payout · Apex $85/mo looks STALE (4.0 = one-time activation, $0/mo) — re-rank before purchase)
 58. [ ] Data-feed discrepancies: TradingView vs Tradovate/Rithmic prints — same-setup divergence
       risk for a 1m RB strategy
 59. [ ] Pre-staged limits vs hotkey execution: published human-latency chains; best practice for
@@ -175,9 +183,14 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 62. [x] ICT market-maker buy/sell models — `ict/market-maker-buy-sell-models.md` (cycle3-laneC ·
       primary 2023 "last lecture" transcript archived · verdict: context lens only, least
       mechanizable ICT concept; Dual46 = right-side fragment; log 1st- vs 2nd-stage entries)
-63. [ ] SMT divergence NQ/ES — refresh for the archived Vault SMT script (carry-over #37)
-64. [ ] Liquidity voids vs FVGs — delivery expectations (carry-over #39)
-65. [ ] Red-folder playbooks: CPI/NFP/FOMC at the 10:00 window — stand-down rules (carry-over #40)
+63. [x] SMT divergence NQ/ES — `ict/smt-divergence-nq-es.md` (cycle3-laneC · SMT = confirmation
+      /management, never entry; Powell uses it mid-trade only; archived Pine lacks heal-invalidation;
+      add SMT_at_tap? boolean to NWOG census)
+64. [x] Liquidity voids vs FVGs — `ict/liquidity-voids-vs-fvgs.md` (cycle3-laneC · void = multi-candle
+      container of FVGs; partial repricing normal, news voids may never fill; NWOG > void > FVG hierarchy)
+65. [x] Red-folder playbooks — `ict/red-folder-playbooks-1000-window.md` (cycle3-laneC · decision
+      table built; Powell: NFP reverses at open (friendly), CPI trends all day (hostile to fades);
+      FOMC morning + day-before-NFP = consensus stand-downs; 10:00-slot prints = arm-delay question)
 66. [ ] Structural-target sleeve evidence: Powell's structural TPs (internal H/L, gaps) vs fixed
       1:5/100pt — assemble the post-May Stage-0 case, both directions
 67. [ ] 5m vs 1m entry trigger: Powell's evolved 5m preference (DeltaTrend note) — what he says,
