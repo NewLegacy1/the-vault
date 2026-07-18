@@ -3,32 +3,29 @@
 Use this **every session** before you click a trade.  
 The script finds candidates. **You** pick the day bias, then take or skip.
 
-**Chart:** MNQ · **5m for bias** · **flip to 1m to ARM** (Path B entry is a 1m RB) · **MARKS 5m RBs** (eyes only).  
-**Script:** lean Morningstar (`Powell_Rejection_Block_gate_v0.pine`) — Path B only (no museum / ghosts / tables).  
-**Inputs:** Path B ON · **Which setups = Leave + Retest** · Leave window 45m · ARM 1m ON · ARM 5m ON · Fill KPI ON · proximity ≥ 50.  
-**Note:** Status + plans stay up past 13:00 / 18:00 (calendar midnight wipe only). Legend must say **MS Dual3**.  
-**Dual sleeve:** [[morningstar-jul16-dual-sleeve-finding]] — **LEAVE** (soon after leave) and **RETEST** (away→return→RB, any clock time).
+**Freeze:** [[morningstar-dual46-lock]]  
+**Chart:** MNQ · **5m for bias** · **flip to 1m to ARM** (Path B entry is a 1m RB).  
+**Script:** `pine/Morningstar_v46.pine`  
+**Inputs:** Path B ON · **KO-retest only** · geom **1m RB wick** · Fixed R **5** · **Max TP 100** · model **Both** · last arm **13:00** · Direction **Long & Short** (Auto OFF) · fib 0.62/0.705 = **eyes only**.
 
 ---
 
-## Bar-replay test dates (start here)
+## Multi-month walk (do this now)
 
-Walk each day **09:30 → 13:00** NY. On 5m for story; flip to 1m if you want candle detail.
+Walk each weekday **09:30 → 13:00** NY. Bias on **5m**; arm check on **1m**. Skip Mondays (SHADOW) or don’t open them.
 
-| Date | Why |
-|---|---|
-| **2026-07-16** | **Control day** — sleeves **Both**: amber **EARLY** (~10:00) + **OTE** (~11:15). Each has its own fill KPI. Use **1m** so OTE RB is not missed. |
-| 2026-07-15 | Prior session — bias + Path B practice |
-| 2026-07-14 | Prior session |
-| 2026-07-13 | Prior session |
-| 2026-07-10 | Friday — NWOG week context into Sun open |
-| 2026-07-09 | Mid-week practice |
-| 2026-07-08 | Mid-week practice |
-| 2026-07-07 | Mid-week practice |
+| Order | Month | Why |
+|---|---|---|
+| **1** | **June 2026** | Newest Dual46 blank — **start here today** |
+| **2** | **May 2026** | Second recent month |
+| **3** | **Nov → Dec 2025** | New year-half; outside Jul/Oct Lab stand-down |
+| **4** | **Aug → Sep 2025** | Optional “good calendar” stress |
+| Hold | Extra July 2026 | Already seeded — don’t overfit |
+| Eyes | Any October week | Count skips only |
 
-**Pass rule for Jul 16:** tag = `1RB` · fib LO/HI visible on the leave leg · ENTRY matches the good 1m retest (not the bad midday long).
+**Retune ban:** finish June + May before changing pine. Screenshot weird days; journal; keep walking.
 
-Then keep walking **backward one weekday at a time** with the journal line below.
+**Sanity control (anytime):** 2026-07-16 Cont · `1RB · OTE+KO` · RB stop · 1:5.
 
 ---
 
@@ -81,6 +78,10 @@ Write it down:
 
 If week and day **disagree** → **NONE** (no trade) unless Path B is textbook and small risk.
 
+### Bias mode (Dual46 harvest)
+
+Keep Direction = **Long & Short**. Auto tag is eyes only. Optional Auto A/B **after** June+May are journaled — see [[morningstar-dual46-lock]].
+
 ---
 
 ## Step 3 — Path B story (after 10:00)
@@ -91,30 +92,30 @@ Only look for trades that match your bias from Steps 1–2.
 
 - [ ] Yellow **10:00** wash is on the open bar  
 - [ ] Price **wicked** one side of 10:00 (manipulation)  
-- [ ] Price **left** back through 10:00 (distribution starts)  
-- [ ] Amber **FIB LO (0)** and **FIB HI (1)** mark the leg — put your fib tool there (script does not draw 0.62–0.79)
+- [ ] Price **left** away from 10:00 (away-only leave)  
+- [ ] Amber **FIB LO (0)** / **FIB HI (1)** mark the frozen leg  
 
 **Direction check:**
 
 | What you saw | Path B lean |
 |---|---|
-| Wick **below** 10:00, then close/trade back **above** | Looking for **LONG** retest |
-| Wick **above** 10:00, then close/trade back **below** | Looking for **SHORT** retest |
+| Dump leave → long OTE RB | **Judas** long (if bias allows) |
+| Rally leave → short OTE RB | **Judas** short |
+| Same side as leave | **Cont** |
 
 Must match **Day bias**. If not → skip, even if ENTRY prints.
 
-### B. Fib (your tool)
+### B. Fib (eyes)
 
-- [ ] Put TradingView fib from **FIB LO (0)** → **FIB HI (1)**  
-- [ ] **Long:** 10:00 in discount (your 0.62–0.79) — or close enough you accept  
-- [ ] **Short:** 10:00 in premium — or close enough you accept  
+- [ ] Your fib tool on amber LO→HI — golden pocket is confluence  
+- [ ] Live stop is **RB extreme**, not 0.705 of the leg  
 
-### C. Trigger
+### C. Trigger (A+)
 
-- [ ] **Armed** ENTRY tag = `PathB · 10:00 · 1RB` (1m only arms)  
-- [ ] Dashed box `5RB @ KO · eyes` may appear — **confluence only**, not the click  
-- [ ] Rejection is **at / near** 10:00 (not a random mid-range wick)  
-- [ ] Stop size feels sane  
+- [ ] Armed tag ≈ `Powell · Cont|Judas · 1RB · OTE+KO` (or `OTE` / `KO` — grade it)  
+- [ ] Entry = RB wick-start · stop beyond RB extreme · TP ≤ 100 pts  
+- [ ] Fill = price **trades through** entry after arm (wick counts)  
+- [ ] Stop size feels sane (~10–25 ideal; wide = smaller effective RR under 100pt cap)  
 - [ ] Trade is **with** your bias, not against empty NWOG  
 
 ### D. Final gate (say it out loud)
@@ -136,36 +137,33 @@ Skip the day (or the signal) if **any** of these are true:
 - [ ] Empty NWOG is the clear magnet and this trade **runs away from** filling it  
 - [ ] Week bias and day bias fight each other  
 - [ ] Path B direction fights your written bias  
-- [ ] Messy chop inside NWOG / no clean leave from 10:00  
+- [ ] Messy chop / no clean leave from 10:00  
 - [ ] You can’t explain the trade in one short sentence  
 - [ ] Already took your 1 trade for the day  
-- [ ] Only a `5RB · eyes` mark printed — **no 1RB arm** → no click  
+- [ ] Monday (SHADOW only — don’t take)  
+- [ ] Grade is weak and stop is huge with no confluence  
 
 ---
 
 ## One-line journal (every day)
 
-Copy/paste:
-
 ```
 Date: ____
-NWOG: unfilled above / unfilled below / filled / inside
+NWOG: unfilled above / below / filled / inside
 Week bias: L / S / none
 Day bias: L / S / none
-Path B armed?: Y / N · dir ____ · tag ____ (want 1RB)
-5RB eyes?: Y / N
-Fib LO/HI visible?: Y / N
+Script arm?: Y / N · Cont / Judas · grade ____ · stop pts ____ · plan RR ____
+Fill?: Y / N / no-arm
 Take or skip: ____
-Why (one sentence): ____
-R result (if taken): ____
+Outcome: WIN / LOSS / no fill / skipped · R ____
+Why: ____
 ```
 
 ---
 
 ## Reminder
 
-- **NWOG** = week magnet / free bias when empty.  
+- **NWOG** = week magnet when empty.  
 - **PDH·PDL + Judas** = day story.  
-- **Path B** = 10:00 wick → leave → **fib leg (amber LO/HI)** → **1m RB arm** at 10:00.  
-- **5m RB** = mark only.  
-- Script proposes. **Checklist decides.**
+- **Path B** = leave → freeze leg → **1m RB** in OTE (+ KO) → wick-start / RB stop → Fixed 1:5 ≤ 100 pts.  
+- Script proposes. **Checklist decides.** · Freeze: [[morningstar-dual46-lock]]

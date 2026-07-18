@@ -1,0 +1,43 @@
+{
+  "description": "Synthetic fixture expectations for Dual29 Path B parity gate (two-candle RB spec)",
+  "sourceCsv": "mnq-1m-fixture-synthetic.csv",
+  "cases": [
+    {
+      "id": "jul16-leave",
+      "ymd": 20260716,
+      "sleeve": "leave",
+      "require": true,
+      "dir": 1,
+      "note": "KO-leave via bearish->bullish block pair at KO (10:03/10:04)"
+    },
+    {
+      "id": "jul16-powell",
+      "ymd": 20260716,
+      "sleeve": "powell",
+      "require": true,
+      "dir": 1,
+      "entryNear": 29328,
+      "entryTol": 12,
+      "note": "Fresh 1m RB whose zone CONTAINS 10:00 KO and overlaps OTE — Dual36 LIVE OTE+KO + Origin TP"
+    },
+    {
+      "id": "jul17-leave-lone-wick",
+      "ymd": 20260717,
+      "sleeve": "leave",
+      "require": false,
+      "note": "Lone bullish long-wick candle at KO (prior candle bullish) is NOT an RB — must not arm"
+    },
+    {
+      "id": "jul17-no-powell",
+      "ymd": 20260717,
+      "sleeve": "powell",
+      "require": false,
+      "note": "No Powell on this day"
+    }
+  ],
+  "unitChecks": {
+    "loneWickIsNotRb": true,
+    "twoCandleIsRb": true,
+    "sweepWickRequired": true
+  }
+}

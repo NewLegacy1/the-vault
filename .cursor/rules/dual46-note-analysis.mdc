@@ -1,0 +1,24 @@
+---
+description: Dual46 journal note-analysis workflow — always refresh canvas + harvest note
+alwaysApply: true
+---
+
+# Dual46 note analysis → always update the canvas
+
+Whenever analyzing the user's Dual46 journal / replay notes (usually pulled from
+`vault.journal` localStorage via the app on `localhost:3000`):
+
+1. Pull the full journal fresh from localStorage — never reuse a stale snapshot.
+   Compare entry count/dates against the last known state and **flag any lost or
+   changed entries** before analyzing (stale-tab overwrites have destroyed data before).
+2. Update `strategies/strategy-dev/50-analyses/morningstar-dual46-june-week1-harvest.md`
+   (or the current walk's harvest note) with the new ledger and patterns.
+3. **Always update the P&L canvas** at
+   `C:\Users\Admin\.cursor\projects\c-Users-Admin-Desktop-The-Vault\canvases\dual46-june-pnl-10mnq.canvas.tsx`
+   in the same pass — ledger rows, equity curve, stats, week splits (10 MNQ = $20/pt, gross).
+4. Keep the Script vs Disc split honest: only script-arm fills count toward the
+   Dual46 scorecard; discretionary takes are a separate sleeve.
+5. On milestones (month complete, sleeve verdict, major finding): archive the canvas
+   to the Obsidian brain — write a markdown snapshot of its data into
+   `strategies/strategy-dev/55-canvas-archive/<name>.md` and copy the `.canvas.tsx`
+   beside it, so the display's knowledge survives outside Cursor.

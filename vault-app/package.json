@@ -11,12 +11,14 @@
     "test": "npx tsx --test lib/mc-golden.test.ts lib/chain-ev.test.ts lib/risk-geometry.test.ts lib/markov-occupancy.test.ts lib/ingest-audit.test.ts",
     "weekly-review": "npx tsx scripts/weekly-review.ts",
     "markov": "npx tsx scripts/analyze-markov-occupancy.ts",
-    "research-queue": "npx tsx scripts/research-queue-status.ts"
+    "research-queue": "npx tsx scripts/research-queue-status.ts",
+    "pathb-replay": "npx tsx scripts/morningstar-pathb-replay.ts"
   },
   "dependencies": {
     "next": "^15.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

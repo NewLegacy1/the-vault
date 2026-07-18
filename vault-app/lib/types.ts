@@ -94,6 +94,27 @@ export interface JournalEntry {
   skipReasons?: SkipReason[];
   /** Compressed JPEG data URL (chart snapshot). */
   chartShot?: string;
+  /** Extra Dual46 chart shots (same compress). chartShot = first for back-compat. */
+  chartShots?: string[];
+
+  // ── Dual46 Path B day-study (additive · optional) ─────────────────
+  /** NWOG read: unfilled above / below / filled / inside */
+  nwog?: "above" | "below" | "filled" | "inside";
+  weekBias?: "long" | "short" | "none";
+  dayBias?: "long" | "short" | "none";
+  /** Cont = same side as leave · Judas = reverse */
+  pathBModel?: "Cont" | "Judas" | "—";
+  /** Script grade on the arm */
+  pathBGrade?: "OTE+KO" | "OTE" | "KO" | "—";
+  stopPts?: number;
+  planRr?: number;
+  fillStatus?: "yes" | "no" | "no-arm";
+  /** WIN / LOSS / no fill / skipped */
+  dualOutcome?: "WIN" | "LOSS" | "no fill" | "skipped";
+  /** Dual46 freeze stamp */
+  dualVersion?: "Dual46";
+  /** script = Morningstar arm · disc = discretionary note (NWOG / reverse fib / etc.) */
+  entrySource?: "script" | "disc";
 }
 
 /** Map journal confluence count → letter suggestion. 0 = empty stack (no setup) → "-". */

@@ -1,14 +1,14 @@
 # PRB v1 — Trade Checklist (locked config)
 
-**Config:** 5m MNQ · Auto entry (CE if stop > 20 pts) · leave-then-retest 1R (strict OFF) · confirming close ON · rolling-sweep OFF · window **10:00–13:00** · $400 risk ($300 in fresh eval) · 1:5 target · BE at +1R · 1 trade/day · skip Mondays · **skip July & October** (`regime-gate-v0` · Pine `Powell_Rejection_Block_gate_v0.pine`)
+**Config:** 5m MNQ · Auto entry (CE if stop > 20 pts) · leave-then-retest 1R (strict OFF) · confirming close ON · rolling-sweep OFF · window **10:00–13:00** · $400 risk ($300 in fresh eval) · 1:5 target · BE at +1R · 1 trade/day · skip Mondays · **skip July & October** (`regime-gate-v0` · Pine `Morningstar_v44.pine`)
 
 The script finds the setup. **You** are the bias filter. Three checkpoints.
 
-**Morningstar (lean gate_v0):** shorttitle **Morningstar** · window **10:00–13:00** · Manual click only.
+**Morningstar (Morningstar v46):** shorttitle **Morningstar v46** · window **10:00–13:00** · Manual click only · geom **1m RB wick** · Fixed **1:5** · Max TP **100 pts**.
 
 - Chart: PDH/PDL · 10:00 · **NWOG** · Path B fib LO/HI · ENTRY/STOP/TP · **fill KPI** · armed RB only.
 - **Path B (Powell):** 10:00 manip → leave → **KO in fib OTE** → 1m RB@KO. Early RB@KO = eyes only ([[morningstar-jul16-dual-sleeve-finding]]).
-- Cut from script: ghosts · tables · trails · CISD · 30/60/240 · IFVG/OB/FVG museum · Deep BT orders. Fat archive: `pine/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine`. Locked Lab remains `Powell_Rejection_Block_v1.pine`.
+- Cut from script: ghosts · tables · trails · CISD · 30/60/240 · IFVG/OB/FVG museum · Deep BT orders. Fat archive: `pine/archive/_archive_Powell_Rejection_Block_gate_v0_working_before_slim_2026-07-16.pine`. Locked Lab remains `Powell_Rejection_Block_v1.pine`.
 
 **Daily bias:** [[Morningstar_Daily_Bias_Checklist]]
 

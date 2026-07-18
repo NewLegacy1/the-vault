@@ -1,26 +1,37 @@
 ---
 strategy: PRB
-updated: 2026-07-16
+updated: 2026-07-17
 tags: [findings, prb, strategy-dev]
 ---
 # PRB — Settled findings & winning trade formula
 
 > Source of truth for what PRB experiments have proven. Update after every settled cohort.
 
-## Morningstar Path B (Manual study · 2026-07-16)
+## Morningstar Path B — Dual46 LOCK (Manual study · 2026-07-17)
 
-**IMPORTANT — not Lab-settled MC.** Chart finding only. Full note: [[morningstar-jul16-dual-sleeve-finding]].
+**IMPORTANT — not Lab-settled MC.** Chart + checklist freeze only. Canonical note: [[morningstar-dual46-lock]]. History: [[morningstar-jul16-dual-sleeve-finding]]. Checklist: [[Morningstar_Daily_Bias_Checklist]].
 
-- **Powell control sleeve:** leave → fib leg → **KO in OTE** → 1m RB@KO (~11:15 on Jul 16). Keep `Require KO in fib OTE` **ON**.
-- **Early sleeve (candidate):** first RB@KO right after leave (~10:00). Appeared when OTE gate was OFF + permissive 1m pack; **steals the day** from Powell if 1-trade lock is on. Mark eyes-only until studied separately.
-- **Do not** treat early ARM ENTRY/STOP/TP as the Powell trade without a fill KPI check.
+**Script:** `pine/Morningstar_v46.pine`
 
-## Winning trade formula (current best: v1.5 BE@2R + Auto PDH/PDL)
+| Layer | Dual46 rule |
+|---|---|
+| Bias | **Long & Short** (Auto OFF) — you take/skip |
+| Sleeve | **KO-retest only** |
+| Gate | 1m RB in frozen-leg OTE (+ KO-in-zone = A+) |
+| Entry / stop | RB **wick-start** / beyond **RB extreme** |
+| Fib 0.62 / 0.705 | Eyes only — **not** live geom |
+| TP | Fixed **1:5**, hard cap **100 pts** |
+| Window | Last arm **13:00** · Skip Mondays = SHADOW |
+
+**Jul-week seed:** sparse arms, mostly WINs on ~14–24pt stops; 100pt TP cap fixes wide-RB fantasy targets.  
+**Next:** multi-month bar-replay per [[morningstar-dual46-lock]] (Jun 2026 → May 2026 → Nov–Dec 2025). Do **not** retune mid-walk.
+
+## Winning trade formula (Lab PRB · separate from Dual46 study)
 
 - **Setup:** Powell rejection block, limit retest entry, 1 trade/day, skip Monday
 - **Risk:** $400/trade
 - **Management:** BE at **+2R** (moving from +1R was the single biggest MC improvement)
-- **Direction:** Auto PDH/PDL draw filter (trade toward the untapped pool)
+- **Direction:** Auto PDH/PDL draw filter (trade toward the untapped pool) — *Lab cohort*; Dual46 chart harvest used Long & Short
 - **Trail:** OFF in baseline; trail 2.0/1.5 only a give-back-regime candidate
 
 ## Cohort leaderboard (TPT $50K, 2000 sims)
@@ -41,7 +52,7 @@ Purpose tags: **event** = pattern/detect · **context** = when to take · **refe
 3. **Skip Monday** — *(context)* holds.
 4. **1 trade/day** — *(context / slot)* holds — slot discipline beats volume.
 5. Win profile is low win-rate / high payoff — formula depends on **losses staying small** (BE = *outcome*), not on WR as KPI.
-6. **`regime-gate-v0` PASS (2026-07-14)** — *(context · calendar)* STAND_DOWN Jul+Oct on 3y A0a/D1. Lab-engine MC: E[$/wk] ↑ and bust ↓ on full + OOS vs ungated. Provisional **ops overlay**, not a causal market regime. Do **not** stack March into v0. Pine: `pine/Powell_Rejection_Block_gate_v0.pine`.
+6. **`regime-gate-v0` PASS (2026-07-14)** — *(context · calendar)* STAND_DOWN Jul+Oct on 3y A0a/D1. Lab-engine MC: E[$/wk] ↑ and bust ↓ on full + OOS vs ungated. Provisional **ops overlay**, not a causal market regime. Do **not** stack March into v0. Pine: `pine/Morningstar_v42.pine`.
 7. **Chain EV A0a→D1 × gate PASS (2026-07-14)** — see [[phase2-chain-ev-gated]]. Ungated **−$18/wk** → gated **−$6/wk**. OOS: $32 → **$50/wk**. Absolute full-3y chain still ≤0. JSON: `vault-app/data/tv-exports/chain-ev-gated-vs-ungated.json`.
 
 **RB detect / leave-retest / confirming close** — *(event)*. **PDH/PDL / PM H/L / key opens** — *(reference)*.

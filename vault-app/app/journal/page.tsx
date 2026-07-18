@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Dual46StudyForm } from "@/components/Dual46StudyForm";
+import { JournalEditPanel } from "@/components/JournalEditPanel";
 import { compressChartShot } from "@/lib/journal-shot";
 import { useLocal, fmtUsd, todayStr } from "@/lib/store";
 import {
@@ -13,49 +15,12 @@ import {
   PrbFilter,
   RedFolderTag,
   SkipReason,
-  StructTf,
-  letterFromMsScore,
   uid,
 } from "@/lib/types";
 import { analyzeBiasJournal } from "@/lib/bias-journal";
 
 const MORNING_BIASES: MorningBias[] = ["long", "short", "neutral", "skip"];
 const PRB_FILTERS: PrbFilter[] = ["Both", "Long only", "Short only"];
-const STRUCT_TFS: StructTf[] = ["15", "30", "60", "240", "chart"];
-
-type MsFlagKey =
-  | "msPoi"
-  | "msH4"
-  | "msCisd"
-  | "msIfvg1"
-  | "msIfvg5"
-  | "msRb5"
-  | "msWFvg"
-  | "msHtfFvg"
-  | "msRb"
-  | "msOb"
-  | "msKeyOpen"
-  | "msOteOverlap";
-
-/** LTF + light context — chart Morningstar marks. */
-const MS_LTF_FLAGS: { key: MsFlagKey; label: string; hint: string }[] = [
-  { key: "msPoi", label: "Draw POI", hint: "PDH / PDL / PM / key open on the RB" },
-  { key: "msH4", label: "4H wick OK", hint: "4H↑/↓ pts green (~15+) or grey (~8+)" },
-  { key: "msCisd", label: "1m CISD", hint: "CISD inside the HTF box" },
-  { key: "msIfvg1", label: "1m IFVG", hint: "1IFVG inside the HTF box" },
-  { key: "msIfvg5", label: "5m IFVG", hint: "5IFVG inside the HTF box" },
-  { key: "msRb5", label: "5m RB", hint: "5RB inside the HTF box" },
-];
-
-/** HTF PDA / OTE used on the take — not 15IFVG-only. */
-const MS_HTF_FLAGS: { key: MsFlagKey; label: string; hint: string }[] = [
-  { key: "msWFvg", label: "Weekly FVG", hint: "Untested WFVG in play" },
-  { key: "msHtfFvg", label: "HTF FVG", hint: "15 / 1H / 4H FVG untested" },
-  { key: "msRb", label: "HTF RB", hint: "Rejection block in the idea" },
-  { key: "msOb", label: "Order block", hint: "15OB / 1HOB" },
-  { key: "msKeyOpen", label: "Key open", hint: "18:00 / 00:00 / 10:00 / PDH·PDL" },
-  { key: "msOteOverlap", label: "Fib OTE overlap", hint: "Chart OTE tag showed PDA stack" },
-];
 
 const SKIP_REASONS: { id: SkipReason; label: string }[] = [
   { id: "no_setup", label: "No setup armed" },
@@ -69,11 +34,9 @@ const SKIP_REASONS: { id: SkipReason; label: string }[] = [
   { id: "other", label: "Other" },
 ];
 
-type FormState = ReturnType<typeof emptyForm>;
-
-function emptyForm(mode: JournalLogMode) {
+function emptyLive() {
   return {
-    mode,
+    mode: "live" as JournalLogMode,
     date: todayStr(),
     accountId: "",
     direction: "skip" as JournalEntry["direction"],
@@ -82,20 +45,6 @@ function emptyForm(mode: JournalLogMode) {
     redFolder: "no" as RedFolderTag,
     redFolderTime: "",
     redFolderEvent: "",
-    structureTf: "15" as StructTf,
-    structureTag: "",
-    msPoi: false,
-    msH4: false,
-    msCisd: false,
-    msIfvg1: false,
-    msIfvg5: false,
-    msRb5: false,
-    msWFvg: false,
-    msHtfFvg: false,
-    msRb: false,
-    msOb: false,
-    msKeyOpen: false,
-    msOteOverlap: false,
     showOutcome: false,
     pnl: "",
     r: "",
@@ -107,53 +56,18 @@ function emptyForm(mode: JournalLogMode) {
   };
 }
 
-function msScoreFromFlags(f: FormState): number {
-  return (
-    (f.msPoi ? 1 : 0) +
-    (f.msH4 ? 1 : 0) +
-    (f.msCisd ? 1 : 0) +
-    (f.msIfvg1 ? 1 : 0) +
-    (f.msIfvg5 ? 1 : 0) +
-    (f.msRb5 ? 1 : 0) +
-    (f.msWFvg ? 1 : 0) +
-    (f.msHtfFvg ? 1 : 0) +
-    (f.msRb ? 1 : 0) +
-    (f.msOb ? 1 : 0) +
-    (f.msKeyOpen ? 1 : 0) +
-    (f.msOteOverlap ? 1 : 0)
-  );
-}
-
-function msLtfFromFlags(f: FormState): number {
-  return (f.msCisd ? 1 : 0) + (f.msIfvg1 ? 1 : 0) + (f.msIfvg5 ? 1 : 0) + (f.msRb5 ? 1 : 0);
-}
-
-function msHtfFromFlags(f: FormState): number {
-  return (
-    (f.msWFvg ? 1 : 0) +
-    (f.msHtfFvg ? 1 : 0) +
-    (f.msRb ? 1 : 0) +
-    (f.msOb ? 1 : 0) +
-    (f.msKeyOpen ? 1 : 0) +
-    (f.msOteOverlap ? 1 : 0)
-  );
-}
-
 export default function JournalPage() {
   const [journal, setJournal] = useLocal<JournalEntry[]>("vault.journal", []);
   const [accounts] = useLocal<Account[]>("vault.accounts", []);
   const [activeId] = useLocal<string>("vault.activeAccount", "");
-  const [filterAcct, setFilterAcct] = useState("");
+  const [filterAcct, setFilterAcct] = useState(MORNINGSTAR_STUDY_ID);
   const [previewShot, setPreviewShot] = useState<string | null>(null);
-
-  const [f, setF] = useState(() => emptyForm("morningstar"));
+  const [editId, setEditId] = useState<string | null>(null);
+  const [mode, setMode] = useState<JournalLogMode>("morningstar");
+  const [f, setF] = useState(emptyLive);
   const [logErr, setLogErr] = useState("");
   const [shotErr, setShotErr] = useState("");
 
-  const msScore = msScoreFromFlags(f);
-  const msLtf = msLtfFromFlags(f);
-  const msHtf = msHtfFromFlags(f);
-  const letter = letterFromMsScore(msScore);
   const tookTrade = f.direction === "long" || f.direction === "short";
 
   const toggleSkip = (id: SkipReason) => {
@@ -180,62 +94,40 @@ export default function JournalPage() {
     }
   };
 
-  const add = () => {
-    const isStudy = f.mode === "morningstar";
-    const acct = isStudy ? MORNINGSTAR_STUDY_ID : f.accountId || activeId;
+  const addLive = () => {
+    const acct = f.accountId || activeId;
     if (!acct) {
-      setLogErr("Live mode needs an account — pick one or switch to Morningstar study.");
+      setLogErr("Live mode needs an account — pick one or switch to Dual46 study.");
       return;
     }
     if (f.redFolder === "yes" && !f.redFolderTime.trim()) {
-      setLogErr("Red folder = yes needs news time (HHMM NY). Use F7 News → Look up a day.");
-      return;
-    }
-    if (isStudy && !f.structureTag.trim() && tookTrade) {
-      setLogErr("Paste the chart tag (e.g. 15m · PDH) so we know which RB you took.");
+      setLogErr("Red folder = yes needs news time (HHMM NY).");
       return;
     }
     setLogErr("");
-    const score = isStudy ? msScoreFromFlags(f) : undefined;
     const entry: JournalEntry = {
       id: uid(),
       date: f.date,
       accountId: acct,
       direction: f.direction,
       morningBias: f.morningBias,
-      prbFilter: isStudy ? "Both" : f.prbFilter,
+      prbFilter: f.prbFilter,
       redFolder: f.redFolder,
       redFolderTime: f.redFolder === "yes" ? f.redFolderTime.trim() : undefined,
       redFolderEvent: f.redFolder === "yes" ? f.redFolderEvent.trim() || undefined : undefined,
-      grade: isStudy ? letterFromMsScore(score ?? 0) : "B",
+      grade: "B",
       pnl: tookTrade && f.showOutcome ? parseFloat(f.pnl) || 0 : 0,
       rMultiple: tookTrade && f.showOutcome ? parseFloat(f.r) || 0 : 0,
-      mfeR:
-        tookTrade && f.showOutcome && f.mfeR !== "" ? parseFloat(f.mfeR) || 0 : undefined,
+      mfeR: tookTrade && f.showOutcome && f.mfeR !== "" ? parseFloat(f.mfeR) || 0 : undefined,
       giveBack: tookTrade && f.showOutcome ? f.giveBack : false,
       checklistFails: f.skipReasons.join(","),
       skipReasons: f.skipReasons.length ? f.skipReasons : undefined,
       notes: f.notes,
-      strategy: isStudy ? "Morningstar" : "PRB",
-      structureTf: isStudy ? f.structureTf : undefined,
-      structureTag: isStudy ? f.structureTag.trim() || undefined : undefined,
-      msScore: score,
-      msPoi: isStudy ? f.msPoi : undefined,
-      msH4: isStudy ? f.msH4 : undefined,
-      msCisd: isStudy ? f.msCisd : undefined,
-      msIfvg1: isStudy ? f.msIfvg1 : undefined,
-      msIfvg5: isStudy ? f.msIfvg5 : undefined,
-      msRb5: isStudy ? f.msRb5 : undefined,
-      msWFvg: isStudy ? f.msWFvg : undefined,
-      msHtfFvg: isStudy ? f.msHtfFvg : undefined,
-      msRb: isStudy ? f.msRb : undefined,
-      msOb: isStudy ? f.msOb : undefined,
-      msKeyOpen: isStudy ? f.msKeyOpen : undefined,
-      msOteOverlap: isStudy ? f.msOteOverlap : undefined,
+      strategy: "PRB",
       chartShot: f.chartShot || undefined,
     };
     setJournal([...journal, entry]);
-    setF(emptyForm(f.mode));
+    setF(emptyLive());
     setShotErr("");
   };
 
@@ -247,19 +139,17 @@ export default function JournalPage() {
       }
       return j.accountId === filterAcct;
     })
-    .sort((a, b) => b.date.localeCompare(a.date));
+    .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
 
-  const trades = rows.filter((r) => r.direction !== "skip");
-  const net = trades.reduce((s, j) => s + j.pnl, 0);
-  const wins = trades.filter((j) => j.pnl > 50).length;
-  const losses = trades.filter((j) => j.pnl < -50).length;
-  const msRows = rows.filter((j) => j.strategy === "Morningstar" || j.accountId === MORNINGSTAR_STUDY_ID);
-  const scored = msRows.filter((j) => typeof j.msScore === "number");
-  const avgMs = scored.reduce((s, j) => s + (j.msScore ?? 0), 0) / Math.max(1, scored.length);
+  const dualRows = rows.filter((j) => j.dualVersion === "Dual46" || j.strategy === "Morningstar");
+  const takes = dualRows.filter((j) => j.direction !== "skip");
+  const wins = dualRows.filter((j) => j.dualOutcome === "WIN").length;
+  const losses = dualRows.filter((j) => j.dualOutcome === "LOSS").length;
+  const skips = dualRows.filter((j) => j.direction === "skip" || j.dualOutcome === "skipped").length;
   const biasStats = useMemo(() => analyzeBiasJournal(rows), [rows]);
 
   const acctLabel = (id: string, strategy?: string) => {
-    if (id === MORNINGSTAR_STUDY_ID || strategy === "Morningstar") return "Morningstar";
+    if (id === MORNINGSTAR_STUDY_ID || strategy === "Morningstar") return "Dual46";
     return accounts.find((a) => a.id === id)?.label ?? id.slice(0, 8);
   };
 
@@ -267,312 +157,161 @@ export default function JournalPage() {
     <>
       <div className="stat-strip">
         <div className="stat">
-          <div className="k">Study logs</div>
-          <div className="v">{msRows.length}</div>
+          <div className="k">Dual46 logs</div>
+          <div className="v">{dualRows.length}</div>
           <div className="d">
-            {msRows.filter((j) => j.direction === "skip").length} skips · {trades.length} takes
+            {skips} skip · {takes.length} take
           </div>
         </div>
         <div className="stat">
-          <div className="k">Avg Morningstar</div>
-          <div className="v">{scored.length ? `${avgMs.toFixed(1)}/5` : "—"}</div>
-          <div className="d">from confluence flags</div>
+          <div className="k">Outcomes</div>
+          <div className="v">
+            <span className="pos">{wins}W</span> / <span className="neg">{losses}L</span>
+          </div>
+          <div className="d">from WIN/LOSS tags</div>
         </div>
         <div className="stat">
-          <div className="k">Logged P&L (optional)</div>
-          <div className={"v " + (net >= 0 ? "pos" : "neg")}>{fmtUsd(net, true)}</div>
-          <div className="d">
-            {wins}W / {losses}L · only if you filled outcome
-          </div>
+          <div className="k">Walk months</div>
+          <div className="v accent">Jun → May</div>
+          <div className="d">then Nov–Dec 2025</div>
         </div>
         <div className="stat">
-          <div className="k">News calendar</div>
-          <div className="v accent">
-            <Link href="/news">F7</Link>
-          </div>
-          <div className="d">look up red-folder day</div>
+          <div className="k">How to log</div>
+          <div className="v accent">Ctrl+V</div>
+          <div className="d">paste + OCR here</div>
         </div>
       </div>
 
       <div className="panel">
         <div className="panel-title">
-          Morningstar log
-          <span className="sub">tap what you saw on the chart · score fills itself · snapshot optional</span>
+          Dual46 day study
+          <span className="sub">paste chart → OCR tag → bias → log · all on this page</span>
         </div>
         <div className="panel-body">
-          <p className="small dim" style={{ marginTop: 0, lineHeight: 1.55 }}>
-            Chart screenshots can&apos;t reliably auto-read TradingView labels yet — OCR misses MS grades too
-            often. Fast path: check the 5 confluence boxes (same as chart), attach a shot for later, skip
-            P&amp;L unless you care.
-          </p>
-
-          {logErr && (
-            <p className="warn small" style={{ marginTop: 0 }}>
-              {logErr}
-            </p>
-          )}
-
-          <div className="frm-row" style={{ marginBottom: 8 }}>
+          <div className="frm-row" style={{ marginBottom: 12 }}>
             <label className="fld">
               Mode
               <select
-                value={f.mode}
+                value={mode}
                 onChange={(e) => {
-                  const mode = e.target.value as JournalLogMode;
-                  setF((prev) => ({ ...emptyForm(mode), date: prev.date }));
+                  setMode(e.target.value as JournalLogMode);
                   setLogErr("");
                 }}
               >
-                <option value="morningstar">Morningstar study</option>
+                <option value="morningstar">Dual46 Path B study</option>
                 <option value="live">Live account (PRB)</option>
               </select>
             </label>
-            <label className="fld">
-              Date
-              <input type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />
-            </label>
           </div>
 
-          {f.mode === "live" && (
-            <div className="frm-row">
-              <label className="fld">
-                Account
-                <select
-                  value={f.accountId || activeId}
-                  onChange={(e) => setF({ ...f, accountId: e.target.value })}
-                >
-                  <option value="">—</option>
-                  {accounts.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="fld">
-                TV Direction filter
-                <select
-                  value={f.prbFilter}
-                  onChange={(e) => setF({ ...f, prbFilter: e.target.value as PrbFilter })}
-                >
-                  {PRB_FILTERS.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          )}
-
-          {/* 1 · Session */}
-          <div className="accent small" style={{ letterSpacing: 1, marginTop: 8 }}>
-            1 · SESSION
-          </div>
-          <div className="frm-row">
-            <label className="fld">
-              Morning bias (D→4H)
-              <select
-                value={f.morningBias}
-                onChange={(e) => setF({ ...f, morningBias: e.target.value as MorningBias })}
-              >
-                {MORNING_BIASES.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="fld">
-              What I did
-              <select
-                value={f.direction}
-                onChange={(e) =>
-                  setF({
-                    ...f,
-                    direction: e.target.value as JournalEntry["direction"],
-                    showOutcome: e.target.value !== "skip" ? f.showOutcome : false,
-                  })
-                }
-                title="Direction of the trade you took — or SKIP if you passed"
-              >
-                <option value="skip">Skipped the setup</option>
-                <option value="long">Took the long</option>
-                <option value="short">Took the short</option>
-              </select>
-            </label>
-            <label className="fld">
-              Red-folder news?
-              <select
-                value={f.redFolder}
-                onChange={(e) => setF({ ...f, redFolder: e.target.value as RedFolderTag })}
-              >
-                <option value="no">no</option>
-                <option value="yes">yes</option>
-                <option value="unknown">unknown</option>
-              </select>
-            </label>
-            {f.redFolder === "yes" && (
-              <>
-                <label className="fld">
-                  News time (HHMM NY)
-                  <input
-                    value={f.redFolderTime}
-                    onChange={(e) => setF({ ...f, redFolderTime: e.target.value })}
-                    placeholder="0830"
-                    style={{ width: 80 }}
-                  />
-                </label>
-                <label className="fld">
-                  Event
-                  <input
-                    value={f.redFolderEvent}
-                    onChange={(e) => setF({ ...f, redFolderEvent: e.target.value })}
-                    placeholder="CPI"
-                    style={{ width: 100 }}
-                  />
-                </label>
-              </>
-            )}
-          </div>
-          <p className="small dim" style={{ marginTop: 0 }}>
-            Red folder? <Link href="/news">F7 Look up a day</Link> — copy the time. No Forex Factory needed.
-          </p>
-
-          {f.mode === "morningstar" && (
+          {mode === "morningstar" ? (
+            <Dual46StudyForm onSave={(entry) => setJournal([...journal, entry])} />
+          ) : (
             <>
-              {/* 2 · Setup on chart */}
-              <div className="accent small" style={{ letterSpacing: 1, marginTop: 12 }}>
-                2 · SETUP ON CHART
-              </div>
+              {logErr && (
+                <p className="warn small" style={{ marginTop: 0 }}>
+                  {logErr}
+                </p>
+              )}
               <div className="frm-row">
                 <label className="fld">
-                  Arming structure TF
+                  Date
+                  <input
+                    type="date"
+                    value={f.date}
+                    onChange={(e) => setF({ ...f, date: e.target.value })}
+                  />
+                </label>
+                <label className="fld">
+                  Account
                   <select
-                    value={f.structureTf}
-                    onChange={(e) => setF({ ...f, structureTf: e.target.value as StructTf })}
+                    value={f.accountId || activeId}
+                    onChange={(e) => setF({ ...f, accountId: e.target.value })}
                   >
-                    {STRUCT_TFS.map((t) => (
-                      <option key={t} value={t}>
-                        {t === "15"
-                          ? "15m"
-                          : t === "30"
-                            ? "30m"
-                            : t === "60"
-                              ? "1H"
-                              : t === "240"
-                                ? "4H"
-                                : "Chart"}
+                    <option value="">—</option>
+                    {accounts.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.label}
                       </option>
                     ))}
                   </select>
                 </label>
                 <label className="fld">
-                  Chart tag (from RB label)
-                  <input
-                    value={f.structureTag}
-                    onChange={(e) => setF({ ...f, structureTag: e.target.value })}
-                    placeholder="15m · PDH"
-                    style={{ width: 160 }}
-                  />
+                  Morning bias
+                  <select
+                    value={f.morningBias}
+                    onChange={(e) => setF({ ...f, morningBias: e.target.value as MorningBias })}
+                  >
+                    {MORNING_BIASES.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="fld">
+                  Direction filter
+                  <select
+                    value={f.prbFilter}
+                    onChange={(e) => setF({ ...f, prbFilter: e.target.value as PrbFilter })}
+                  >
+                    {PRB_FILTERS.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="fld">
+                  Did
+                  <select
+                    value={f.direction}
+                    onChange={(e) =>
+                      setF({
+                        ...f,
+                        direction: e.target.value as JournalEntry["direction"],
+                        showOutcome: e.target.value !== "skip" ? f.showOutcome : false,
+                      })
+                    }
+                  >
+                    <option value="skip">Skip</option>
+                    <option value="long">Long</option>
+                    <option value="short">Short</option>
+                  </select>
+                </label>
+                <label className="fld">
+                  Red folder
+                  <select
+                    value={f.redFolder}
+                    onChange={(e) => setF({ ...f, redFolder: e.target.value as RedFolderTag })}
+                  >
+                    <option value="no">no</option>
+                    <option value="yes">yes</option>
+                    <option value="unknown">unknown</option>
+                  </select>
                 </label>
               </div>
-
-              {/* 3 · Confluence → auto grade */}
-              <div className="accent small" style={{ letterSpacing: 1, marginTop: 12 }}>
-                3 · LTF / CONTEXT (chart marks)
-              </div>
-              <p className="small dim" style={{ marginTop: 0, marginBottom: 8 }}>
-                Check only what lit. No setup → leave off + skip <b>No setup armed</b>. OTE is not
-                15m-IFVG-only — use HTF PDA row below for weekly/HTF FVG · RB · OB · key opens · fib overlap.
-              </p>
-              <div className="frm-row" style={{ alignItems: "stretch", gap: 8 }}>
-                {MS_LTF_FLAGS.map((flag) => (
-                  <label
-                    key={flag.key}
-                    className={"chk" + (f[flag.key] ? " done" : "")}
-                    title={flag.hint}
-                    style={{
-                      minWidth: 120,
-                      border: "1px solid var(--border)",
-                      borderRadius: 6,
-                      padding: "8px 10px",
-                    }}
-                  >
+              {f.redFolder === "yes" && (
+                <div className="frm-row">
+                  <label className="fld">
+                    Time HHMM
                     <input
-                      type="checkbox"
-                      checked={f[flag.key]}
-                      onChange={(e) => setF({ ...f, [flag.key]: e.target.checked })}
+                      value={f.redFolderTime}
+                      onChange={(e) => setF({ ...f, redFolderTime: e.target.value })}
+                      style={{ width: 80 }}
                     />
-                    <span className="chk-box" aria-hidden="true" />
-                    <span className="txt">
-                      <b>{flag.label}</b>
-                      <span className="note">{flag.hint}</span>
-                    </span>
                   </label>
-                ))}
-              </div>
-              <div className="accent small" style={{ letterSpacing: 1, marginTop: 14 }}>
-                3b · HTF PDA / OTE (what you used)
-              </div>
-              <div className="frm-row" style={{ alignItems: "stretch", gap: 8 }}>
-                {MS_HTF_FLAGS.map((flag) => (
-                  <label
-                    key={flag.key}
-                    className={"chk" + (f[flag.key] ? " done" : "")}
-                    title={flag.hint}
-                    style={{
-                      minWidth: 120,
-                      border: "1px solid var(--border)",
-                      borderRadius: 6,
-                      padding: "8px 10px",
-                    }}
-                  >
+                  <label className="fld">
+                    Event
                     <input
-                      type="checkbox"
-                      checked={f[flag.key]}
-                      onChange={(e) => setF({ ...f, [flag.key]: e.target.checked })}
+                      value={f.redFolderEvent}
+                      onChange={(e) => setF({ ...f, redFolderEvent: e.target.value })}
+                      style={{ width: 100 }}
                     />
-                    <span className="chk-box" aria-hidden="true" />
-                    <span className="txt">
-                      <b>{flag.label}</b>
-                      <span className="note">{flag.hint}</span>
-                    </span>
                   </label>
-                ))}
-              </div>
-              <div
-                className="mt"
-                style={{
-                  display: "inline-block",
-                  padding: "8px 14px",
-                  borderRadius: 6,
-                  border: "1px solid var(--border-hi)",
-                  background: "var(--panel, transparent)",
-                }}
-              >
-                <span className="dim small">Auto grade · </span>
-                <span className="accent" style={{ fontSize: 18, fontWeight: 600 }}>
-                  {msScore}/12 · {letter}
-                </span>
-                <span className="dim small">
-                  {" "}
-                  · LTF {msLtf}/4 · HTF {msHtf}/6
-                  {msScore === 0
-                    ? " · empty stack OK"
-                    : msScore >= 6
-                      ? " · A+ band"
-                      : msScore >= 3
-                        ? " · B band"
-                        : " · C band"}
-                </span>
-              </div>
-
-              {/* 4 · Why skip / why weak */}
-              <div className="accent small" style={{ letterSpacing: 1, marginTop: 16 }}>
-                4 · WHY SKIP / WHY WEAK (optional)
-              </div>
-              <div className="frm-row" style={{ alignItems: "center" }}>
+                </div>
+              )}
+              <div className="frm-row">
                 {SKIP_REASONS.map((r) => (
                   <label key={r.id} className="chk" style={{ marginRight: 6 }}>
                     <input
@@ -585,114 +324,92 @@ export default function JournalPage() {
                   </label>
                 ))}
               </div>
-              <label className="fld" style={{ maxWidth: "100%", marginTop: 8 }}>
+              <label className="fld" style={{ maxWidth: "100%" }}>
                 Notes
                 <input
                   value={f.notes}
                   onChange={(e) => setF({ ...f, notes: e.target.value })}
-                  placeholder="one line — what you saw"
                   style={{ width: "100%", maxWidth: 480 }}
                 />
               </label>
+              <div className="frm-row">
+                <label className="fld">
+                  Snapshot
+                  <input type="file" accept="image/*" onChange={(e) => onShot(e.target.files?.[0] ?? null)} />
+                </label>
+                {f.chartShot && (
+                  <button type="button" className="btn-ghost" onClick={() => setPreviewShot(f.chartShot)}>
+                    Preview
+                  </button>
+                )}
+              </div>
+              {shotErr && <p className="warn small">{shotErr}</p>}
+              {tookTrade && (
+                <details
+                  className="mt"
+                  open={f.showOutcome}
+                  onToggle={(e) => setF({ ...f, showOutcome: (e.target as HTMLDetailsElement).open })}
+                >
+                  <summary className="small dim" style={{ cursor: "pointer" }}>
+                    Optional P&amp;L / R
+                  </summary>
+                  <div className="frm-row mt">
+                    <label className="fld">
+                      P&L $
+                      <input
+                        type="number"
+                        value={f.pnl}
+                        onChange={(e) => setF({ ...f, pnl: e.target.value })}
+                        style={{ width: 90 }}
+                      />
+                    </label>
+                    <label className="fld">
+                      R
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={f.r}
+                        onChange={(e) => setF({ ...f, r: e.target.value })}
+                        style={{ width: 70 }}
+                      />
+                    </label>
+                  </div>
+                </details>
+              )}
+              <div className="frm-row mt">
+                <button type="button" className="btn" onClick={addLive}>
+                  Log live
+                </button>
+              </div>
             </>
           )}
-
-          {/* 5 · Snapshot */}
-          <div className="accent small" style={{ letterSpacing: 1, marginTop: 16 }}>
-            5 · CHART SNAPSHOT (optional · not auto-parsed)
-          </div>
-          <div className="frm-row" style={{ alignItems: "flex-end" }}>
-            <label className="fld">
-              Upload PNG/JPG
-              <input type="file" accept="image/*" onChange={(e) => onShot(e.target.files?.[0] ?? null)} />
-            </label>
-            {f.chartShot && (
-              <>
-                <button type="button" className="btn-ghost" onClick={() => setPreviewShot(f.chartShot)}>
-                  Preview
-                </button>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={f.chartShot}
-                  alt="Chart"
-                  style={{ height: 48, borderRadius: 4, border: "1px solid var(--border)" }}
-                />
-              </>
-            )}
-          </div>
-          {shotErr && (
-            <p className="warn small" style={{ marginTop: 0 }}>
-              {shotErr}
-            </p>
-          )}
-
-          {/* Optional outcome — collapsed */}
-          {tookTrade && (
-            <details
-              className="mt"
-              open={f.showOutcome}
-              onToggle={(e) => setF({ ...f, showOutcome: (e.target as HTMLDetailsElement).open })}
-            >
-              <summary className="small dim" style={{ cursor: "pointer" }}>
-                Optional · P&amp;L / R / MFE (skip this for study — not required)
-              </summary>
-              <div className="frm-row mt">
-                <label className="fld">
-                  P&L $
-                  <input
-                    type="number"
-                    value={f.pnl}
-                    onChange={(e) => setF({ ...f, pnl: e.target.value })}
-                    style={{ width: 90 }}
-                  />
-                </label>
-                <label className="fld">
-                  R multiple
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={f.r}
-                    onChange={(e) => setF({ ...f, r: e.target.value })}
-                    style={{ width: 70 }}
-                  />
-                </label>
-                <label className="fld">
-                  MFE (R)
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={f.mfeR}
-                    onChange={(e) => setF({ ...f, mfeR: e.target.value })}
-                    style={{ width: 70 }}
-                  />
-                </label>
-                <label className="fld">
-                  Peaked ≥2R, exited &lt;1R
-                  <input
-                    type="checkbox"
-                    checked={f.giveBack}
-                    onChange={(e) => setF({ ...f, giveBack: e.target.checked })}
-                  />
-                </label>
-              </div>
-            </details>
-          )}
-
-          <div className="frm-row mt">
-            <button type="button" className="btn" onClick={add}>
-              Log setup
-            </button>
-          </div>
         </div>
       </div>
 
+      {editId &&
+        (() => {
+          const target = journal.find((x) => x.id === editId);
+          if (!target) return null;
+          return (
+            <JournalEditPanel
+              key={target.id}
+              entry={target}
+              onSave={(updated) => {
+                setJournal(journal.map((x) => (x.id === updated.id ? updated : x)));
+                setEditId(null);
+              }}
+              onCancel={() => setEditId(null)}
+            />
+          );
+        })()}
+
       <div className="panel">
         <div className="panel-title">
-          History
+          Review
           <span className="sub">
             <select value={filterAcct} onChange={(e) => setFilterAcct(e.target.value)}>
+              <option value={MORNINGSTAR_STUDY_ID}>Dual46 study</option>
               <option value="">all</option>
-              <option value={MORNINGSTAR_STUDY_ID}>Morningstar study</option>
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.label}
@@ -705,74 +422,93 @@ export default function JournalPage() {
           <table>
             <thead>
               <tr>
+                <th></th>
                 <th>Date</th>
+                <th>Bias</th>
                 <th>Did</th>
                 <th>Tag</th>
-                <th>Grade</th>
-                <th>Red</th>
+                <th>Src</th>
+                <th>Fill</th>
+                <th>Out</th>
+                <th>Stop</th>
+                <th>RR</th>
                 <th>Shot</th>
                 <th>Notes</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((j) => (
-                <tr key={j.id}>
-                  <td>{j.date}</td>
-                  <td
-                    className={
-                      j.direction === "skip" ? "dim" : j.direction === "long" ? "pos" : "neg"
-                    }
-                  >
-                    {j.direction === "skip" ? "SKIP" : j.direction.toUpperCase()}
-                  </td>
-                  <td className="small dim">{j.structureTag ?? "—"}</td>
-                  <td>
-                    {typeof j.msScore === "number" ? (
-                      <>
-                        <span className="accent">{j.msScore}/12</span> {j.grade}
-                      </>
-                    ) : (
-                      j.grade
-                    )}
-                  </td>
-                  <td className="small dim">
-                    {j.redFolder === "yes"
-                      ? `${j.redFolderTime ?? "?"} ${j.redFolderEvent ?? ""}`.trim()
-                      : (j.redFolder ?? "—")}
-                  </td>
-                  <td>
-                    {j.chartShot ? (
+              {rows.map((j) => {
+                const shots = j.chartShots?.length ? j.chartShots : j.chartShot ? [j.chartShot] : [];
+                return (
+                  <tr key={j.id} style={editId === j.id ? { outline: "1px solid var(--matrix-dim)" } : undefined}>
+                    <td>
                       <button
                         type="button"
                         className="btn-ghost"
-                        onClick={() => setPreviewShot(j.chartShot!)}
+                        style={{ padding: "1px 7px" }}
+                        title="Edit entry"
+                        onClick={() => setEditId(editId === j.id ? null : j.id)}
                       >
-                        view
+                        edit
                       </button>
-                    ) : (
-                      ""
-                    )}
-                  </td>
-                  <td className="small dim">
-                    {[j.skipReasons?.join(", "), j.notes].filter(Boolean).join(" · ")}
-                  </td>
-                  <td>
-                    <button
-                      type="button"
-                      className="btn danger"
-                      style={{ padding: "1px 7px" }}
-                      onClick={() => setJournal(journal.filter((x) => x.id !== j.id))}
+                    </td>
+                    <td>{j.date}</td>
+                    <td className="small dim">
+                      {[j.weekBias, j.dayBias].filter(Boolean).join("/") || j.morningBias || "—"}
+                    </td>
+                    <td
+                      className={
+                        j.direction === "skip" ? "dim" : j.direction === "long" ? "pos" : "neg"
+                      }
                     >
-                      x
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      {j.direction === "skip" ? "SKIP" : j.direction.toUpperCase()}
+                    </td>
+                    <td className="small dim">{j.structureTag ?? acctLabel(j.accountId, j.strategy)}</td>
+                    <td className="small dim">{j.entrySource ?? "—"}</td>
+                    <td className="small dim">{j.fillStatus ?? "—"}</td>
+                    <td
+                      className={
+                        j.dualOutcome === "WIN" ? "pos" : j.dualOutcome === "LOSS" ? "neg" : "dim"
+                      }
+                    >
+                      {j.dualOutcome ?? j.grade}
+                    </td>
+                    <td className="small dim">{j.stopPts != null ? j.stopPts : "—"}</td>
+                    <td className="small dim">
+                      {j.planRr != null ? `1:${j.planRr}` : "—"}
+                    </td>
+                    <td>
+                      {shots.length ? (
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          onClick={() => setPreviewShot(shots[0])}
+                        >
+                          {shots.length > 1 ? `${shots.length} imgs` : "view"}
+                        </button>
+                      ) : (
+                        ""
+                      )}
+                    </td>
+                    <td className="small dim">{j.notes}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn danger"
+                        style={{ padding: "1px 7px" }}
+                        onClick={() => setJournal(journal.filter((x) => x.id !== j.id))}
+                      >
+                        x
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="dim">
-                    Nothing logged yet.
+                  <td colSpan={13} className="dim">
+                    Nothing logged yet — paste a chart above and hit Log.
                   </td>
                 </tr>
               )}
@@ -782,31 +518,13 @@ export default function JournalPage() {
       </div>
 
       {previewShot && (
-        <div
-          role="dialog"
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.75)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 50,
-            padding: 24,
-          }}
-          onClick={() => setPreviewShot(null)}
-        >
+        <div role="dialog" className="shot-modal" onClick={() => setPreviewShot(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={previewShot}
-            alt="Chart"
-            style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: 6 }}
-            onClick={(e) => e.stopPropagation()}
-          />
+          <img src={previewShot} alt="Chart" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
 
-      {f.mode === "live" && biasStats.filterMismatch > 0 && (
+      {mode === "live" && biasStats.filterMismatch > 0 && (
         <div className="panel">
           <div className="panel-body small warn">
             Live filter-mismatch count: {biasStats.filterMismatch}.{" "}

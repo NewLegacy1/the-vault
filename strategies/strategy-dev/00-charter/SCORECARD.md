@@ -1,11 +1,12 @@
 ---
-updated: 2026-07-15
+updated: 2026-07-17
 tags: [scorecard, strategy-dev, promote]
 ---
 # Strategy scorecard — success / failure
 
 > Every Lab cohort and Stage-0 event study ends with **toward / away / kill**.  
 > Metric hierarchy: path MC first → trade EV ± CI → risk geometry (diagnostic only).
+> **Morningstar Dual46** (manual Path B): see [[morningstar-dual46-lock]] — chart freeze, not Lab promote.
 
 ## Hierarchy (do not invert)
 
@@ -84,3 +85,13 @@ No CUSIP matching required. Still ask: was this calendar/news/version **known as
 ## Decay check (weekly review)
 
 Compare latest OOS / rolling window to IS. Collapsing OOS EV or `E[$/wk]` → **away** (α-decay), not “one bad week — press on.”
+
+## Morningstar Dual46 (manual Path B · 2026-07-17)
+
+| Field | Status |
+|---|---|
+| Freeze | [[morningstar-dual46-lock]] · `pine/Morningstar_v46.pine` |
+| Lab MC / E[$/wk] | **Not claimed** — chart harvest only |
+| Verdict | **toward** study (geometry locked) — waiting multi-month journal |
+| Do next | Bar-replay **2026-06 → 2026-05** then **2025-11→12** per lock note |
+| Do not | Retune fib geom / Auto ON / raise Max TP mid-walk |

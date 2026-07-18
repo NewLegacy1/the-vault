@@ -70,9 +70,22 @@ The F2 bias panel then compares filter mismatches, "Both filter on a bearish rea
 
 **MNQ vs NQ:** MNQ outperformed by ~$3K purely from sizing granularity — NQ rounds $400 risk down to 1 contract (or 0 when stop > 20 pts). Stay on MNQ until risk unit ≥ ~$1,000. **v1.8 — Instrument / contract size** input: `Auto (chart symbol)` reads MNQ1! vs NQ1! from the chart; override `MNQ micro ($2/pt)` or `NQ mini ($20/pt)` for what-if only. NQ auto-caps at **6 contracts** (TPT 60-micro equivalent). Funnel row **Sizing** shows tag + max contracts. For real NQ backtests: chart `CME_MINI:NQ1!` + Auto, or stay on MNQ1! (recommended for $400 risk). **v1.9:** Auto now checks **ticker/root for MNQ/NQ** before `syminfo.pointvalue` — bar replay on `MNQ1!` sometimes reported `tv=20` and sized like NQ (~2 contracts instead of ~20). Funnel shows `tv=` raw value when Auto is on; if tag ≠ chart, lock **MNQ micro ($2/pt)** for the 12mo run.
 
-## PRB gate_v0 (`Powell_Rejection_Block_gate_v0.pine`) — regime-gate-v0 ops
+## Morningstar v44 (`Morningstar_v44.pine`) — Manual Path B study
 
-Copy of locked **v1** with one extra Session input. **Never edit** `Powell_Rejection_Block_v1.pine`.
+Active **Morningstar** chart study (was `Powell_Rejection_Block_gate_v0`). **Never edit** `Powell_Rejection_Block_v1.pine` (locked Lab Deep BT).
+
+| Role | File |
+|---|---|
+| **Morningstar (live study)** | `pine/Morningstar_v44.pine` |
+| **Locked Lab PRB** | `pine/Powell_Rejection_Block_v1.pine` |
+| **LiveCoach HUD** | `pine/PRB_Gate_LiveCoach_v0.pine` |
+| **Unused / old Dual / Track B / Macro** | `pine/archive/` |
+
+Jul/Oct regime skip and Manual Path B dual-sleeve logic live in Morningstar v44. Paste into Pine Editor after changes; shorttitle **Morningstar v44**.
+
+## PRB gate_v0 (archived name) — regime-gate-v0 ops
+
+Historical name for what is now **Morningstar v44**. Older snapshots and Track B measure scripts are under `pine/archive/`. **Never edit** `Powell_Rejection_Block_v1.pine`.
 
 | Input | Default | Behavior |
 |---|---|---|

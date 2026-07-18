@@ -18,6 +18,21 @@ export function useLocal<T>(key: string, initial: T) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
+  // Sync writes from other tabs — otherwise a stale tab silently overwrites
+  // entries logged elsewhere the next time it saves (journal data loss).
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== key || e.newValue === null) return;
+      try {
+        setVal(JSON.parse(e.newValue) as T);
+      } catch {
+        // ignore malformed cross-tab payload
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [key]);
+
   useEffect(() => {
     if (ready) localStorage.setItem(key, JSON.stringify(val));
   }, [key, val, ready]);

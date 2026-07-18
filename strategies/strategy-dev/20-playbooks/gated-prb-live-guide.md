@@ -7,7 +7,7 @@ tags: [live, gated-prb, ops, strategy-dev]
 
 > **Yes — actively paper/live-test gated PRB** as an **ops overlay**, not as proven prop income.  
 > Lab: Jul+Oct STAND_DOWN **PASS** (survival ↑). Full-3y chain A0a→D1 still **≤$0/wk** absolute.  
-> Pine: `pine/Powell_Rejection_Block_gate_v0.pine` · Checklist: [[PRB_Trade_Checklist]] · Coach: `pine/PRB_Gate_LiveCoach_v0.pine`
+> Pine: `pine/Morningstar_v44.pine` · Checklist: [[PRB_Trade_Checklist]] · Coach: `pine/PRB_Gate_LiveCoach_v0.pine`
 
 ## What “actively testing” means
 
@@ -55,18 +55,18 @@ Optional: set Coach alerts **enter STAND_DOWN** / **exit STAND_DOWN** so Aug ope
 | Script | What it draws | What it does **not** do |
 |---|---|---|
 | **`PRB_Gate_LiveCoach_v0`** | STAND_DOWN wash · corner LIVE/STAND_DOWN · risk table · optional **planned** stop/TP/BE lines from *Planned stop (pts)* | Find RBs · arm LIMIT/STOP/TP boxes · emit entry signals |
-| **`Powell_Rejection_Block_gate_v0`** | **RB** wick box · **LIMIT / STOP / TP** lines on chart when setup arms · optional frozen past trades (Deep BT) | Bias labels · corner tables |
+| **`Morningstar_v44`** | **RB** wick box · **LIMIT / STOP / TP** lines on chart when setup arms · optional frozen past trades (Deep BT) | Bias labels · corner tables |
 
 If the chart shows only a HUD/table: you almost certainly have **Coach only**. Add **gate_v0** on the same MNQ chart (overlay strategy). Locked `Powell_Rejection_Block_v1.pine` stays untouched.
 
 ### Morningstar study (Manual Path B)
 
-**Name:** Morningstar — Manual study on lean `gate_v0` (TV shorttitle **Morningstar**). Locked PRB v1 / Lab Chart control stay **PRB**.
+**Name:** Morningstar — Manual study on lean `gate_v0` (TV shorttitle **Morningstar v44**). Locked PRB v1 / Lab Chart control stay **PRB**.
 
 **IMPORTANT:** [[morningstar-jul16-dual-sleeve-finding]] — early RB@KO (~10:00) vs Powell OTE (~11:15).
 
 1. Chart: `CME_MINI:MNQ1!` · **5m bias / 1m to ARM** · NY session.  
-2. Add **`Morningstar (PRB gate_v0)`** (strategy, overlay). Re-paste after Pine changes.  
+2. Add **`Morningstar v44`** (strategy, overlay). Re-paste after Pine changes.  
 3. Inputs:
    - **Path B ON** · **Path B sleeves = Both** · Min fib **40** · Min away **30** · ARM 1m ON · MARK 5m ON · Fill KPI ON · ARM 5m OFF
    - Last arm **1300** · Direction **Both** · NWOG / fib LO/HI / ENTRY/STOP/TP ON
@@ -84,7 +84,7 @@ If the chart shows only a HUD/table: you almost certainly have **Coach only**. A
 | Pane | Script | Setting | Role |
 |---|---|---|---|
 | **A — Coach** | `PRB_Gate_LiveCoach_v0` | Eval or Funded profile | STAND_DOWN banner · sizing · planned R lines |
-| **B — Setup engine** | `Powell_Rejection_Block_gate_v0` | **Manual levels only = ON** · Jul/Oct = ON | Draws LIMIT / STOP / TP boxes when ARMED / SHADOW — **no** `strategy.entry` |
+| **B — Setup engine** | `Morningstar_v44` | **Manual levels only = ON** · Jul/Oct = ON | Draws LIMIT / STOP / TP boxes when ARMED / SHADOW — **no** `strategy.entry` |
 
 You copy box prices into the broker (or click TradingView futures if that’s your fill path). The checklist bias filter stays **human**. Paste Coach **Planned stop (pts)** from the red-box stop distance to get qty.
 
@@ -189,7 +189,7 @@ Create **separate** alerts (one script each). Use *Once per bar close*. Message 
 |---|---|---|
 | `PRB_Gate_LiveCoach_v0` | **PRB · enter STAND_DOWN** | Month rolls into Jul/Oct |
 | `PRB_Gate_LiveCoach_v0` | **PRB · exit STAND_DOWN** | Month leaves Jul/Oct |
-| `Powell_Rejection_Block_gate_v0` | **PRB · ARMED (Manual ON)** | Limit armed — only if `Manual levels only` **ON** and `Alert when limit level arms` **ON** |
+| `Morningstar_v44` | **PRB · ARMED (Manual ON)** | Limit armed — only if `Manual levels only` **ON** and `Alert when limit level arms` **ON** |
 
 ARMED body (also baked into Pine):
 
