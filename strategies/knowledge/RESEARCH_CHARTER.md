@@ -43,9 +43,9 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 1. [x] Walk-forward & overfitting — `quant/walk-forward-testing-overfitting-prevention.md` (wave 1)
 2. [x] Monte Carlo prop survival — `quant/monte-carlo-prop-firm-survival.md` (wave 1)
 3. [x] Sizing under trailing DD — `quant/position-sizing-under-trailing-drawdown.md` (wave 1)
-4. [ ] Minimum sample size & significance for trade systems (n, WR CIs, regime coverage)
-5. [ ] Intraday regime detection: trend vs chop filters for session selection
-6. [ ] Stop placement research: fixed vs structure vs volatility (ATR) — wick-out rates
+4. [x] Sample size & significance — `quant/minimum-sample-size-statistical-significance.md` (wave 2)
+5. [x] Regime detection — `quant/intraday-regime-detection-session-selection.md` (wave 2)
+6. [x] Stop placement — `quant/stop-placement-fixed-structure-volatility.md` (wave 2)
 7. [ ] Limit-order fill modeling: queue position, adverse selection, tick-miss rates
 8. [ ] Expectancy math: WR × RR frontier, capped-R distributions, asymmetry ratios
 9. [ ] Event-study methodology for intraday setups (what we call Stage-0)
@@ -55,15 +55,17 @@ Folder layout: `quant/` · `ict/` · `powell/` (one .md per topic, kebab-case).
 11. [x] NWOG/NDOG — `ict/nwog-ndog-opening-gaps.md` (wave 1)
 12. [x] Judas swing — `ict/judas-swing.md` (wave 1)
 13. [x] OTE / golden pocket — `ict/ote-optimal-trade-entry.md` (wave 1)
-14. [ ] Rejection blocks vs order blocks: precise definitions, entry/stop conventions
-15. [ ] Key opens (midnight, 8:30, 9:30, 10:00) & Power of 3 (AMD)
-16. [ ] FVG / IFVG / BISI-SIBI & consequent encroachment (CE) targeting
+14. [x] Rejection vs order blocks — `ict/rejection-blocks-vs-order-blocks.md` (wave 2)
+15. [x] Key opens & Po3 — `ict/key-opens-power-of-3.md` (wave 2)
+16. [x] FVG / IFVG / CE — `ict/fvg-ifvg-consequent-encroachment.md` (wave 2)
 17. [ ] Draw on liquidity: PDH/PDL, internal vs external liquidity, intermediate highs/lows
 18. [ ] ICT time macros (9:50–10:10, 10:50–11:10) — mechanics and evidence
 
 ### Powell (agent C)
-19. [ ] Powell's free YouTube course: catalog videos, extract teachings on RB entries,
-      KO retests, fib confluence — transcript-based where possible
+19. [x] Powell catalog + RB teachings — `powell/powell-course-catalog.md`,
+      `powell/powell-rb-entry-teachings.md` (wave 1 · channel = "Powell trades"
+      @Powelltrades · 9/14 transcripts extracted, raw in `vault-app/data/powell-transcripts/`,
+      re-runnable script `vault-app/scripts/fetch-powell-transcripts.ts`)
 20. [ ] Powell's risk & trade management: stop conventions, RR targets, session rules
 
 ## Guardrails

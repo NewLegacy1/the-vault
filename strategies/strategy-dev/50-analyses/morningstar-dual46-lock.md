@@ -64,6 +64,19 @@ Walk **Tue–Fri**, **09:30 → 13:00** NY. Bias on **5m**, arm check on **1m**.
 
 **Stop rule for retunes:** finish Priority 1 + 2 before changing pine. If something looks broken, screenshot + journal — don’t flip geom mid-month.
 
+**May-walk logging additions (2026-07-17, from quant research — logging only, no logic change):**
+- Log **ATR(14, 1-min) at entry** for every take/arm; backfill June's 15 takes from replay when
+  convenient. June's losses at stops ≤9.75 pts vs wins at 11.5–33.5 pts match the published
+  ~1.5×ATR wick-out floor — ~100 logged trades confirms or kills a stop/ATR validity floor
+  as a Stage-0 candidate ([[../../knowledge/quant/stop-placement-fixed-structure-volatility|stop research]]).
+- Tag each session: opening-range percentile · ADX(7) read · first-30-min direction —
+  census only, no gating ([[../../knowledge/quant/intraday-regime-detection-session-selection|regime research]]).
+- **Pre-registered evaluation rule** (avoids the optional-stopping trap — monthly "is it
+  working?" checks inflate false alarms to ~25%+): verdicts on the Dual46 script sleeve only
+  at **fixed horizons — end of May walk, then end of Nov–Dec walk** — not mid-month; the
+  discretionary sleeve is judged on the same schedule
+  ([[../../knowledge/quant/minimum-sample-size-statistical-significance|sample-size research]]).
+
 ## Journal fields (lock)
 
 ```
@@ -88,8 +101,26 @@ freezing through May is that June↔May stay comparable on identical code.
    logic change — first candidate after May.
 2. ~~NWOG eyes-only lines~~ — **not needed**: user's existing NWOG indicator already draws
    the gap + CE. Census logging continues off that ([[morningstar-dual46-june-week1-harvest]]).
-3. **Min-stop floor (~10 pts)** — 06-23 disc loss: 9.75-pt stop wicked before TP ran.
-   One data point; needs May confirmation before touching geometry.
+3. **Min-stop floor (~10 pts / ≥1.5×ATR)** — 06-23 disc loss: 9.75-pt stop wicked before TP
+   ran. One data point; May ATR logging decides before touching geometry.
+5. **RB anchoring audit** — ICT's original 2016 rejection-block lecture anchors the block to
+   the highest open/close of the **entire swing** (multi-candle), not the single sweep candle.
+   Our wick-start limit + stop-beyond-extreme is canon; the anchor may not be. Audit June's
+   1m fills against swing-anchored blocks after May
+   ([[../../knowledge/ict/rejection-blocks-vs-order-blocks|RB research]]).
+6. **CE-of-wick early exit** — 2024 Mentorship L8: wicks trade like gaps, CE is the key level.
+   Candidate discretionary rule: body-cross of the entry wick's midpoint against position =
+   warning/exit. Census in May notes first; no mechanical rule yet.
+7. **Fib leg-validity rule (Powell, from transcript)** — a leg dies once rebalanced 50%;
+   fib must re-anchor from the last unrebalanced extreme. Mechanizable check for the frozen
+   manip-leg fib; audit June/May charts for anchor drift after the walk
+   ([[../../knowledge/powell/powell-rb-entry-teachings|Powell RB teachings]]).
+
+**Freeze validation (Powell transcripts, 07-17):** his own recorded 10AM KO trade confirms
+stop-beyond-RB-extreme is his stated *ideal* ("ideally your stop should be at the end of the
+rejection block") — he personally used a tighter PD-array-midpoint stop for 1:8, but the
+frozen stop-at-extreme + fixed 1:5 is his conservative variant priced honestly. Nothing in
+the free content justifies touching the lock.
 4. ~~Monday un-skip~~ — **decided 07-17, effective for May walk** (settings toggle, not a
    pine edit). Mondays are normal sessions; tag them for a Monday sub-scorecard.
 
