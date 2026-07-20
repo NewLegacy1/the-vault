@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-status: CYCLE 3 COMPLETE (2026-07-18 · 30/30 · lanes A quant · B exec-ops · C ICT/Powell · cycle-2 remainder closed)
+status: CYCLE 3 COMPLETE (2026-07-18 · 30/30) · CYCLE 4 QUEUED (2026-07-20 · 8 model-builder gaps · unchecked) · hubs + architecture notes landed
 tags: [knowledge-base, research-charter, multi-agent]
 ---
 # Knowledge Research Charter — multi-agent deep-research loop
@@ -222,9 +222,6 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 ## Ad-hoc research (2026-07-20)
 
 - [x] Historical data vs live markets — `quant/historical-data-vs-live-markets.md` (adhoc-past-vs-live · objectify history via conditional EV±CI / walk-forward / regimes / Bayesian WR / replay→live calib — not day-identity)
-
-## Ad-hoc research (2026-07-20)
-
 - [x] JJ Simon / Fair Value 9:30 NQ sleeve — `quant/jj-simon-fair-value-930-strategy.md`
       (adhoc-jj-simon · channel `@itsjjsimon` · 6 transcripts in
       `vault-app/data/jj-simon-transcripts/` · verdict: **explore / park until Stage-0
@@ -235,6 +232,32 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 - [x] Phase-0 regime tags shipped into Dual46 journal (2026-07-20 · master) —
       `vault-app/lib/regime-tags.ts` + Dual46 form/edit · May harvest VIX/mega-cap backfill ·
       oil thresholds frozen · JJ Fair-Value still parked separately
+- [x] Frozen top-5 regime variables — `quant/mnq-relevant-regime-variables.md`
+- [x] Model builder architecture APPLICATION — `quant/vault-model-builder-architecture.md`
+      + knowledge `hubs/` MOCs (math / regimes / ops / stage0 / doctrine)
+
+## Topic queue — CYCLE 4 (8 · added 2026-07-20 · model-builder gaps)
+
+Aim: close **wiring / math / validation** gaps for the cohesive model builder+tester.
+Not more ICT folklore. Prefer distill → `lib/` or `strategy-dev` over new lore notes.
+See `quant/vault-model-builder-architecture.md`.
+
+72. [ ] Event-study → regime columns — wire `vixBand` / `or30` / `release10` / `oilShock` /
+      `megaCapEarnWeek` group-bys into `analyze-event-study.ts` output (match frozen top-5)
+73. [ ] `regime-tags.ts` completeness — restore or implement `or30BandFromRatio` /
+      `or30BandLabel` / `release10FromEventTimes` so tests + doctrine stay in lockstep
+74. [ ] Stage-0 scorecard surface — one checklist view: EV±CI · leakage L-checklist ·
+      vsRandom/vsFlip · k-adjusted survivor rule (no new Track-B ideas)
+75. [ ] Path MC `E[$/wk]` after Stage-0 toward — document + script path from ES JSON →
+      firm-rule MC inputs (fees, trail, timeout) without inventing Deep BT numbers
+76. [ ] Fill-haircut defaults — map `ops-mnq-slippage` + limit-fill note into Stage-0 /
+      Lab execution haircut presets (ticks by window; no live claims)
+77. [ ] Journal ↔ harvest sync protocol — localStorage → May/June harvest → canvas
+      without stale-tab overwrite; regime fields required on every day row
+78. [ ] Prop-rule matrix as MC config — Topstep/Apex/TPT payout + MLL fields as versioned
+      JSON consumed by path MC (ties to ops-prop-rule-change-watch)
+79. [ ] Builder hub smoke-test — verify all `hubs/*` wikilinks resolve; archive stubs only;
+      update `_index` when a CYCLE 4 note lands in `lib/`
 
 ## Guardrails
 

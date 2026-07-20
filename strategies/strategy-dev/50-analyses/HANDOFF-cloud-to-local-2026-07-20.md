@@ -33,18 +33,20 @@ Cloud agent branch (only if needed): `cursor/cloud-agent-1784580173599-gqnk6`
 
 ## Regime tags — log these (top 5)
 
-From `strategies/knowledge/quant/mnq-relevant-regime-variables.md`:
+Canonical note (now present): `strategies/knowledge/quant/mnq-relevant-regime-variables.md`  
+Hub: `strategies/knowledge/hubs/hub-regimes.md` · code: `vault-app/lib/regime-tags.ts`
 
 1. **`vixPrevClose`** — `<16` / `16–20` / `>20` (prior close)
 2. **`or30ratio`** — OR 09:30–10:00 ÷ 20-day median; `<0.75` / `0.75–1.25` / `>1.25`
-3. **`redFolder` / `release10`** — already auto-matched in journal
+3. **`redFolder` / `release10`** — already auto-matched in journal (09:50–10:10)
 4. **`megaCapEarnWeek`** — AAPL/MSFT/GOOGL/AMZN/META/NVDA reporting that week Y/N
 5. **`oilShock`** — `|CL 1d| ≥ 3%` or `|CL 5d| ≥ 8%` (prior settles)
 
 Ignore: war NLP scores, politician trades, SaaS “risk-on” labels without frozen defs.
 
 Full options map: `strategies/knowledge/quant/macro-regime-context-data-options.md`  
-Past-vs-live doctrine: `strategies/knowledge/quant/historical-data-vs-live-markets.md`
+Past-vs-live doctrine: `strategies/knowledge/quant/historical-data-vs-live-markets.md`  
+Model-builder spine: `strategies/knowledge/quant/vault-model-builder-architecture.md`
 
 Forgotten-app candidates (user may still confirm): MACRO/SIGNAL, EdgeCypher, CondorEdge.
 
@@ -63,7 +65,8 @@ Forgotten-app candidates (user may still confirm): MACRO/SIGNAL, EdgeCypher, Con
 ## Research status
 
 - Cycles 1–3 complete (~60+ notes). Charter: CYCLE 3 COMPLETE.
-- Ad-hoc 2026-07-20: JJ Simon, historical-data-vs-live, macro-regime options, mnq-relevant regime vars.
+- Ad-hoc 2026-07-20: JJ Simon, historical-data-vs-live, macro-regime options, mnq-relevant regime vars, model-builder architecture + `knowledge/hubs/`.
+- CYCLE 4 queued (8 unchecked) — model-builder wiring gaps, not ICT folklore (`RESEARCH_CHARTER.md`).
 - Prop asymmetry: score via path MC `E[$/wk]` under firm rules — no personal live account required.
 - One open Stage-0 at a time; Dual46 May walk is current priority over opening JJ Stage-0.
 
