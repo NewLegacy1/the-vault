@@ -52,7 +52,15 @@ a:hover { text-decoration: underline; text-shadow: 0 0 8px rgba(57, 255, 186, 0.
 .term-nav a:hover { color: var(--matrix); text-decoration: none; background: var(--panel2); }
 .term-nav a.active { color: #000; background: var(--matrix); font-weight: 700; box-shadow: 0 0 16px var(--matrix-glow); }
 .term-nav a .fkey { color: var(--matrix-dim); margin-right: 6px; }
+.term-nav a .fkey-f { opacity: 0.45; margin-left: 3px; font-size: 0.85em; }
 .term-nav a.active .fkey { color: #003d10; }
+.brain-md { white-space: pre-wrap; font-family: var(--mono, ui-monospace, monospace); font-size: 12px; line-height: 1.55; color: var(--text, #c8c8c8); }
+.brain-hubs { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 16px; }
+.brain-hubs button, .brain-hubs a.chip {
+  cursor: pointer; border: 1px solid var(--border); background: var(--panel2); color: var(--matrix);
+  padding: 4px 10px; font-size: 11px; letter-spacing: 0.04em;
+}
+.brain-hubs button.active, .brain-hubs a.chip.active { background: var(--matrix); color: #000; font-weight: 700; }
 
 .page { padding: 16px; max-width: 1400px; margin: 0 auto; }
 

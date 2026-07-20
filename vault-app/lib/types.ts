@@ -37,6 +37,8 @@ export type JournalLogMode = "morningstar" | "live";
 export type StructTf = "15" | "30" | "60" | "240" | "chart";
 /** Prior-day VIX tercile — Phase-0 regime tag (see lib/regime-tags.ts). */
 export type VixBand = "lt16" | "16-20" | "gt20";
+/** OR30 ratio tercile — Phase-0 regime tag. */
+export type Or30Band = "lt0.75" | "0.75-1.25" | "gt1.25";
 export type SkipReason =
   | "no_setup"
   | "no_poi"
@@ -148,6 +150,10 @@ export interface JournalEntry {
   oilShock?: boolean;
   /** 09:30–10:00 MNQ range ÷ trailing 20-session median of same. */
   or30ratio?: number;
+  /** Pre-registered OR30 band: &lt;0.75 / 0.75–1.25 / &gt;1.25. */
+  or30Band?: Or30Band;
+  /** High-impact calendar print in 09:50–10:10 NY (Dual46 arm window). */
+  release10?: boolean;
 }
 
 /** Map journal confluence count → letter suggestion. 0 = empty stack (no setup) → "-". */
