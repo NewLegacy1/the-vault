@@ -1,8 +1,8 @@
 ---
-updated: 2026-07-15
+updated: 2026-07-20
 tags: [weekly-review, read-only, hermes]
 ---
-# Weekly review — 2026-07-15
+# Weekly review — 2026-07-20
 
 > Read-only. No Pine mutation. Path MC + net EV before WR.
 

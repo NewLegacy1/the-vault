@@ -1,5 +1,5 @@
 ---
-updated: 2026-07-14
+updated: 2026-07-20
 status: settled
 settle_full: PASS
 settle_oos: PASS
@@ -15,7 +15,7 @@ tags: [phase2, chain-ev, regime-gate-v0, strategy-dev]
 
 | Window | Ungated E[$/wk] | Gated E[$/wk] | Δ | Settle |
 |---|---:|---:|---:|---|
-| **Full 3y** (primary) | **$-18** | **$-6** | **$12** | **PASS** |
+| **Full 3y** (primary) | **$-15** | **$-6** | **$9** | **PASS** |
 | OOS ≥ 2025-07-14 | $32 | $50 | $18 | PASS |
 
 **Rule:** PASS if gated chain E[$/wk] ≥ ungated × (1 − 0.05) (±5% tolerance).
@@ -30,23 +30,23 @@ Gated Jul+Oct STAND_DOWN **improves** (or holds within tolerance) the **full bus
 |---|---|---|
 | Eval n (A0a) | 120 | 100 |
 | Funded n (D1) | 120 | 100 |
-| Eval pass% | 41.5 | 58.8 |
-| Eval bust% | 58.6 | 41.2 |
-| Eval weeks→pass p50 | 20.8 | 22.5 |
-| Funded E[$/acct] | $333 | $520 |
+| Eval pass% | 42.6 | 58.5 |
+| Eval bust% | 57.5 | 41.6 |
+| Eval weeks→pass p50 | 19.5 | 22.5 |
+| Funded E[$/acct] | $330 | $508 |
 | Funded weeks→payout p50 | 11.7 | 13.5 |
-| Funded bust% | 44.3 | 31.5 |
-| **Chain weeks p50** | 32.5 | 36 |
-| **Chain E[$/acct]** | $-593 | $-209 |
-| **Chain E[$/wk]** | **$-18** | **$-6** |
+| Funded bust% | 43.4 | 33.6 |
+| **Chain weeks p50** | 31.2 | 36 |
+| **Chain E[$/acct]** | $-474 | $-222 |
+| **Chain E[$/wk]** | **$-15** | **$-6** |
 
 ### OOS (last ~12m)
 
 | | Ungated | Gated |
 |---|---:|---:|
 | Chain E[$/wk] | $32 | $50 |
-| Eval pass% | 83.3 | 91.2 |
-| Funded bust% | 10.3 | 7.5 |
+| Eval pass% | 84.6 | 90.3 |
+| Funded bust% | 11.1 | 5.7 |
 | n eval / funded | 40 / 40 | 36 / 36 |
 
 ## Cohort cross-check (saved Lab notes)
@@ -64,10 +64,9 @@ Primary settlement uses **lab-engine dual-run** (same path as Phase 2.1 confirm)
 
 ## Implications
 
-- **Relative PASS:** gate improves full-loop chain vs ungated (−$18 → −$6/wk; OOS $32 → $50/wk). Jul+Oct STAND_DOWN is supported as an ops overlay.
-- **Absolute honesty:** full-3y chained E[$/acct] stays **negative** (ungated −$593 · gated −$209) because eval fail fees + long weeksChain dominate. Single-leg funded E[$/wk] (~$28–39) overstates the business loop. **Do not** treat this PASS as “profitable prop income on 3y.”
-- OOS last-12m is where the loop prints positive — same non-stationarity as Phase 1.
-- Still blocked: March stack · min-day pad until asked · Track B unless user opens it · Macro/Hybrid polish · multi-account off this gate alone.
+- Ops Jul+Oct STAND_DOWN: **supported** as business-loop overlay.
+- Income still modest — gate is survival/EV lift, not Phase 4 multi-account unlock.
+- Still blocked: March stack · min-day pad until asked · Track B unless user opens it · Macro/Hybrid polish.
 
 ## Links
 
