@@ -1,13 +1,15 @@
 ---
-updated: 2026-07-18
-tags: [morningstar, dual46, harvest, may-2026, manual-study]
+updated: 2026-07-20
+tags: [morningstar, dual46, harvest, may-2026, manual-study, regime-tags]
 ---
 # Dual46 · May 2026 harvest — IN PROGRESS (started 2026-07-17)
 
 > Chart + journal study only — **not** Lab MC. Freeze: [[morningstar-dual46-lock]].
 > Fills monitored live-style in replay. Second walk month (June complete:
 > [[morningstar-dual46-june-week1-harvest]]). Limits pre-staged from day one per the
-> June capture-arc lesson. P&L canvas updated 2026-07-18 alongside this note.
+> June capture-arc lesson. P&L canvas updated 2026-07-20 alongside this note.
+> JJ Fair-Value is a **separate** product exploration — not this walk
+> ([[../../knowledge/quant/jj-simon-fair-value-930-strategy]]).
 
 ## Count (5 rows · sessions 05-01 → 05-06)
 
@@ -27,6 +29,24 @@ tags: [morningstar, dual46, harvest, may-2026, manual-study]
 
 **May running: −13 pts → −$260 gross @ 10 MNQ** · takes 0W / 1L · **script sleeve 0 arms / 0 fills**
 (the −$260 is discretionary-sleeve only — Dual46 scorecard unchanged at June's 2W/0L on 2 fills)
+
+## Phase-0 regime tags (backfill · Yahoo ^VIX · 2026-07-20)
+
+Pre-registered bands from [[../../knowledge/quant/vol-regime-dependence-setup-frequency]]:
+prior-day VIX **&lt;16 / 16–20 / &gt;20**. Oil shock frozen: **|CL 1d|≥3% OR |CL 5d|≥8%**.
+Mega-cap week = any of AAPL/MSFT/GOOGL/AMZN/META/NVDA reporting Mon–Fri of that week.
+App fields live on Dual46 form + edit panel (`vixPrevClose`, `megaCapEarnWeek`, `oilShock`, `or30ratio`).
+
+| Session | Prior VIX close | Band | Mega-cap earn week | Oil shock | OR30 ratio |
+|---|---|---|---|---|---|
+| 05-01 Fri | 16.89 (Apr 30) | 16–20 | **Y** (MSFT/META Apr 29 · AAPL Apr 30) | unset — check CL | unset (chart) |
+| 05-04 Mon | 16.99 (May 1) | 16–20 | N | unset | unset |
+| 05-05 | 18.29 (May 4) | 16–20 | N | unset | unset |
+| 05-06 | 17.38 (May 5) | 16–20 | N | unset | unset |
+
+All four logged sessions sit in the **16–20** band — no early-May excuse that “May was a different VIX month” at the day level either (month means were already ~identical to June).
+
+**Human edit pass:** open each May row in F5 Journal → paste VIX prior close + mega-cap Y/N chips → save. OR30 needs the 09:30–10:00 MNQ range vs 20-session median from chart/replay. Oil shock needs one CL glance per day.
 
 ## Week breakdown (fills in as the walk advances)
 
@@ -51,18 +71,22 @@ tags: [morningstar, dual46, harvest, may-2026, manual-study]
 - NWOG census columns (pos + filled split) are populated on all 5 rows; gap-pts / tap-loc /
   ×dATR not yet — start filling per the census spec in the June note.
 - Mondays: 05-04 no setup (June went 2/2 on Mondays — keep tracking the un-skip case).
+- **Regime:** early May is goldilocks-mid VIX so far; frequency/quality splits wait until
+  bands diversify (and n≥10 per band before %).
 
 ## May logging additions in effect
 
 ATR (pts), entry time, NWOG position + filled as separate fields, news auto-match
-(red-folder event/time), MFE (R), 5m confirm, daily ATR. Schema live since 05-01; the
-per-trade fields (ATR, entry time, MFE, 5m confirm, dATR) are **not yet populated** on
-tonight's rows — fill them at log time, they're the whole payoff of this walk.
+(red-folder event/time), MFE (R), 5m confirm, daily ATR, **plus Phase-0 regime**:
+`vixPrevClose` (auto-bands), `megaCapEarnWeek`, `oilShock`, `or30ratio`.
+Schema live; per-trade fields still thin on early rows — fill at log time.
 
 ## Status
 
 - **Walk in progress** — no verdicts, no prop math, one open Stage-0 discipline holds.
 - Script sleeve: waiting for first May arm.
-- Canvas [dual46-june-pnl-10mnq] restructured 2026-07-18 to June-done + May-in-progress;
+- Regime Phase-0: **form shipped + VIX/mega-cap backfill table above**; oil + OR30 still human.
+- Canvas [dual46-june-pnl-10mnq] updated 2026-07-20 with May regime strip;
   not a milestone, no archive snapshot taken (June archive already at
   [[../55-canvas-archive/dual46-june-2026-pnl]]).
+- **Next session to log:** 05-07 Thu (continue May walk) — tag regime at log time.

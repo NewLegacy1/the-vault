@@ -3,8 +3,8 @@
 import { useCallback, useState } from "react";
 import { compressChartShot } from "@/lib/journal-shot";
 import { formatPlanRr, parsePlanRr } from "@/lib/morningstar/parse-plan-rr";
-import { vixBandFromClose, vixBandLabel } from "@/lib/regime-tags";
-import { JournalEntry, VixBand } from "@/lib/types";
+import { or30BandFromRatio, or30BandLabel, release10FromEventTimes, vixBandFromClose, vixBandLabel } from "@/lib/regime-tags";
+import { JournalEntry, Or30Band, VixBand } from "@/lib/types";
 import { autoRedFolder, useDayNews } from "@/lib/use-day-news";
 
 type EditState = {
@@ -131,6 +131,19 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
         vixBand = undefined;
       }
     }
+    const or30ratio = num(f.or30ratio);
+    let or30Band: Or30Band | undefined;
+    if (or30ratio != null) {
+      try {
+        or30Band = or30BandFromRatio(or30ratio);
+      } catch {
+        or30Band = undefined;
+      }
+    }
+    const highImpactTimes = dayNews
+      .filter((e) => e.impact === "high")
+      .map((e) => e.time);
+    const release10 = release10FromEventTimes(highImpactTimes);
     const rMultiple =
       f.dualOutcome === "WIN" && planRr != null
         ? planRr
@@ -167,7 +180,9 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
       vixBand,
       megaCapEarnWeek: f.megaCapEarnWeek ?? undefined,
       oilShock: f.oilShock ?? undefined,
-      or30ratio: num(f.or30ratio),
+      or30ratio,
+      or30Band,
+      release10,
       ...(news
         ? { redFolder: news.redFolder, redFolderTime: news.time, redFolderEvent: news.event }
         : {}),
@@ -424,8 +439,26 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
               placeholder="ratio"
               style={{ width: 70 }}
             />
+            {(() => {
+              const n = parseFloat(f.or30ratio);
+              if (f.or30ratio === "" || !Number.isFinite(n)) return null;
+              try {
+                return (
+                  <span className="dim" style={{ fontSize: 10, marginTop: 2 }}>
+                    band {or30BandLabel(or30BandFromRatio(n))}
+                  </span>
+                );
+              } catch {
+                return null;
+              }
+            })()}
           </label>
         </div>
+        {release10FromEventTimes(dayNews.filter((e) => e.impact === "high").map((e) => e.time)) && (
+          <p className="warn small" style={{ marginTop: 0 }}>
+            release10 auto: high-impact print in 09:50–10:10 NY
+          </p>
+        )}
 
         <div className="small" style={{ marginBottom: 8 }}>
           {dayNews.length ? (

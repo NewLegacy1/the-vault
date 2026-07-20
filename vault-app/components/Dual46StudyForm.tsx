@@ -9,9 +9,9 @@ import {
   type ParsedDual46Tag,
 } from "@/lib/morningstar/parse-dual46-tag";
 import { formatPlanRr, parsePlanRr } from "@/lib/morningstar/parse-plan-rr";
-import { vixBandFromClose, vixBandLabel } from "@/lib/regime-tags";
+import { or30BandFromRatio, or30BandLabel, release10FromEventTimes, vixBandFromClose, vixBandLabel } from "@/lib/regime-tags";
 import { todayStr } from "@/lib/store";
-import { JournalEntry, MORNINGSTAR_STUDY_ID, VixBand, uid } from "@/lib/types";
+import { JournalEntry, MORNINGSTAR_STUDY_ID, Or30Band, VixBand, uid } from "@/lib/types";
 import { autoRedFolder, useDayNews } from "@/lib/use-day-news";
 
 type Dual46Form = {
@@ -113,7 +113,11 @@ function dualGradeLetter(grade: Dual46Form["pathBGrade"]): JournalEntry["grade"]
   return "-";
 }
 
-function toEntry(f: Dual46Form, news: ReturnType<typeof autoRedFolder>): JournalEntry {
+function toEntry(
+  f: Dual46Form,
+  news: ReturnType<typeof autoRedFolder>,
+  highImpactTimes: string[]
+): JournalEntry {
   const stopPts = f.stopPts !== "" ? parseFloat(f.stopPts) : undefined;
   const planRr = parsePlanRr(f.planRr);
   const num = (s: string) => {
@@ -129,6 +133,16 @@ function toEntry(f: Dual46Form, news: ReturnType<typeof autoRedFolder>): Journal
       vixBand = undefined;
     }
   }
+  const or30ratio = num(f.or30ratio);
+  let or30Band: Or30Band | undefined;
+  if (or30ratio != null) {
+    try {
+      or30Band = or30BandFromRatio(or30ratio);
+    } catch {
+      or30Band = undefined;
+    }
+  }
+  const release10 = release10FromEventTimes(highImpactTimes);
   const tag =
     f.armed && f.pathBModel !== "—"
       ? `Powell · ${f.pathBModel} · 1RB · ${f.pathBGrade}`
@@ -166,7 +180,9 @@ function toEntry(f: Dual46Form, news: ReturnType<typeof autoRedFolder>): Journal
     vixBand,
     megaCapEarnWeek: f.megaCapEarnWeek ?? undefined,
     oilShock: f.oilShock ?? undefined,
-    or30ratio: num(f.or30ratio),
+    or30ratio,
+    or30Band,
+    release10,
     redFolder: news.redFolder,
     redFolderTime: news.time,
     redFolderEvent: news.event,
@@ -270,7 +286,10 @@ export function Dual46StudyForm({ onSave }: Props) {
       return;
     }
     setErr("");
-    onSave(toEntry(f, autoRedFolder(dayNews)));
+    const highImpactTimes = dayNews
+      .filter((e) => e.impact === "high")
+      .map((e) => e.time);
+    onSave(toEntry(f, autoRedFolder(dayNews), highImpactTimes));
     setF((prev) => ({
       ...emptyDual46(prev.date),
       nwogPos: prev.nwogPos,
@@ -591,8 +610,26 @@ export function Dual46StudyForm({ onSave }: Props) {
             placeholder="ratio"
             style={{ width: 70 }}
           />
+          {(() => {
+            const n = parseFloat(f.or30ratio);
+            if (f.or30ratio === "" || !Number.isFinite(n)) return null;
+            try {
+              return (
+                <span className="dim" style={{ fontSize: 10, marginTop: 2 }}>
+                  band {or30BandLabel(or30BandFromRatio(n))}
+                </span>
+              );
+            } catch {
+              return null;
+            }
+          })()}
         </label>
       </div>
+      {release10FromEventTimes(dayNews.filter((e) => e.impact === "high").map((e) => e.time)) && (
+        <p className="warn small" style={{ marginTop: 0 }}>
+          release10 auto: high-impact print in 09:50–10:10 NY — will save on this row
+        </p>
+      )}
 
       <div className="accent small" style={{ letterSpacing: 1, marginTop: 8 }}>
         FIX IF OCR MISSED

@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "index": "npx tsx scripts/build-vault-indexes.ts",
-    "test": "npx tsx --test lib/mc-golden.test.ts lib/chain-ev.test.ts lib/risk-geometry.test.ts lib/markov-occupancy.test.ts lib/ingest-audit.test.ts",
+    "test": "npx tsx --test lib/mc-golden.test.ts lib/chain-ev.test.ts lib/risk-geometry.test.ts lib/markov-occupancy.test.ts lib/ingest-audit.test.ts lib/regime-tags.test.ts",
     "weekly-review": "npx tsx scripts/weekly-review.ts",
     "markov": "npx tsx scripts/analyze-markov-occupancy.ts",
     "research-queue": "npx tsx scripts/research-queue-status.ts",
