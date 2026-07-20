@@ -1,0 +1,568 @@
+# My $1,300,000 Trading Strategy (Explained in 10 Minutes)
+# https://www.youtube.com/watch?v=UVKVSWKFlvo
+# source: yt-dlp auto-sub
+
+[0:01] I made over 1.3 million dollars from
+[0:01] prop firms in the last 12 months. This
+[0:02] prop firms in the last 12 months. This
+[0:02] is my trading strategy explained in just
+[0:05] 10 minutes. All right, I'm going to go
+[0:05] over 5 days from this week of the New
+[0:07] over 5 days from this week of the New
+[0:07] York AM session. And what I'm looking
+[0:08] York AM session. And what I'm looking
+[0:08] for in my strategy is to mark out the
+[0:11] for in my strategy is to mark out the
+[0:11] price of the pre-open. Now, I'm going to
+[0:13] s
+[0:16] wait for a continuation away from this
+[0:16] price. I believe that this is the fair
+[0:17] price. I believe that this is the fair
+[0:17] price.
+[0:18] price.
+[0:18] This is something I studied in college,
+[0:20] This is something I studied in college,
+[0:20] and fair price is basically the price
+[0:22] and fair price is basically the price
+[0:22] before the session open, because when
+[0:23] before the session open, because when
+[0:23] the session opens, there's an influx of
+[0:25] the session opens, there's an influx of
+[0:25] volume from institutions that are
+[0:26] volume from institutions that are
+[0:26] willing to trade unfairly. So, they pump
+[0:29] price
+[0:30] up the price or they'll dump the price
+[0:30] away from a fair price. And you can sort
+[0:33] of analyze that with volume. So, just
+[0:33] like looking at this here, for example,
+[0:35] like looking at this here, for example,
+[0:35] session opens right here, crazy increase
+[0:39] in volume, huge move up.
+[0:39] Now, you got to think to yourself, are
+[0:41] Now, you got to think to yourself, are
+[0:41] we really changing the fair value price
+[0:43] we really changing the fair value price
+[0:43] of Nasdaq futures? Because we're pricing
+[0:46] companies here. So, are we really
+[0:46] changing the fair price of these
+[0:48] changing the fair price of these
+[0:48] companies just because the session
+[0:49] companies just because the session
+[0:50] opened? Well, not really, which is why
+[0:52] opened? Well, not really, which is why
+[0:52] the first trade I take is a continuation
+[0:54] se
+[0:57] it's just a sum of the overnight orders
+[0:57] that are executed on the opening candle,
+[1:01] and it creates a very good bias. And if
+[1:01] you have your bias right when you're
+[1:02] you have your bias right when you're
+[1:02] trading props, you're going to make a
+[1:03] trading props, you're going to make a
+[1:03] lot of money in the long run. After
+[1:04] lot of money in the long run. After
+[1:04] that, I will just trade a reversion back
+[1:07] ice,
+[1:08] to what I believe to be the fair price,
+[1:08] which is pretty much just the session
+[1:09] which is pretty much just the session
+[1:09] open. Fair prices only
+[1:12] open. Fair prices only
+[1:12] ever changed by news and by session
+[1:14] ever changed by news and by session
+[1:14] opens. Now, session open's not going to
+[1:16] opens. Now, session open's not going to
+[1:16] actually change the fair price, but
+[1:18] actually change the fair price, but
+[1:18] it'll change the real price, which is
+[1:19] it'll change the real price, which is
+[1:19] over here on the right side. So, it'll
+[1:20] over here on the right side. So, it'll
+[1:20] change the price of the future. That's
+[1:22] change the price of the future. That's
+[1:22] why I revert it. So, just be aware did
+[1:24] why I revert it. So, just be aware did
+[1:24] news cause this move or was it like a
+[1:25] news cause this move or was it like a
+[1:25] session open? What caused it? Unfair,
+[1:27] session open? What caused it? Unfair,
+[1:27] fair, news. All the videos are on my
+[1:29] fair, news. All the videos are on my
+[1:29] page. So, I'll just get into it really
+[1:31] page. So, I'll just get into it really
+[1:31] quickly here what I would do for all 5
+[1:33] quickly here what I would do for all 5
+[1:33] days this week. All right, so the first
+[1:34] days this week. All right, so the first
+[1:34] day is Friday. I have the pre-open price
+[1:38] marked here.
+[1:38] First candle is green, but very
+[1:40] First candle is green, but very
+[1:40] slightly.
+[1:41] slightly.
+[1:41] Anyways, second candle clearly breaks up
+[1:43] s above all of these previous
+[1:45] and closes above all of these previous
+[1:45] ones. So, I would just take a very quick
+[1:48] continuation long.
+[1:48] The candle is 29 points, so I would do a
+[1:49] a 76 point take
+[1:51] 50 point stop and a 76 point take
+[1:51] profit. My usual rule for that is if the
+[1:54] on't do
+[1:59] my 25 stop 38 profit. I would divide
+[1:59] size by two and I'll do 50 and 76. So,
+[2:02] size by two and I'll do 50 and 76. So,
+[2:02] that creates a pretty easy continuation
+[2:03] that creates a pretty easy continuation
+[2:03] trade right there. If for some reason
+[2:05] trade right there. If for some reason
+[2:05] you miss this first one, it's also fine
+[2:06] you miss this first one, it's also fine
+[2:06] to get in right here. For continuation
+[2:08] to get in right here. For continuation
+[2:08] trade, I'm just trading the direction of
+[2:10] g
+[2:11] the open. So, in this case, the opening
+[2:11] price is here and it opens and closes
+[2:14] price is here and it opens and closes
+[2:14] above structure here. Also, this one
+[2:16] above structure here. Also, this one
+[2:16] opens and closes above this opening
+[2:17] opens and closes above this opening
+[2:18] candle here. So, these would be my two
+[2:19] candle here. So, these would be my two
+[2:19] entries for continuation longs on this
+[2:21] entries for continuation longs on this
+[2:22] day.
+[2:27] Now, for reversion, I just trade back to
+[2:27] the pre-open price, as always. Entry
+[2:29] the pre-open price, as always. Entry
+[2:29] would just be off of a break of
+[2:30] would just be off of a break of
+[2:30] structure. So, I'm looking through here,
+[2:33] waiting for the first break of
+[2:33] structure, and the first one we see is
+[2:35] structure, and the first one we see is
+[2:35] right here.
+[2:41] This candle breaks below this structure
+[2:41] and this structure, and there's no wick
+[2:43] and this structure, and there's no wick
+[2:43] on the bottom, so it's a pretty strong
+[2:44] on the bottom, so it's a pretty strong
+[2:44] displacement and break of structure
+[2:45] displacement and break of structure
+[2:45] candle. I always do 25 and 38 for these
+[2:48] candle. I always do 25 and 38 for these
+[2:48] take profits. Sometimes I'll target
+[2:50] take profits. Sometimes I'll target
+[2:50] more. In this case, you're even getting
+[2:51] more. In this case, you're even getting
+[2:51] 100 points to fair price, so this is a
+[2:53] 100 points to fair price, so this is a
+[2:53] very, very profitable trade for you to
+[2:54] very, very profitable trade for you to
+[2:54] take all the way back to the opening
+[2:56] take all the way back to the opening
+[2:56] price.
+[2:57] price.
+[2:57] Some people wanted to trade
+[2:58] Some people wanted to trade
+[2:59] continuations here, away from this. I
+[3:00] continuations here, away from this. I
+[3:00] would probably not do that. I only like
+[3:02] would probably not do that. I only like
+[3:02] to take continuation longs right when
+[3:03] to take continuation longs right when
+[3:03] session opens, because that is when the
+[3:05] session opens, because that is when the
+[3:05] unfair moves happen. After that, I'm
+[3:07] unfair moves happen. After that, I'm
+[3:07] just looking for reverses to this price
+[3:08] just looking for reverses to this price
+[3:08] here. It moves up more, but I don't see
+[3:10] here. It moves up more, but I don't see
+[3:10] an entry back here. It moves all the way
+[3:13] down, and I don't really see a break of
+[3:13] structure here to get back to fair
+[3:15] structure here to get back to fair
+[3:15] price.
+[3:16] price.
+[3:16] After that, lots of consolidation here,
+[3:17] After that, lots of consolidation here,
+[3:17] just proving that this was indeed the
+[3:19] just proving that this was indeed the
+[3:19] fair price throughout the day. More
+[3:20] fair price throughout the day. More
+[3:20] consolidation, more, more, more, and
+[3:22] consolidation, more, more, more, and
+[3:22] then the market eventually closes right
+[3:23] then the market eventually closes right
+[3:23] here. So, there was no news on this day,
+[3:29] which means it opened and it closed at
+[3:29] the exact same price, as expected,
+[3:31] the exact same price, as expected,
+[3:31] because nothing changed the fair price
+[3:32] because nothing changed the fair price
+[3:32] of futures, let alone the market open.
+[3:35] of futures, let alone the market open.
+[3:35] So, when it moved up more than 100
+[3:36] So, when it moved up more than 100
+[3:36] points up, I'm so excited to short that,
+[3:38] g that
+[3:42] should change the fair value pricing of
+[3:42] companies of Nasdaq. And the futures are
+[3:47] just the future price of Nasdaq. So,
+[3:47] might as well just trade a reversion
+[3:49] might as well just trade a reversion
+[3:49] back to the fair price. Now, let's go
+[3:51] back to the fair price. Now, let's go
+[3:51] over Thursday. Thursday is a little bit
+[3:53] over Thursday. Thursday is a little bit
+[3:53] different. In this case, we had news at
+[3:54] different. In this case, we had news at
+[3:54] 8:30. If you haven't seen my news video,
+[3:57] go check that out, but I'll just keep
+[3:57] that in here for example. News came out
+[3:59] that in here for example. News came out
+[3:59] at 8:30. News is basically like another
+[4:01] at 8:30. News is basically like another
+[4:01] session open. You can take continuation
+[4:03] session open. You can take continuation
+[4:03] long since news was green. Pretty much
+[4:05] long since news was green. Pretty much
+[4:05] same trade as the open. Anything you
+[4:08] same trade as the open. Anything you
+[4:08] want to do there would be totally fine.
+[4:09] want to do there would be totally fine.
+[4:09] After that, I would trade a reversion
+[4:11] After that, I would trade a reversion
+[4:11] back to the pre-news price. So, instead
+[4:13] back to the pre-news price. So, instead
+[4:13] of coming back to the pre-open price on
+[4:14] of coming back to the pre-open price on
+[4:14] this example, I would trade back to the
+[4:16] this example, I would trade back to the
+[4:16] pre-news price.
+[4:18] pre-news price.
+[4:18] This is because eight-folder This is
+[4:20] This is because eight-folder This is
+[4:20] because red folder news at 8:30 is
+[4:22] because red folder news at 8:30 is
+[4:22] always priced in, in my opinion, which
+[4:24] always priced in, in my opinion, which
+[4:24] means that moves like this are very,
+[4:25] means that moves like this are very,
+[4:25] very unfair.
+[4:26] very unfair.
+[4:26] Then, whenever the market opens or break
+[4:28] ck down to the downside, I
+[4:30] structure back down to the downside, I
+[4:30] am very interested in shorting back to
+[4:32] am very interested in shorting back to
+[4:32] the pre-news price. In this example, you
+[4:35] would have gotten wicked out on market
+[4:35] open. I do recommend going break even if
+[4:37] e
+[4:38] the market's going to open while you're
+[4:38] in a trade, just because you have crazy
+[4:40] in a trade, just because you have crazy
+[4:40] wicks like this, just filled with the
+[4:42] wicks like this, just filled with the
+[4:42] overnight volume. In this example, there
+[4:44] o
+[4:46] was lots of green momentum coming into
+[4:46] the open, especially since news was
+[4:47] the open, especially since news was
+[4:48] green. And then, when the market opened,
+[4:49] icks
+[4:51] it had a very large green candle, wicks
+[4:51] you out before coming to your take
+[4:52] you out before coming to your take
+[4:52] profit. If for some reason you got
+[4:54] profit. If for some reason you got
+[4:54] wicked out here, like I did, shouldn't
+[4:55] wicked out here, like I did, shouldn't
+[4:55] have taken the trade. I just re-entered
+[4:57] have taken the trade. I just re-entered
+[4:57] here when it broke structure again down
+[4:58] here when it broke structure again down
+[4:58] to the downside. Now, let's go over
+[5:00] to the downside. Now, let's go over
+[5:00] Wednesday. Wednesday, we didn't have any
+[5:02] pen
+[5:04] 8:30 a.m. news. We had the market open
+[5:04] at 9:30, and I would just take a very
+[5:06] at 9:30, and I would just take a very
+[5:06] quick continuation short. Again,
+[5:08] quick continuation short. Again,
+[5:08] 50-point candle, so I would do a
+[5:09] 50-point candle, so I would do a
+[5:09] 50-point stop and a 76-point take
+[5:12] 50-point stop and a 76-point take
+[5:12] profit. This is just my risk
+[5:14] profit. This is just my risk
+[5:14] pretty much my standard risk management
+[5:15] pretty much my standard risk management
+[5:15] protocol is a 1:1.5, just because prop
+[5:18] protocol is a 1:1.5, just because prop
+[5:18] firms are minus 2,000 to plus 3,000,
+[5:20] firms are minus 2,000 to plus 3,000,
+[5:20] meaning it's a 1:1.5 to pass your eval.
+[5:22] meaning it's a 1:1.5 to pass your eval.
+[5:22] So, I just separate my trades in a
+[5:24] So, I just separate my trades in a
+[5:24] 1:1.5, makes passing
+[5:26] 1:1.5, makes passing
+[5:26] very much easier.
+[5:28] very much easier.
+[5:28] Anyways, just take a very quick
+[5:29] Anyways, just take a very quick
+[5:29] continuation short cuz the opening
+[5:31] continuation short cuz the opening
+[5:31] candle is huge and red. If you didn't
+[5:33] candle is huge and red. If you didn't
+[5:33] get this one for some reason, you can
+[5:34] get this one for some reason, you can
+[5:34] also enter there. It's kind of the same
+[5:36] also enter there. It's kind of the same
+[5:36] thing, but first one just gives me
+[5:38] thing, but first one just gives me
+[5:38] uh I'm selling a little bit higher, so
+[5:39] uh I'm selling a little bit higher, so
+[5:39] it's like slightly more likely to win,
+[5:40] it's like slightly more likely to win,
+[5:40] so I'll always take that. After that, I
+[5:43] so I'll always take that. After that, I
+[5:43] would believe that pre-open price is
+[5:45] would believe that pre-open price is
+[5:45] probably fair price, and then I would go
+[5:47] ne I
+[5:51] see is right here. Usual target 38
+[5:51] points. Unfortunately, misses by 2 and
+[5:52] points. Unfortunately, misses by 2 and
+[5:52] 1/2 points.
+[5:54] 1/2 points.
+[5:54] Then after that, I would reenter on the
+[5:55] Then after that, I would reenter on the
+[5:55] next break of structure, which is this
+[5:57] next break of structure, which is this
+[5:57] one right here. This one hits 38 points
+[5:59] one right here. This one hits 38 points
+[5:59] by 1.5 points. So, very glad to have won
+[6:02] t
+[6:05] here.
+[6:05] Lose, unfortunately. And then this one
+[6:07] Lose, unfortunately. And then this one
+[6:07] right here, win. After that, I'm just
+[6:09] right here, win. After that, I'm just
+[6:09] done trading once it hits 11:00 a.m.
+[6:11] done trading once it hits 11:00 a.m.
+[6:11] because the volume dies out.
+[6:12] because the volume dies out.
+[6:13] So,
+[6:13] So,
+[6:13] uh very interesting day today.
+[6:14] uh very interesting day today.
+[6:14] Unfortunately, did not revert during the
+[6:16] ed all the
+[6:20] way here when the market was finally
+[6:20] closing, but
+[6:21] closing, but
+[6:21] still no reversion on open, but win,
+[6:24] still no reversion on open, but win,
+[6:24] loss, win, loss, win. So, I mean, still
+[6:27] loss, win, loss, win. So, I mean, still
+[6:27] incredibly winning at a 1.5 risk to
+[6:29] incredibly winning at a 1.5 risk to
+[6:29] reward as well. Even on days it doesn't
+[6:31] reward as well. Even on days it doesn't
+[6:31] fully revert, you're still getting some
+[6:32] fully revert, you're still getting some
+[6:32] of that that action back up towards the
+[6:34] of that that action back up towards the
+[6:34] fair price.
+[6:36] fair price.
+[6:36] Next, let's go over Tuesday. Very good
+[6:39] Next, let's go over Tuesday. Very good
+[6:39] day for reversion, as usual. I will just
+[6:45] mark out the pre-open price.
+[6:45] In this day,
+[6:46] In this day,
+[6:46] very large wick rejecting long, so I
+[6:48] very large wick rejecting long, so I
+[6:48] would probably just go short as soon as
+[6:50] would probably just go short as soon as
+[6:50] the opening candle forms.
+[6:52] the opening candle forms.
+[6:52] You could do 25 points, and you get
+[6:54] You could do 25 points, and you get
+[6:54] saved by uh one point right there. The
+[6:56] saved by uh one point right there. The
+[6:56] body of the opening candle is 18 points,
+[7:00] so risk management says, "Go with a
+[7:00] 25-point stop, 38-point take profit."
+[7:03] 25-point stop, 38-point take profit."
+[7:03] And there you go, you hit a win right
+[7:04] And there you go, you hit a win right
+[7:04] there. After that, let's just trade it
+[7:06] there. After that, let's just trade it
+[7:06] back to the pre-open price.
+[7:09] back to the pre-open price.
+[7:09] Enter off the first break of structure
+[7:10] Enter off the first break of structure
+[7:10] we see, which is right here, because
+[7:11] we see, which is right here, because
+[7:11] this is structure here.
+[7:13] this is structure here.
+[7:13] 38-point take profit gets hit right
+[7:15] 38-point take profit gets hit right
+[7:15] there.
+[7:17] there.
+[7:17] After that, you could continue to short.
+[7:20] uld enter here. There is no
+[7:21] You could enter here. There is no
+[7:21] structure broken here or here, but it is
+[7:24] d
+[7:25] optional for you to short. I would
+[7:25] probably have waited until it actually
+[7:28] probably have waited until it actually
+[7:28] breaks structure to short. And for the
+[7:29] breaks structure to short. And for the
+[7:29] first break of structure, let's see, it
+[7:31] first break of structure, let's see, it
+[7:32] is right here.
+[7:34] is right here.
+[7:34] So, first break of structure, just
+[7:35] So, first break of structure, just
+[7:35] always stick to the rules.
+[7:37] always stick to the rules.
+[7:37] And in this case, you are getting 181
+[7:40] And in this case, you are getting 181
+[7:40] points in your favor to fair price. That
+[7:43] is an insane amount of points.
+[7:44] Uh with one contract, I don't even know
+[7:45] Uh with one contract, I don't even know
+[7:45] how much that is, like 3.6k. That's a a
+[7:47] how much that is, like 3.6k. That's a a
+[7:47] ton of money. So, very very insane
+[7:50] ton of money. So, very very insane
+[7:50] perfect reversion there on this day.
+[7:53] perfect reversion there on this day.
+[7:53] After 11:00 a.m., I am done trading as
+[7:55] After 11:00 a.m., I am done trading as
+[7:55] well, but I'll let a position play out
+[7:56] well, but I'll let a position play out
+[7:56] if I'm still in one. So, when it breaks
+[7:58] if I'm still in one. So, when it breaks
+[7:58] structure here, I will send one two
+[8:00] structure here, I will send one two
+[8:00] contracts short and just let it play
+[8:01] contracts short and just let it play
+[8:01] out. Now, I will go over Monday. Monday
+[8:03] out. Now, I will go over Monday. Monday
+[8:03] was a bank holiday, but I still like to
+[8:05] was a bank holiday, but I still like to
+[8:05] trade them if there's an influx in
+[8:07] trade them if there's an influx in
+[8:07] volume
+[8:08] volume
+[8:08] when the market opens. Just because that
+[8:10] there's still going to be an
+[8:11] means there's still going to be an
+[8:11] unfair move. So, here I'll just mark out
+[8:15] the pre-open price.
+[8:15] There is an influx in volume just cuz
+[8:16] There is an influx in volume just cuz
+[8:16] you can see the 9:30 a.m. candle that's
+[8:18] you can see the 9:30 a.m. candle that's
+[8:18] larger than most of these candles.
+[8:20] larger than most of these candles.
+[8:20] I would do a continuation long, just
+[8:22] I would do a continuation long, just
+[8:22] enter right here, 38 points. Definitely
+[8:24] enter right here, 38 points. Definitely
+[8:24] don't go for 76 here because it's bank
+[8:27] don't go for 76 here because it's bank
+[8:27] holiday and it it's very unlikely to
+[8:28] holiday and it it's very unlikely to
+[8:28] continue that far away from a fair
+[8:30] continue that far away from a fair
+[8:30] price.
+[8:31] price.
+[8:31] Also, I only take continuations in like
+[8:33] Also, I only take continuations in like
+[8:33] the first 10-15 minutes because when the
+[8:37] unfair initial opening move stops, I
+[8:37] definitely want to be shorting for
+[8:39] definitely want to be shorting for
+[8:39] reversion.
+[8:41] reversion.
+[8:41] Anyways, fair price is here, quick move
+[8:43] Anyways, fair price is here, quick move
+[8:43] up, unfair. I would take a short off
+[8:45] up, unfair. I would take a short off
+[8:45] break of structure. First break of
+[8:46] break of structure. First break of
+[8:46] structure that I see is this one right
+[8:48] structure that I see is this one right
+[8:48] here. And it's giving 33 and 1/2 points,
+[8:53] so target 38 points. Very quick trade
+[8:53] right there.
+[8:54] right there.
+[8:54] It does move down even farther, so if
+[8:56] It does move down even farther, so if
+[8:56] you wanted to scalp a a little quick
+[8:57] you wanted to scalp a a little quick
+[8:57] long back to fair price, you could. And
+[9:00] long back to fair price, you could. And
+[9:00] then this was the tweet and this was the
+[9:03] tweet as well. So,
+[9:03] tweets are traded a lot differently, but
+[9:05] very good informative
+[9:06] I hope this was a very good informative
+[9:06] video on how you can trade the strategy.
+[9:10] I hope simplifying it made it a lot
+[9:10] easier to understand. Last thing I'll
+[9:12] easier to understand. Last thing I'll
+[9:12] mention is I have a free website here.
+[9:14] mention is I have a free website here.
+[9:14] I'll put it in the description. You
+[9:15] I'll put it in the description. You
+[9:15] insert your trading stats, total wins,
+[9:18] insert your trading stats, total wins,
+[9:18] total trades, wins, average win, average
+[9:22] loss, calculate EV, and then based on
+[9:22] your stats, it will tell you the optimal
+[9:23] my
+[9:26] stats, if I trade this account, I'm
+[9:26] going to make $225 per eval I purchase,
+[9:28] going to make $225 per eval I purchase,
+[9:28] but if I buy this one, I'm going to lose
+[9:30] g
+[9:35] to lose on this eval and this eval. So,
+[9:35] hopefully this website, which is free
+[9:37] hopefully this website, which is free
+[9:37] and in the description, is going to help
+[9:41] you trade on the optimal prop firm.
+[9:41] Thank you guys for watching. If you want
+[9:43] to join the free Discord in the
+[9:43] description, we can talk about my
+[9:45] description, we can talk about my
+[9:45] website there or talk about the
+[9:46] website there or talk about the
+[9:46] strategy, send you trades, all that sort
+[9:48] and if
+[9:50] of stuff. So, uh go hit that up and if
+[9:50] you want proof of my payouts and stuff,
+[9:51] you want proof of my payouts and stuff,
+[9:51] go check out any of my other videos like
+[9:54] uh I'm going to link one here. It's my
+[9:54] news trading video. Proof screen
+[9:55] news trading video. Proof screen
+[9:56] recorded in the first 15 seconds of
+[9:57] recorded in the first 15 seconds of
+[9:57] that. But, hopefully you enjoyed the
+[9:58] that. But, hopefully you enjoyed the
+[9:58] video and have a good one.

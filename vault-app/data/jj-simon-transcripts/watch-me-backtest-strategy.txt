@@ -1,0 +1,2301 @@
+# Watch Me Backtest My $1,500,000 Trading Strategy
+# https://www.youtube.com/watch?v=MVP7X-3v8xk
+# source: yt-dlp auto-sub
+
+[0:01] What's up everyone? Today we're going to
+[0:01] be back testing my continuation and
+[0:02] be back testing my continuation and
+[0:02] reversion strategy just for the month of
+[0:04] hange
+[0:07] monthtomonth a little bit based on the
+[0:07] market conditions. If it's drifting to
+[0:09] market conditions. If it's drifting to
+[0:09] all-time highs, if it's dumping,
+[0:11] all-time highs, if it's dumping,
+[0:11] correcting, or stagnating in the middle,
+[0:13] nt entry
+[0:15] model, but I'm just going to do May
+[0:15] right now. All right, we are on May 1st.
+[0:18] a.m.
+[0:19] I'm not going to be doing any 8:30 a.m.
+[0:20] news trades because I am not able to
+[0:21] news trades because I am not able to
+[0:21] look at the actual values of them from
+[0:23] look at the actual values of them from
+[0:23] here, but I'm just going to be doing
+[0:24] here, but I'm just going to be doing
+[0:24] market opens for New York AM
+[0:26] market opens for New York AM
+[0:26] continuation, reversion, all that sort
+[0:27] continuation, reversion, all that sort
+[0:27] of stuff. So, first one, opening candle
+[0:29] of stuff. So, first one, opening candle
+[0:29] 33 points. I'm automatically going to do
+[0:33] half my normal contracts and it's going
+[0:34] to buy just because
+[0:37] to buy just because
+[0:37] opening candle is green and just that's
+[0:39] opening candle is green and just that's
+[0:39] sort of how you do continuation trades.
+[0:41] sort of how you do continuation trades.
+[0:41] Let me see if I can just free take
+[0:43] Let me see if I can just free take
+[0:44] profit stop loss and buy.
+[0:47] profit stop loss and buy.
+[0:47] I'm just going to risk 500, go for 750
+[0:48] I'm just going to risk 500, go for 750
+[0:48] every single trade. Um, back testing is
+[0:51] every single trade. Um, back testing is
+[0:51] a little bit different than live, but
+[0:53] a little bit different than live, but
+[0:53] I'm going to give it my best shot. I
+[0:54] I'm going to give it my best shot. I
+[0:54] don't really do it anymore. So, here's
+[0:57] don't really do it anymore. So, here's
+[0:57] the first one. Let's speed it up. All
+[0:59] the first one. Let's speed it up. All
+[0:59] right, there we go. Take profit.
+[1:01] right, there we go. Take profit.
+[1:01] [clears throat]
+[1:02] [clears throat]
+[1:02] Now, I am going to mark out what I think
+[1:03] ce, which is just the
+[1:05] is the fair price, which is just the
+[1:05] pre-open price. And let's see what it
+[1:08] pre-open price. And let's see what it
+[1:08] does in terms of a reversion.
+[1:10] does in terms of a reversion.
+[1:10] I'm going to wait for a break of
+[1:12] I'm going to wait for a break of
+[1:12] structure. Uh, because we're at alltime
+[1:13] structure. Uh, because we're at alltime
+[1:13] highs, I want to wait for a break of
+[1:15] highs, I want to wait for a break of
+[1:15] structure to have it like really be
+[1:17] structure to have it like really be
+[1:17] ready to short. I don't want to short
+[1:18] ready to short. I don't want to short
+[1:18] off displacement. So, I'll just wait
+[1:20] off displacement. So, I'll just wait
+[1:20] till structure breaks, which it does
+[1:22] till structure breaks, which it does
+[1:22] right here. And in this case, I'm just
+[1:24] right here. And in this case, I'm just
+[1:24] going to use I'm going to see how many
+[1:26] going to use I'm going to see how many
+[1:26] points there are. So, just looking at
+[1:27] points there are. So, just looking at
+[1:27] the right side, there is over 100
+[1:29] the right side, there is over 100
+[1:30] points. So, um actually, I'll just use
+[1:32] points. So, um actually, I'll just use
+[1:32] I'll just use a one contract for every
+[1:34] I'll just use a one contract for every
+[1:34] single one
+[1:36] single one
+[1:36] no matter what. It [clears throat] is
+[1:38] no matter what. It [clears throat] is
+[1:38] going to be a little bit less
+[1:39] going to be a little bit less
+[1:39] profitable, but just keep everything
+[1:41] profitable, but just keep everything
+[1:41] standard, same risk. And then I'll
+[1:42] standard, same risk. And then I'll
+[1:42] switch contracts. I'll only do the half
+[1:44] switch contracts. I'll only do the half
+[1:44] contract on opening
+[1:47] contract on opening
+[1:47] opening one. And that one loses, but
+[1:50] opening one. And that one loses, but
+[1:50] that's fine. Now, I'm going to stop at
+[1:51] that's fine. Now, I'm going to stop at
+[1:52] 11 a.m. But let's see if there's any
+[1:53] 11 a.m. But let's see if there's any
+[1:53] other shorts presented. Now, I'm going
+[1:55] other shorts presented. Now, I'm going
+[1:56] to bring my fair price back up to here
+[1:57] to bring my fair price back up to here
+[1:57] because we had a volume spike and it
+[1:59] because we had a volume spike and it
+[2:00] continued up instead of coming back to
+[2:01] continued up instead of coming back to
+[2:01] the fair price. So, I can change fair
+[2:02] the fair price. So, I can change fair
+[2:02] price a little bit throughout the day if
+[2:07] you did not know that.
+[2:07] I change fair price throughout the day
+[2:08] I change fair price throughout the day
+[2:08] based on most recent consolidation.
+[2:11] based on most recent consolidation.
+[2:11] Now, let's wait for a break of structure
+[2:14] ime
+[2:16] with no wick because we're at all time
+[2:16] highs here. I really want a a very
+[2:17] highs here. I really want a a very
+[2:17] strong short. Um, and it looks like we
+[2:20] strong short. Um, and it looks like we
+[2:20] get the break of structure, no wick at
+[2:21] get the break of structure, no wick at
+[2:21] the bottom.
+[2:23] the bottom.
+[2:23] and looks like a pretty standard shorts.
+[2:25] 'm going to change it. I'm
+[2:26] Actually, I'm going to change it. I'm
+[2:26] just going to do half. So, you can
+[2:29] just going to do half. So, you can
+[2:29] change the amount of contracts you use
+[2:30] change the amount of contracts you use
+[2:30] based on how many points to the fair
+[2:31] based on how many points to the fair
+[2:32] price. It is something I do. I wasn't
+[2:34] price. It is something I do. I wasn't
+[2:34] sure if I was going to tell people that
+[2:35] sure if I was going to tell people that
+[2:35] on YouTube. I was just going to say
+[2:37] on YouTube. I was just going to say
+[2:37] everyone just do the same thing as
+[2:38] everyone just do the same thing as
+[2:38] always. But this is a little
+[2:39] always. But this is a little
+[2:40] optimization you can do to help increase
+[2:41] . There you
+[2:44] your win rate. Might as well. There you
+[2:44] go. So, that's the continuation. That is
+[2:49] the reversion. Very good day today.
+[2:49] Let's see if it does go back to AM. It
+[2:50] Let's see if it does go back to AM. It
+[2:50] doesn't. I don't [clears throat] think
+[2:51] doesn't. I don't [clears throat] think
+[2:51] it will just because there's a bunch of
+[2:53] it will just because there's a bunch of
+[2:53] consolidation here and then it moved up
+[2:54] consolidation here and then it moved up
+[2:54] farther. So I would think this is the
+[2:56] farther. So I would think this is the
+[2:56] new fair price and then yes, let's go. I
+[2:58] on
+[3:03] to Monday New York AM. Some sort of news
+[3:03] that I obviously don't know what that
+[3:04] that I obviously don't know what that
+[3:04] was. I don't have news up, but this
+[3:06] was. I don't have news up, but this
+[3:06] definitely looks like a very fair price.
+[3:07] t is
+[3:09] Lots of consolidation and the market is
+[3:09] about to open. Let's see if we take any
+[3:12] about to open. Let's see if we take any
+[3:12] continuation. So this would be a great
+[3:14] continuation. So this would be a great
+[3:14] time to do continuation short. I'm just
+[3:16] time to do continuation short. I'm just
+[3:16] going to do one contract because no need
+[3:21] to cut in half. The opening candle was
+[3:21] not very large.
+[3:24] not very large.
+[3:24] So just the standard - 500 plus 750
+[3:27] So just the standard - 500 plus 750
+[3:27] [clears throat]
+[3:32] gets really close
+[3:32] and unfortunate loss, but it got very
+[3:35] and unfortunate loss, but it got very
+[3:35] close uh as expected. So now we'll just
+[3:37] close uh as expected. So now we'll just
+[3:37] look for a reversion since the
+[3:39] look for a reversion since the
+[3:39] continuation was not a win. Going to
+[3:41] continuation was not a win. Going to
+[3:41] need it to move quite a bit away. It
+[3:43] need it to move quite a bit away. It
+[3:43] doesn't look like it's going to because
+[3:45] doesn't look like it's going to because
+[3:45] it's Monday, but let's see if we can get
+[3:52] a decent amount of points in our favor.
+[3:52] Uh, it's going to be a while.
+[3:53] Uh, it's going to be a while.
+[3:53] [clears throat] Okay, there we go. I am
+[3:55] [clears throat] Okay, there we go. I am
+[3:56] down at 11. So, let's see if I do get an
+[4:00] entry before 11. Just wait for the
+[4:00] structure to break. Wick, but no break.
+[4:03] structure to break. Wick, but no break.
+[4:03] I want to close below.
+[4:06] I want to close below.
+[4:06] And there we go. So, this one seems
+[4:08] And there we go. So, this one seems
+[4:08] good. Fair price is probably this. This
+[4:10] good. Fair price is probably this. This
+[4:10] one's from the previous day. I don't
+[4:11] one's from the previous day. I don't
+[4:11] need that. So, just take this one and
+[4:15] need that. So, just take this one and
+[4:15] then you can see how many points we're
+[4:16] then you can see how many points we're
+[4:16] getting. We're getting about 50, maybe
+[4:18] getting. We're getting about 50, maybe
+[4:18] 60. So, just standard one contract and
+[4:20] 60. So, just standard one contract and
+[4:20] then go for 760, 750, whatever, 500 stop
+[4:25] loss. And then we'll see if this one
+[4:25] wins.
+[4:27] wins.
+[4:27] Oh my gosh. One tick away. There we go.
+[4:29] Oh my gosh. One tick away. There we go.
+[4:29] One tick away and then it wins. Uh,
+[4:31] One tick away and then it wins. Uh,
+[4:31] definitely done for the day at 11. And
+[4:33] definitely done for the day at 11. And
+[4:33] this is a crazy no volume day. Probably
+[4:35] this is a crazy no volume day. Probably
+[4:35] no volume day is why the continuation
+[4:37] no volume day is why the continuation
+[4:37] loss, but who really knows? All right,
+[4:39] loss, but who really knows? All right,
+[4:39] we are now on Tuesday. Let's see what
+[4:41] we are now on Tuesday. Let's see what
+[4:41] the opening candle does. Okay, it is
+[4:43] the opening candle does. Okay, it is
+[4:43] green, but there's a huge wick on top.
+[4:44] green, but there's a huge wick on top.
+[4:44] So, my bias is going to be longs, but
+[4:46] So, my bias is going to be longs, but
+[4:46] I'm not going to buy right now just
+[4:48] I'm not going to buy right now just
+[4:48] because of the huge wick.
+[4:50] because of the huge wick.
+[4:50] And if it closes above the Oh,
+[4:53] And if it closes above the Oh,
+[4:53] it's going to say if it closes above, I
+[4:55] it's going to say if it closes above, I
+[4:55] will buy. It closed literally at the
+[4:57] will buy. It closed literally at the
+[4:57] same exact one. So, I'm just going to
+[4:58] same exact one. So, I'm just going to
+[4:58] wait one more candle. Okay, this one's
+[5:01] wait one more candle. Okay, this one's
+[5:01] green. I'm I'm going to buy here just
+[5:04] green. I'm I'm going to buy here just
+[5:04] with one contract. It's probably fine.
+[5:07] with one contract. It's probably fine.
+[5:07] Don't need a bigger stop here.
+[5:10] Don't need a bigger stop here.
+[5:10] &gt;&gt; [clears throat]
+[5:16] &gt;&gt; and then we'll see what this one does.
+[5:16] &gt;&gt; and then we'll see what this one does. Okay, this one wins. Now I'm going to
+[5:18] Okay, this one wins. Now I'm going to
+[5:18] wait for a reversion back to this price.
+[5:22] ee
+[5:23] Just this consolidation here. Let's see
+[5:23] what we get.
+[5:25] what we get.
+[5:25] Okay, there we go. Break structure.
+[5:27] Okay, there we go. Break structure.
+[5:27] Everything seems good to go except for
+[5:29] Everything seems good to go except for
+[5:29] the fact that news is coming out at 10.
+[5:32] the fact that news is coming out at 10.
+[5:32] I'm going to do 0.5 contracts because
+[5:36] I'm going to do 0.5 contracts because
+[5:36] I'm getting exactly 750 to the fair
+[5:38] I'm getting exactly 750 to the fair
+[5:38] price. So, [clears throat] perfect.
+[5:41] price. So, [clears throat] perfect.
+[5:41] And then news comes out. I would move
+[5:44] And then news comes out. I would move
+[5:44] stop to break even, but I'm in draw
+[5:45] stop to break even, but I'm in draw
+[5:45] down, so I don't need to
+[5:49] down, so I don't need to
+[5:49] let it play out. Okay, some movements
+[5:52] let it play out. Okay, some movements
+[5:52] and it goes the wrong way. Well, it was
+[5:54] and it goes the wrong way. Well, it was
+[5:54] worth a try. Entry seemed fine. Uh, it
+[5:57] worth a try. Entry seemed fine. Uh, it
+[5:57] was at alltime highs, so never the best
+[5:59] was at alltime highs, so never the best
+[5:59] short all-time highs, but entry very
+[6:01] short all-time highs, but entry very
+[6:02] good. Just standard break of structure
+[6:03] good. Just standard break of structure
+[6:03] and then unfortunately not enough
+[6:05] and then unfortunately not enough
+[6:05] movement in our favor. I will look for
+[6:07] movement in our favor. I will look for
+[6:07] one more if it breaks this consolidation
+[6:11] here.
+[6:11] Yep, there it goes. I'm [clears throat]
+[6:13] Yep, there it goes. I'm [clears throat]
+[6:13] gonna do one because fair price is most
+[6:15] gonna do one because fair price is most
+[6:15] likely not this consolidation or this
+[6:17] likely not this consolidation or this
+[6:17] one right here.
+[6:19] one right here.
+[6:19] And then we are getting enough points to
+[6:21] And we'll see what this
+[6:24] go for 750 500. And we'll see what this
+[6:24] one does.
+[6:26] one does.
+[6:26] Going down
+[6:29] Going down
+[6:29] almost.
+[6:36] Well, unfortunate loss. It did revert to
+[6:36] this pair price. So I guess now we know
+[6:37] this pair price. So I guess now we know
+[6:37] this is the pair price going forward.
+[6:38] this is the pair price going forward.
+[6:38] But that doesn't help us unfortunately.
+[6:40] But that doesn't help us unfortunately.
+[6:40] Did not revert all the way. So on to the
+[6:43] next day. All right. Now we are on
+[6:43] Wednesday. Let's see what the opening
+[6:45] Wednesday. Let's see what the opening
+[6:45] candle does. Okay. Opening candle is
+[6:46] candle does. Okay. Opening candle is
+[6:46] red. Continuation shorts might be an
+[6:49] red. Continuation shorts might be an
+[6:49] option here. Um
+[6:51] option here. Um
+[6:51] they're not the best option though. I
+[6:53] they're not the best option though. I
+[6:53] think fair price is quite higher. It is
+[6:55] think fair price is quite higher. It is
+[6:56] likely about here. Reason for that is
+[6:57] likely about here. Reason for that is
+[6:57] there was two green pieces of news
+[6:59] there was two green pieces of news
+[6:59] overnight and you're at the very very
+[7:01] overnight and you're at the very very
+[7:01] bottom of a move. I would be very
+[7:03] bottom of a move. I would be very
+[7:03] careful to short the absolute bottom. I
+[7:05] careful to short the absolute bottom. I
+[7:05] would like it if it opens here 100% to
+[7:07] would like it if it opens here 100% to
+[7:07] short back to this. I'm just treating
+[7:09] short back to this. I'm just treating
+[7:09] this as a fair price because it's the
+[7:10] this as a fair price because it's the
+[7:10] consolidation after this news. So, I
+[7:12] consolidation after this news. So, I
+[7:12] would not short if it breaks if it goes
+[7:15] would not short if it breaks if it goes
+[7:15] up. Okay,
+[7:17] up. Okay,
+[7:17] I'm going to [clears throat] buy with
+[7:18] I'm going to [clears throat] buy with
+[7:18] 0.5.
+[7:20] 0.5.
+[7:20] Opening candle was 43. So, buy with 0.5
+[7:23] Opening candle was 43. So, buy with 0.5
+[7:23] getting 7050. Okay, exactly to where I
+[7:25] getting 7050. Okay, exactly to where I
+[7:25] thought fair price was. So, we'll just
+[7:26] thought fair price was. So, we'll just
+[7:26] let that play out then. Okay, there's a
+[7:29] let that play out then. Okay, there's a
+[7:29] win. Um, and now I'm actually going to
+[7:33] win. Um, and now I'm actually going to
+[7:33] think about a No, I'm not going to think
+[7:36] about a short. I was going to think
+[7:36] about a short, but instead of the
+[7:38] about a short, but instead of the
+[7:38] opening being the fair price, I honestly
+[7:40] re or
+[7:42] think the pair price is now up here or
+[7:42] here. Like, it's one of these two, not
+[7:44] here. Like, it's one of these two, not
+[7:44] the open, because when it opened, the
+[7:47] the open, because when it opened, the
+[7:47] overnight orders were short, but then it
+[7:49] and
+[7:52] broke structure to the upside. And plus,
+[7:52] we had two green news and high time
+[7:53] we had two green news and high time
+[7:54] frame biases to fail this move here. So,
+[7:57] I am long biased. I might not even
+[7:57] revert this. I'm gonna wait for Okay,
+[8:00] revert this. I'm gonna wait for Okay,
+[8:00] lots of consolidation in there. So, 100%
+[8:05] fair price there.
+[8:05] Uh we'll see if it moves up to where I
+[8:06] Uh we'll see if it moves up to where I
+[8:06] can take Oh, I could even maybe I can
+[8:09] can take Oh, I could even maybe I can
+[8:09] buy if it goes down farther.
+[8:12] buy if it goes down farther.
+[8:12] Uh it doesn't look like it. Okay, it's
+[8:14] Uh it doesn't look like it. Okay, it's
+[8:14] about to hit 11 and it's just
+[8:15] about to hit 11 and it's just
+[8:15] consolidating in the bare price and now
+[8:17] consolidating in the bare price and now
+[8:17] it's drifting.
+[8:19] it's drifting.
+[8:19] Yeah. So, I'd be done for today. Just
+[8:20] Yeah. So, I'd be done for today. Just
+[8:20] one continuation. More of a macro play.
+[8:23] one continuation. More of a macro play.
+[8:23] All right. Now, for Thursday, it looks
+[8:24] All right. Now, for Thursday, it looks
+[8:24] like it's opening in the middle of the
+[8:25] like it's opening in the middle of the
+[8:25] overnight range. So, it is probably
+[8:27] overnight range. So, it is probably
+[8:27] opening at a fair price. I'll just mark
+[8:30] opening at a fair price. I'll just mark
+[8:30] out the open. And
+[8:33] out the open. And
+[8:33] all right, shorts seem like they would
+[8:35] all right, shorts seem like they would
+[8:35] be good to take with 17 point candle.
+[8:38] be good to take with 17 point candle.
+[8:38] So, I'll just do one one contract here.
+[8:41] So, I'll just do one one contract here.
+[8:41] I have to drag to 500 750
+[8:49] and we'll see what this one does. This
+[8:49] one loses. Very large wicks this day.
+[8:51] one loses. Very large wicks this day.
+[8:51] Let's see.
+[8:55] Let's see.
+[8:55] Um,
+[8:57] Um,
+[8:57] if we get a good displacement, I'll buy.
+[8:59] y. Well, there's the displacement,
+[9:00] Okay. Well, there's the displacement,
+[9:00] but it got back to fair price instantly.
+[9:03] ,
+[9:05] Origin did not see an entry there. Uh,
+[9:05] are we at all time high? Yeah. Okay. So,
+[9:09] now to short, I want to break the
+[9:09] structure just because it's at all time
+[9:10] structure just because it's at all time
+[9:10] highs.
+[9:12] highs.
+[9:12] So, we'll see.
+[9:19] Alltime highs consolidation. Is it going
+[9:19] to break structure?
+[9:21] to break structure?
+[9:21] Give it a minute.
+[9:24] Give it a minute.
+[9:24] Okay, give it another minute.
+[9:27] Okay, give it another minute.
+[9:27] Uh, is that structure? Nope.
+[9:31] Uh, is that structure? Nope.
+[9:31] If you don't know what structure is,
+[9:32] If you don't know what structure is,
+[9:32] there should be like a good free YouTube
+[9:33] ever
+[9:36] there's a wick just like that, and it's
+[9:36] lower than these two. So, it's
+[9:38] lower than these two. So, it's
+[9:38] structure. Just wait for a close below
+[9:40] structure. Just wait for a close below
+[9:40] it. Here we go. There's a close below,
+[9:43] it. Here we go. There's a close below,
+[9:43] but there's a huge wick. Um, I would
+[9:47] but there's a huge wick. Um, I would
+[9:47] not short that one probably. Let me see.
+[9:54] Okay, I might go for a really long
+[9:54] trade. The back testing P&amp;L is going to
+[9:55] trade. The back testing P&amp;L is going to
+[9:55] trade. The back testing P&amp;L is going to be way different than proper P&amp;L and
+[9:59] live P&amp;L.
+[9:59] Um, but I'm just trying to get you guys
+[10:01] Um, but I'm just trying to get you guys
+[10:01] the strategy.
+[10:04] the strategy.
+[10:04] Uh, so the results are not going to be
+[10:05] Uh, so the results are not going to be
+[10:05] totally accurate. Okay, there we go.
+[10:07] totally accurate. Okay, there we go.
+[10:07] Breakup structure. No wick. I'm ready to
+[10:16] Like even days like this, if I was on a
+[10:16] specific account, I would even go for
+[10:19] specific account, I would even go for
+[10:19] this. But it's hard to do that in back
+[10:21] this. But it's hard to do that in back
+[10:21] testing. Like I feel like it it can
+[10:23] testing. Like I feel like it it can
+[10:23] easily revert all the way because it's
+[10:24] easily revert all the way because it's
+[10:24] just drifting at all time highs
+[10:25] just drifting at all time highs
+[10:25] unfairly. It's hard to do that on a prop
+[10:28] nt. Like
+[10:31] firm funded account, Eval account. Like
+[10:31] depending on your account, this is an
+[10:33] depending on your account, this is an
+[10:33] optional play that you could do. Okay,
+[10:35] optional play that you could do. Okay,
+[10:35] there we go. So, if I wanted to maximize
+[10:40] my account balance, I would do longer
+[10:40] trades like that. I could also just
+[10:42] trades like that. I could also just
+[10:42] literally just do 38 points. I don't
+[10:45] literally just do 38 points. I don't
+[10:45] know. I don't know what's best for back
+[10:46] know. I don't know what's best for back
+[10:46] testing, but I'm just going to show
+[10:47] testing, but I'm just going to show
+[10:47] everyone the pass rate and that sort of
+[10:49] everyone the pass rate and that sort of
+[10:49] stuff. And I guess I'll take long trades
+[10:53] like that if I see them.
+[10:53] Uh, this one I took exactly at 11, so
+[10:55] Uh, this one I took exactly at 11, so
+[10:55] I'm very grateful it broke structure
+[10:57] I'm very grateful it broke structure
+[10:57] then instead of later. All right, now
+[10:58] then instead of later. All right, now
+[10:58] I'm on Friday, but I actually saw that
+[10:59] I'm on Friday, but I actually saw that
+[11:00] there's red boulder news and it is
+[11:02] there's red boulder news and it is
+[11:02] actually going to give the results. I'm
+[11:03] actually going to give the results. I'm
+[11:04] not sure if they have tweets here in FX
+[11:05] not sure if they have tweets here in FX
+[11:05] Replay, but I'm going to actually just
+[11:08] Replay, but I'm going to actually just
+[11:08] trade the news like I would usually so I
+[11:11] can give you guys an extra session.
+[11:11] Okay, let's see if we take a
+[11:13] Okay, let's see if we take a
+[11:13] continuation. Continuation long seems
+[11:15] continuation. Continuation long seems
+[11:15] fine here just because it was green and
+[11:18] fine here just because it was green and
+[11:18] then this candle sort of confirming good
+[11:19] .
+[11:25] I'll change this to 750. The thing is
+[11:25] here I'm optimizing for prop firms pass
+[11:27] here I'm optimizing for prop firms pass
+[11:27] rate because I'm doing a 1 to 1.5. Like
+[11:30] rate because I'm doing a 1 to 1.5. Like
+[11:30] there's better strategies if you're
+[11:31] there's better strategies if you're
+[11:32] trading this on live. Okay, perfect. Now
+[11:35] if I
+[11:37] green news prices there. Let's see if I
+[11:37] get a reversion.
+[11:44] breaking structure almost. There we go.
+[11:44] Sell one. Okay, exactly 750 to fair
+[11:48] Sell one. Okay, exactly 750 to fair
+[11:48] price. Perfect. 500 here and then just
+[11:50] price. Perfect. 500 here and then just
+[11:50] play that one out. Should win because
+[11:52] play that one out. Should win because
+[11:52] it's free news price. Yep, there we go.
+[11:54] it's free news price. Yep, there we go.
+[11:54] Nice and easy. Now, let's see what New
+[11:56] Nice and easy. Now, let's see what New
+[11:56] York AM does at 930. Don't want to skip
+[11:59] York AM does at 930. Don't want to skip
+[11:59] it by accident.
+[12:01] it by accident.
+[12:01] Okay, green candle. So, 100% long bias
+[12:04] Okay, green candle. So, 100% long bias
+[12:04] today. Like very very very very strong.
+[12:06] today. Like very very very very strong.
+[12:06] Um we took alltime highs in the morning.
+[12:10] So, this is the alltime high. So, first
+[12:10] of all, we're very close to that. Second
+[12:13] of all, the opening candle is green.
+[12:13] Third of all, news is green. So, I am
+[12:15] Third of all, news is green. So, I am
+[12:15] very ready. Okay, there we go. I was
+[12:17] very ready. Okay, there we go. I was
+[12:17] going to say I'm very ready to long. So,
+[12:22] that does it for me.
+[12:22] Uh, same risk as usual. Play it. And
+[12:25] Uh, same risk as usual. Play it. And
+[12:25] there we go. Take profit. Uh, fair price
+[12:28] as
+[12:31] here. Consolidation here after news as
+[12:31] well. There was consolidation here, but
+[12:33] well. There was consolidation here, but
+[12:33] when open came, it got all the way back
+[12:35] when open came, it got all the way back
+[12:35] up to here and then consolidated here.
+[12:36] up to here and then consolidated here.
+[12:36] So, it changed fair price up to here.
+[12:39] So, it changed fair price up to here.
+[12:39] Now, let's see if I can get a reversion
+[12:40] Now, let's see if I can get a reversion
+[12:40] off this just break of structure. Maybe.
+[12:47] Nope. Okay, new fair price would be up
+[12:47] here because there's a volume spike and
+[12:49] here because there's a volume spike and
+[12:49] it went away from what I thought was the
+[12:52] fair price.
+[12:52] A little bit more of an in-depth bare
+[12:54] A little bit more of an in-depth bare
+[12:54] price explanation through these back
+[12:56] price explanation through these back
+[12:56] test videos, but that is always good.
+[12:59] test videos, but that is always good.
+[12:59] Um, no breakup structure. It's like at
+[13:01] Um, no breakup structure. It's like at
+[13:02] the same level. We'll see if it does.
+[13:05] the same level. We'll see if it does.
+[13:05] Okay, so it climbs up again further. So,
+[13:09] I moved our price up to here.
+[13:09] Okay.
+[13:11] Okay.
+[13:11] Well, it reverted. Great. Uh, I kind of
+[13:13] Well, it reverted. Great. Uh, I kind of
+[13:14] missed the displacement entry by
+[13:15] missed the displacement entry by
+[13:16] clicking too fast. But, uh, it's
+[13:18] clicking too fast. But, uh, it's
+[13:18] definitely better to wait for breaking
+[13:19] definitely better to wait for breaking
+[13:19] structure at all time highs.
+[13:22] structure at all time highs.
+[13:22] Let's see. Are we going to get structure
+[13:24] So, on to
+[13:26] break? Nope. And it hits 11. So, on to
+[13:26] the next day. All right. Now, we are on
+[13:27] the next day. All right. Now, we are on
+[13:27] Monday the 11th. It is at a very, very
+[13:30] Monday the 11th. It is at a very, very
+[13:30] fair price. The gap is like slightly
+[13:32] fair price. The gap is like slightly
+[13:32] above. So, it's in the middle of the
+[13:33] above. So, it's in the middle of the
+[13:33] overnight range. I guess it's more
+[13:34] overnight range. I guess it's more
+[13:34] slightly to the bottom. And then we can
+[13:35] slightly to the bottom. And then we can
+[13:36] fill this move up here. So before even
+[13:37] fill this move up here. So before even
+[13:37] seeing the opening candle, I'm just
+[13:39] seeing the opening candle, I'm just
+[13:39] going to guess long bias, but obviously
+[13:40] going to guess long bias, but obviously
+[13:40] we'll see. Hey, there we go.
+[13:43] we'll see. Hey, there we go.
+[13:43] Opening candle size 37. So let's do 0.5.
+[13:48] .
+[13:52] There we go. Just like usual.
+[13:52] And that was quick. Very nice. Easy. I
+[13:55] And that was quick. Very nice. Easy. I
+[13:55] think this is probably a fair price, but
+[13:59] we'll see if
+[13:59] Okay. Wow.
+[14:01] Okay. Wow.
+[14:01] It's moving.
+[14:06] Okay, I missed the entry again. Whoops.
+[14:06] Uh I should have entered right there.
+[14:09] Uh I should have entered right there.
+[14:09] But uh and there's not 75 points in my
+[14:13] But uh and there's not 75 points in my
+[14:13] favor. So just going to do one contract
+[14:17] favor. So just going to do one contract
+[14:17] and then go for 760 750
+[14:20] and then go for 760 750
+[14:20] 500
+[14:23] 500
+[14:23] and we'll see what that does. There we
+[14:25] and we'll see what that does. There we
+[14:25] go.
+[14:30] Crazy volume this day. Uh we'll see what
+[14:30] happens.
+[14:39] Let's see. Almost to 11
+[14:39] also. Okay. What am I doing? I just
+[14:41] also. Okay. What am I doing? I just
+[14:41] missed another one by clicking too fast.
+[14:48] Okay. Well, that was a mistake. Um,
+[14:48] okay. I should have taken this with 75
+[14:51] okay. I should have taken this with 75
+[14:51] 35 to 50, but I mean, I'll just get in
+[14:54] 35 to 50, but I mean, I'll just get in
+[14:54] here and take it uh with one. So, I'll
+[14:58] here and take it uh with one. So, I'll
+[14:58] do 30.
+[15:01] do 30.
+[15:01] All these numbers are confusing me while
+[15:02] ing this over here. I'll just do
+[15:03] I'm doing this over here. I'll just do
+[15:04] the smaller one. It doesn't matter.
+[15:06] the smaller one. It doesn't matter.
+[15:06] Okay, they both won. Back to the fair
+[15:07] Okay, they both won. Back to the fair
+[15:07] price. Pretty easy trade. And it is
+[15:10] price. Pretty easy trade. And it is
+[15:10] 10:30. Let's see if we get another
+[15:12] 10:30. Let's see if we get another
+[15:12] opportunity before 11.
+[15:15] opportunity before 11.
+[15:16] Uh almost.
+[15:18] Uh almost.
+[15:18] And
+[15:20] And
+[15:20] okay, it's about to break structure.
+[15:23] okay, it's about to break structure.
+[15:23] We'll see if it closes.
+[15:25] We'll see if it closes.
+[15:25] Wick.
+[15:27] Wick.
+[15:27] Green candle. Green. Green. Green. Okay.
+[15:30] one. All right. Now we are on
+[15:32] I'm done. All right. Now we are on
+[15:32] Tuesday. High time frame bias is long.
+[15:34] Tuesday. High time frame bias is long.
+[15:34] So let's expect a long drift on this
+[15:37] So let's expect a long drift on this
+[15:37] day. Um now let's see what open does.
+[15:40] day. Um now let's see what open does.
+[15:40] Okay. Open very large red candle. Uh I
+[15:43] Okay. Open very large red candle. Uh I
+[15:44] would just take a continuation short
+[15:45] would just take a continuation short
+[15:45] with 0.5 contracts
+[15:49] with 0.5 contracts
+[15:49] just because open candle bigger than 25
+[15:50] just because open candle bigger than 25
+[15:50] as we always do
+[15:53] as we always do
+[15:53] and unfortunately lose but that's
+[15:56] and unfortunately lose but that's
+[15:56] normal. Um let's see what it does from
+[15:58] normal. Um let's see what it does from
+[15:58] here. Mark out fair price there and
+[16:01] here. Mark out fair price there and
+[16:02] we'll see if we can get a reversion.
+[16:03] we'll see if we can get a reversion.
+[16:03] Okay, there's the reversion but no
+[16:05] Okay, there's the reversion but no
+[16:06] breakup structure. So,
+[16:08] breakup structure. So,
+[16:08] okay, I'm getting ready to long.
+[16:12] okay, I'm getting ready to long.
+[16:12] That's displacement. U but we're only
+[16:14] That's displacement. U but we're only
+[16:14] doing break of structure in this video.
+[16:18] doing break of structure in this video.
+[16:18] There's a break of this structure right
+[16:20] There's a break of this structure right
+[16:20] here. It's not the best for sure, but it
+[16:25] is still a structure being broken.
+[16:25] I probably should have sized down.
+[16:27] I probably should have sized down.
+[16:27] Whoops. But let's play it. There we
+[16:30] Whoops. But let's play it. There we
+[16:30] [clears throat] go. They both would have
+[16:34] won. All right. So, there's the
+[16:34] reversion.
+[16:36] reversion.
+[16:36] Yeah, it's continuing down. Opening
+[16:38] Yeah, it's continuing down. Opening
+[16:38] candle is red. So, good short bias
+[16:41] candle is red. So, good short bias
+[16:41] indicated by that. Let's see. There
+[16:42] indicated by that. Let's see. There
+[16:42] might be one more attempt. Oh [&nbsp;__&nbsp;] I
+[16:43] might be one more attempt. Oh [&nbsp;__&nbsp;] I
+[16:44] might be one more attempt. Oh [&nbsp;__&nbsp;] I missed it again.
+[16:45] missed it again.
+[16:45] Uh, this was supposed to be the attempt.
+[16:49] .5. It's still far
+[16:51] I can still do 0.5. It's still far
+[16:51] enough away.
+[16:53] enough away.
+[16:53] But yeah, that was supposed to be the
+[16:54] But yeah, that was supposed to be the
+[16:54] reversion there
+[16:57] reversion there
+[16:57] and unfortunately lose. Maybe one more
+[16:59] and unfortunately lose. Maybe one more
+[16:59] time before 11. Let's see if it breaks
+[17:00] time before 11. Let's see if it breaks
+[17:00] up. Nope. Okay, no break up. So, I am
+[17:03] up. Nope. Okay, no break up. So, I am
+[17:03] done. It's just dumping. Okay, on to the
+[17:08] next day. All right, so it's opening
+[17:08] about in the middle of the range. High
+[17:09] about in the middle of the range. High
+[17:09] time frame could be either way. And
+[17:11] time frame could be either way. And
+[17:11] let's do opening candle says to short.
+[17:13] let's do opening candle says to short.
+[17:14] So, I'm going to short with 0.5
+[17:16] So, I'm going to short with 0.5
+[17:16] contracts. And all these are NQ, by the
+[17:19] contracts. And all these are NQ, by the
+[17:19] way. [clears throat and cough]
+[17:21] way. [clears throat and cough]
+[17:22] All right, there's the win. Now I'm
+[17:23] All right, there's the win. Now I'm
+[17:23] going to revert to pre-open price.
+[17:26] going to revert to pre-open price.
+[17:26] That's a good displacement, but I'm just
+[17:28] Give
+[17:30] going to wait for break structure. Give
+[17:30] it a bit. Give it more time. More time.
+[17:36] it a bit. Give it more time. More time.
+[17:36] Okay. Well, good reversions, but no
+[17:39] Okay. Well, good reversions, but no
+[17:39] entry for break of structure yet. Huge
+[17:41] entry for break of structure yet. Huge
+[17:41] wicks. Okay. If it breaks from this
+[17:43] wicks. Okay. If it breaks from this
+[17:43] consolidation, if it breaks down, I'm
+[17:45] consolidation, if it breaks down, I'm
+[17:45] going to adjust fair price to here. If
+[17:46] going to adjust fair price to here. If
+[17:46] it breaks up, I'm going to buy back to
+[17:49] it breaks up, I'm going to buy back to
+[17:49] the opening price.
+[17:54] Okay, time to buy. And let's see how
+[17:54] many points are we getting. Oh, we're
+[17:56] many points are we getting. Oh, we're
+[17:56] getting a lot of points. So, I'll do 0.5
+[18:03] buy. And then let it play out.
+[18:03] And there we go. Nice easy win. I guess
+[18:05] And there we go. Nice easy win. I guess
+[18:05] I'll let it play a bit more. See if we
+[18:07] I'll let it play a bit more. See if we
+[18:07] get any opportunity at 11. No. Okay.
+[18:12] get any opportunity at 11. No. Okay.
+[18:12] So, it just consolidates more at fair
+[18:14] So, it just consolidates more at fair
+[18:14] price. Perfect. Really great reversion
+[18:16] price. Perfect. Really great reversion
+[18:16] there just off the first break of
+[18:18] there just off the first break of
+[18:18] structure. On to the next day. Here we
+[18:20] structure. On to the next day. Here we
+[18:20] are on Thursday the 14th. High time
+[18:23] are on Thursday the 14th. High time
+[18:23] frame bias probably just longs. It's a
+[18:25] frame bias probably just longs. It's a
+[18:25] little bit to the bottom side of the
+[18:26] little bit to the bottom side of the
+[18:26] overnight range. Uh so going to expect a
+[18:30] long drift today and then we have
+[18:30] alltime highs up there to claim
+[18:31] alltime highs up there to claim
+[18:31] possibly. Let's see what it does. First
+[18:33] possibly. Let's see what it does. First
+[18:33] candle red. Okay, that's weird.
+[18:37] candle red. Okay, that's weird.
+[18:37] Oh, that's better. It is 26 points. So I
+[18:40] opening
+[18:42] would still do the 0.5. Um the opening
+[18:42] candle slash this one. I guess you could
+[18:44] ng
+[18:49] the half size. There we go. Easy
+[18:49] continuation as always. Uh just the
+[18:51] continuation as always. Uh just the
+[18:51] reason for this one is a broken close
+[18:53] reason for this one is a broken close
+[18:53] above this previous structure. No wick
+[18:54] above this previous structure. No wick
+[18:54] on top, two wicks projecting shorts,
+[18:56] on top, two wicks projecting shorts,
+[18:56] high time frame long. So everything
+[18:58] high time frame long. So everything
+[18:58] lines up except the opening candle which
+[19:00] it.
+[19:03] is more than enough for me to take it.
+[19:03] Definitely not the best. Obviously you
+[19:04] Definitely not the best. Obviously you
+[19:04] want to do in the direction of the open,
+[19:08] but some days it's very artificially
+[19:08] created if you if you know what I mean.
+[19:10] created if you if you know what I mean.
+[19:10] Uh now let's just look for a reversion
+[19:13] Uh now let's just look for a reversion
+[19:13] back to this price. Probably a fair
+[19:15] back to this price. Probably a fair
+[19:15] price. Also consolidation here might be
+[19:18] price. Also consolidation here might be
+[19:18] fair. We can consider that in a second.
+[19:20] fair. We can consider that in a second.
+[19:20] But I'm definitely going to have one
+[19:21] But I'm definitely going to have one
+[19:22] attempt for sure. Let's see. That's
+[19:25] attempt for sure. Let's see. That's
+[19:25] displacement, but no break structure
+[19:27] displacement, but no break structure
+[19:27] yet.
+[19:29] yet.
+[19:29] There's the breakup structure. And let's
+[19:31] .5 contracts just so we get a larger
+[19:37] stop and the same takeprofit
+[19:37] and then play it out. There we go. Easy.
+[19:41] [clears throat]
+[19:41] Maybe one more attempt. We'll see what
+[19:42] Maybe one more attempt. We'll see what
+[19:42] it does.
+[19:44] it does.
+[19:44] Okay, I'm moving fair price up to here.
+[19:49] Okay, I'm moving fair price up to here.
+[19:49] I have a green with this area here. So,
+[19:51] I have a green with this area here. So,
+[19:51] it's either here or here. So, I put it
+[19:52] it's either here or here. So, I put it
+[19:52] in the middle of them. Uh because my
+[19:54] in the middle of them. Uh because my
+[19:54] whole goal here is to have a bias. Okay.
+[19:55] he
+[19:57] It didn't break below. It broke to the
+[19:57] even with it. So, not a strong breakup
+[19:59] even with it. So, not a strong breakup
+[19:59] structure there. Is it going to hit 11
+[20:01] structure there. Is it going to hit 11
+[20:01] or we going to get one more short?
+[20:11] Almost. Any breaking structure? Yep.
+[20:11] Structure breaks. Um, so you could
+[20:14] Structure breaks. Um, so you could
+[20:14] consider one right here.
+[20:20] There's a pretty large wick at the
+[20:20] bottom. Is it alltime highs? Yeah.
+[20:24] bottom. Is it alltime highs? Yeah.
+[20:24] I mean, it's 50/50. If there's a large
+[20:26] I mean, it's 50/50. If there's a large
+[20:26] wick, you can wait for the next candle
+[20:28] wick, you can wait for the next candle
+[20:28] to confirm.
+[20:29] to confirm.
+[20:29] Okay. That one's indecisive. Okay.
+[20:34] Okay. That one's indecisive. Okay.
+[20:34] I really don't want to trade after 11
+[20:35] I really don't want to trade after 11
+[20:35] because it always just drifts straight
+[20:37] because it always just drifts straight
+[20:37] up. Yeah, nothing here. It's probably
+[20:39] up. Yeah, nothing here. It's probably
+[20:39] just going to drift. Yeah, whenever it
+[20:40] just going to drift. Yeah, whenever it
+[20:40] hits alltime highs, it's just a drift.
+[20:41] hits alltime highs, it's just a drift.
+[20:42] So, it's hard to short that unless it
+[20:43] So, it's hard to short that unless it
+[20:43] actually breaks structure before 11.
+[20:47] actually breaks structure before 11.
+[20:47] This one's it's decent, but the huge
+[20:49] This one's it's decent, but the huge
+[20:49] wick at the bottom kind of scares me.
+[20:51] wick at the bottom kind of scares me.
+[20:51] Right now, we are on Friday the 15th.
+[20:53] Right now, we are on Friday the 15th.
+[20:53] Let's see.
+[20:59] Okay, red candle.
+[20:59] We'll look for some continuation shorts
+[21:01] We'll look for some continuation shorts
+[21:01] if I get an entry. This one's an
+[21:04] if I get an entry. This one's an
+[21:04] optional entry. It's a 34 point candle.
+[21:08] optional entry. It's a 34 point candle.
+[21:08] Uh opening candle is very small though.
+[21:10] Uh opening candle is very small though.
+[21:10] 19 only 19 points. I would prefer it to
+[21:14] 19 only 19 points. I would prefer it to
+[21:14] close below structure.
+[21:16] close below structure.
+[21:16] Yeah, that one that one should work.
+[21:19] Yeah, that one that one should work.
+[21:19] Just do one.
+[21:21] Just do one.
+[21:21] It is a 50 point candle. Okay, this
+[21:22] It is a 50 point candle. Okay, this
+[21:22] one's this one's really weird. Okay. Uh
+[21:26] one's this one's really weird. Okay. Uh
+[21:26] the reason why I'm a bit hesitant is
+[21:27] the reason why I'm a bit hesitant is
+[21:27] it's at the all-time low of the last 24
+[21:30] it's at the all-time low of the last 24
+[21:30] hours. And it's never good to be
+[21:33] hours. And it's never good to be
+[21:33] shorting the absolute bottom.
+[21:36] shorting the absolute bottom.
+[21:36] Opening candle is red. It did close
+[21:39] Opening candle is red. It did close
+[21:39] below structure. I'll just sell with
+[21:40] below structure. I'll just sell with
+[21:40] one. I'm more
+[21:43] one. I'm more
+[21:43] trading off like a quick continuation
+[21:45] trading off like a quick continuation
+[21:45] rather than a bias like the larger ones.
+[21:51] Okay. Oh, it didn't work anyway. So,
+[21:51] that's all right. Whatever. On to the
+[21:53] that's all right. Whatever. On to the
+[21:53] reversion, which is always a bit better.
+[21:55] e.
+[21:57] There's the fair price. Now, let's see.
+[21:57] Do we ever Okay. Break a structure,
+[22:00] Do we ever Okay. Break a structure,
+[22:00] but like three points in our favor.
+[22:03] but like three points in our favor.
+[22:03] Let's [clears throat] wait. There's
+[22:06] Let's [clears throat] wait. There's
+[22:06] another break. And this one seems good.
+[22:08] another break. And this one seems good.
+[22:08] Just do one.
+[22:10] Just do one.
+[22:10] 750 500. There we go. Let that run. And
+[22:16] 750 500. There we go. Let that run. And
+[22:16] okay,
+[22:18] okay,
+[22:18] I guess it lost.
+[22:21] I guess it lost.
+[22:21] Yeah, it lost before it won, I think. I
+[22:25] Yeah, it lost before it won, I think. I
+[22:25] don't know. It went too fast. I was Yep.
+[22:28] Okay. Well, it lost right before
+[22:28] winning. Unfortunate. Um, but great
+[22:30] winning. Unfortunate. Um, but great
+[22:30] reversion trade in general. Maybe
+[22:32] reversion trade in general. Maybe
+[22:32] possibility for a short. Yep. The
+[22:35] possibility for a short. Yep. The
+[22:35] structure here just got broken. Sell one
+[22:48] That was pretty easy.
+[22:48] Uh maybe one more before 11 if it jumps
+[22:51] Uh maybe one more before 11 if it jumps
+[22:51] up or down.
+[22:54] up or down.
+[22:54] Okay, it's consolidating at fair price.
+[22:56] Okay, it's consolidating at fair price.
+[22:56] So, we are done for this day. All right,
+[23:00] now we're on Monday the 18th. Let's see
+[23:00] what sort of action we're getting. There
+[23:03] was no news. I mean, this was obviously
+[23:03] some sort of news, but it wasn't
+[23:05] some sort of news, but it wasn't
+[23:05] planned. So, we'll see how it reacts to
+[23:07] planned. So, we'll see how it reacts to
+[23:07] this area right here. Opening candle red
+[23:14] and high time frame um high time frame
+[23:14] short just to fill this move up here.
+[23:15] short just to fill this move up here.
+[23:15] So, pretty strong short bias going in
+[23:17] So, pretty strong short bias going in
+[23:17] today because we have to revert this
+[23:19] today because we have to revert this
+[23:19] move here. I don't know if this is
+[23:21] move here. I don't know if this is
+[23:21] caused by a tweet like an actual thing
+[23:23] caused by a tweet like an actual thing
+[23:23] that could change fair price because
+[23:25] that could change fair price because
+[23:25] it's a back test, but does make it a
+[23:27] it's a back test, but does make it a
+[23:27] little harder. But whatever, we'll just
+[23:29] little harder. But whatever, we'll just
+[23:29] follow the strategy exactly like it
+[23:31] follow the strategy exactly like it
+[23:31] says. Okay, I'm going to use one
+[23:32] says. Okay, I'm going to use one
+[23:32] contract for short instead of path. And
+[23:35] contract for short instead of path. And
+[23:35] there we go. Break a structure. So
+[23:39] there we go. Break a structure. So
+[23:39] 750 500.
+[23:46] Play it out. Oh man, I lost. Um I could
+[23:46] consider one more maybe. Okay, I'm
+[23:49] consider one more maybe. Okay, I'm
+[23:49] probably going to take one more.
+[23:51] probably going to take one more.
+[23:52] We are at what I think might be a fair
+[23:54] We are at what I think might be a fair
+[23:54] price, which is this.
+[23:57] price, which is this.
+[23:57] So, it's not the best, but I'm just
+[24:00] So, it's not the best, but I'm just
+[24:00] going to take a very quick continuation.
+[24:02] so
+[24:03] The opening candle was quite small, so
+[24:03] I'm just going to stick with a smaller
+[24:04] I'm just going to stick with a smaller
+[24:04] size, even if this candle was large, and
+[24:08] just hope that we can get there pretty
+[24:08] quickly. Okay.
+[24:12] quickly. Okay.
+[24:12] Yeah. Well, that was not the best trade
+[24:15] Yeah. Well, that was not the best trade
+[24:15] for sure.
+[24:17] for sure.
+[24:17] What was I doing?
+[24:20] What was I doing?
+[24:20] Okay, looking back, that was dumb. This
+[24:23] Okay, looking back, that was dumb. This
+[24:23] candle was 26 points. The opening candle
+[24:28] was very small. I don't know. Maybe you
+[24:28] could have done 50, 75, and then one
+[24:31] could have done 50, 75, and then one
+[24:31] pretty easily. But I don't know.
+[24:34] pretty easily. But I don't know.
+[24:34] I always get a little bit 50/50 when the
+[24:36] ut then
+[24:38] opening candle's really small, but then
+[24:38] the candles themselves are printing
+[24:39] the candles themselves are printing
+[24:40] large. It just throws me off because I
+[24:42] large. It just throws me off because I
+[24:42] feel like the opening candle is
+[24:43] feel like the opening candle is
+[24:44] obviously the one with the most volume.
+[24:45] obviously the one with the most volume.
+[24:45] So, it does throw me off sometimes, but
+[24:48] So, it does throw me off sometimes, but
+[24:48] I just try and stick with the same thing
+[24:51] every time. So, probably just fine to
+[24:51] get destroyed.
+[24:55] get destroyed.
+[24:55] I guess because it went down but as
+[24:58] I guess because it went down but as
+[24:58] expected for sure but just got stopped
+[25:00] expected for sure but just got stopped
+[25:00] out every time.
+[25:03] out every time.
+[25:03] All right, I can send in a buy here with
+[25:10] just because there's a lot of points in
+[25:10] our favor.
+[25:12] our favor.
+[25:12] Hey, okay, perfect. Just easy break
+[25:15] Hey, okay, perfect. Just easy break
+[25:15] structure. At least reversion is paying
+[25:16] structure. At least reversion is paying
+[25:16] us when uh continuation somehow losing
+[25:19] us when uh continuation somehow losing
+[25:19] two continuations when it's only going
+[25:20] two continuations when it's only going
+[25:20] down. I don't know. Whatever. reversion
+[25:23] down. I don't know. Whatever. reversion
+[25:24] pays. Oh, that's not a breakup
+[25:26] pays. Oh, that's not a breakup
+[25:26] structure.
+[25:28] structure.
+[25:28] Oh my gosh, it's working. The versions
+[25:30] Oh my gosh, it's working. The versions
+[25:30] are great, but the continuation trolled
+[25:32] are great, but the continuation trolled
+[25:32] today. We'll see if we get one more
+[25:34] today. We'll see if we get one more
+[25:34] attempt here before 11. Oh yeah,
+[25:36] attempt here before 11. Oh yeah,
+[25:36] definitely going to get another shot.
+[25:37] definitely going to get another shot.
+[25:37] This one seems pretty good just by half
+[25:41] This one seems pretty good just by half
+[25:41] the contract. Okay, it was not pretty
+[25:43] the contract. Okay, it was not pretty
+[25:43] good. It was It was bad. Whatever.
+[25:45] good. It was It was bad. Whatever.
+[25:45] That's not the worst. I just didn't like
+[25:46] .
+[25:49] that this wick did not close above.
+[25:49] But it hits 11. No more structure being
+[25:51] But it hits 11. No more structure being
+[25:51] broken. on to the next day. All right,
+[25:53] broken. on to the next day. All right,
+[25:53] Tuesday the 19th. High time frame bias
+[25:55] Tuesday the 19th. High time frame bias
+[25:55] definitely longs because it's at the
+[25:56] definitely longs because it's at the
+[25:56] very bottom. Hopefully opening candle is
+[25:59] green. Then we'll have a very good
+[25:59] continuation long. Hey, there we go.
+[26:03] continuation long. Hey, there we go.
+[26:03] We're in breakup structure. A little bit
+[26:04] ias
+[26:06] of a wick, but the high time frame bias
+[26:06] makes up for that. There's take profit.
+[26:09] makes up for that. There's take profit.
+[26:09] Pretty easy mark out price.
+[26:13] Pretty easy mark out price.
+[26:13] More movement up. I'm going to short
+[26:15] More movement up. I'm going to short
+[26:15] when it breaks structure. There we go. I
+[26:17] ny
+[26:19] can sell.5 just because I have so many
+[26:19] points in my favor that going for 38 is
+[26:20] points in my favor that going for 38 is
+[26:20] kind of like it's it's good too but just
+[26:25] too few.
+[26:25] Hey, there we go. That was pretty easy
+[26:27] Hey, there we go. That was pretty easy
+[26:27] continuation reversion just break of
+[26:29] continuation reversion just break of
+[26:29] structure as always. A+ setup for sure.
+[26:32] structure as always. A+ setup for sure.
+[26:32] Uh let's see if we get
+[26:34] Uh let's see if we get
+[26:34] anything else. More movement up. If it
+[26:38] anything else. More movement up. If it
+[26:38] breaks structure down, I'll short again.
+[26:42] No structure in there.
+[26:42] Uh it did break structure. Uh okay. I
+[26:45] Uh it did break structure. Uh okay. I
+[26:45] kind of want to short again. back to
+[26:46] kind of want to short again. back to
+[26:46] here. How many points is that? Uh,
+[26:49] here. How many points is that? Uh,
+[26:49] exactly 75. So, let's do it.
+[26:58] Hey, there we go.
+[26:58] Anything else before 11? Because it's
+[26:59] Anything else before 11? Because it's
+[27:00] really early. Three wins so early on.
+[27:02] really early. Three wins so early on.
+[27:02] Uh, okay. Wow. I'm actually going to
+[27:03] Uh, okay. Wow. I'm actually going to
+[27:03] buy. This is a crazy volume day. Let's
+[27:06] buy. This is a crazy volume day. Let's
+[27:06] see. Right there. First break of
+[27:08] see. Right there. First break of
+[27:08] structure. Buy with five seems fine.
+[27:11] structure. Buy with five seems fine.
+[27:11] Okay. Stopped out.
+[27:15] Okay. Stopped out.
+[27:15] One more buy. It breaks above. Okay,
+[27:19] One more buy. It breaks above. Okay,
+[27:19] that was maybe irresponsible. I'll do
+[27:20] that was maybe irresponsible. I'll do
+[27:20] one more though
+[27:23] one more though
+[27:23] if it can break and close above
+[27:25] if it can break and close above
+[27:25] structure.
+[27:26] structure.
+[27:26] Oh,
+[27:33] trying to look at the time as well. I
+[27:33] don't want it to hit 11.
+[27:35] don't want it to hit 11.
+[27:35] Oh man, I really want to buy. Hey, there
+[27:37] today. I do take
+[27:41] a lot of trades just because I feel like
+[27:41] I know it's going to revert. Okay, there
+[27:45] we go. Back to fair price. I just feel
+[27:45] like I know it's going to revert. So, if
+[27:48] I get stopped out, I'm ready to go on
+[27:48] another account. That's how I'm getting
+[27:50] another account. That's how I'm getting
+[27:50] through so many trades per day.
+[27:52] through so many trades per day.
+[27:52] Obviously, some setups are better than
+[27:53] Obviously, some setups are better than
+[27:53] others when you have really good price
+[27:55] others when you have really good price
+[27:55] action and no wicks, but I'm pretty much
+[27:59] taking everything. So, very good day
+[28:00] that day. All right, now Wednesday the
+[28:01] that day. All right, now Wednesday the
+[28:01] 20th, high time frame bias probably
+[28:03] 20th, high time frame bias probably
+[28:04] short. Let's see what opening is,
+[28:05] short. Let's see what opening is,
+[28:05] though. Okay, opening's green.
+[28:08] though. Okay, opening's green.
+[28:08] Um, I wouldn't buy right now just
+[28:10] Um, I wouldn't buy right now just
+[28:10] because it hasn't broke above any any
+[28:12] because it hasn't broke above any any
+[28:12] structure. So, it is 9:30, but it didn't
+[28:14] So,
+[28:17] I'm not going to buy yet. I'm going to
+[28:18] wait for a confirmation meeting just to
+[28:19] wait for a confirmation meeting just to
+[28:19] break in the close above. Hey, there we
+[28:21] break in the close above. Hey, there we
+[28:21] go.
+[28:23] go.
+[28:24] Um,
+[28:26] Um,
+[28:26] okay.
+[28:28] okay.
+[28:28] [clears throat] I'm probably going to do
+[28:29] ontract
+[28:30] one contract
+[28:30] because that candle was only 15 points.
+[28:32] because that candle was only 15 points.
+[28:32] So, um, not the half contract size.
+[28:36] So, um, not the half contract size.
+[28:36] Okay, that's a bit off, but I don't
+[28:37] Okay, that's a bit off, but I don't
+[28:37] care.
+[28:38] care.
+[28:38] Wow.
+[28:40] Wow.
+[28:40] Oh [&nbsp;__&nbsp;]
+[28:42] Oh [&nbsp;__&nbsp;]
+[28:42] Well, that got back to fair price pretty
+[28:49] And then I just missed a long entry.
+[28:49] Whoops. Um, okay. You should have bought
+[28:52] . 50
+[28:58] point candle. Do a 50 point stop for
+[28:58] sure. And then 75 take profit.
+[29:02] sure. And then 75 take profit.
+[29:02] Uh, I don't know if there's any way I
+[29:03] Uh, I don't know if there's any way I
+[29:04] can enter this. Okay. Okay. Basically,
+[29:06] can enter this. Okay. Okay. Basically,
+[29:06] what I like is that the opening candle
+[29:07] what I like is that the opening candle
+[29:07] was green
+[29:09] was green
+[29:09] and this one was green as well. Lots of
+[29:11] and this one was green as well. Lots of
+[29:11] wicks rejecting shorts and a broken
+[29:13] wicks rejecting shorts and a broken
+[29:13] close above structure. So, I do like
+[29:15] close above structure. So, I do like
+[29:15] Yeah. Okay, there we go. Whoops. I
+[29:18] Yeah. Okay, there we go. Whoops. I
+[29:18] should have taken that. And then I
+[29:19] should have taken that. And then I
+[29:19] reversed fair price and I missed that as
+[29:20] ture
+[29:22] well. But there was no break structure
+[29:22] there, so it's fine. Let's see if I do
+[29:25] there, so it's fine. Let's see if I do
+[29:25] get a Okay, tons of consolidation around
+[29:29] fair price. Very obvious fair price
+[29:29] there.
+[29:31] there.
+[29:31] Okay, what are what is this volume? 84
+[29:33] Okay, what are what is this volume? 84
+[29:33] points. Okay, that
+[29:37] points. Okay, that
+[29:37] I don't want to make assumptions, but
+[29:40] I don't want to make assumptions, but
+[29:40] I'm pretty sure this is a Trump tweet.
+[29:44] I'm pretty sure this is a Trump tweet.
+[29:44] And I think new fair price be here. Let
+[29:46] And I think new fair price be here. Let
+[29:46] me just double check.
+[29:48] me just double check.
+[29:48] Okay, yep, that's a Trump tweet.
+[29:50] Okay, yep, that's a Trump tweet.
+[29:50] Basically, I can tell because the volume
+[29:52] ndom
+[29:53] increased out of nowhere at a random
+[29:53] time and then it just started
+[29:56] time and then it just started
+[29:56] consolidating after. So, this is a new
+[29:57] consolidating after. So, this is a new
+[29:57] fair price. I would possibly
+[30:01] fair price. I would possibly
+[30:01] You know what? I'm going to take an
+[30:02] You know what? I'm going to take an
+[30:02] interesting trade here. I'm just gonna
+[30:04] interesting trade here. I'm just gonna
+[30:04] buy. Uh the reason for this, I would
+[30:07] buy. Uh the reason for this, I would
+[30:07] prefer to have a much larger stop-loss.
+[30:10] prefer to have a much larger stop-loss.
+[30:10] Like I probably should have bought with
+[30:11] Like I probably should have bought with
+[30:11] Okay, let me let me try something
+[30:14] Okay, let me let me try something
+[30:14] interesting for you guys. I'm going to
+[30:18] interesting for you guys. I'm going to
+[30:18] try this.
+[30:20] try this.
+[30:20] I'm going to keep the same risk over
+[30:22] I'm going to keep the same risk over
+[30:22] here and I'm going to show you guys a
+[30:23] here and I'm going to show you guys a
+[30:23] news news dripped trade. This is what
+[30:26] news news dripped trade. This is what
+[30:26] happens when Trump tweets and I'm buying
+[30:29] t.
+[30:30] at like just the price after the tweet.
+[30:30] Consolidation after the tweet and we
+[30:32] Consolidation after the tweet and we
+[30:32] have alltime highs is a really good
+[30:33] have alltime highs is a really good
+[30:33] target. Okay, I guess it's never mind.
+[30:35] target. Okay, I guess it's never mind.
+[30:35] Ignore that. Um I'm just going to news
+[30:37] Ignore that. Um I'm just going to news
+[30:37] drift this Trump tweet. See what happens
+[30:40] d.
+[30:45] Might take a really long time and speed
+[30:45] it up, but I just want to see if it
+[30:47] it up, but I just want to see if it
+[30:47] drifts long over the course of the day.
+[30:51] drifts long over the course of the day.
+[30:51] So it did drift long and then of course
+[30:53] So it did drift long and then of course
+[30:53] one point away from my take profit. Uh,
+[30:55] one point away from my take profit. Uh,
+[30:55] if it hits 2 pm, then I'll just keep
+[30:58] if it hits 2 pm, then I'll just keep
+[30:58] holding.
+[31:00] holding.
+[31:00] Yeah, news drift trades are are are
+[31:03] Yeah, news drift trades are are are
+[31:03] quite interesting. Okay, good drift.
+[31:06] quite interesting. Okay, good drift.
+[31:06] It's going to hit four and then I'll
+[31:07] It's going to hit four and then I'll
+[31:07] just exit because that's when the
+[31:08] just exit because that's when the
+[31:08] propers make you exit. Oh my god, edged
+[31:11] propers make you exit. Oh my god, edged
+[31:11] again. Okay, well, I'm just going to
+[31:13] again. Okay, well, I'm just going to
+[31:13] have to exit here because it's four and
+[31:14] have to exit here because it's four and
+[31:14] the prop is going to make you exit.
+[31:15] the prop is going to make you exit.
+[31:16] Well, I guess four was like one point
+[31:17] Well, I guess four was like one point
+[31:17] away from taking take profit, but
+[31:18] away from taking take profit, but
+[31:18] whatever. Yeah, so that's how you do a
+[31:20] whatever. Yeah, so that's how you do a
+[31:20] news drift trade. Uh, basically like
+[31:22] news drift trade. Uh, basically like
+[31:22] incredibly large takeprofit stop loss.
+[31:23] incredibly large takeprofit stop loss.
+[31:24] just let it run and see what happens.
+[31:26] just let it run and see what happens.
+[31:26] More often than not, it's going to win.
+[31:27] More often than not, it's going to win.
+[31:27] So that's how you can use a bias. So
+[31:29] So that's how you can use a bias. So
+[31:29] that kind of messed up the risk
+[31:30] that kind of messed up the risk
+[31:30] management, but just ignore that. On to
+[31:32] management, but just ignore that. On to
+[31:32] the next day. All right, Thursday. We
+[31:34] the next day. All right, Thursday. We
+[31:34] are opening out the bottom. So high time
+[31:37] frame is long. Let's see if we get an
+[31:37] entry. Okay, first candle red.
+[31:41] entry. Okay, first candle red.
+[31:41] Second candle red.
+[31:43] Second candle red.
+[31:43] Okay, that's a break and a close above.
+[31:50] I'm still not going to do it, though.
+[31:50] I'm not going to do it. Uh because
+[31:51] I'm not going to do it. Uh because
+[31:51] there's a very large wick up here.
+[31:54] there's a very large wick up here.
+[31:54] So, I don't want to go against the wick
+[31:56] So, I don't want to go against the wick
+[31:56] plus the opening candle being red. I
+[31:58] plus the opening candle being red. I
+[31:58] guess we'll see if I was right or wrong
+[32:00] guess we'll see if I was right or wrong
+[32:00] for doing that. Um, okay. It's just
+[32:03] for doing that. Um, okay. It's just
+[32:03] chopping.
+[32:05] chopping.
+[32:05] Okay, I was wrong.
+[32:07] Okay, I was wrong.
+[32:07] Whoops. Whatever. Now, let's just see if
+[32:10] o this consolidation
+[32:13] I get entry back to this consolidation
+[32:13] off of breaking structure or reversion.
+[32:19] Okay, break structure and we're getting
+[32:20] 50 points. So, I'll just do one
+[32:21] 50 points. So, I'll just do one
+[32:21] contract. It's going to be a pretty
+[32:23] contract. It's going to be a pretty
+[32:23] quick trade. See if we can get a nice
+[32:24] quick trade. See if we can get a nice
+[32:24] quick reversion there. 750,500.
+[32:33] Okay. Wow.
+[32:33] Interesting.
+[32:35] Interesting.
+[32:35] Nothing you can do about that. Yes. Uh
+[32:39] Nothing you can do about that. Yes. Uh
+[32:39] yeah, that's just weird. Very, very
+[32:42] yeah, that's just weird. Very, very
+[32:42] weird wick when it clearly wanted to go
+[32:45] weird wick when it clearly wanted to go
+[32:45] down. Whatever. Uh possible longs here.
+[32:49] down. Whatever. Uh possible longs here.
+[32:49] If it breaks and closes above. Okay, it
+[32:52] If it breaks and closes above. Okay, it
+[32:52] breaks and closes above, but it's
+[32:53] breaks and closes above, but it's
+[32:53] already back. So, I'm probably done for
+[32:56] already back. So, I'm probably done for
+[32:56] today.
+[32:58] today.
+[32:58] Yeah, more consolidation of the fair
+[32:59] Yeah, more consolidation of the fair
+[32:59] price.
+[33:01] price.
+[33:01] That's a bad day.
+[33:03] That's a bad day.
+[33:03] Is it? Oh, it's a Thursday. That's
+[33:05] Is it? Oh, it's a Thursday. That's
+[33:05] weird. Bad days are usually Mondays.
+[33:06] weird. Bad days are usually Mondays.
+[33:06] Whatever. Uh, just lots of
+[33:08] Whatever. Uh, just lots of
+[33:08] consolidation. No real moves. And then
+[33:10] consolidation. No real moves. And then
+[33:10] it did a real move. We had a a great
+[33:11] it did a real move. We had a a great
+[33:11] setup, but then weird wick. Whatever. On
+[33:14] ow
+[33:16] to the next one. All right. We are now
+[33:16] on Friday high time frame. probably a
+[33:19] on Friday high time frame. probably a
+[33:19] little bit short just because it's
+[33:21] little bit short just because it's
+[33:21] toward the upper side of that range
+[33:22] toward the upper side of that range
+[33:22] overnight.
+[33:24] overnight.
+[33:24] Okay, open candle's green. So, I'm just
+[33:26] Okay, open candle's green. So, I'm just
+[33:26] going to buy then and the size is 37.5.
+[33:29] going to buy then and the size is 37.5.
+[33:29] So, we'll choose 0.5 contract buy
+[33:32] So, we'll choose 0.5 contract buy
+[33:32] and then let it play out. That was easy.
+[33:36] dation
+[33:38] Now, fair price just this consolidation
+[33:38] here prior to open all this stuff here
+[33:42] here prior to open all this stuff here
+[33:42] probably like there somewhere.
+[33:44] probably like there somewhere.
+[33:44] Uh let's see. Do we get any short
+[33:47] Uh let's see. Do we get any short
+[33:47] positions? because I really want to go
+[33:48] positions? because I really want to go
+[33:48] short. That's not bad. Good
+[33:51] short. That's not bad. Good
+[33:51] displacement. Um,
+[33:54] displacement. Um,
+[33:54] probably could not. Oh, there we go. How
+[33:56] is? Okay. Well, there's
+[34:00] like no points. If I was to go for 38,
+[34:00] let's see how far I need it to go.
+[34:04] let's see how far I need it to go.
+[34:04] I needed to hit the low of the opening
+[34:06] I needed to hit the low of the opening
+[34:06] candle. Let me think. Is this possible?
+[34:14] This is obviously a tweet uh because
+[34:14] it's a random price movement at 8:12
+[34:15] it's a random price movement at 8:12
+[34:15] a.m. The consolidation after the tweet
+[34:17] a.m. The consolidation after the tweet
+[34:17] is this area here.
+[34:20] is this area here.
+[34:20] So this is like the middle of that area.
+[34:23] just going to do it.
+[34:24] You know what? I'm just going to do it.
+[34:24] It's 30 points. I'll just go for 38.
+[34:26] It's 30 points. I'll just go for 38.
+[34:26] We'll see what it does.
+[34:28] We'll see what it does.
+[34:28] If you're on a live account, you would
+[34:30] If you're on a live account, you would
+[34:30] put your fair price here. You put your
+[34:31] put your fair price here. You put your
+[34:31] target here. But we're on proper, so
+[34:33] target here. But we're on proper, so
+[34:33] that is why I am putting it a little bit
+[34:35] low
+[34:36] below because I'm trying to just follow
+[34:36] minus 500 plus 750 each time instead of
+[34:40] minus 500 plus 750 each time instead of
+[34:40] optimization for a live account. It's
+[34:42] optimization for a live account. It's
+[34:42] obviously different. What is that? Okay,
+[34:44] s
+[34:46] so it's obviously different and that's
+[34:46] why my account balance is not going to
+[34:47] why my account balance is not going to
+[34:47] be as high as it could be because I'm
+[34:49] be as high as it could be because I'm
+[34:49] optimizing for prop firms, but I'm
+[34:50] optimizing for prop firms, but I'm
+[34:50] testing back testing it for you guys
+[34:52] testing back testing it for you guys
+[34:52] here in a live account format. Hey,
+[34:55] here in a live account format. Hey,
+[34:55] there we go.
+[35:00] Okay.
+[35:00] Uh, let's see if we get anything else
+[35:01] Uh, let's see if we get anything else
+[35:01] before 11.
+[35:06] [clears throat] Maybe one final short.
+[35:06] We'll see if it breaks structure down.
+[35:08] We'll see if it breaks structure down.
+[35:08] Oh, huge wick.
+[35:10] Oh, huge wick.
+[35:10] I would be careful. And it's 11. We're
+[35:13] I would be careful. And it's 11. We're
+[35:13] done. On to the next. All right. Monday
+[35:16] done. On to the next. All right. Monday
+[35:16] the 25th. This is Memorial Day, so it's
+[35:18] the 25th. This is Memorial Day, so it's
+[35:18] going to be a bank call day, but I still
+[35:21] trade it the same. Um, as long as
+[35:22] there's volume. So, yep, there's volume.
+[35:24] ou bet.
+[35:28] We are doing one contract instead of
+[35:28] half a contract. Same risk as usual.
+[35:34] half a contract. Same risk as usual.
+[35:34] 75500. Even though it is a bank holiday,
+[35:36] me.
+[35:38] I still think it's going to work. Same.
+[35:38] There we go. And then market fair prices
+[35:47] Constructure. Is it going to break?
+[35:47] Hey, there we go. That one
+[35:51] Hey, there we go. That one
+[35:51] 750 500.
+[35:54] 750 500.
+[35:54] Let it play out
+[35:57] Let it play out
+[35:57] a little bit farther down, please. There
+[35:59] t, that was easy for bank
+[36:03] holiday.
+[36:03] Two and two and 0. Uh oh [&nbsp;__&nbsp;] What am I
+[36:07] Two and two and 0. Uh oh [&nbsp;__&nbsp;] What am I
+[36:07] Two and two and 0. Uh oh [&nbsp;__&nbsp;] What am I doing? I still long by clicking too
+[36:09] doing? I still long by clicking too
+[36:09] fast. Uh, okay, never mind. It's only 15
+[36:12] Oh,
+[36:14] points. It's 100% going to win, but Oh,
+[36:14] yep. But not enough points in our favor
+[36:16] yep. But not enough points in our favor
+[36:16] to even take that.
+[36:19] to even take that.
+[36:19] And that looks like a tweet. On to the
+[36:21] And that looks like a tweet. On to the
+[36:21] next day. Right now, we are on Tuesday.
+[36:24] next day. Right now, we are on Tuesday.
+[36:24] It's opening in the middle of the
+[36:25] It's opening in the middle of the
+[36:25] overnight range again. So, it's probably
+[36:27] see
+[36:29] opening pretty fairly. Let's just see
+[36:29] what it does. Okay, short bias. Let's
+[36:32] what it does. Okay, short bias. Let's
+[36:32] see. Should I just take short right now?
+[36:36] me
+[36:42] check. So, very large wick to the top.
+[36:42] 100% rejecting long. So, there's zero
+[36:44] 100% rejecting long. So, there's zero
+[36:44] way I'm longing, which probably means
+[36:46] way I'm longing, which probably means
+[36:46] I'm going to short. Um I just don't like
+[36:51] that I wasn't able to enter here. I
+[36:51] guess it's good that I didn't enter here
+[36:53] though because this wick would have
+[36:53] stopped me out probably. Uh yeah, I can
+[36:55] stopped me out probably. Uh yeah, I can
+[36:56] probably go short. Just fill this this
+[36:57] probably go short. Just fill this this
+[36:57] recent move up. So the high time frame
+[36:59] recent move up. So the high time frame
+[36:59] is kind of in the middle, but we're
+[37:01] is kind of in the middle, but we're
+[37:01] always balanced to revert the most
+[37:02] always balanced to revert the most
+[37:02] previous move. So I'll just go short and
+[37:05] e 18
+[37:07] then the size of the opening candle 18
+[37:07] point. So one is probably fine.
+[37:11] point. So one is probably fine.
+[37:11] I'll do 550 and see what happens.
+[37:20] Okay, nice continuation short. Uh fair
+[37:20] prices.
+[37:21] prices.
+[37:21] Fair price is most likely this
+[37:24] Fair price is most likely this
+[37:24] consolidation here.
+[37:32] And what am I doing? Oh my god, I just
+[37:32] missed a buy. What am I doing?
+[37:36] missed a buy. What am I doing?
+[37:36] Oh [&nbsp;__&nbsp;] What? Whatever. Uh, how can I
+[37:40] Oh [&nbsp;__&nbsp;] What? Whatever. Uh, how can I
+[37:40] Oh [&nbsp;__&nbsp;] What? Whatever. Uh, how can I fix this? How can I fix this? Um, I'm
+[37:43] fix this? How can I fix this? Um, I'm
+[37:43] just going to put this to 750.
+[37:50] What am I doing? I was just going to put
+[37:50] infinite stop loss because I want this
+[37:51] infinite stop loss because I want this
+[37:51] money. I know it's no win.
+[37:54] money. I know it's no win.
+[37:54] Okay. Well, yeah, I was supposed to
+[37:55] Okay. Well, yeah, I was supposed to
+[37:55] enter there. So, we'll count that,
+[37:56] enter there. So, we'll count that,
+[37:56] right? Break a structure reversion.
+[37:58] right? Break a structure reversion.
+[37:58] Easy.
+[37:59] Easy.
+[38:00] Allow it.
+[38:02] Allow it.
+[38:02] This is no breaker structure, by the
+[38:03] This is no breaker structure, by the
+[38:03] way, since this is not a structure.
+[38:06] way, since this is not a structure.
+[38:06] I like that the way came back here
+[38:07] I like that the way came back here
+[38:07] instead of the open, right? So, I'm
+[38:09] instead of the open, right? So, I'm
+[38:09] agreeing that fair price is probably
+[38:10] agreeing that fair price is probably
+[38:10] here, but let's see what it does for the
+[38:13] .
+[38:23] Still no structure being broken.
+[38:23] I'm going to miss it if I go on that
+[38:24] I'm going to miss it if I go on that
+[38:24] speed. Okay. Are we at all time highs?
+[38:27] speed. Okay. Are we at all time highs?
+[38:27] Yes. Okay. So, it's it's at all time
+[38:29] Yes. Okay. So, it's it's at all time
+[38:29] highs, which means it moves far
+[38:30] highs, which means it moves far
+[38:30] unfairly. So, I am getting ready to
+[38:32] unfairly. So, I am getting ready to
+[38:32] short.
+[38:34] short.
+[38:34] I feel like I've been shorting in all of
+[38:36] videos, on all these days.
+[38:39] these videos, on all these days.
+[38:39] Uh, give it a bit more. Let's see if it
+[38:42] Uh, give it a bit more. Let's see if it
+[38:42] breaks structure before 11. I really
+[38:43] breaks structure before 11. I really
+[38:43] hope it does.
+[38:46] hope it does.
+[38:46] Oh, there we go. Uh, I'm going to do 0.5
+[38:51] there's so many points in
+[38:52] just because there's so many points in
+[38:52] my favor. Like, I can even put this down
+[38:55] here. This is what I do on a live
+[38:55] account, by the way. I would probably do
+[38:57] ount
+[38:59] something like this on a live account
+[38:59] and then just print infinite profit. But
+[39:03] it's unfunded, so I'll just do minus
+[39:03] 500. And then on Eval, there's the
+[39:05] 500. And then on Eval, there's the
+[39:06] consistency rule. So, uh, I'm just going
+[39:08] ant to
+[39:12] win more than half of your thing in one
+[39:12] day because consistency rule.
+[39:16] day because consistency rule.
+[39:16] Let's see what it does. Whenever it's at
+[39:18] really long
+[39:21] reversions, which is amazing. It prints
+[39:21] profit. There you go. Print.
+[39:24] profit. There you go. Print.
+[39:24] And it's past 11. Did I enter before 11?
+[39:26] ed. On to
+[39:28] Yes, I did. Rules all followed. On to
+[39:28] the next. All right. Here we are on
+[39:30] the next. All right. Here we are on
+[39:30] Wednesday. High time frame could be
+[39:34] Wednesday. High time frame could be
+[39:34] short. I remember this was fake news.
+[39:36] short. I remember this was fake news.
+[39:36] Fake news is very weird when you're
+[39:37] Fake news is very weird when you're
+[39:37] doing fair pricing theory. Um, basically
+[39:40] uh,
+[39:42] just pretend it didn't happen. So, uh,
+[39:42] you want to pretend that this stuff
+[39:45] you want to pretend that this stuff
+[39:45] never happened. Just pretend that the
+[39:46] never happened. Just pretend that the
+[39:46] chart kept going like this. Uh, because
+[39:48] chart kept going like this. Uh, because
+[39:48] that is fake news and that's not real
+[39:49] that is fake news and that's not real
+[39:50] price action. Uh, so we'll just leave it
+[39:52] his
+[39:57] does anyways. Okay, red, very large
+[39:57] candle, 50 points. So, definitely half
+[39:59] candle, 50 points. So, definitely half
+[39:59] the contract there. I'll let that play
+[40:01] the contract there. I'll let that play
+[40:01] out. See what it does. Okay, there's a
+[40:03] out. See what it does. Okay, there's a
+[40:03] win. Very easy mark out fair price.
+[40:06] win. Very easy mark out fair price.
+[40:06] Probably this consolidation right there.
+[40:09] where
+[40:14] off break of structure. All right,
+[40:14] structure broken.
+[40:16] structure broken.
+[40:16] Uh 100 points favor by.
+[40:20] Uh 100 points favor by.
+[40:20] Okay, lose unfortunately. Structure
+[40:22] Okay, lose unfortunately. Structure
+[40:22] broken again. One more.
+[40:25] broken again. One more.
+[40:25] Oh, okay. Scam.
+[40:29] Oh, okay. Scam.
+[40:29] Why is it not reverting?
+[40:35] Okay. Uh, I missed an entry. What am I
+[40:35] doing? I'm clicking too fast.
+[40:40] doing? I'm clicking too fast.
+[40:40] Uh, the entry should have been this.
+[40:55] Okay. Well, it hit 11 and it lost.
+[40:55] [clears throat] So, we'll have to take
+[40:56] [clears throat] So, we'll have to take
+[40:56] away one win. We'll have to take off
+[40:57] away one win. We'll have to take off
+[40:57] 500.
+[40:59] 500.
+[40:59] Whatever. Seems like a pretty good
+[41:01] Whatever. Seems like a pretty good
+[41:01] entry, though. If I entered here, I
+[41:02] entry, though. If I entered here, I
+[41:02] would have won. Wait, hold on. Let me
+[41:04] would have won. Wait, hold on. Let me
+[41:04] just double check.
+[41:06] just double check.
+[41:06] Did this break structure? Yes, this
+[41:09] Did this break structure? Yes, this
+[41:09] broke this structure. So, I should have
+[41:11] broke this structure. So, I should have
+[41:11] bought here and then it would have Would
+[41:17] it have to hit 75? Hold on.
+[41:17] This is important to know. Yes, it would
+[41:18] e won. Not
+[41:21] have. Okay, so it would have won. Not
+[41:21] Yeah, pretty close, but would have won.
+[41:29] There's the entry to the tick. Barely a
+[41:29] win. So, I guess we have to add 750 to
+[41:31] win. So, I guess we have to add 750 to
+[41:31] the profit at the end. All right, we are
+[41:35] back to Thursday the 28th. Uh, slight
+[41:35] problem. While I was fast forwarding, I
+[41:37] problem. While I was fast forwarding, I
+[41:37] accidentally skipped news. There was
+[41:38] accidentally skipped news. There was
+[41:38] news at 8:30. It showed me the little
+[41:40] news at 8:30. It showed me the little
+[41:40] red thing, but it went away now that I
+[41:41] red thing, but it went away now that I
+[41:41] skipped it. Uh, but yeah, you should
+[41:44] skipped it. Uh, but yeah, you should
+[41:44] have taken a news continuation and had
+[41:46] have taken a news continuation and had
+[41:46] the easiest win ever, but I skipped it
+[41:48] the easiest win ever, but I skipped it
+[41:48] by accident. Whatever. Let's see what
+[41:50] by accident. Whatever. Let's see what
+[41:50] the open does. Okay, [clears throat]
+[41:53] the open does. Okay, [clears throat]
+[41:53] this is interesting. Let me check high
+[41:55] this is interesting. Let me check high
+[41:55] time frame.
+[42:01] Uh, is that all time high? Oh, that's
+[42:01] from yesterday. I can delete this
+[42:03] from yesterday. I can delete this
+[42:03] though. So, it's it's honestly in the
+[42:06] though. So, it's it's honestly in the
+[42:06] middle of all of that. I don't like
+[42:08] middle of all of that. I don't like
+[42:08] opening longs because I'm my goal now is
+[42:11] y
+[42:13] to revert it to pre-news. So, I only
+[42:13] want to take continuations to pre-news.
+[42:15] want to take continuations to pre-news.
+[42:15] I think the opening candle might have
+[42:16] I think the opening candle might have
+[42:16] been affected by the fact that news was
+[42:18] been affected by the fact that news was
+[42:18] green and caused a fake long candle and
+[42:21] green and caused a fake long candle and
+[42:21] also it failed to close above that. Let
+[42:24] also it failed to close above that. Let
+[42:24] me just double check.
+[42:30] Okay, there we go. I'm just going to
+[42:30] sell.5 [clears throat] to get back to
+[42:32] sell.5 [clears throat] to get back to
+[42:32] the previous price.
+[42:34] the previous price.
+[42:34] Um,
+[42:36] Um,
+[42:36] I guess it's fine that I'm not
+[42:39] I guess it's fine that I'm not
+[42:39] Yeah, it's fine that I'm overshooting
+[42:41] Yeah, it's fine that I'm overshooting
+[42:41] because it's not on live. Remember, if I
+[42:42] e
+[42:44] was on live, my profit target would be
+[42:44] exactly the previous price,
+[42:47] exactly the previous price,
+[42:47] but it's on a prop. So, okay, there we
+[42:50] but it's on a prop. So, okay, there we
+[42:50] go. We hit pre-news. Now, I could
+[42:52] go. We hit pre-news. Now, I could
+[42:52] consider long for a few reasons. The
+[42:55] consider long for a few reasons. The
+[42:55] first reason is the bias is definitely
+[42:56] first reason is the bias is definitely
+[42:56] long because the opening was green and
+[42:58] long because the opening was green and
+[42:58] news was green. My time frame is sort of
+[43:02] 50/50. So, ignore that. But news was
+[43:02] green and opening was green. So, I
+[43:04] green and opening was green. So, I
+[43:04] really do want to buy. I honestly think
+[43:06] really do want to buy. I honestly think
+[43:06] I'm just going to do it here because it
+[43:07] I'm just going to do it here because it
+[43:07] just broke structure and the stop loss
+[43:09] just broke structure and the stop loss
+[43:10] is like good to be below. So, it's sort
+[43:12] is like good to be below. So, it's sort
+[43:12] of like a bias trade. That was close.
+[43:15] of like a bias trade. That was close.
+[43:15] Hey, there we go. Okay. No luck
+[43:17] Hey, there we go. Okay. No luck
+[43:18] involved. Perfect. Just like a standard
+[43:20] involved. Perfect. Just like a standard
+[43:20] bias trade.
+[43:22] bias trade.
+[43:22] uh because this was green and this was
+[43:24] uh because this was green and this was
+[43:24] green and if I think this is a fair
+[43:26] green and if I think this is a fair
+[43:26] price then from here over time fair
+[43:28] price then from here over time fair
+[43:28] price changes right and I feel like it's
+[43:30] going to change in the positive
+[43:30] direction because news was green and
+[43:32] direction because news was green and
+[43:32] open was green so that is why I did that
+[43:35] to
+[43:37] um newest fair price I'm just going to
+[43:37] say it's here consolidation here this
+[43:40] say it's here consolidation here this
+[43:40] okay this looks like a tweet though
+[43:47] oh did I miss a reversion probably this
+[43:47] is definitely a tweet actually just
+[43:49] is definitely a tweet actually just
+[43:49] because it's a 106 point candle at 10
+[43:52] because it's a 106 point candle at 10
+[43:52] 10:12 a.m. which never happens. So
+[43:54] 10:12 a.m. which never happens. So
+[43:54] clearly a tweet. Oh, news rift. Remember
+[43:57] many
+[43:59] news rift trade. Uh let's see how many
+[43:59] should I do. I can do 0.2 again.
+[44:04] should I do. I can do 0.2 again.
+[44:04] Yeah, that's probably fine.
+[44:11] And remember to follow the 75500 rule as
+[44:11] always. This one might take a really
+[44:13] always. This one might take a really
+[44:13] long time as well. But just the news
+[44:14] long time as well. But just the news
+[44:14] strip, same as last one. Trump tweeted,
+[44:16] strip, same as last one. Trump tweeted,
+[44:16] just ride the green. Also open the
+[44:17] just ride the green. Also open the
+[44:17] screen. News hero is green and Trump was
+[44:20] ghs.
+[44:22] green. So, and there's all time highs.
+[44:22] So, this is 100% going to win.
+[44:25] So, this is 100% going to win.
+[44:25] Did I jinx it?
+[44:27] Did I jinx it?
+[44:27] Okay, one point away. Why are all my
+[44:28] Okay, one point away. Why are all my
+[44:28] news drip trades one point away? Oh my.
+[44:33] news drip trades one point away? Oh my.
+[44:33] Okay, hold on. Maybe I should stop it.
+[44:35] Okay, hold on. Maybe I should stop it.
+[44:35] Oh, one point away again.
+[44:38] Oh, one point away again.
+[44:38] Wait, am I past?
+[44:41] Wait, am I past?
+[44:41] Shoot, I went past
+[44:43] Shoot, I went past
+[44:43] market close. Whoops. Okay, well, you
+[44:46] market close. Whoops. Okay, well, you
+[44:46] get the idea. Did it add money? Okay,
+[44:48] get the idea. Did it add money? Okay,
+[44:48] whatever. Hopefully that's money. Yeah.
+[44:51] whatever. Hopefully that's money. Yeah.
+[44:51] So I get I mean you get you get the
+[44:52] So I get I mean you get you get the
+[44:52] idea. Opening was green, news was green,
+[44:54] nt to
+[44:57] buy and then drift. And then you need a
+[44:57] big stop if you want to drift so that
+[44:58] big stop if you want to drift so that
+[44:58] you're not uh losing your expectation if
+[45:02] you get stopped out. One more day for
+[45:02] May, I think. 2930. Yeah. All right. We
+[45:04] May, I think. 2930. Yeah. All right. We
+[45:04] are now on the 29th. Um and then
+[45:07] are now on the 29th. Um and then
+[45:07] obviously the weekend will end May, but
+[45:09] obviously the weekend will end May, but
+[45:09] we are at alltime highs. So probably
+[45:12] we are at alltime highs. So probably
+[45:12] just going to have a long bias. But
+[45:14] just going to have a long bias. But
+[45:14] anyways, let's see what the opening
+[45:15] anyways, let's see what the opening
+[45:15] candle does on the one minute. It is
+[45:19] candle does on the one minute. It is
+[45:19] Okay, it is 50/50, but it is green,
+[45:22] Okay, it is 50/50, but it is green,
+[45:22] which is good. Now, if it closes above,
+[45:24] which is good. Now, if it closes above,
+[45:24] I'll just buy. Yeah. Okay, I assume so.
+[45:26] I'll just buy. Yeah. Okay, I assume so.
+[45:26] Um, and then the size of the candle is
+[45:29] Um, and then the size of the candle is
+[45:29] 29. So, I'll just do 0.5, I guess. And
+[45:32] 29. So, I'll just do 0.5, I guess. And
+[45:32] then just let it drift.
+[45:35] then just let it drift.
+[45:35] A little bit of a difference between
+[45:36] A little bit of a difference between
+[45:36] like the drift and the scalp trades. Um,
+[45:42] there we go. Pretty easy. Now,
+[45:42] I'm uh I'm going to short back to the
+[45:44] I'm uh I'm going to short back to the
+[45:44] pre-open price, but I'm going to wait
+[45:46] pre-open price, but I'm going to wait
+[45:46] for break structure because we're all
+[45:47] for break structure because we're all
+[45:47] time high. So, no displacement.
+[45:49] time high. So, no displacement.
+[45:49] [clears throat]
+[45:51] [clears throat]
+[45:51] And the entry is going to be
+[45:55] And the entry is going to be
+[45:55] right there. Break structure. Boom. 0.5.
+[45:58] points in
+[45:59] Just because you have enough points in
+[45:59] your favor. Uh, if I was on a live
+[46:01] your favor. Uh, if I was on a live
+[46:01] account or a funded account, which
+[46:03] account or a funded account, which
+[46:03] doesn't have consistency rule, you could
+[46:05] ike,
+[46:07] target more. Same thing on Eval. Like,
+[46:07] technically, I could just go for I don't
+[46:11] know why I'm not going for a thousand.
+[46:11] What have I been doing? Okay.
+[46:13] What have I been doing? Okay.
+[46:13] Uh, I'm not sure why why I was not doing
+[46:18] that earlier.
+[46:18] Um, you can go for 500, you can go for
+[46:21] Um, you can go for 500, you can go for
+[46:21] 750, you can go for 1,000, you can go
+[46:22] 750, you can go for 1,000, you can go
+[46:22] for 1,500, but don't go for more than
+[46:24] for 1,500, but don't go for more than
+[46:24] 1500 on eBunded.
+[46:26] 1500 on eBunded.
+[46:26] It's okay to go for more because they
+[46:27] It's okay to go for more because they
+[46:27] don't have consistency, but make sure
+[46:28] don't have consistency, but make sure
+[46:28] you know the rules. Okay. Uh, pretty
+[46:31] you know the rules. Okay. Uh, pretty
+[46:31] easy reversion there. Um, so I love
+[46:33] easy reversion there. Um, so I love
+[46:33] these I love these reversions. Like just
+[46:36] r
+[46:37] there are so many points in my favor
+[46:37] like this 100 points exactly and you can
+[46:40] and
+[46:43] you just have to win a little bit more
+[46:43] than like 20% to be profitable. So, I
+[46:45] than like 20% to be profitable. So, I
+[46:45] mean, it's like so it's so profitable.
+[46:48] mean, it's like so it's so profitable.
+[46:48] You just have to make sure you don't get
+[46:49] ke
+[46:52] this
+[46:52] because then if you short here, here,
+[46:53] because then if you short here, here,
+[46:53] here, here, and you kind of cook. But it
+[46:55] y.
+[46:58] doesn't do that too often. Don't worry.
+[46:58] All right. I think that was all of May
+[46:59] All right. I think that was all of May
+[46:59] because next is the weekend. Um, let me
+[47:02] because next is the weekend. Um, let me
+[47:02] see if we can pull up the stats. All
+[47:03] see if we can pull up the stats. All
+[47:04] right. So, let's take a look at the
+[47:05] right. So, let's take a look at the
+[47:05] performance of the strategy over May.
+[47:08] performance of the strategy over May.
+[47:08] This is just a standard equity curve.
+[47:10] This is just a standard equity curve.
+[47:10] Um, but the the strategy is optimized
+[47:12] Um, but the the strategy is optimized
+[47:12] for reduced draw down so you don't blow
+[47:13] for reduced draw down so you don't blow
+[47:13] your profit account challenge as much.
+[47:15] your profit account challenge as much.
+[47:15] Um, so to lose a 50k account, you have
+[47:18] Um, so to lose a 50k account, you have
+[47:18] to lose $2,000, which is 4%. And as you
+[47:22] to lose $2,000, which is 4%. And as you
+[47:22] can see, we never hit 4%. So you would
+[47:24] can see, we never hit 4%. So you would
+[47:24] have not lost an account um for that
+[47:27] have not lost an account um for that
+[47:27] month. I think
+[47:30] month. I think
+[47:30] I can just do dollars.
+[47:33] I can just do dollars.
+[47:33] Okay. Well, I guess if you have draw on
+[47:34] Okay. Well, I guess if you have draw on
+[47:34] streaks, so I'm not sure why it's
+[47:35] streaks, so I'm not sure why it's
+[47:36] calculating like this. Uh, so you would
+[47:37] calculating like this. Uh, so you would
+[47:37] have lost it like backtoback days here.
+[47:39] have lost it like backtoback days here.
+[47:39] I don't know why it's calculating like
+[47:41] I don't know why it's calculating like
+[47:41] this. Whatever. Um, but yeah, no, no
+[47:43] this. Whatever. Um, but yeah, no, no
+[47:43] instant $2,000 draw down streak. Math
+[47:45] instant $2,000 draw down streak. Math
+[47:45] draw down 120, whatever. So, you're
+[47:47] draw down 120, whatever. So, you're
+[47:47] never going to blow an account in one
+[47:47] never going to blow an account in one
+[47:48] day, which is always great.
+[47:50] day, which is always great.
+[47:50] And in terms of the performance, 67% win
+[47:53] ough trades
+[47:55] rate. Uh, definitely not enough trades
+[47:55] to consider it like a solid
+[47:57] to consider it like a solid
+[47:58] uh win rate, but obviously the strategy
+[47:59] uh win rate, but obviously the strategy
+[47:59] works. Just pretty good profit and loss
+[48:02] works. Just pretty good profit and loss
+[48:02] on
+[48:03] on
+[48:03] the month. Expectancy profit factors.
+[48:05] the month. Expectancy profit factors.
+[48:05] Great. Uh, I'm going to plug into my
+[48:08] Great. Uh, I'm going to plug into my
+[48:08] website at the end and I'll show you
+[48:09] website at the end and I'll show you
+[48:09] exactly what Prop Firm is optimal for
+[48:11] exactly what Prop Firm is optimal for
+[48:11] me. I guess I kind of use them all
+[48:13] me. I guess I kind of use them all
+[48:13] because I'm trying to scale. Uh,
+[48:15] because I'm trying to scale. Uh,
+[48:15] performance calendar. Interesting. One,
+[48:17] performance calendar. Interesting. One,
+[48:17] two, three, four, five, six red days.
+[48:21] two, three, four, five, six red days.
+[48:21] Not bad considering tons of trades every
+[48:23] to
+[48:24] day. That's obviously why it's going to
+[48:24] average out to be green because the
+[48:25] average out to be green because the
+[48:25] strategy wins. Okay. 2.67 trades per
+[48:28] strategy wins. Okay. 2.67 trades per
+[48:28] day. Uh, I'm definitely more aggressive
+[48:30] day. Uh, I'm definitely more aggressive
+[48:30] on my own accounts because I'm taking a
+[48:31] on my own accounts because I'm taking a
+[48:31] bunch of displacements. So that lowers
+[48:33] bunch of displacements. So that lowers
+[48:33] my win rates, but it increases the
+[48:34] my win rates, but it increases the
+[48:34] amount of trades I can take and then I
+[48:36] amount of trades I can take and then I
+[48:36] make more money because I'm taking
+[48:37] make more money because I'm taking
+[48:37] profitable trades on props. But my win
+[48:39] profitable trades on props. But my win
+[48:40] rate's personally lower because I take
+[48:42] rate's personally lower because I take
+[48:42] slightly worse trades.
+[48:44] slightly worse trades.
+[48:44] Um, but yeah, this is a good amount of
+[48:46] Um, but yeah, this is a good amount of
+[48:46] trades for New York session
+[48:48] trades for New York session
+[48:48] [clears throat] for a beginner who only
+[48:50] [clears throat] for a beginner who only
+[48:50] has one or two accounts and you just
+[48:52] has one or two accounts and you just
+[48:52] want to take it slow and only take the
+[48:53] want to take it slow and only take the
+[48:53] best setups, which is what I was showing
+[48:54] ow
+[48:58] max draw down, especially on prop firms.
+[48:58] That is why I created the strategy
+[49:00] That is why I created the strategy
+[49:00] specifically for prop firms in terms of
+[49:01] specifically for prop firms in terms of
+[49:01] the risk management uh that I just
+[49:03] the risk management uh that I just
+[49:03] showed you which is why we never hit
+[49:05] showed you which is why we never hit
+[49:05] minus 2k uh in one day and pretty good
+[49:08] minus 2k uh in one day and pretty good
+[49:08] positive expectancy. Uh it's looking
+[49:11] positive expectancy. Uh it's looking
+[49:11] quite linear. So everything as expected.
+[49:14] won
+[49:23] 37 of them.
+[49:23] Average win was just I'll just do 750
+[49:25] Average win was just I'll just do 750
+[49:25] and then average loss 500 because that's
+[49:26] all
+[49:31] of them and it wants me to use this one.
+[49:31] U so I'm getting pretty good EB on the
+[49:33] U so I'm getting pretty good EB on the
+[49:33] 100k top step no fee with consistency
+[49:35] 100k top step no fee with consistency
+[49:35] rule based on these stats. Um obviously
+[49:38] rule based on these stats. Um obviously
+[49:38] I'm profitable in all the prop firms but
+[49:41] you should put in your own stats. So I
+[49:41] would never buy the MFX 25K to only make
+[49:46] 1,300 when I could buy this and make
+[49:46] like five times as much. So hopefully
+[49:48] like five times as much. So hopefully
+[49:48] this can help you guys as well. I'll put
+[49:49] I
+[49:50] it in the description. All right. So I
+[49:50] hope you guys enjoyed the back test.
+[49:51] hope you guys enjoyed the back test.
+[49:51] That should have given you a little bit
+[49:53] That should have given you a little bit
+[49:53] of more information about my risk
+[49:54] of more information about my risk
+[49:54] management protocol on prop firms seeing
+[49:56] max
+[49:58] as how we are barely ever hitting max
+[49:58] draw on up $2,000 except for consecutive
+[50:02] days and as well you are seeing very
+[50:02] good equity curves. So just try and
+[50:04] good equity curves. So just try and
+[50:04] replicate exactly what I did to the best
+[50:05] uld
+[50:07] of your ability. Obviously this should
+[50:07] be optimized different risk on different
+[50:08] n
+[50:10] prop firms definitely different risk on
+[50:10] a live account. Tons of optimizations
+[50:12] a live account. Tons of optimizations
+[50:12] you can do, but this should get you
+[50:14] you can do, but this should get you
+[50:14] incredibly profitable results if you're
+[50:15] incredibly profitable results if you're
+[50:15] just able to replicate pretty much what
+[50:17] just able to replicate pretty much what
+[50:17] I

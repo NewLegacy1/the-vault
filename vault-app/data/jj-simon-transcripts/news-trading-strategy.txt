@@ -1,0 +1,681 @@
+# I Made $1,300,000 in 12 Months — Copy My News Trading Strategy
+# https://www.youtube.com/watch?v=8lbkj0PF1uM
+# source: yt-dlp auto-sub
+
+[0:01] I made over a million dollars trading
+[0:01] prop firms in the past 12 months. Here's
+[0:04] my news trading strategy. As always,
+[0:04] I'll start with the proof. I'll refresh
+[0:06] I'll start with the proof. I'll refresh
+[0:06] each page. On Topstep, I have about
+[0:08] each page. On Topstep, I have about
+[0:08] $250,000
+[0:10] $250,000
+[0:10] worth of payouts in the past 12 months.
+[0:14] worth of payouts in the past 12 months.
+[0:14] And they are all right here. You can
+[0:16] And they are all right here. You can
+[0:16] slow it down and look at them.
+[0:17] slow it down and look at them.
+[0:17] TradiFire, same thing, 136,000
+[0:20] TradiFire, same thing, 136,000
+[0:20] total payouts.
+[0:22] total payouts.
+[0:22] Next will be E8.
+[0:25] Next will be E8.
+[0:25] E8, I have about $220,000 worth of total
+[0:31] payouts.
+[0:31] Lucid.
+[0:33] Lucid.
+[0:33] I just finished the Lucid live account,
+[0:34] I just finished the Lucid live account,
+[0:34] so I have about $100,000 worth of total
+[0:36] so I have about $100,000 worth of total
+[0:36] payouts on Lucid.
+[0:39] payouts on Lucid.
+[0:39] FundedNext, 108,000. These are just the
+[0:42] FundedNext, 108,000. These are just the
+[0:42] biggest sites that I use. I use some
+[0:43] biggest sites that I use. I use some
+[0:43] smaller ones, but not really worth
+[0:45] smaller ones, but not really worth
+[0:45] showing here. 108,000.
+[0:47] showing here. 108,000.
+[0:47] And then lastly, Alpha Futures, about
+[0:49] And then lastly, Alpha Futures, about
+[0:49] 75,000.
+[0:51] 75,000.
+[0:51] All right, so news is a very good way to
+[0:53] y fair price and manipulations
+[0:55] identify fair price and manipulations
+[0:55] away from fair price. So, it works very
+[0:56] away from fair price. So, it works very
+[0:56] strongly with my fair pricing theory.
+[0:59] strongly with my fair pricing theory.
+[0:59] Now, pretty much, if you haven't seen
+[1:00] Now, pretty much, if you haven't seen
+[1:00] fair pricing theory video, it's saying
+[1:02] fair pricing theory video, it's saying
+[1:02] that we are trying to price the futures
+[1:05] that we are trying to price the futures
+[1:05] of Nasdaq. So, we're pricing actual
+[1:07] of Nasdaq. So, we're pricing actual
+[1:07] companies, and then any moves away from
+[1:08] companies, and then any moves away from
+[1:08] a fair price, we want to trade back to
+[1:10] a fair price, we want to trade back to
+[1:10] fair price with a reversion. And the way
+[1:14] we do that with news is to, first of
+[1:14] all, understand the fair price of news.
+[1:16] all, understand the fair price of news.
+[1:16] And this is going to matter technically
+[1:18] And this is going to matter technically
+[1:18] if it's unexpected or unexpected. Um we
+[1:21] if it's unexpected or unexpected. Um we
+[1:21] can just work with the expected news for
+[1:25] now, which is pretty much red folder US
+[1:25] impact news. That's going to be 8:30
+[1:27] impact news. That's going to be 8:30
+[1:27] a.m. EST, usually Tuesday, Thursday,
+[1:29] a.m. EST, usually Tuesday, Thursday,
+[1:30] sometimes Friday, Monday, whatever.
+[1:31] sometimes Friday, Monday, whatever.
+[1:31] You can use Forex Factory where I get my
+[1:33] then
+[1:39] you'll see 8:30 a.m. We have USD red
+[1:39] folder. And this is May 14th, May 13th,
+[1:42] folder. And this is May 14th, May 13th,
+[1:42] same thing here.
+[1:43] same thing here.
+[1:43] And May 12th, same thing here. So, I'll
+[1:45] And May 12th, same thing here. So, I'll
+[1:45] just go over my trades for these 3 days,
+[1:49] show you a little bit about how I use
+[1:49] the fair price of news. Pretty much, the
+[1:53] fair price of news is going to be the
+[1:53] price before the news came out. This is
+[1:55] price before the news came out. This is
+[1:55] because this news is planned. If the
+[1:57] because this news is planned. If the
+[1:57] news is planned, they already have a
+[1:59] news is planned, they already have a
+[1:59] forecast for it. Most of the time it's
+[2:01] forecast for it. Most of the time it's
+[2:01] pretty much exactly on the forecast. If
+[2:03] pretty much exactly on the forecast. If
+[2:03] it's not, it changes a little bit, but
+[2:05] it's not, it changes a little bit, but
+[2:05] for the majority of time it's going to
+[2:06] for the majority of time it's going to
+[2:06] be pretty much exactly what it's
+[2:07] be pretty much exactly what it's
+[2:07] forecast to be. If so, that means the
+[2:09] forecast to be. If so, that means the
+[2:09] news has already been priced in. So, if
+[2:11] news has already been priced in. So, if
+[2:11] the Nasdaq is trading, if the futures of
+[2:16] NQ are trading at 30,000 for example,
+[2:16] news comes out and then there's a sharp
+[2:17] news comes out and then there's a sharp
+[2:17] move away, this is what I would believe
+[2:19] move away, this is what I would believe
+[2:19] to be the fair price because news is
+[2:20] to be the fair price because news is
+[2:20] already priced in. And then I would
+[2:22] already priced in. And then I would
+[2:22] trade a reversion back to this price
+[2:24] trade a reversion back to this price
+[2:24] here before the news. You can also trade
+[2:28] a continuation of the news if you're
+[2:28] able to get in early enough. It's a lot
+[2:30] able to get in early enough. It's a lot
+[2:30] more dangerous though. You would have to
+[2:33] test that for yourself. It's only
+[2:33] something I would add once you're
+[2:34] something I would add once you're
+[2:34] trading multiple accounts at a time.
+[2:36] trading multiple accounts at a time.
+[2:36] Reversion is the main way to make money
+[2:38] Reversion is the main way to make money
+[2:38] off of expected news. Unexpected news,
+[2:40] off of expected news. Unexpected news,
+[2:40] I'll go over that at the end. And news
+[2:42] I'll go over that at the end. And news
+[2:42] drift is a commonly studied phenomenon
+[2:43] drift is a commonly studied phenomenon
+[2:43] that goes with unexpected news. Pretty
+[2:45] that goes with unexpected news. Pretty
+[2:45] much just got this from Google. What it
+[2:47] much just got this from Google. What it
+[2:47] means is financial asset prices continue
+[2:51] moving in the direction of a surprise
+[2:51] piece of news. So, unexpected news,
+[2:53] piece of news. So, unexpected news,
+[2:54] pretty much just trading on a drift from
+[2:57] that. So, if the price is here,
+[2:57] unexpected news,
+[2:59] unexpected news,
+[2:59] this is a new fair price and I would
+[3:00] this is a new fair price and I would
+[3:00] just expect a slight positive drift if
+[3:03] just expect a slight positive drift if
+[3:03] the news was positive. The good thing
+[3:04] the news was positive. The good thing
+[3:04] about trading news with my strategy is
+[3:06] about trading news with my strategy is
+[3:06] you don't have to analyze the sentiment
+[3:07] you don't have to analyze the sentiment
+[3:07] of the news. You don't have to know if
+[3:08] of the news. You don't have to know if
+[3:08] the news is good or bad. You just have
+[3:10] the news is good or bad. You just have
+[3:10] to know if it occurred and if it was
+[3:12] to know if it occurred and if it was
+[3:12] planned. Forex Factory will tell you all
+[3:14] ght
+[3:16] of that. It will also post tweets right
+[3:16] here. Tweets are just a really good
+[3:17] here. Tweets are just a really good
+[3:17] example of unexpected news.
+[3:19] example of unexpected news.
+[3:19] So, let's get into the three examples I
+[3:21] So, let's get into the three examples I
+[3:21] have of the expected news and how I
+[3:25] have of the expected news and how I
+[3:25] would trade reversions. So, first one,
+[3:27] would trade reversions. So, first one,
+[3:27] we have Thursday, May 5th 14th if you
+[3:29] we have Thursday, May 5th 14th if you
+[3:29] want to test it. 8:30 a.m. We have two
+[3:31] want to test it. 8:30 a.m. We have two
+[3:31] pieces of news. So,
+[3:33] pieces of news. So,
+[3:33] come over here to Thursday, May 14th and
+[3:36] k out the candle
+[3:37] what I'll do is mark out the candle
+[3:37] before news. So, 8:30 a.m. was news. And
+[3:42] I'll mark out here the body of the
+[3:42] candle before the news. So, this would
+[3:43] candle before the news. So, this would
+[3:43] be 8:29 a.m. EST.
+[3:46] be 8:29 a.m. EST.
+[3:46] Here, news comes out. This news was
+[3:48] Here, news comes out. This news was
+[3:48] expected. It was forecast to be 0.7%.
+[3:52] expected. It was forecast to be 0.7%.
+[3:52] The actual release of this news was
+[3:53] The actual release of this news was
+[3:53] 0.7%. So, they already knew what the
+[3:56] 0.7%. So, they already knew what the
+[3:56] outcome was going to be. So, why would
+[3:57] outcome was going to be. So, why would
+[3:57] the fair price of Nasdaq futures change?
+[4:01] Well, they shouldn't. Therefore, this
+[4:01] entire move down is unfair, and I want
+[4:02] entire move down is unfair, and I want
+[4:03] to trade it coming right back to this
+[4:04] to trade it coming right back to this
+[4:04] price here. Any entry for this is up to
+[4:06] price here. Any entry for this is up to
+[4:06] you. Personally, I just use a break and
+[4:08] you. Personally, I just use a break and
+[4:08] close above previous structure. It's
+[4:10] close above previous structure. It's
+[4:10] what's worked best for me in the past,
+[4:12] what's worked best for me in the past,
+[4:12] and I'm very easily able to see how many
+[4:16] points I'm getting in my favor back to
+[4:16] what I believe to be the fair price. In
+[4:18] what I believe to be the fair price. In
+[4:18] my other strategy, I also trade
+[4:19] my other strategy, I also trade
+[4:19] continuation of an opening candle, and
+[4:22] continuation of an opening candle, and
+[4:22] obviously the open candle's red, but we
+[4:24] obviously the open candle's red, but we
+[4:24] make a quick continuation back up
+[4:26] make a quick continuation back up
+[4:26] towards the fair price. So, you could
+[4:27] towards the fair price. So, you could
+[4:27] pretty much enter anywhere along this
+[4:28] pretty much enter anywhere along this
+[4:29] stretch of green candles, and then
+[4:30] stretch of green candles, and then
+[4:30] you'll be making a plus EV trade back in
+[4:32] e.
+[4:34] the direction of the pre-news price.
+[4:34] You can also enter before the market
+[4:36] You can also enter before the market
+[4:36] open, such as off this break of
+[4:38] open, such as off this break of
+[4:38] structure or maybe this break of
+[4:39] structure or maybe this break of
+[4:39] structure. Just know it is very, very
+[4:41] structure. Just know it is very, very
+[4:41] dangerous if the market is opening while
+[4:43] pen
+[4:48] has a ton of overnight orders, and it is
+[4:48] totally possible that you're in a trade,
+[4:52] you're in a winning trade, and the open
+[4:52] just wicks you out before continuing
+[4:54] just wicks you out before continuing
+[4:54] back up. Just because the open is a sum
+[4:56] back up. Just because the open is a sum
+[4:56] of overnight orders,
+[4:57] of overnight orders,
+[4:57] and this night here, for example, there
+[4:59] and this night here, for example, there
+[4:59] was probably like 12 hours straight of
+[5:01] was probably like 12 hours straight of
+[5:01] majority selling. So, it is pretty
+[5:03] majority selling. So, it is pretty
+[5:03] likely that the opening trend for at
+[5:05] likely that the opening trend for at
+[5:05] least the first 10 to 15 seconds is
+[5:07] least the first 10 to 15 seconds is
+[5:07] going to have a lot of selling orders
+[5:08] going to have a lot of selling orders
+[5:08] because obviously the overnight trend
+[5:10] because obviously the overnight trend
+[5:10] was mostly bearish here. So, just be
+[5:12] was mostly bearish here. So, just be
+[5:12] careful. You want to widen your stop if
+[5:14] careful. You want to widen your stop if
+[5:14] you're in a trade. Sometimes go break
+[5:16] you're in a trade. Sometimes go break
+[5:16] even, but it is up to you and your back
+[5:18] even, but it is up to you and your back
+[5:18] testing what you would prefer to do. Or
+[5:20] testing what you would prefer to do. Or
+[5:20] you can just wait until the market opens
+[5:23] and prints its first green candle and
+[5:23] just enter here off this break of
+[5:25] just enter here off this break of
+[5:25] structure back to this pre-news price,
+[5:27] structure back to this pre-news price,
+[5:27] which we believe to be fair. If you want
+[5:30] to take it a step further,
+[5:30] this continuation up here would also be
+[5:32] this continuation up here would also be
+[5:32] unfair, and you could trade another
+[5:33] unfair, and you could trade another
+[5:33] reversion back to the news price here.
+[5:35] reversion back to the news price here.
+[5:35] But, I would recommend don't look for
+[5:37] But, I would recommend don't look for
+[5:37] too many reversions throughout the day.
+[5:39] too many reversions throughout the day.
+[5:39] I'm usually done trading by 11:00 a.m.
+[5:41] I'm usually done trading by 11:00 a.m.
+[5:41] just because the volume sort of dies
+[5:43] just because the volume sort of dies
+[5:43] out, and the edge dies as well. Next, I
+[5:46] out, and the edge dies as well. Next, I
+[5:46] will go over Wednesday May 13th. Same
+[5:48] will go over Wednesday May 13th. Same
+[5:48] exact thing, 8:30 a.m. Let's mark out
+[5:51] exact thing, 8:30 a.m. Let's mark out
+[5:51] the candle before the news. Here we have
+[5:55] 8:29 to be right here.
+[5:55] That's pretty close. I just do the body
+[5:57] That's pretty close. I just do the body
+[5:57] of the candle. And this news was
+[6:02] of the candle. And this news was
+[6:02] the actual was a little bit higher than
+[6:04] the actual was a little bit higher than
+[6:04] expected, but on average it should not
+[6:07] expected, but on average it should not
+[6:07] be too impactful.
+[6:09] be too impactful.
+[6:09] Um in this case it went down anyways.
+[6:10] Um in this case it went down anyways.
+[6:10] So, in this case, if
+[6:12] So, in this case, if
+[6:12] the actual is very far away from the
+[6:14] the actual is very far away from the
+[6:14] forecast, as you can see here, then
+[6:17] forecast, as you can see here, then
+[6:17] actual greater than forecast be good for
+[6:19] d to
+[6:20] currency. Thankfully, you don't need to
+[6:20] know what this means. All you need to do
+[6:23] is analyze based on the price action.
+[6:23] Okay, the institution has thought that
+[6:24] Okay, the institution has thought that
+[6:24] this was bad for Nasdaq futures, and
+[6:27] this was bad for Nasdaq futures, and
+[6:27] hence the dump. And then I would just
+[6:28] hence the dump. And then I would just
+[6:28] treat the most recent consolidation and
+[6:30] treat the most recent consolidation and
+[6:30] the market open price as fair, instead
+[6:33] the market open price as fair, instead
+[6:33] of this news candle right here. So,
+[6:35] of this news candle right here. So,
+[6:35] a little bit of a difference here.
+[6:36] a little bit of a difference here.
+[6:36] Thursday, red folder here, exactly as
+[6:39] Thursday, red folder here, exactly as
+[6:39] expected.
+[6:40] expected.
+[6:40] Wednesday, pretty far off, so
+[6:43] Wednesday, pretty far off, so
+[6:43] um
+[6:44] um
+[6:44] in this case it's sort of unexpected in
+[6:46] in this case it's sort of unexpected in
+[6:46] a way. Then, I'll just treat this
+[6:48] a way. Then, I'll just treat this
+[6:48] consolidation and the 9:29 a.m. candle
+[6:50] consolidation and the 9:29 a.m. candle
+[6:50] as the fair price.
+[6:52] as the fair price.
+[6:52] You probably have seen my strategy video
+[6:53] you haven't, that just
+[6:58] pretty much explains why 9:29 is fair.
+[6:58] Also, I will add, if it is very far
+[7:00] Also, I will add, if it is very far
+[7:00] away, as it is here, it is better to
+[7:03] away, as it is here, it is better to
+[7:03] take continuations of these sort of
+[7:05] take continuations of these sort of
+[7:05] trades, and you can just enter anywhere
+[7:06] trades, and you can just enter anywhere
+[7:07] throughout the first candle as it's
+[7:08] throughout the first candle as it's
+[7:08] printing.
+[7:09] printing.
+[7:09] And that would be a pretty good
+[7:10] And that would be a pretty good
+[7:10] continuation trade for you. For the
+[7:12] continuation trade for you. For the
+[7:12] reversion, though, I would just enter
+[7:14] reversion, though, I would just enter
+[7:14] back up into the pre-open price.
+[7:17] back up into the pre-open price.
+[7:17] Same entry criteria as usual for the
+[7:19] Same entry criteria as usual for the
+[7:19] strategy, pretty much off of any break
+[7:20] strategy, pretty much off of any break
+[7:20] of structure. Seems like the first one
+[7:22] of structure. Seems like the first one
+[7:22] we get is here.
+[7:23] we get is here.
+[7:23] And just trade back to the pre-open
+[7:25] And just trade back to the pre-open
+[7:25] price. Next, I will do Tuesday May 12th.
+[7:31] Here we have CPI.
+[7:31] And
+[7:32] And
+[7:32] pretty much as expected for all of them.
+[7:34] this one I'm going to trade the same
+[7:37] as
+[7:37] Thursday. Treating the 8:30 8:29 a.m.
+[7:40] Thursday. Treating the 8:30 8:29 a.m.
+[7:40] candle as fair.
+[7:42] candle as fair.
+[7:42] So, mark that out right here. It's very
+[7:45] So, mark that out right here. It's very
+[7:45] small.
+[7:46] small.
+[7:46] Just make it like that.
+[7:48] Just make it like that.
+[7:48] And we have this move up, obviously
+[7:50] And we have this move up, obviously
+[7:50] unfair. Want to trade on it coming back
+[7:52] unfair. Want to trade on it coming back
+[7:52] to this price here.
+[7:54] to this price here.
+[7:54] In terms of the entry, pretty much same
+[7:55] In terms of the entry, pretty much same
+[7:55] as always. Just get on get in on a break
+[7:58] of structure. The first one we see is
+[7:58] right here. And you're getting 70 points
+[8:02] in your favor. The market does open
+[8:02] here, so I would be a little bit careful
+[8:04] . Uh
+[8:07] just not wanting to get stopped out. Uh
+[8:07] thankfully, the overnight was absolutely
+[8:11] dumping, so majority of the orders were
+[8:11] short, and it's coming back to here
+[8:12] short, and it's coming back to here
+[8:12] anyways, so very, very high probability
+[8:14] anyways, so very, very high probability
+[8:14] win on it coming back to this price
+[8:17] win on it coming back to this price
+[8:17] here. Perfect trade as usual. And this
+[8:19] here. Perfect trade as usual. And this
+[8:19] move up would also be unfair, so you
+[8:21] move up would also be unfair, so you
+[8:21] could even double down and get a second
+[8:22] could even double down and get a second
+[8:22] trade in somewhere through this move
+[8:23] trade in somewhere through this move
+[8:23] down. Um entry would probably be up to
+[8:26] down. Um entry would probably be up to
+[8:26] you on if you're entering here,
+[8:28] you on if you're entering here,
+[8:28] maybe here as well, or anywhere through
+[8:30] maybe here as well, or anywhere through
+[8:30] this move down here. It does come all
+[8:31] this move down here. It does come all
+[8:31] the way back down to the pre-news price,
+[8:33] o
+[8:36] as expected, and then consolidates, so
+[8:36] pretty much
+[8:37] pretty much
+[8:37] proving that this was indeed a fair
+[8:39] proving that this was indeed a fair
+[8:39] price as it was exactly as forecasted,
+[8:42] price as it was exactly as forecasted,
+[8:42] meaning the move away was unfair, and
+[8:44] meaning the move away was unfair, and
+[8:44] reversions are very live. I probably
+[8:47] reversions are very live. I probably
+[8:47] wouldn't trade a continuation because it
+[8:49] o
+[8:52] came out as expected, but it is up to
+[8:52] you if you want to add that into your
+[8:53] you if you want to add that into your
+[8:53] trading. But, I would definitely
+[8:55] trading. But, I would definitely
+[8:55] recommend testing before implementing
+[8:57] recommend testing before implementing
+[8:57] anything. Just understand that 9:29 is
+[9:00] anything. Just understand that 9:29 is
+[9:00] not always going to be the fair price
+[9:01] not always going to be the fair price
+[9:01] because there can be unfair moves
+[9:03] because there can be unfair moves
+[9:03] pre-market open. All right, so that is
+[9:06] pre-market open. All right, so that is
+[9:06] pretty much how we are trading news in
+[9:08] pretty much how we are trading news in
+[9:08] general. First off, we have to
+[9:09] general. First off, we have to
+[9:10] understand the fair price of the news
+[9:12] understand the fair price of the news
+[9:12] and do the continuation if it is
+[9:14] and do the continuation if it is
+[9:14] extremely unexpected, and reversion if
+[9:17] extremely unexpected, and reversion if
+[9:17] the news came out as expected.
+[9:20] the news came out as expected.
+[9:20] Pretty much, you can just test these 3
+[9:21] Pretty much, you can just test these 3
+[9:22] days and see how far away it was from
+[9:24] days and see how far away it was from
+[9:24] the expectation, and then obviously how
+[9:25] the expectation, and then obviously how
+[9:25] much it uh displaced away from what you
+[9:28] much it uh displaced away from what you
+[9:28] think should be a fair price.
+[9:29] think should be a fair price.
+[9:29] Last thing I'll go over is the
+[9:31] Last thing I'll go over is the
+[9:31] unexpected news and news drift. So, in
+[9:34] unexpected news and news drift. So, in
+[9:34] terms of that, let me see if I can find
+[9:37] terms of that, let me see if I can find
+[9:37] an example from this morning, 13 hours
+[9:40] an example from this morning, 13 hours
+[9:40] ago from recording it at about 8:00 p.m.
+[9:45] There was red folder news from Twitter
+[9:45] about Iran and
+[9:47] about Iran and
+[9:47] materials. So, that was this piece right
+[9:51] here.
+[9:51] And what you do with unexpected news
+[9:53] And what you do with unexpected news
+[9:53] means you want to trade, first of all, a
+[9:57] continuation. So, entering anywhere
+[9:57] throughout this candle as it's forming
+[9:59] throughout this candle as it's forming
+[9:59] is very good. You don't even need to
+[10:01] is very good. You don't even need to
+[10:01] know the sentiment of the news. All you
+[10:02] know the sentiment of the news. All you
+[10:02] have to see is, "Okay, it's dumping, so
+[10:03] have to see is, "Okay, it's dumping, so
+[10:03] I'm just going to get in a
+[10:04] I'm just going to get in a
+[10:04] continuation."
+[10:06] continuation."
+[10:06] Next, instead of trading back to the
+[10:08] Next, instead of trading back to the
+[10:08] pre-news price, because the move is
+[10:10] pre-news price, because the move is
+[10:10] fair, I would treat the most recent
+[10:12] fair, I would treat the most recent
+[10:12] consolidation after the news to be the
+[10:14] consolidation after the news to be the
+[10:14] new fair price, which seems to be about
+[10:16] new fair price, which seems to be about
+[10:16] here, and it's later confirmed here.
+[10:18] here, and it's later confirmed here.
+[10:18] So, it doesn't really look like there's
+[10:20] So, it doesn't really look like there's
+[10:20] too many opportunities to trade after
+[10:21] too many opportunities to trade after
+[10:21] this.
+[10:23] this.
+[10:23] Sometimes, though, it will break out of
+[10:25] Sometimes, though, it will break out of
+[10:25] this consolidation and I'll trade on it
+[10:26] this consolidation and I'll trade on it
+[10:26] coming back to the consolidation.
+[10:29] coming back to the consolidation.
+[10:29] Also, this specific day, the market
+[10:30] Also, this specific day, the market
+[10:30] opened right here and pretty much
+[10:32] opened right here and pretty much
+[10:32] instantly came back to this
+[10:33] instantly came back to this
+[10:33] consolidation uh after the news and just
+[10:36] ving that
+[10:39] chopped around in here, proving that
+[10:39] this is the new fair price instead of
+[10:40] this is the new fair price instead of
+[10:40] this back here. So,
+[10:42] this back here. So,
+[10:42] you have to be on top of Forex Factory,
+[10:44] you have to be on top of Forex Factory,
+[10:44] watching the news,
+[10:45] watching the news,
+[10:45] finding out is this expected news, is it
+[10:47] hat sort of stuff, and
+[10:52] use the calendar to identify red folder
+[10:52] news throughout the week. It is Thursday
+[10:56] right now, so nothing for the rest of
+[10:56] the week, but in the week after that,
+[10:58] the week, but in the week after that,
+[10:58] you can
+[10:59] you can
+[10:59] &gt;&gt; [clears throat] &gt;&gt; attempt this strategy, try it on paper
+[11:01] &gt;&gt; attempt this strategy, try it on paper
+[11:01] &gt;&gt; attempt this strategy, try it on paper trading first. Remember, only US because
+[11:05] we're trading Nasdaq futures. So,
+[11:05] Thursday, we're definitely going to get
+[11:06] Thursday, we're definitely going to get
+[11:06] to a very good day and be sure to check
+[11:09] to a very good day and be sure to check
+[11:09] if the actual is meeting the forecast.
+[11:11] if the actual is meeting the forecast.
+[11:11] Hopefully, that is a good trade for you
+[11:14] Hopefully, that is a good trade for you
+[11:14] next week. Last thing I'll mention is
+[11:16] next week. Last thing I'll mention is
+[11:16] news drift. Pretty much, if news is red,
+[11:19] re,
+[11:23] you'll enter a continuation as soon as
+[11:23] it starts consolidating.
+[11:24] it starts consolidating.
+[11:25] Stop loss and take profit are arbitrary,
+[11:27] k management,
+[11:28] up to your prop firm risk management,
+[11:29] whatever you are doing. There are
+[11:30] whatever you are doing. There are
+[11:30] statistically optimal ways to do this,
+[11:32] statistically optimal ways to do this,
+[11:32] but in general, just trading in the
+[11:34] but in general, just trading in the
+[11:34] direction of the news is always good
+[11:36] direction of the news is always good
+[11:36] because they're not able to price in the
+[11:37] ve
+[11:40] effects instantly, which is why I love
+[11:40] doing continuations of unexpected news.
+[11:42] doing continuations of unexpected news.
+[11:42] So, I believe that's everything that
+[11:43] So, I believe that's everything that
+[11:43] I've needed to talk about for news, the
+[11:45] I've needed to talk about for news, the
+[11:45] expected news, unexpected news,
+[11:47] expected news, unexpected news,
+[11:47] reversions, continuations, fair price
+[11:49] reversions, continuations, fair price
+[11:49] changes, news drift, all those sort of
+[11:51] changes, news drift, all those sort of
+[11:51] things. I know it's extremely complex.
+[11:53] things. I know it's extremely complex.
+[11:53] There's so many different factors to be
+[11:55] There's so many different factors to be
+[11:55] at play for news trading, but hopefully
+[11:57] at play for news trading, but hopefully
+[11:57] that was a a very good introduction to
+[12:00] that was a a very good introduction to
+[12:00] news trading and how I've been using it
+[12:02] news trading and how I've been using it
+[12:02] personally. I would say it is my highest
+[12:06] win rate trade out of literally all of
+[12:06] the trades that I take is the reversion
+[12:08] the trades that I take is the reversion
+[12:08] to pre-news price.
+[12:10] to pre-news price.
+[12:10] Best example was definitely on Thursday
+[12:13] Best example was definitely on Thursday
+[12:13] of last week, Thursday, May 14th. If you
+[12:15] s
+[12:19] was just a a very high win rate trade
+[12:19] that I took using the strategy. So, I
+[12:21] that I took using the strategy. So, I
+[12:22] always risk higher when my chance of
+[12:23] always risk higher when my chance of
+[12:23] winning is expected to be higher. It's
+[12:26] winning is expected to be higher. It's
+[12:26] something that you should apply to your
+[12:27] something that you should apply to your
+[12:27] trading as well. If you want to learn
+[12:28] trading as well. If you want to learn
+[12:28] more about news drift and other news
+[12:31] more about news drift and other news
+[12:31] trading strategies, then you can join my
+[12:33] s of
+[12:37] people there talking about news and how
+[12:37] to trade it. We're all watching Forex
+[12:38] to trade it. We're all watching Forex
+[12:38] Factory on the side and if something
+[12:40] Factory on the side and if something
+[12:40] comes out, we will let you know and see
+[12:43] comes out, we will let you know and see
+[12:43] how we can trade it together.

@@ -219,6 +219,17 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
       log, cycle3-laneC · NO new uploads on either channel; archives complete 14/14 + 13/13; Powell ~7
       weeks silent; bonus: ICT 2023 MMXM lecture transcript archived to `vault-app/data/ict-transcripts/`)
 
+## Ad-hoc research (2026-07-20)
+
+- [x] Historical data vs live markets — `quant/historical-data-vs-live-markets.md` (adhoc-past-vs-live · objectify history via conditional EV±CI / walk-forward / regimes / Bayesian WR / replay→live calib — not day-identity)
+
+## Ad-hoc research (2026-07-20)
+
+- [x] JJ Simon / Fair Value 9:30 NQ sleeve — `quant/jj-simon-fair-value-930-strategy.md`
+      (adhoc-jj-simon · channel `@itsjjsimon` · 6 transcripts in
+      `vault-app/data/jj-simon-transcripts/` · verdict: **explore / park until Stage-0
+      slot free** — Phase-2 MR mechanizable; not Dual46 override; payouts = claim)
+
 ## Guardrails
 
 - Knowledge notes **never** override the Dual46 freeze or hard stops in
