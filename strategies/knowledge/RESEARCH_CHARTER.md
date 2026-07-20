@@ -232,6 +232,9 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 - [x] Macro regime context data options — `quant/macro-regime-context-data-options.md`
       (adhoc-regime-data · forgotten-app candidates + build/buy ladder · verdict:
       **$0 DIY tags first**; SaaS/NLP optional glance only; regime = gate not Dual46 lock)
+- [x] Phase-0 regime tags shipped into Dual46 journal (2026-07-20 · master) —
+      `vault-app/lib/regime-tags.ts` + Dual46 form/edit · May harvest VIX/mega-cap backfill ·
+      oil thresholds frozen · JJ Fair-Value still parked separately
 
 ## Guardrails
 

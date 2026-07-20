@@ -71,6 +71,13 @@ Walk **Tue–Fri**, **09:30 → 13:00** NY. Bias on **5m**, arm check on **1m**.
   as a Stage-0 candidate ([[../../knowledge/quant/stop-placement-fixed-structure-volatility|stop research]]).
 - Tag each session: opening-range percentile · ADX(7) read · first-30-min direction —
   census only, no gating ([[../../knowledge/quant/intraday-regime-detection-session-selection|regime research]]).
+- **Phase-0 regime tags (2026-07-20 — form fields live, freeze locked):**
+  `vixPrevClose` (bands **&lt;16 / 16–20 / &gt;20**, prior close only) · `megaCapEarnWeek`
+  (AAPL/MSFT/GOOGL/AMZN/META/NVDA) · `oilShock` (**|CL 1d|≥3% OR |CL 5d|≥8%** — frozen) ·
+  `or30ratio` (09:30–10:00 ÷ 20d median) · `redFolder` already auto-matched.
+  Context / Stage-0 splits only — **never** a Dual46 lock edit. JJ Fair-Value stays a
+  separate product ([[../../knowledge/quant/jj-simon-fair-value-930-strategy|JJ note]],
+  [[../../knowledge/quant/macro-regime-context-data-options|regime data ladder]]).
 - **Pre-registered evaluation rule** (avoids the optional-stopping trap — monthly "is it
   working?" checks inflate false alarms to ~25%+): verdicts on the Dual46 script sleeve only
   at **fixed horizons — end of May walk, then end of Nov–Dec walk** — not mid-month; the

@@ -174,11 +174,13 @@ Log on every Dual46 / JJ / walk day (prior-day where noted):
 1. **`vixPrevClose` tercile** — use pre-registered bands from vol note: **&lt;16 / 16–20 / &gt;20** (prior close only).
 2. **`redFolder`** — already from FF calendar bundle / journal auto-match (USD high-impact).
 3. **`megaCapEarnWeek`** — binary: any of AAPL, MSFT, GOOGL, AMZN, META, NVDA reporting that calendar week.
-4. **`oilShock`** — binary: e.g. \|CL 1-day %\| ≥ 3% **or** 5-day % ≥ 8% (pre-register exact thresholds before use; adjust once, then freeze).
+4. **`oilShock`** — binary: **FROZEN 2026-07-20** — \|CL 1-day %\| ≥ **3%** **or** \|CL 5-day %\| ≥ **8%** (`OIL_SHOCK_1D_PCT` / `OIL_SHOCK_5D_PCT` in `vault-app/lib/regime-tags.ts`). Do not retune mid-May-walk.
 
 Optional fifth (still $0): **`or30ratio`** (09:30–10:00 MNQ range ÷ 20-day median) — already recommended in vol-regime note.
 
 No SaaS. No Dual46 rule change. Tags only.
+
+**Shipped 2026-07-20:** Dual46 study form + journal edit panel expose all four fields; `vixBand` auto-derives from `vixPrevClose`. May harvest has VIX/mega-cap backfill for 05-01→05-06 ([[../../strategy-dev/50-analyses/morningstar-dual46-may-harvest]]). JJ Fair-Value stays out of this walk.
 
 ### Phase 1 — automate ($0–$50/mo)
 

@@ -35,6 +35,8 @@ export type PrbFilter = "Both" | "Long only" | "Short only";
 export type RedFolderTag = "yes" | "no" | "unknown";
 export type JournalLogMode = "morningstar" | "live";
 export type StructTf = "15" | "30" | "60" | "240" | "chart";
+/** Prior-day VIX tercile — Phase-0 regime tag (see lib/regime-tags.ts). */
+export type VixBand = "lt16" | "16-20" | "gt20";
 export type SkipReason =
   | "no_setup"
   | "no_poi"
@@ -134,6 +136,18 @@ export interface JournalEntry {
   dualVersion?: "Dual46";
   /** script = Morningstar arm · disc = discretionary note (NWOG / reverse fib / etc.) */
   entrySource?: "script" | "disc";
+
+  // ── Phase-0 regime tags (census only — never Dual46 lock) ─────────
+  /** Prior trading day's VIX close (predictive; no same-day leakage). */
+  vixPrevClose?: number;
+  /** Pre-registered band from vixPrevClose: &lt;16 / 16–20 / &gt;20. */
+  vixBand?: VixBand;
+  /** Any of AAPL/MSFT/GOOGL/AMZN/META/NVDA reporting Mon–Fri of this calendar week. */
+  megaCapEarnWeek?: boolean;
+  /** Frozen: |CL 1d %|≥3 OR |CL 5d %|≥8 (see lib/regime-tags.ts). */
+  oilShock?: boolean;
+  /** 09:30–10:00 MNQ range ÷ trailing 20-session median of same. */
+  or30ratio?: number;
 }
 
 /** Map journal confluence count → letter suggestion. 0 = empty stack (no setup) → "-". */

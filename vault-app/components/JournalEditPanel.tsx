@@ -3,7 +3,8 @@
 import { useCallback, useState } from "react";
 import { compressChartShot } from "@/lib/journal-shot";
 import { formatPlanRr, parsePlanRr } from "@/lib/morningstar/parse-plan-rr";
-import { JournalEntry } from "@/lib/types";
+import { vixBandFromClose, vixBandLabel } from "@/lib/regime-tags";
+import { JournalEntry, VixBand } from "@/lib/types";
 import { autoRedFolder, useDayNews } from "@/lib/use-day-news";
 
 type EditState = {
@@ -26,6 +27,10 @@ type EditState = {
   fiveMinConfirm: boolean | null;
   /** Daily ATR in points (normalizes NWOG gap to ×dATR). */
   dailyAtrPts: string;
+  vixPrevClose: string;
+  megaCapEarnWeek: boolean | null;
+  oilShock: boolean | null;
+  or30ratio: string;
   stopPts: string;
   planRr: string;
   notes: string;
@@ -61,6 +66,10 @@ function fromEntry(j: JournalEntry): EditState {
     mfeR: j.mfeR != null ? String(j.mfeR) : "",
     fiveMinConfirm: j.fiveMinConfirm ?? null,
     dailyAtrPts: j.dailyAtrPts != null ? String(j.dailyAtrPts) : "",
+    vixPrevClose: j.vixPrevClose != null ? String(j.vixPrevClose) : "",
+    megaCapEarnWeek: j.megaCapEarnWeek ?? null,
+    oilShock: j.oilShock ?? null,
+    or30ratio: j.or30ratio != null ? String(j.or30ratio) : "",
     stopPts: j.stopPts != null ? String(j.stopPts) : "",
     planRr: j.planRr != null ? String(j.planRr) : "",
     notes: j.notes ?? "",
@@ -113,6 +122,15 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
       const n = parseFloat(s);
       return s !== "" && Number.isFinite(n) ? n : undefined;
     };
+    const vixPrevClose = num(f.vixPrevClose);
+    let vixBand: VixBand | undefined;
+    if (vixPrevClose != null) {
+      try {
+        vixBand = vixBandFromClose(vixPrevClose);
+      } catch {
+        vixBand = undefined;
+      }
+    }
     const rMultiple =
       f.dualOutcome === "WIN" && planRr != null
         ? planRr
@@ -145,6 +163,11 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
       mfeR: num(f.mfeR),
       fiveMinConfirm: f.fiveMinConfirm ?? undefined,
       dailyAtrPts: num(f.dailyAtrPts),
+      vixPrevClose,
+      vixBand,
+      megaCapEarnWeek: f.megaCapEarnWeek ?? undefined,
+      oilShock: f.oilShock ?? undefined,
+      or30ratio: num(f.or30ratio),
       ...(news
         ? { redFolder: news.redFolder, redFolderTime: news.time, redFolderEvent: news.event }
         : {}),
@@ -340,6 +363,65 @@ export function JournalEditPanel({ entry, onSave, onCancel }: Props) {
               value={f.dailyAtrPts}
               onChange={(e) => setF({ ...f, dailyAtrPts: e.target.value })}
               placeholder="pts"
+              style={{ width: 70 }}
+            />
+          </label>
+        </div>
+
+        <div className="accent small" style={{ letterSpacing: 1, marginTop: 4 }}>
+          REGIME (Phase-0)
+        </div>
+        <div className="frm-row" style={{ alignItems: "flex-start" }}>
+          <label className="fld">
+            VIX prior close
+            <input
+              value={f.vixPrevClose}
+              onChange={(e) => setF({ ...f, vixPrevClose: e.target.value })}
+              placeholder="e.g. 17.4"
+              style={{ width: 80 }}
+            />
+            {(() => {
+              const n = parseFloat(f.vixPrevClose);
+              if (f.vixPrevClose === "" || !Number.isFinite(n)) return null;
+              try {
+                return (
+                  <span className="dim" style={{ fontSize: 10, marginTop: 2 }}>
+                    band {vixBandLabel(vixBandFromClose(n))}
+                  </span>
+                );
+              } catch {
+                return null;
+              }
+            })()}
+          </label>
+          <div>
+            <div className="dim small" style={{ marginBottom: 4 }}>
+              Mega-cap earn week
+            </div>
+            {chip(f.megaCapEarnWeek === true, "Y", () =>
+              setF({ ...f, megaCapEarnWeek: f.megaCapEarnWeek === true ? null : true })
+            )}
+            {chip(f.megaCapEarnWeek === false, "N", () =>
+              setF({ ...f, megaCapEarnWeek: f.megaCapEarnWeek === false ? null : false })
+            )}
+          </div>
+          <div>
+            <div className="dim small" style={{ marginBottom: 4 }}>
+              Oil shock
+            </div>
+            {chip(f.oilShock === true, "Y", () =>
+              setF({ ...f, oilShock: f.oilShock === true ? null : true })
+            )}
+            {chip(f.oilShock === false, "N", () =>
+              setF({ ...f, oilShock: f.oilShock === false ? null : false })
+            )}
+          </div>
+          <label className="fld">
+            OR30 / 20d med
+            <input
+              value={f.or30ratio}
+              onChange={(e) => setF({ ...f, or30ratio: e.target.value })}
+              placeholder="ratio"
               style={{ width: 70 }}
             />
           </label>

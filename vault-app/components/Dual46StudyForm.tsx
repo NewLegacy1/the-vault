@@ -9,8 +9,9 @@ import {
   type ParsedDual46Tag,
 } from "@/lib/morningstar/parse-dual46-tag";
 import { formatPlanRr, parsePlanRr } from "@/lib/morningstar/parse-plan-rr";
+import { vixBandFromClose, vixBandLabel } from "@/lib/regime-tags";
 import { todayStr } from "@/lib/store";
-import { JournalEntry, MORNINGSTAR_STUDY_ID, uid } from "@/lib/types";
+import { JournalEntry, MORNINGSTAR_STUDY_ID, VixBand, uid } from "@/lib/types";
 import { autoRedFolder, useDayNews } from "@/lib/use-day-news";
 
 type Dual46Form = {
@@ -29,6 +30,12 @@ type Dual46Form = {
   fiveMinConfirm: boolean | null;
   /** Daily ATR in points (normalizes NWOG gap to ×dATR). */
   dailyAtrPts: string;
+  /** Prior-day VIX close — Phase-0 regime. */
+  vixPrevClose: string;
+  megaCapEarnWeek: boolean | null;
+  oilShock: boolean | null;
+  /** 09:30–10:00 MNQ range ÷ 20-day median. */
+  or30ratio: string;
   weekBias: "long" | "short" | "none";
   dayBias: "long" | "short" | "none";
   armed: boolean;
@@ -58,6 +65,10 @@ function emptyDual46(date = todayStr()): Dual46Form {
     mfeR: "",
     fiveMinConfirm: null,
     dailyAtrPts: "",
+    vixPrevClose: "",
+    megaCapEarnWeek: null,
+    oilShock: null,
+    or30ratio: "",
     weekBias: "none",
     dayBias: "none",
     armed: false,
@@ -109,6 +120,15 @@ function toEntry(f: Dual46Form, news: ReturnType<typeof autoRedFolder>): Journal
     const n = parseFloat(s);
     return s !== "" && Number.isFinite(n) ? n : undefined;
   };
+  const vixPrevClose = num(f.vixPrevClose);
+  let vixBand: VixBand | undefined;
+  if (vixPrevClose != null) {
+    try {
+      vixBand = vixBandFromClose(vixPrevClose);
+    } catch {
+      vixBand = undefined;
+    }
+  }
   const tag =
     f.armed && f.pathBModel !== "—"
       ? `Powell · ${f.pathBModel} · 1RB · ${f.pathBGrade}`
@@ -142,6 +162,11 @@ function toEntry(f: Dual46Form, news: ReturnType<typeof autoRedFolder>): Journal
     mfeR: num(f.mfeR),
     fiveMinConfirm: f.fiveMinConfirm ?? undefined,
     dailyAtrPts: num(f.dailyAtrPts),
+    vixPrevClose,
+    vixBand,
+    megaCapEarnWeek: f.megaCapEarnWeek ?? undefined,
+    oilShock: f.oilShock ?? undefined,
+    or30ratio: num(f.or30ratio),
     redFolder: news.redFolder,
     redFolderTime: news.time,
     redFolderEvent: news.event,
@@ -501,6 +526,69 @@ export function Dual46StudyForm({ onSave }: Props) {
             value={f.dailyAtrPts}
             onChange={(e) => setF({ ...f, dailyAtrPts: e.target.value })}
             placeholder="pts"
+            style={{ width: 70 }}
+          />
+        </label>
+      </div>
+
+      <div className="accent small" style={{ letterSpacing: 1, marginTop: 8 }}>
+        REGIME (Phase-0 · census only)
+      </div>
+      <p className="small dim" style={{ marginTop: 0, marginBottom: 6 }}>
+        Prior-day VIX + mega-cap week + oil shock + OR ratio — no Dual46 rule changes. Bands frozen:
+        VIX &lt;16 / 16–20 / &gt;20 · oil |1d|≥3% or |5d|≥8%.
+      </p>
+      <div className="frm-row" style={{ alignItems: "flex-start" }}>
+        <label className="fld">
+          VIX prior close
+          <input
+            value={f.vixPrevClose}
+            onChange={(e) => setF({ ...f, vixPrevClose: e.target.value })}
+            placeholder="e.g. 17.4"
+            style={{ width: 80 }}
+          />
+          {(() => {
+            const n = parseFloat(f.vixPrevClose);
+            if (f.vixPrevClose === "" || !Number.isFinite(n)) return null;
+            try {
+              return (
+                <span className="dim" style={{ fontSize: 10, marginTop: 2 }}>
+                  band {vixBandLabel(vixBandFromClose(n))}
+                </span>
+              );
+            } catch {
+              return null;
+            }
+          })()}
+        </label>
+        <div>
+          <div className="dim small" style={{ marginBottom: 4 }}>
+            Mega-cap earn week
+          </div>
+          {chip(f.megaCapEarnWeek === true, "Y", () =>
+            setF({ ...f, megaCapEarnWeek: f.megaCapEarnWeek === true ? null : true })
+          )}
+          {chip(f.megaCapEarnWeek === false, "N", () =>
+            setF({ ...f, megaCapEarnWeek: f.megaCapEarnWeek === false ? null : false })
+          )}
+        </div>
+        <div>
+          <div className="dim small" style={{ marginBottom: 4 }}>
+            Oil shock
+          </div>
+          {chip(f.oilShock === true, "Y", () =>
+            setF({ ...f, oilShock: f.oilShock === true ? null : true })
+          )}
+          {chip(f.oilShock === false, "N", () =>
+            setF({ ...f, oilShock: f.oilShock === false ? null : false })
+          )}
+        </div>
+        <label className="fld">
+          OR30 / 20d med
+          <input
+            value={f.or30ratio}
+            onChange={(e) => setF({ ...f, or30ratio: e.target.value })}
+            placeholder="ratio"
             style={{ width: 70 }}
           />
         </label>
