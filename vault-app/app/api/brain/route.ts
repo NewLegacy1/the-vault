@@ -26,6 +26,11 @@ const HUBS = [
   { id: "builder", path: "strategies/knowledge/quant/vault-model-builder-architecture.md", label: "BUILDER" },
   { id: "away-mc", path: "strategies/strategy-dev/50-analyses/away-session-2026-07-20-mc-synthesis.md", label: "AWAY MC" },
   { id: "away-d46", path: "strategies/strategy-dev/50-analyses/away-session-2026-07-20-dual46-conclusions.md", label: "AWAY D46" },
+  { id: "weekly", path: "strategies/strategy-dev/50-analyses/weekly-review-latest.md", label: "WEEKLY" },
+  { id: "stage0", path: "strategies/knowledge/quant/stage-0-scorecard-surface.md", label: "S0 CHECK" },
+  { id: "es-mc", path: "strategies/knowledge/quant/event-study-to-path-mc-handoff.md", label: "ES→MC" },
+  { id: "haircut", path: "strategies/knowledge/quant/fill-haircut-defaults-stage0-lab.md", label: "HAIRCUT" },
+  { id: "addendum", path: "strategies/strategy-dev/50-analyses/away-session-2026-07-20-addendum.md", label: "ADDENDUM" },
 ];
 
 function safeResolve(rel: string): string | null {

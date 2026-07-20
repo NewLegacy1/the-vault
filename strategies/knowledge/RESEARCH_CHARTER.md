@@ -244,23 +244,21 @@ See `quant/vault-model-builder-architecture.md`.
 
 72. [ ] Event-study → regime columns — wire `vixBand` / `or30` / `release10` / `oilShock` /
       `megaCapEarnWeek` group-bys into `analyze-event-study.ts` output (match frozen top-5)
-73. [ ] `regime-tags.ts` completeness — restore or implement `or30BandFromRatio` /
-      `or30BandLabel` / `release10FromEventTimes` so tests + doctrine stay in lockstep
+73. [x] `regime-tags.ts` completeness — or30 bands + release10 live; Dual46 form/edit
+      save `or30Band` + `release10` (2026-07-20 away-2)
 74. [x] Stage-0 scorecard surface — `quant/stage-0-scorecard-surface.md` (cycle4 ·
       one closeout checklist: EV±CI · L1–L8 · vsRandom/vsFlip · k-adjusted survivor ·
       path MC still required; maps SCORECARD ↔ analyze-event-study.ts; Dual46 freeze untouched)
 75. [x] Path MC `E[$/wk]` after Stage-0 toward — document + script path from ES JSON →
       firm-rule MC inputs (fees, trail, timeout) without inventing Deep BT numbers
       → `quant/event-study-to-path-mc-handoff.md` (cycle4-75)
-76. [x] Fill-haircut defaults — `quant/fill-haircut-defaults-stage0-lab.md` (cycle4 ·
-      tick presets by window from ops-mnq-slippage + limit-fill; Stage-0/Lab defaults as
-      CLAIM+VERIFY; suggest `vault-app/lib/execution-haircut-presets.ts`)
+76. [x] Fill-haircut defaults — `quant/fill-haircut-defaults-stage0-lab.md` +
+      `vault-app/lib/execution-haircut-presets.ts` (presets shipped; ES/Lab wire still open)
 77. [ ] Journal ↔ harvest sync protocol — localStorage → May/June harvest → canvas
       without stale-tab overwrite; regime fields required on every day row
 78. [ ] Prop-rule matrix as MC config — Topstep/Apex/TPT payout + MLL fields as versioned
       JSON consumed by path MC (ties to ops-prop-rule-change-watch)
-79. [ ] Builder hub smoke-test — verify all `hubs/*` wikilinks resolve; archive stubs only;
-      update `_index` when a CYCLE 4 note lands in `lib/`
+79. [x] Builder hub smoke-test — `vault-app/scripts/smoke-knowledge-hubs.ts` (139 ok)
 
 ## Guardrails
 

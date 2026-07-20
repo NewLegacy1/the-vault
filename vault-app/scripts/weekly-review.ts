@@ -114,7 +114,7 @@ function main() {
   } else {
     for (const c of latest) {
       lines.push(
-        `| ${c.created?.slice(0, 10) ?? "—"} | ${c.variant ?? c.id} | ${c.verdict ?? "—"} | ${c.compositeScore ?? "—"} | ${c.weeklyEdgeUsd ?? "—"} | ${c.mcPassPct ?? "—"} | ${c.mcBustPct ?? "—"} | ${c.mcPayoutPct ?? "—"} | ${c.trades ?? "—"} |`
+        `| ${c.created?.slice(0, 10) ?? "—"} | ${c.variant ?? c.id} | ${c.scorecardVerdict || "—"} | ${c.compositeScore ?? "—"} | ${c.weeklyEdgeUsd ?? "—"} | ${c.mcPassPct ?? "—"} | ${c.mcBustPct ?? "—"} | ${c.mcPayoutPct ?? "—"} | ${c.trades ?? "—"} |`
       );
     }
   }
