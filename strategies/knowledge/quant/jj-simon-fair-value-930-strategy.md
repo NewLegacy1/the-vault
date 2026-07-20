@@ -74,7 +74,11 @@ topic: jj-simon-fair-value-930-strategy · researched: 2026-07-20 · sources: 10
 
 ## APPLICATION TO THE VAULT
 
-### Overlap vs conflict with Dual46 (frozen)
+### Product boundary (locked 2026-07-20)
+
+**JJ Fair-Value is its own separate research product** — not a Dual46 replacement, not a Dual46 add-on, not a Dual46 discretionary sleeve, and not a Pine merge candidate. Dual46 stays frozen and walks its own ledger (May → Nov–Dec). JJ gets its own Stage-0 note, own event study, own SCORECARD, and own path MC when a slot opens. Shared infrastructure only (MNQ, prop firms, `analyze-event-study.ts`, kill-lessons). Never co-score or blend rules into Morningstar.
+
+### Overlap vs conflict with Dual46 (frozen — comparison only, not integration)
 
 | Dimension | Dual46 | JJ Simon | Conflict? |
 |---|---|---|---|
@@ -107,11 +111,11 @@ Tag Asia / 2pm / 8:30 news as **out of scope** for v0.
 
 ### Recommendation
 
-**Explore (parked until Stage-0 slot free) — do not kill-as-inspiration-only.**
+**Explore as a standalone product (parked until its own Stage-0 slot free) — do not kill-as-inspiration-only. Do not fold into Dual46.**
 
-**Why explore:** Clean, public, free theory; objective FV anchor; mechanizable displacement rule already published; independence from Dual46 on level set + barrier; Lane-F frequency compatible with prop cadence *if* loss shape clears trail math.
+**Why explore separately:** Clean, public, free theory; objective FV anchor; mechanizable displacement rule already published; different session/RR/cadence from Dual46 so it can live as a second prop attempt *if* it clears SCORECARD on its own.
 
-**Why not open now / why not promote:** (1) Dual46 freeze + one Stage-0 rule; (2) 1.5R geometry sits next to falsified Track-B traps — need n and path MC before any excitement; (3) Phase-1 continuation is ORB-adjacent risk — score P2 first; (4) payout "proof" remains claim; (5) he himself frames live EV ≈ 0 — Vault cares about *our* MNQ path EV, not his montage.
+**Why not open now / why not promote:** (1) Dual46 May walk is current priority; (2) 1.5R geometry sits next to falsified Track-B traps — need n and path MC before any excitement; (3) Phase-1 continuation is ORB-adjacent risk — score P2 first; (4) payout "proof" remains claim; (5) he himself frames live EV ≈ 0 — Vault scores *our* MNQ path EV under prop rules, not his montage.
 
 **Next human step (when slot opens):** export 1m NQ/MNQ matrix for a pre-registered window → `analyze-event-study.ts` on JJ-P2-MR only → SCORECARD with eraConsistency + vsFlip/vsRandom. No Pine until toward.
 
