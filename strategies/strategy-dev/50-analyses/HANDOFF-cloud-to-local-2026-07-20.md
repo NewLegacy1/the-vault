@@ -1,7 +1,7 @@
 ---
 created: 2026-07-20
 tags: [handoff, dual46, cloud-to-local]
-status: ACTIVE
+status: LOCAL ACTIVE · Phase-0 regime UI shipped · next = May 05-07 walk
 ---
 # Handoff — cloud → local agent (2026-07-20)
 
