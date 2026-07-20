@@ -246,13 +246,15 @@ See `quant/vault-model-builder-architecture.md`.
       `megaCapEarnWeek` group-bys into `analyze-event-study.ts` output (match frozen top-5)
 73. [ ] `regime-tags.ts` completeness — restore or implement `or30BandFromRatio` /
       `or30BandLabel` / `release10FromEventTimes` so tests + doctrine stay in lockstep
-74. [ ] Stage-0 scorecard surface — one checklist view: EV±CI · leakage L-checklist ·
-      vsRandom/vsFlip · k-adjusted survivor rule (no new Track-B ideas)
+74. [x] Stage-0 scorecard surface — `quant/stage-0-scorecard-surface.md` (cycle4 ·
+      one closeout checklist: EV±CI · L1–L8 · vsRandom/vsFlip · k-adjusted survivor ·
+      path MC still required; maps SCORECARD ↔ analyze-event-study.ts; Dual46 freeze untouched)
 75. [x] Path MC `E[$/wk]` after Stage-0 toward — document + script path from ES JSON →
       firm-rule MC inputs (fees, trail, timeout) without inventing Deep BT numbers
       → `quant/event-study-to-path-mc-handoff.md` (cycle4-75)
-76. [ ] Fill-haircut defaults — map `ops-mnq-slippage` + limit-fill note into Stage-0 /
-      Lab execution haircut presets (ticks by window; no live claims)
+76. [x] Fill-haircut defaults — `quant/fill-haircut-defaults-stage0-lab.md` (cycle4 ·
+      tick presets by window from ops-mnq-slippage + limit-fill; Stage-0/Lab defaults as
+      CLAIM+VERIFY; suggest `vault-app/lib/execution-haircut-presets.ts`)
 77. [ ] Journal ↔ harvest sync protocol — localStorage → May/June harvest → canvas
       without stale-tab overwrite; regime fields required on every day row
 78. [ ] Prop-rule matrix as MC config — Topstep/Apex/TPT payout + MLL fields as versioned

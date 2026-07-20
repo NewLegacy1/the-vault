@@ -13,10 +13,12 @@ Active notes stay under `quant/ops-*`. Peripheral tax/entity → archive.
 2. [[../quant/ops-mnq-slippage-market-orders-open]] — 09:50–10:10 fill quality
 3. [[../quant/ops-news-print-microstructure-stand-down]] — T−2m→T+1m
 4. [[../quant/limit-order-fill-modeling-queue-position]] — Stage-0 fill assumptions
+5. [[../quant/fill-haircut-defaults-stage0-lab]] — Stage-0/Lab tick presets by window (CLAIM→VERIFY)
 
 ## Fills & latency
 
 - [[../quant/ops-mnq-slippage-market-orders-open]]
+- [[../quant/fill-haircut-defaults-stage0-lab]]
 - [[../quant/ops-prestaged-limits-vs-hotkey-execution]]
 - [[../quant/ops-data-feed-discrepancies-tv-vs-execution]]
 - [[../quant/execution-latency-reaction-time-replay-realism]]

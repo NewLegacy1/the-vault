@@ -16,6 +16,8 @@ Thin pointer into `strategies/strategy-dev/`. Knowledge informs; charter + score
 
 ## Knowledge that feeds Stage-0
 
+- [[../quant/stage-0-scorecard-surface]] — one closeout checklist (EV±CI · leakage · baselines · k-rule · path MC)
+- [[../quant/fill-haircut-defaults-stage0-lab]] — execution haircut presets before net EV language
 - [[../quant/event-study-methodology-intraday-setups]]
 - [[../quant/event-study-to-path-mc-handoff]] — ES toward/away → firm-rule path MC inputs (no invented Deep BT)
 - [[../quant/feature-lag-audits-data-leakage]]

@@ -51,6 +51,7 @@ Executable: `vault-app/lib/monte-carlo.ts` · scripts under `vault-app/scripts/`
 - [[../quant/feature-lag-audits-data-leakage]]
 - [[../quant/event-study-methodology-intraday-setups]]
 - [[../quant/historical-data-vs-live-markets]]
+- [[../quant/stage-0-scorecard-surface]] — Stage-0 closeout checklist (EV±CI · L-checklist · baselines · k-rule · path MC gate)
 
 ## Hierarchy (never invert)
 
