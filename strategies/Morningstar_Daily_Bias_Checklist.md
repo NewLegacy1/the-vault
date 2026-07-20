@@ -183,6 +183,12 @@ MFE: peaked at ____ R before exit   ← May addition (structural-TP decision: do
 Session: OR size ____ · first 30m dir ____ (census only)
 NWOG tap? gap size ____ · gap age ____ d · tapped edge/CE/far ____ · gap = ____ ×dailyATR · day-of-week ____   ← only if NWOG idea (Monday tap rows scored separately — published gap data shows Monday is the genuine-move outlier)
 News: auto-matched in the app from the calendar — glance at F7 NEWS to confirm it agrees with FF
+Regime (measurable only — [[mnq-relevant-regime-variables]]):
+  VIX prior close: <16 / 16–20 / >20
+  OR30 ratio (09:30–10:00 ÷ 20d median): <0.75 / 0.75–1.25 / >1.25
+  Mega-cap earn week (AAPL/MSFT/GOOGL/AMZN/META/NVDA): Y / N
+  Oil shock (|CL 1d|≥3% or |CL 5d|≥8%): Y / N
+  (Red-folder / 10:00 release already auto-matched)
 ```
 
 ---

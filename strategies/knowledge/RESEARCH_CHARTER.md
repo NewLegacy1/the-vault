@@ -232,6 +232,9 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 - [x] Macro regime context data options — `quant/macro-regime-context-data-options.md`
       (adhoc-regime-data · forgotten-app candidates + build/buy ladder · verdict:
       **$0 DIY tags first**; SaaS/NLP optional glance only; regime = gate not Dual46 lock)
+- [x] MNQ-relevant regime variables — `quant/mnq-relevant-regime-variables.md`
+      (adhoc-regime-vars · ranked measurables for Dual46/JJ · top-5: VIX band + OR30 +
+      red-folder/10:00 + mega-cap earn week + oilShock · deprioritize war NLP)
 
 ## Guardrails
 
