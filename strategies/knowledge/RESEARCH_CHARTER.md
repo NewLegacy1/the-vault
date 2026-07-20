@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-status: CYCLE 3 COMPLETE (2026-07-18 · 30/30) · CYCLE 4 QUEUED (2026-07-20 · 8 model-builder gaps · unchecked) · hubs + architecture notes landed
+status: CYCLE 3 COMPLETE (2026-07-18 · 30/30) · CYCLE 4 IN PROGRESS (2026-07-20 · 1/8 model-builder gaps) · hubs + architecture notes landed
 tags: [knowledge-base, research-charter, multi-agent]
 ---
 # Knowledge Research Charter — multi-agent deep-research loop
@@ -248,8 +248,9 @@ See `quant/vault-model-builder-architecture.md`.
       `or30BandLabel` / `release10FromEventTimes` so tests + doctrine stay in lockstep
 74. [ ] Stage-0 scorecard surface — one checklist view: EV±CI · leakage L-checklist ·
       vsRandom/vsFlip · k-adjusted survivor rule (no new Track-B ideas)
-75. [ ] Path MC `E[$/wk]` after Stage-0 toward — document + script path from ES JSON →
+75. [x] Path MC `E[$/wk]` after Stage-0 toward — document + script path from ES JSON →
       firm-rule MC inputs (fees, trail, timeout) without inventing Deep BT numbers
+      → `quant/event-study-to-path-mc-handoff.md` (cycle4-75)
 76. [ ] Fill-haircut defaults — map `ops-mnq-slippage` + limit-fill note into Stage-0 /
       Lab execution haircut presets (ticks by window; no live claims)
 77. [ ] Journal ↔ harvest sync protocol — localStorage → May/June harvest → canvas

@@ -17,6 +17,7 @@ Thin pointer into `strategies/strategy-dev/`. Knowledge informs; charter + score
 ## Knowledge that feeds Stage-0
 
 - [[../quant/event-study-methodology-intraday-setups]]
+- [[../quant/event-study-to-path-mc-handoff]] — ES toward/away → firm-rule path MC inputs (no invented Deep BT)
 - [[../quant/feature-lag-audits-data-leakage]]
 - [[../quant/benchmark-discipline-naive-baselines]]
 - [[../quant/multiple-testing-selection-bias-sleeves]]
