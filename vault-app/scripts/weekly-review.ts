@@ -15,16 +15,42 @@ const COHORT_DIRS = [
 const OUT_DIR = path.join(__dirname, "../../strategies/strategy-dev/50-analyses");
 const OUT_MD = path.join(OUT_DIR, "weekly-review-latest.md");
 
+/** Recurse eval/funded/combined/research — root-only scan missed almost all cohorts. */
+function walkMdFiles(dir: string, base = ""): { rel: string; abs: string }[] {
+  if (!fs.existsSync(dir)) return [];
+  const out: { rel: string; abs: string }[] = [];
+  for (const name of fs.readdirSync(dir)) {
+    const abs = path.join(dir, name);
+    let st: fs.Stats;
+    try {
+      st = fs.statSync(abs);
+    } catch {
+      continue;
+    }
+    if (st.isDirectory()) {
+      out.push(...walkMdFiles(abs, path.join(base, name)));
+    } else if (name.endsWith(".md") && !name.startsWith("_")) {
+      out.push({
+        rel: path.join(base, name).replace(/\\/g, "/"),
+        abs,
+      });
+    }
+  }
+  return out;
+}
+
 function loadCohorts(): CohortRecord[] {
   const out: CohortRecord[] = [];
+  const repoRoot = path.join(__dirname, "../..");
   for (const dir of COHORT_DIRS) {
-    if (!fs.existsSync(dir)) continue;
-    for (const name of fs.readdirSync(dir)) {
-      if (!name.endsWith(".md") || name.startsWith("_")) continue;
-      const full = path.join(dir, name);
+    for (const { rel, abs } of walkMdFiles(dir)) {
       try {
-        const text = fs.readFileSync(full, "utf8");
-        const rec = parseCohortMeta(text, name, path.relative(path.join(__dirname, "../.."), full));
+        const text = fs.readFileSync(abs, "utf8");
+        const rec = parseCohortMeta(
+          text,
+          path.basename(rel),
+          path.relative(repoRoot, abs).replace(/\\/g, "/")
+        );
         if (rec) out.push(rec);
       } catch {
         /* skip */
@@ -37,7 +63,9 @@ function loadCohorts(): CohortRecord[] {
 function decayFlag(rows: CohortRecord[]): string {
   if (rows.length < 2) return "Insufficient cohorts for decay check.";
   const latest = rows[0]!;
-  const prior = rows.find((r) => r.id !== latest.id && r.strategyFamily === latest.strategyFamily) ?? rows[1]!;
+  const prior =
+    rows.find((r) => r.id !== latest.id && r.strategyFamily === latest.strategyFamily) ??
+    rows[1]!;
   const dWeek = (latest.weeklyEdgeUsd ?? 0) - (prior.weeklyEdgeUsd ?? 0);
   const dPass = (latest.mcPassPct ?? 0) - (prior.mcPassPct ?? 0);
   if (dWeek < -50 || dPass < -5) {
@@ -62,6 +90,7 @@ function main() {
     `# Weekly review — ${asOf}`,
     "",
     "> Read-only. No Pine mutation. Path MC + net EV before WR.",
+    `> Cohorts scanned (recursive): **${cohorts.length}**`,
     "",
     "## Cadence checklist",
     "",
@@ -80,33 +109,29 @@ function main() {
     "|---|---|---|---|---|---|---|---|---|",
   ];
 
-  for (const c of latest) {
-    lines.push(
-      `| ${c.created?.slice(0, 10) ?? "—"} | ${c.variant || c.strategyPreset || c.id} | ${c.scorecardVerdict || "—"} | ${c.compositeScore || "—"} | ${Math.round(c.weeklyEdgeUsd || 0)} | ${(c.mcPassPct ?? 0).toFixed(1)} | ${(c.mcBustPct ?? 0).toFixed(1)} | ${(c.mcPayoutPct ?? 0).toFixed(1)} | ${c.trades} |`
-    );
-  }
-
-  if (latest.length === 0) {
+  if (!latest.length) {
     lines.push("| — | no cohorts yet | — | — | — | — | — | — | — |");
+  } else {
+    for (const c of latest) {
+      lines.push(
+        `| ${c.created?.slice(0, 10) ?? "—"} | ${c.variant ?? c.id} | ${c.verdict ?? "—"} | ${c.compositeScore ?? "—"} | ${c.weeklyEdgeUsd ?? "—"} | ${c.mcPassPct ?? "—"} | ${c.mcBustPct ?? "—"} | ${c.mcPayoutPct ?? "—"} | ${c.trades ?? "—"} |`
+      );
+    }
   }
 
   lines.push(
     "",
-    "## Geometry footnote (do not promote on these alone)",
+    "## Notes",
     "",
-    "WR / RR / PF belong below path economics. If a cohort note leads with WR↑ without MC, treat as incomplete.",
-    "",
-    "## Next actions",
-    "",
-    "1. Hold or kill based on SCORECARD primary metrics.",
-    "2. Stage-0 context slice if event EV CI covers 0.",
-    "3. Do not open Pine strategy.entry for blocked events.",
+    "- Dual46 May walk = chart study — not Lab promote.",
+    "- Regime-gate-v0 remains the last Lab toward on gated PRB books (see away-session MC synthesis).",
+    "- Track B matrix: do not reopen kills via param retune.",
     ""
   );
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  fs.writeFileSync(OUT_MD, lines.join("\n"), "utf8");
-  console.log(`Wrote ${OUT_MD} (${cohorts.length} cohorts scanned)`);
+  fs.writeFileSync(OUT_MD, lines.join("\n"));
+  console.log(`Wrote ${OUT_MD} (${cohorts.length} cohorts)`);
 }
 
 main();
