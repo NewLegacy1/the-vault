@@ -229,6 +229,9 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
       (adhoc-jj-simon · channel `@itsjjsimon` · 6 transcripts in
       `vault-app/data/jj-simon-transcripts/` · verdict: **explore / park until Stage-0
       slot free** — Phase-2 MR mechanizable; not Dual46 override; payouts = claim)
+- [x] Macro regime context data options — `quant/macro-regime-context-data-options.md`
+      (adhoc-regime-data · forgotten-app candidates + build/buy ladder · verdict:
+      **$0 DIY tags first**; SaaS/NLP optional glance only; regime = gate not Dual46 lock)
 
 ## Guardrails
 
