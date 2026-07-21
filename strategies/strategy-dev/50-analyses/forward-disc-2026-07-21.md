@@ -23,6 +23,20 @@ tags: [forward-disc, journal, mnq, not-dual46]
 
 Gross note @ 10 MNQ ($20/pt): **+$1,460** (paper / forward — size not a prop account).
 
+## Powell confirmation (same session)
+
+Powell posted the **same long** with the **same entry**. Difference was TP:
+
+| | You | Powell |
+|---|---|---|
+| Entry | Same | Same |
+| TP | 10:00 key open (~73 pts · 4.08R) | **PDH** (~111 pts) |
+| Path | ~30 pt pullback after 10:00 KO — would **not** have stopped a PDH runner | Full PDH hit |
+
+Your fear (reversion at 10:00 KO) was directionally right — there was a dip — but magnitude (~30 pts) was inside a PDH runner from an 18-pt stop. Initial idea = PDH; conservatism left ~38 pts on the table.
+
+**Harvest (census only — not Dual46 freeze):** when against-bias midnight RB long prints clean, log **two TPs** in notes: (A) next key open / KO magnet · (B) PDH/PDL. Score which would have paid without needing to retune mid-trade. Stage-0 later can pre-register A vs B — not both at once.
+
 ## How to save in the app
 
 1. **Accounts** → **Add paper / forward test** (once), set it active.
