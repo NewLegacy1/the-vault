@@ -8,6 +8,7 @@ import { compressChartShot } from "@/lib/journal-shot";
 import { useLocal, fmtUsd, todayStr } from "@/lib/store";
 import {
   Account,
+  FORWARD_DISC_ID,
   JournalEntry,
   JournalLogMode,
   MORNINGSTAR_STUDY_ID,
@@ -15,6 +16,8 @@ import {
   PrbFilter,
   RedFolderTag,
   SkipReason,
+  isPaperAccount,
+  makePaperAccount,
   uid,
 } from "@/lib/types";
 import { analyzeBiasJournal } from "@/lib/bias-journal";
@@ -46,7 +49,6 @@ function nwogLabel(j: JournalEntry): string {
 
 function emptyLive() {
   return {
-    mode: "live" as JournalLogMode,
     date: todayStr(),
     accountId: "",
     direction: "skip" as JournalEntry["direction"],
@@ -66,19 +68,54 @@ function emptyLive() {
   };
 }
 
+function emptyForward() {
+  return {
+    date: todayStr(),
+    direction: "long" as JournalEntry["direction"],
+    morningBias: "neutral" as MorningBias,
+    againstBias: true,
+    stopPts: "",
+    planRr: "",
+    outcome: "WIN" as "WIN" | "LOSS",
+    entryTime: "",
+    tpNote: "",
+    notes: "",
+    chartShot: "" as string,
+    /** Gross $ at 10 MNQ ($20/pt) — leave blank to skip. */
+    pnl: "",
+  };
+}
+
 export default function JournalPage() {
   const [journal, setJournal] = useLocal<JournalEntry[]>("vault.journal", []);
-  const [accounts] = useLocal<Account[]>("vault.accounts", []);
-  const [activeId] = useLocal<string>("vault.activeAccount", "");
+  const [accounts, setAccounts] = useLocal<Account[]>("vault.accounts", []);
+  const [activeId, setActiveId] = useLocal<string>("vault.activeAccount", "");
   const [filterAcct, setFilterAcct] = useState(MORNINGSTAR_STUDY_ID);
   const [previewShot, setPreviewShot] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [mode, setMode] = useState<JournalLogMode>("morningstar");
   const [f, setF] = useState(emptyLive);
+  const [fwd, setFwd] = useState(emptyForward);
   const [logErr, setLogErr] = useState("");
   const [shotErr, setShotErr] = useState("");
 
   const tookTrade = f.direction === "long" || f.direction === "short";
+  const selectedLiveId = f.accountId || activeId;
+  const selectedLiveAcct = accounts.find((a) => a.id === selectedLiveId);
+  const liveIsPaper = selectedLiveAcct ? isPaperAccount(selectedLiveAcct) : false;
+
+  /** Ensure default Paper / forward-test account exists; return its id. */
+  const ensurePaperAccount = (): string => {
+    const existing = accounts.find(isPaperAccount);
+    if (existing) {
+      setActiveId(existing.id);
+      return existing.id;
+    }
+    const acct = makePaperAccount("Paper / forward test", todayStr());
+    setAccounts([...accounts, acct]);
+    setActiveId(acct.id);
+    return acct.id;
+  };
 
   const toggleSkip = (id: SkipReason) => {
     setF((prev) => ({
@@ -89,25 +126,89 @@ export default function JournalPage() {
     }));
   };
 
-  const onShot = async (file: File | null) => {
+  const onShot = async (file: File | null, target: "live" | "forward" = "live") => {
     setShotErr("");
     if (!file) {
-      setF((prev) => ({ ...prev, chartShot: "" }));
+      if (target === "forward") setFwd((prev) => ({ ...prev, chartShot: "" }));
+      else setF((prev) => ({ ...prev, chartShot: "" }));
       return;
     }
     try {
       const dataUrl = await compressChartShot(file);
-      setF((prev) => ({ ...prev, chartShot: dataUrl }));
+      if (target === "forward") setFwd((prev) => ({ ...prev, chartShot: dataUrl }));
+      else setF((prev) => ({ ...prev, chartShot: dataUrl }));
     } catch (e) {
       setShotErr(e instanceof Error ? e.message : "Could not compress snapshot");
-      setF((prev) => ({ ...prev, chartShot: "" }));
+      if (target === "forward") setFwd((prev) => ({ ...prev, chartShot: "" }));
+      else setF((prev) => ({ ...prev, chartShot: "" }));
     }
   };
 
+  const addForward = () => {
+    if (fwd.direction !== "long" && fwd.direction !== "short") {
+      setLogErr("Pick long or short.");
+      return;
+    }
+    const stopPts = fwd.stopPts !== "" ? parseFloat(fwd.stopPts) : undefined;
+    const planRr = fwd.planRr !== "" ? parseFloat(fwd.planRr) : undefined;
+    if (stopPts == null || !Number.isFinite(stopPts) || stopPts <= 0) {
+      setLogErr("Stop pts required.");
+      return;
+    }
+    if (planRr == null || !Number.isFinite(planRr) || planRr <= 0) {
+      setLogErr("Plan R (e.g. 4.08) required.");
+      return;
+    }
+    setLogErr("");
+    const paperId = ensurePaperAccount();
+    const rMultiple = fwd.outcome === "WIN" ? planRr : -1;
+    const tpPts = Math.round(stopPts * planRr * 100) / 100;
+    const noteBits = [
+      fwd.againstBias ? "against daily bias" : "with daily bias",
+      fwd.tpNote.trim() || undefined,
+      fwd.entryTime.trim() ? `entry ${fwd.entryTime.trim()} NY` : undefined,
+      `SL ${stopPts}pt · TP ~${tpPts}pt · ${planRr}R`,
+      fwd.notes.trim() || undefined,
+    ].filter(Boolean);
+    const entry: JournalEntry = {
+      id: uid(),
+      date: fwd.date,
+      loggedAt: new Date().toISOString(),
+      accountId: paperId,
+      direction: fwd.direction,
+      morningBias: fwd.morningBias,
+      dayBias:
+        fwd.morningBias === "long" || fwd.morningBias === "short"
+          ? fwd.morningBias
+          : "none",
+      redFolder: "unknown",
+      grade: "B",
+      pnl: fwd.pnl !== "" ? parseFloat(fwd.pnl) || 0 : 0,
+      rMultiple,
+      stopPts,
+      planRr,
+      entryTime: fwd.entryTime.trim() || undefined,
+      entrySource: "disc",
+      dualOutcome: fwd.outcome,
+      fillStatus: "yes",
+      giveBack: false,
+      checklistFails: fwd.againstBias ? "counter_draw" : "",
+      skipReasons: fwd.againstBias ? ["counter_draw"] : undefined,
+      notes: noteBits.join(" · "),
+      strategy: "ForwardDisc",
+      chartShot: fwd.chartShot || undefined,
+    };
+    setJournal([...journal, entry]);
+    setFwd(emptyForward());
+    setShotErr("");
+    setFilterAcct(paperId);
+    setF((prev) => ({ ...prev, accountId: paperId }));
+  };
+
   const addLive = () => {
-    const acct = f.accountId || activeId;
+    let acct = f.accountId || activeId;
     if (!acct) {
-      setLogErr("Live mode needs an account — pick one or switch to Dual46 study.");
+      setLogErr("Pick an account — or click Add paper / forward test.");
       return;
     }
     if (f.redFolder === "yes" && !f.redFolderTime.trim()) {
@@ -115,6 +216,7 @@ export default function JournalPage() {
       return;
     }
     setLogErr("");
+    const paper = accounts.find((a) => a.id === acct && isPaperAccount(a));
     const entry: JournalEntry = {
       id: uid(),
       date: f.date,
@@ -134,7 +236,8 @@ export default function JournalPage() {
       checklistFails: f.skipReasons.join(","),
       skipReasons: f.skipReasons.length ? f.skipReasons : undefined,
       notes: f.notes,
-      strategy: "PRB",
+      strategy: paper ? "ForwardDisc" : "PRB",
+      entrySource: paper ? "disc" : undefined,
       chartShot: f.chartShot || undefined,
     };
     setJournal([...journal, entry]);
@@ -152,6 +255,13 @@ export default function JournalPage() {
       if (filterAcct === MORNINGSTAR_STUDY_ID) {
         return j.accountId === MORNINGSTAR_STUDY_ID || j.strategy === "Morningstar";
       }
+      if (filterAcct === FORWARD_DISC_ID) {
+        return (
+          j.accountId === FORWARD_DISC_ID ||
+          j.strategy === "ForwardDisc" ||
+          accounts.some((a) => a.id === j.accountId && isPaperAccount(a))
+        );
+      }
       return j.accountId === filterAcct;
     })
     .sort((a, b) => (b.j.loggedAt ?? "").localeCompare(a.j.loggedAt ?? "") || b.idx - a.idx)
@@ -166,7 +276,10 @@ export default function JournalPage() {
 
   const acctLabel = (id: string, strategy?: string) => {
     if (id === MORNINGSTAR_STUDY_ID || strategy === "Morningstar") return "Dual46";
-    return accounts.find((a) => a.id === id)?.label ?? id.slice(0, 8);
+    const acct = accounts.find((a) => a.id === id);
+    if (acct && isPaperAccount(acct)) return acct.label || "Paper";
+    if (id === FORWARD_DISC_ID || strategy === "ForwardDisc") return "Paper / forward";
+    return acct?.label ?? id.slice(0, 8);
   };
 
   return (
@@ -200,8 +313,8 @@ export default function JournalPage() {
 
       <div className="panel">
         <div className="panel-title">
-          Dual46 day study
-          <span className="sub">paste chart → OCR tag → bias → log · all on this page</span>
+          Journal log
+          <span className="sub">Dual46 study · Live (prop or paper account)</span>
         </div>
         <div className="panel-body">
           <div className="frm-row" style={{ marginBottom: 12 }}>
@@ -215,13 +328,194 @@ export default function JournalPage() {
                 }}
               >
                 <option value="morningstar">Dual46 Path B study</option>
-                <option value="live">Live account (PRB)</option>
+                <option value="live">Live / paper account</option>
+                <option value="forward">Quick forward trade (uses paper account)</option>
               </select>
             </label>
           </div>
 
           {mode === "morningstar" ? (
             <Dual46StudyForm onSave={(entry) => setJournal([...journal, entry])} />
+          ) : mode === "forward" ? (
+            <>
+              <p className="small dim" style={{ marginTop: 0 }}>
+                Saves under your <b>Paper / forward test</b> account (creates it if missing). Same
+                book as Accounts → Add paper / forward test. Not Dual46.
+              </p>
+              {logErr && (
+                <p className="warn small" style={{ marginTop: 0 }}>
+                  {logErr}
+                </p>
+              )}
+              <div className="frm-row">
+                <label className="fld">
+                  Date
+                  <input
+                    type="date"
+                    value={fwd.date}
+                    onChange={(e) => setFwd({ ...fwd, date: e.target.value })}
+                  />
+                </label>
+                <label className="fld">
+                  Daily bias
+                  <select
+                    value={fwd.morningBias}
+                    onChange={(e) =>
+                      setFwd({ ...fwd, morningBias: e.target.value as MorningBias })
+                    }
+                  >
+                    {MORNING_BIASES.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="fld">
+                  Did
+                  <select
+                    value={fwd.direction}
+                    onChange={(e) =>
+                      setFwd({
+                        ...fwd,
+                        direction: e.target.value as JournalEntry["direction"],
+                      })
+                    }
+                  >
+                    <option value="long">Long</option>
+                    <option value="short">Short</option>
+                  </select>
+                </label>
+                <label className="chk" style={{ alignSelf: "end", marginBottom: 4 }}>
+                  <input
+                    type="checkbox"
+                    checked={fwd.againstBias}
+                    onChange={(e) => setFwd({ ...fwd, againstBias: e.target.checked })}
+                  />
+                  <span className="chk-box" aria-hidden="true" />
+                  <span className="txt">Against bias</span>
+                </label>
+              </div>
+              <div className="frm-row">
+                <label className="fld">
+                  Stop pts
+                  <input
+                    type="number"
+                    step="0.25"
+                    value={fwd.stopPts}
+                    onChange={(e) => setFwd({ ...fwd, stopPts: e.target.value })}
+                    style={{ width: 90 }}
+                    placeholder="18"
+                  />
+                </label>
+                <label className="fld">
+                  Plan R
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={fwd.planRr}
+                    onChange={(e) => setFwd({ ...fwd, planRr: e.target.value })}
+                    style={{ width: 90 }}
+                    placeholder="4.08"
+                  />
+                </label>
+                <label className="fld">
+                  Outcome
+                  <select
+                    value={fwd.outcome}
+                    onChange={(e) =>
+                      setFwd({ ...fwd, outcome: e.target.value as "WIN" | "LOSS" })
+                    }
+                  >
+                    <option value="WIN">WIN</option>
+                    <option value="LOSS">LOSS</option>
+                  </select>
+                </label>
+                <label className="fld">
+                  Entry HH:MM
+                  <input
+                    value={fwd.entryTime}
+                    onChange={(e) => setFwd({ ...fwd, entryTime: e.target.value })}
+                    style={{ width: 90 }}
+                    placeholder="10:15"
+                  />
+                </label>
+              </div>
+              <label className="fld" style={{ maxWidth: "100%" }}>
+                TP / level note
+                <input
+                  value={fwd.tpNote}
+                  onChange={(e) => setFwd({ ...fwd, tpNote: e.target.value })}
+                  style={{ width: "100%", maxWidth: 480 }}
+                  placeholder="TP @ 10:00 key open · 1m+5m RB midnight"
+                />
+              </label>
+              <label className="fld" style={{ maxWidth: "100%" }}>
+                Notes
+                <input
+                  value={fwd.notes}
+                  onChange={(e) => setFwd({ ...fwd, notes: e.target.value })}
+                  style={{ width: "100%", maxWidth: 480 }}
+                />
+              </label>
+              <div className="frm-row">
+                <label className="fld">
+                  Optional $ P&amp;L (10 MNQ = $20/pt)
+                  <input
+                    type="number"
+                    value={fwd.pnl}
+                    onChange={(e) => setFwd({ ...fwd, pnl: e.target.value })}
+                    style={{ width: 110 }}
+                    placeholder="1460"
+                  />
+                </label>
+                <label className="fld">
+                  Snapshot
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => onShot(e.target.files?.[0] ?? null, "forward")}
+                  />
+                </label>
+                {fwd.chartShot && (
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => setPreviewShot(fwd.chartShot)}
+                  >
+                    Preview
+                  </button>
+                )}
+              </div>
+              {shotErr && <p className="warn small">{shotErr}</p>}
+              <div className="frm-row mt">
+                <button type="button" className="btn" onClick={addForward}>
+                  Log forward trade
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() =>
+                    setFwd({
+                      ...emptyForward(),
+                      date: "2026-07-21",
+                      direction: "long",
+                      morningBias: "short",
+                      againstBias: true,
+                      stopPts: "18",
+                      planRr: "4.08",
+                      outcome: "WIN",
+                      entryTime: "10:15",
+                      tpNote: "TP @ 10:00 key open · 1m+5m RB · midnight open context",
+                      notes: "Forward test · price continued higher after TP; still banked 4.08R",
+                      pnl: "1460",
+                    })
+                  }
+                >
+                  Prefill today&apos;s 4.08R long
+                </button>
+              </div>
+            </>
           ) : (
             <>
               {logErr && (
@@ -247,11 +541,30 @@ export default function JournalPage() {
                     <option value="">—</option>
                     {accounts.map((a) => (
                       <option key={a.id} value={a.id}>
-                        {a.label}
+                        {isPaperAccount(a) ? `Paper · ${a.label}` : a.label}
                       </option>
                     ))}
                   </select>
                 </label>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ alignSelf: "end", marginBottom: 2 }}
+                  onClick={() => {
+                    const id = ensurePaperAccount();
+                    setF((prev) => ({ ...prev, accountId: id }));
+                    setLogErr("");
+                  }}
+                >
+                  Add paper / forward test
+                </button>
+              </div>
+              {liveIsPaper && (
+                <p className="small dim" style={{ marginTop: 0 }}>
+                  Logging to a paper account — disc / forward book, not Dual46, no prop fees.
+                </p>
+              )}
+              <div className="frm-row">
                 <label className="fld">
                   Morning bias
                   <select
@@ -425,10 +738,11 @@ export default function JournalPage() {
           <span className="sub">
             <select value={filterAcct} onChange={(e) => setFilterAcct(e.target.value)}>
               <option value={MORNINGSTAR_STUDY_ID}>Dual46 study</option>
+              <option value={FORWARD_DISC_ID}>Paper / forward</option>
               <option value="">all</option>
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.label}
+                  {isPaperAccount(a) ? `Paper · ${a.label}` : a.label}
                 </option>
               ))}
             </select>

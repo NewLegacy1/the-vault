@@ -1,4 +1,4 @@
-export type Phase = "eval" | "funded" | "passed" | "blown" | "retired";
+export type Phase = "eval" | "funded" | "passed" | "blown" | "retired" | "paper";
 
 export interface Account {
   id: string;
@@ -33,7 +33,7 @@ export interface LedgerEntry {
 export type MorningBias = "long" | "short" | "neutral" | "skip";
 export type PrbFilter = "Both" | "Long only" | "Short only";
 export type RedFolderTag = "yes" | "no" | "unknown";
-export type JournalLogMode = "morningstar" | "live";
+export type JournalLogMode = "morningstar" | "forward" | "live";
 export type StructTf = "15" | "30" | "60" | "240" | "chart";
 /** Prior-day VIX tercile — Phase-0 regime tag (see lib/regime-tags.ts). */
 export type VixBand = "lt16" | "16-20" | "gt20";
@@ -52,6 +52,36 @@ export type SkipReason =
 
 /** Fixed journal bucket for Morningstar Manual study (no prop account). */
 export const MORNINGSTAR_STUDY_ID = "study:morningstar";
+/**
+ * Default Paper / forward-test account id (no prop fees).
+ * Create via Accounts → Add paper / forward test, or Journal Live one-click.
+ */
+export const FORWARD_DISC_ID = "study:forward-disc";
+/** ruleId marker for paper accounts (not a PropRule). */
+export const PAPER_FORWARD_RULE_ID = "paper-forward";
+
+export function isPaperAccount(a: Account): boolean {
+  return a.phase === "paper" || a.ruleId === PAPER_FORWARD_RULE_ID || a.id === FORWARD_DISC_ID;
+}
+
+/** Stable default paper book — one per vault unless user adds more. */
+export function makePaperAccount(
+  label = "Paper / forward test",
+  startDate: string,
+  id: string = FORWARD_DISC_ID
+): Account {
+  return {
+    id,
+    firm: "Paper",
+    label,
+    size: 50_000,
+    phase: "paper",
+    startDate,
+    ruleId: PAPER_FORWARD_RULE_ID,
+    currentBalance: 50_000,
+    notes: "No prop fees · forward / disc / paper book — not Dual46",
+  };
+}
 
 export interface JournalEntry {
   id: string;

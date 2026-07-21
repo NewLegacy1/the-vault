@@ -22,15 +22,17 @@ const HUBS = [
   { id: "ops", path: "strategies/knowledge/hubs/hub-ops.md", label: "OPS" },
   { id: "stage0", path: "strategies/knowledge/hubs/hub-stage0.md", label: "STAGE-0" },
   { id: "doctrine", path: "strategies/knowledge/hubs/hub-doctrine.md", label: "DOCTRINE" },
+  { id: "auction", path: "strategies/knowledge/hubs/hub-auction.md", label: "AUCTION" },
   { id: "org", path: "strategies/knowledge/ORGANIZATION.md", label: "ORG RULES" },
   { id: "builder", path: "strategies/knowledge/quant/vault-model-builder-architecture.md", label: "BUILDER" },
   { id: "away-mc", path: "strategies/strategy-dev/50-analyses/away-session-2026-07-20-mc-synthesis.md", label: "AWAY MC" },
   { id: "away-d46", path: "strategies/strategy-dev/50-analyses/away-session-2026-07-20-dual46-conclusions.md", label: "AWAY D46" },
   { id: "weekly", path: "strategies/strategy-dev/50-analyses/weekly-review-latest.md", label: "WEEKLY" },
-  { id: "stage0", path: "strategies/knowledge/quant/stage-0-scorecard-surface.md", label: "S0 CHECK" },
+  { id: "s0check", path: "strategies/knowledge/quant/stage-0-scorecard-surface.md", label: "S0 CHECK" },
   { id: "es-mc", path: "strategies/knowledge/quant/event-study-to-path-mc-handoff.md", label: "ES→MC" },
   { id: "haircut", path: "strategies/knowledge/quant/fill-haircut-defaults-stage0-lab.md", label: "HAIRCUT" },
   { id: "addendum", path: "strategies/strategy-dev/50-analyses/away-session-2026-07-20-addendum.md", label: "ADDENDUM" },
+  { id: "sierra", path: "strategies/knowledge/quant/sierra-chart-tpo-volume-diy-template.md", label: "SIERRA DIY" },
 ];
 
 function safeResolve(rel: string): string | null {

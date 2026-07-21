@@ -12,6 +12,7 @@ export function suggestedPhaseTab(accountPhase: Phase): PropRulePhaseId | "trans
       return "transition";
     case "blown":
     case "retired":
+    case "paper":
       return "eval";
     default: {
       const _exhaustive: never = accountPhase;

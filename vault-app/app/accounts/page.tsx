@@ -4,13 +4,13 @@ import { useMemo, useState } from "react";
 import { useLocal, fmtUsd, todayStr } from "@/lib/store";
 import {
   Account, LedgerEntry, JournalEntry, LedgerType, Phase,
-  LEDGER_LABELS, isCost, uid,
+  LEDGER_LABELS, isCost, isPaperAccount, makePaperAccount, uid,
 } from "@/lib/types";
 import { PROP_RULES, ruleById } from "@/lib/prop-firms";
 import { PropRulePhaseId } from "@/lib/prop-phase-types";
 import { phaseDetailRows, suggestedPhaseTab, transitionChecklist } from "@/lib/prop-rulebook";
 
-const PHASES: Phase[] = ["eval", "funded", "passed", "blown", "retired"];
+const PHASES: Phase[] = ["paper", "eval", "funded", "passed", "blown", "retired"];
 const LEDGER_TYPES: LedgerType[] = [
   "eval_fee", "reset_fee", "activation_fee", "monthly_fee", "data_fee", "payout", "other",
 ];
@@ -31,6 +31,17 @@ export default function AccountsPage() {
   const [lType, setLType] = useState<LedgerType>("monthly_fee");
   const [lAmount, setLAmount] = useState("");
   const [lNote, setLNote] = useState("");
+
+  const addPaperAccount = () => {
+    const existing = accounts.find(isPaperAccount);
+    if (existing) {
+      setActiveId(existing.id);
+      return;
+    }
+    const acct = makePaperAccount("Paper / forward test", todayStr());
+    setAccounts([...accounts, acct]);
+    setActiveId(acct.id);
+  };
 
   const addAccount = () => {
     const rule = ruleById(nRule);
@@ -138,18 +149,25 @@ export default function AccountsPage() {
             <tbody>
               {accounts.map((a) => {
                 const rule = ruleById(a.ruleId);
+                const paper = isPaperAccount(a);
                 const fees = acctFees(a.id);
                 const pays = acctPayouts(a.id);
                 const pnl = acctTradePnl(a.id);
-                const headroom = rule ? a.currentBalance - (Math.max(a.currentBalance, a.size) - rule.trailingDD) : null;
+                const headroom =
+                  !paper && rule
+                    ? a.currentBalance - (Math.max(a.currentBalance, a.size) - rule.trailingDD)
+                    : null;
                 return (
                   <tr key={a.id}>
                     <td>
                       <input type="radio" name="active" checked={activeId === a.id} onChange={() => setActiveId(a.id)} />
                     </td>
-                    <td className="accent">{a.label}</td>
+                    <td className="accent">
+                      {a.label}
+                      {paper && <span className="dim"> · paper</span>}
+                    </td>
                     <td className="small">
-                      {rule ? rule.name : a.firm}
+                      {paper ? "Paper / forward test" : rule ? rule.name : a.firm}
                       {rule && !rule.verified && <span className="warn"> (verify)</span>}
                     </td>
                     <td>
@@ -176,13 +194,21 @@ export default function AccountsPage() {
                 );
               })}
               {accounts.length === 0 && (
-                <tr><td colSpan={10} className="dim">No accounts yet — add your TPT eval below.</td></tr>
+                <tr><td colSpan={10} className="dim">No accounts yet — add a paper / forward test or a TPT eval below.</td></tr>
               )}
             </tbody>
           </table>
 
           <hr className="hr" />
           <div className="frm-row">
+            <button type="button" className="btn" onClick={addPaperAccount}>
+              Add paper / forward test
+            </button>
+            <span className="small dim" style={{ alignSelf: "center" }}>
+              No prop fees — use for forward disc logging in Journal Live
+            </span>
+          </div>
+          <div className="frm-row mt">
             <label className="fld">Label
               <input value={nLabel} onChange={(e) => setNLabel(e.target.value)} placeholder="TPT 50K #1" />
             </label>
@@ -194,7 +220,7 @@ export default function AccountsPage() {
             <label className="fld">Eval fee (optional)
               <input type="number" value={nFee} onChange={(e) => setNFee(e.target.value)} placeholder="e.g. 170" style={{ width: 100 }} />
             </label>
-            <button className="btn" onClick={addAccount}>Add account</button>
+            <button className="btn" onClick={addAccount}>Add prop account</button>
           </div>
         </div>
       </div>
