@@ -1,6 +1,6 @@
 ---
 created: 2026-07-17
-status: CYCLE 3 COMPLETE (2026-07-18 · 30/30) · CYCLE 4 IN PROGRESS (2026-07-20 · 1/8 model-builder gaps) · hubs + architecture notes landed
+status: CYCLE 3 COMPLETE (2026-07-18 · 30/30) · CYCLE 4 IN PROGRESS (2026-07-20) · adhoc-auction-2026-07-21 (TPO/VP/absorption + hub-auction)
 tags: [knowledge-base, research-charter, multi-agent]
 ---
 # Knowledge Research Charter — multi-agent deep-research loop
@@ -235,6 +235,16 @@ When the user says "queue another research cycle" (or a cycle's lanes are exhaus
 - [x] Frozen top-5 regime variables — `quant/mnq-relevant-regime-variables.md`
 - [x] Model builder architecture APPLICATION — `quant/vault-model-builder-architecture.md`
       + knowledge `hubs/` MOCs (math / regimes / ops / stage0 / doctrine)
+
+## Ad-hoc research (2026-07-21 · auction / profile)
+
+- [x] TPO / Market Profile basics — `quant/tpo-market-profile-basics.md`
+      (adhoc-auction-2026-07-21 · Steidlmayer letters/POC/VA/IB · Sierra study = **TPO Profile Chart** · Dual46 eyes-only at 10:00 leave; never mid-May lock edit)
+- [x] Volume Profile POC/VAH/VAL — `quant/volume-profile-poc-vah-val.md`
+      (adhoc-auction-2026-07-21 · contracts vs time · prefer volume POC for NQ/MNQ = CLAIM · optional journal priorVAH/VAL/POC)
+- [x] Order-flow absorption — `quant/order-flow-absorption.md`
+      (adhoc-auction-2026-07-21 · vs exhaustion · Sierra Numbers Bars · census at Dual46 RB tap only; no Stage-0 without measurable def)
+- Hub: `hubs/hub-auction.md` (links all three + Sierra stub · **Unresolved: DDY** — needs user clarify)
 
 ## Topic queue — CYCLE 4 (8 · added 2026-07-20 · model-builder gaps)
 

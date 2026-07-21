@@ -1,5 +1,5 @@
 ---
-updated: 2026-07-20
+updated: 2026-07-21
 tags: [knowledge, moc, index, model-builder]
 ---
 # Knowledge brain — map of content
@@ -27,6 +27,7 @@ brain becomes a flat dump — that was the real problem, not “too many notes.�
 | Regime tags (May walk)? | [[hubs/hub-regimes]] · [[quant/mnq-relevant-regime-variables]] |
 | Stage-0 / kill / scorecard? | [[hubs/hub-stage0]] (points into `strategy-dev`) |
 | Fills / slippage / news stand-down? | [[hubs/hub-ops]] |
+| TPO / volume profile / absorption? | [[hubs/hub-auction]] |
 | ICT / Powell teaching (not proof)? | [[hubs/hub-doctrine]] |
 | How notes are sorted going forward? | [[ORGANIZATION]] |
 | Model builder architecture? | [[quant/vault-model-builder-architecture]] |
