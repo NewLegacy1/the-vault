@@ -11,9 +11,11 @@ import {
   isPaperAccount,
 } from "@/lib/types";
 import { ruleById } from "@/lib/prop-firms";
-import { MsPretradeChecklist } from "@/components/MsPretradeChecklist";
 
-/** Today = account pulse + MSv46 checklist. Dual46 study logging stays on /journal. */
+/**
+ * Today = account pulse + jump to Journal.
+ * Pre-trade / Path B fields live on Journal → MSv46 live (one place).
+ */
 export default function TodayPage() {
   const day = todayStr();
   const [accounts] = useLocal<Account[]>("vault.accounts", []);
@@ -39,7 +41,7 @@ export default function TodayPage() {
         j.strategy === "Morningstar")
   );
   const liveToday = journal.filter(
-    (j) => j.date === day && j.strategy === "MSv46" && j.accountId === activeId
+    (j) => j.date === day && (j.strategy === "MSv46" || j.strategy === "ForwardDisc")
   );
   const isMonday = new Date().getDay() === 1;
   const apexIntra = active?.ruleId === "apex50-intraday";
@@ -53,7 +55,7 @@ export default function TodayPage() {
           <div className="d">
             {active
               ? `${active.firm} · ${active.phase.toUpperCase()}${paper ? " · paper" : ""}`
-              : "F2 Accounts"}
+              : "F2 Accounts — add Apex"}
           </div>
         </div>
         <div className="stat">
@@ -65,11 +67,13 @@ export default function TodayPage() {
         </div>
         <div className="stat">
           <div className="k">Net cash</div>
-          <div className={"v " + (payouts - fees >= 0 ? "pos" : "neg")}>{fmtUsd(payouts - fees, true)}</div>
-          <div className="d">all firms</div>
+          <div className={"v " + (payouts - fees >= 0 ? "pos" : "neg")}>
+            {fmtUsd(payouts - fees, true)}
+          </div>
+          <div className="d">fees vs payouts</div>
         </div>
         <div className="stat">
-          <div className="k">MSv46 today</div>
+          <div className="k">Logged today</div>
           <div className="v">{liveToday.length}</div>
           <div className="d">{dualToday.length} Dual46 study</div>
         </div>
@@ -78,36 +82,27 @@ export default function TodayPage() {
       {apexIntra && active?.phase === "eval" && (
         <div className="panel">
           <div className="panel-body warn" style={{ lineHeight: 1.5 }}>
-            <b>Apex $50K Intraday eval</b> — $3k target · <b>$2k intraday trail</b> (follows peak
-            incl. open P&L) · <b>no DLL</b>. Do not let a runner give back into the floor.
+            <b>Apex $50K Intraday</b> — $3k target · <b>$2k intraday trail</b> (peak incl. open P&L) ·
+            no DLL. Don&apos;t let a runner give back into the floor.
           </div>
         </div>
       )}
 
       {isMonday && (
         <div className="panel">
-          <div className="panel-body warn">
-            MONDAY — Dual46 study SHADOW nuance still applies; live Apex is your call — tag Monday in
-            notes.
-          </div>
+          <div className="panel-body warn">Monday — tag it in the journal notes if you take live.</div>
         </div>
       )}
 
-      <MsPretradeChecklist />
-
       <div className="panel">
         <div className="panel-title">
-          Log the take
-          <span className="sub">checklist above → Journal MSv46 live on your Apex account</span>
+          Journal
+          <span className="sub">one place for bias · Path B · fills · Apex P&amp;L</span>
         </div>
         <div className="panel-body">
           <p className="small dim" style={{ marginTop: 0, lineHeight: 1.55 }}>
-            After the checklist:{" "}
-            <Link href="/journal">
-              <b>F5 Journal</b>
-            </Link>{" "}
-            → mode <b>MSv46 live (prop)</b> → account = Apex 50K Intraday. Dual46 Path B study stays a
-            separate mode for May replay.
+            <b>MSv46 live</b> — Apex / prop takes (week + day bias, Cont/Judas, grade, stop, R,
+            outcome). <b>Dual46 study</b> — May replay only. Don&apos;t mix scorecards.
           </p>
           <Link href="/journal" className="btn" style={{ display: "inline-block", textDecoration: "none" }}>
             Open Journal →
@@ -116,8 +111,8 @@ export default function TodayPage() {
             <ul className="small mt" style={{ paddingLeft: 16 }}>
               {liveToday.map((j) => (
                 <li key={j.id}>
-                  {j.direction.toUpperCase()} · {j.structureTag ?? "—"} · {j.dualOutcome ?? "—"} ·{" "}
-                  {fmtUsd(j.pnl, true)}
+                  {j.direction.toUpperCase()} · {j.structureTag ?? j.strategy ?? "—"} ·{" "}
+                  {j.dualOutcome ?? "—"} · {fmtUsd(j.pnl, true)}
                 </li>
               ))}
             </ul>

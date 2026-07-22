@@ -536,8 +536,8 @@ export default function JournalPage() {
           ) : (
             <>
               <p className="small dim" style={{ marginTop: 0, lineHeight: 1.5 }}>
-                Morningstar v46 live book on your prop account (Apex). Same fields as Path B — not
-                PRB. Run the checklist on <Link href="/">Today</Link> first.
+                This <b>is</b> the pre-trade gate — fill bias + Path B, then log. No separate
+                checklist. Apex account selected above.
               </p>
               {logErr && (
                 <p className="warn small" style={{ marginTop: 0 }}>
