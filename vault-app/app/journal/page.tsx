@@ -19,6 +19,7 @@ import {
   uid,
 } from "@/lib/types";
 import { analyzeBiasJournal } from "@/lib/bias-journal";
+import { ruleById } from "@/lib/prop-firms";
 
 const MORNING_BIASES: MorningBias[] = ["long", "short", "neutral", "skip"];
 
@@ -304,41 +305,128 @@ export default function JournalPage() {
   const skips = dualRows.filter((j) => j.direction === "skip" || j.dualOutcome === "skipped").length;
   const biasStats = useMemo(() => analyzeBiasJournal(rows), [rows]);
 
+  const liveAcctId = f.accountId || activeId;
+  const liveAcct = accounts.find((a) => a.id === liveAcctId);
+  const liveRule = liveAcct && !isPaperAccount(liveAcct) ? ruleById(liveAcct.ruleId) : undefined;
+
+  const liveBook = useMemo(() => {
+    const acctId = liveAcctId;
+    return journal.filter((j) => {
+      if (mode === "forward") {
+        return (
+          j.strategy === "ForwardDisc" ||
+          j.accountId === FORWARD_DISC_ID ||
+          (acctId && j.accountId === acctId && accounts.some((a) => a.id === j.accountId && isPaperAccount(a)))
+        );
+      }
+      // MSv46 live prop book for selected / active account
+      if (!acctId) return j.strategy === "MSv46";
+      return j.accountId === acctId && (j.strategy === "MSv46" || j.strategy === "PRB");
+    });
+  }, [journal, mode, liveAcctId, accounts]);
+
+  const liveTakes = liveBook.filter((j) => j.direction === "long" || j.direction === "short");
+  const liveWins = liveBook.filter((j) => j.dualOutcome === "WIN").length;
+  const liveLosses = liveBook.filter((j) => j.dualOutcome === "LOSS").length;
+  const liveTradePnl = liveBook.reduce((s, j) => s + (j.pnl || 0), 0);
+  const liveNetR = liveTakes.reduce((s, j) => s + (j.rMultiple || 0), 0);
+  const liveToTarget =
+    liveRule != null ? liveRule.passAt - liveTradePnl : null;
+
+  const scriptTakes = dualRows.filter((j) => j.entrySource === "script" && j.direction !== "skip");
+  const discTakes = dualRows.filter((j) => j.entrySource === "disc" && j.direction !== "skip");
+
   const acctLabel = (id: string, strategy?: string) => {
     if (id === MORNINGSTAR_STUDY_ID || strategy === "Morningstar") return "Dual46";
     const acct = accounts.find((a) => a.id === id);
     if (acct && isPaperAccount(acct)) return acct.label || "Paper";
     if (id === FORWARD_DISC_ID || strategy === "ForwardDisc") return "Paper / forward";
+    if (strategy === "MSv46") return acct?.label ?? "MSv46";
     return acct?.label ?? id.slice(0, 8);
   };
 
   return (
     <>
       <div className="stat-strip">
-        <div className="stat">
-          <div className="k">Dual46 logs</div>
-          <div className="v">{dualRows.length}</div>
-          <div className="d">
-            {skips} skip · {takes.length} take
-          </div>
-        </div>
-        <div className="stat">
-          <div className="k">Outcomes</div>
-          <div className="v">
-            <span className="pos">{wins}W</span> / <span className="neg">{losses}L</span>
-          </div>
-          <div className="d">from WIN/LOSS tags</div>
-        </div>
-        <div className="stat">
-          <div className="k">Walk months</div>
-          <div className="v accent">Jun → May</div>
-          <div className="d">then Nov–Dec 2025</div>
-        </div>
-        <div className="stat">
-          <div className="k">How to log</div>
-          <div className="v accent">Ctrl+V</div>
-          <div className="d">paste + OCR here</div>
-        </div>
+        {mode === "morningstar" ? (
+          <>
+            <div className="stat">
+              <div className="k">Dual46 logs</div>
+              <div className="v">{dualRows.length}</div>
+              <div className="d">
+                {skips} skip · {takes.length} take
+              </div>
+            </div>
+            <div className="stat">
+              <div className="k">Outcomes</div>
+              <div className="v">
+                <span className="pos">{wins}W</span> / <span className="neg">{losses}L</span>
+              </div>
+              <div className="d">WIN/LOSS tags</div>
+            </div>
+            <div className="stat">
+              <div className="k">Script / disc</div>
+              <div className="v">
+                {scriptTakes.length}
+                <span className="dim"> / </span>
+                {discTakes.length}
+              </div>
+              <div className="d">takes only · scorecard = script</div>
+            </div>
+            <div className="stat">
+              <div className="k">Paste</div>
+              <div className="v accent">Ctrl+V</div>
+              <div className="d">OCR Path B tag</div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="stat">
+              <div className="k">Trade P&amp;L</div>
+              <div className={"v " + (liveTradePnl >= 0 ? "pos" : "neg")}>
+                {fmtUsd(liveTradePnl, true)}
+              </div>
+              <div className="d">
+                {mode === "forward"
+                  ? "paper book · no fees"
+                  : liveAcct
+                    ? `${liveAcct.label} · trading only`
+                    : "pick account · trading only"}
+              </div>
+            </div>
+            <div className="stat">
+              <div className="k">W / L</div>
+              <div className="v">
+                <span className="pos">{liveWins}W</span> / <span className="neg">{liveLosses}L</span>
+              </div>
+              <div className="d">{liveTakes.length} takes logged</div>
+            </div>
+            <div className="stat">
+              <div className="k">Net R</div>
+              <div className={"v " + (liveNetR >= 0 ? "pos" : "neg")}>
+                {liveNetR >= 0 ? "+" : ""}
+                {liveNetR.toFixed(1)}R
+              </div>
+              <div className="d">sum of logged R multiples</div>
+            </div>
+            <div className="stat">
+              <div className="k">{liveToTarget != null ? "To target" : "Fills"}</div>
+              <div className={"v " + (liveToTarget != null && liveToTarget <= 0 ? "pos" : "accent")}>
+                {liveToTarget != null
+                  ? liveToTarget <= 0
+                    ? "HIT"
+                    : fmtUsd(liveToTarget)
+                  : liveBook.filter((j) => j.fillStatus === "yes" || j.fillStatus === "converted")
+                      .length}
+              </div>
+              <div className="d">
+                {liveToTarget != null
+                  ? `${fmtUsd(liveRule!.passAt)} pass · trail ${fmtUsd(liveRule!.trailingDD)}`
+                  : "yes + converted"}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="panel">
