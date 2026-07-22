@@ -123,6 +123,19 @@ export default function JournalPage() {
     }
   };
 
+  const pasteShot = async (e: React.ClipboardEvent, target: "live" | "forward") => {
+    const cd = e.clipboardData;
+    if (!cd) return;
+    for (const item of Array.from(cd.items)) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) await onShot(file, target);
+        return;
+      }
+    }
+  };
+
   const addForward = () => {
     if (fwd.direction !== "long" && fwd.direction !== "short") {
       setLogErr("Pick long or short.");
@@ -475,6 +488,52 @@ export default function JournalPage() {
                   style={{ width: "100%", maxWidth: 480 }}
                 />
               </label>
+              <div
+                className="shot-paste shot-paste--lg"
+                tabIndex={0}
+                onPaste={(e) => void pasteShot(e, "forward")}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const file = e.dataTransfer.files?.[0];
+                  if (file?.type.startsWith("image/")) void onShot(file, "forward");
+                }}
+                style={{ marginBottom: 10 }}
+              >
+                <div style={{ fontSize: 14 }}>
+                  <b>Ctrl+V</b> chart snapshot here
+                </div>
+                <div className="small dim" style={{ marginTop: 4 }}>
+                  Or drop / choose a file
+                </div>
+                {fwd.chartShot && (
+                  <div className="frm-row mt" style={{ justifyContent: "center" }}>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => setPreviewShot(fwd.chartShot)}
+                    >
+                      Preview pasted
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => setFwd((prev) => ({ ...prev, chartShot: "" }))}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+                <label className="fld" style={{ marginTop: 10 }}>
+                  Or file
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => onShot(e.target.files?.[0] ?? null, "forward")}
+                  />
+                </label>
+              </div>
+              {shotErr && <p className="warn small">{shotErr}</p>}
               <div className="frm-row">
                 <label className="fld">
                   Optional $ P&amp;L (10 MNQ = $20/pt)
@@ -486,25 +545,7 @@ export default function JournalPage() {
                     placeholder="1460"
                   />
                 </label>
-                <label className="fld">
-                  Snapshot
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => onShot(e.target.files?.[0] ?? null, "forward")}
-                  />
-                </label>
-                {fwd.chartShot && (
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => setPreviewShot(fwd.chartShot)}
-                  >
-                    Preview
-                  </button>
-                )}
               </div>
-              {shotErr && <p className="warn small">{shotErr}</p>}
               <div className="frm-row mt">
                 <button type="button" className="btn" onClick={addForward}>
                   Log forward trade
@@ -789,24 +830,50 @@ export default function JournalPage() {
                   placeholder="one-line why · Apex size · trail note"
                 />
               </label>
-              <div className="frm-row">
-                <label className="fld">
-                  Snapshot
+              <div
+                className="shot-paste shot-paste--lg"
+                tabIndex={0}
+                onPaste={(e) => void pasteShot(e, "live")}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const file = e.dataTransfer.files?.[0];
+                  if (file?.type.startsWith("image/")) void onShot(file, "live");
+                }}
+                style={{ marginTop: 10 }}
+              >
+                <div style={{ fontSize: 14 }}>
+                  <b>Ctrl+V</b> chart snapshot here
+                </div>
+                <div className="small dim" style={{ marginTop: 4 }}>
+                  Click this box first, then paste — or drop / choose a file
+                </div>
+                {f.chartShot && (
+                  <div className="frm-row mt" style={{ justifyContent: "center" }}>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => setPreviewShot(f.chartShot)}
+                    >
+                      Preview pasted
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => setF((prev) => ({ ...prev, chartShot: "" }))}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                )}
+                <label className="fld" style={{ marginTop: 10 }}>
+                  Or file
                   <input
                     type="file"
                     accept="image/*"
                     onChange={(e) => onShot(e.target.files?.[0] ?? null)}
                   />
                 </label>
-                {f.chartShot && (
-                  <button
-                    type="button"
-                    className="btn-ghost"
-                    onClick={() => setPreviewShot(f.chartShot)}
-                  >
-                    Preview
-                  </button>
-                )}
               </div>
               {shotErr && <p className="warn small">{shotErr}</p>}
               <div className="frm-row mt">
