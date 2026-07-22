@@ -79,7 +79,6 @@ export default function JournalPage() {
   const [journal, setJournal] = useLocal<JournalEntry[]>("vault.journal", []);
   const [accounts, setAccounts] = useLocal<Account[]>("vault.accounts", []);
   const [activeId, setActiveId] = useLocal<string>("vault.activeAccount", "");
-  const [filterAcct, setFilterAcct] = useState(MORNINGSTAR_STUDY_ID);
   const [previewShot, setPreviewShot] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [mode, setMode] = useState<JournalLogMode>("morningstar");
@@ -92,6 +91,14 @@ export default function JournalPage() {
   const selectedLiveId = f.accountId || activeId;
   const selectedLiveAcct = accounts.find((a) => a.id === selectedLiveId);
   const liveIsPaper = selectedLiveAcct ? isPaperAccount(selectedLiveAcct) : false;
+
+  /** Review table follows journal mode — Dual46 study vs live prop vs paper. */
+  const reviewFilter =
+    mode === "morningstar"
+      ? MORNINGSTAR_STUDY_ID
+      : mode === "forward"
+        ? FORWARD_DISC_ID
+        : selectedLiveId || "";
 
   /** Ensure default Paper / forward-test account exists; return its id. */
   const ensurePaperAccount = (): string => {
@@ -194,7 +201,6 @@ export default function JournalPage() {
     setJournal([...journal, entry]);
     setFwd(emptyForward());
     setShotErr("");
-    setFilterAcct(paperId);
     setF((prev) => ({ ...prev, accountId: paperId }));
   };
 
@@ -273,7 +279,6 @@ export default function JournalPage() {
     setJournal([...journal, entry]);
     setF(emptyLive());
     setShotErr("");
-    setFilterAcct(acct);
   };
 
   // Newest-logged first (walk months run backwards in time, so date sort
@@ -282,18 +287,26 @@ export default function JournalPage() {
   const rows = journal
     .map((j, idx) => ({ j, idx }))
     .filter(({ j }) => {
-      if (!filterAcct) return true;
-      if (filterAcct === MORNINGSTAR_STUDY_ID) {
-        return j.accountId === MORNINGSTAR_STUDY_ID || j.strategy === "Morningstar";
+      if (mode === "morningstar") {
+        return (
+          j.accountId === MORNINGSTAR_STUDY_ID ||
+          j.strategy === "Morningstar" ||
+          j.dualVersion === "Dual46"
+        );
       }
-      if (filterAcct === FORWARD_DISC_ID) {
+      if (mode === "forward") {
         return (
           j.accountId === FORWARD_DISC_ID ||
           j.strategy === "ForwardDisc" ||
           accounts.some((a) => a.id === j.accountId && isPaperAccount(a))
         );
       }
-      return j.accountId === filterAcct;
+      // MSv46 live — selected / active prop account only
+      if (!reviewFilter) return j.strategy === "MSv46";
+      return (
+        j.accountId === reviewFilter &&
+        (j.strategy === "MSv46" || j.strategy === "PRB" || !j.strategy)
+      );
     })
     .sort((a, b) => (b.j.loggedAt ?? "").localeCompare(a.j.loggedAt ?? "") || b.idx - a.idx)
     .map(({ j }) => j);
@@ -995,16 +1008,13 @@ export default function JournalPage() {
         <div className="panel-title">
           Review
           <span className="sub">
-            <select value={filterAcct} onChange={(e) => setFilterAcct(e.target.value)}>
-              <option value={MORNINGSTAR_STUDY_ID}>Dual46 study</option>
-              <option value={FORWARD_DISC_ID}>Paper / forward</option>
-              <option value="">all</option>
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {isPaperAccount(a) ? `Paper · ${a.label}` : a.label}
-                </option>
-              ))}
-            </select>
+            {mode === "morningstar"
+              ? "Dual46 study only"
+              : mode === "forward"
+                ? "Paper / forward only"
+                : liveAcct
+                  ? `${liveAcct.label} · MSv46 live`
+                  : "MSv46 live — pick an account above"}
           </span>
         </div>
         <div className="panel-body" style={{ overflowX: "auto" }}>
