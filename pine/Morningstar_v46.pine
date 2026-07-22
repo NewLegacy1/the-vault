@@ -26,7 +26,7 @@ i_oneTradeDay = input.bool(false, "Max 1 setup per day (off when studying both s
 i_skipMonday  = input.bool(true, "Skip Mondays (SHADOW)", group = "Session")
 i_skipJulOct  = input.bool(false, "Skip July & October (SHADOW)", group = "Session")
 i_biasMode    = input.string("Long & Short", "Direction filter", options = ["Long & Short", "Long only", "Short only", "Auto PDH/PDL draw"], group = "Session", tooltip = "DEFAULT Long & Short = Dual46 harvest (Auto OFF). You + checklist filter. Long/Short only = hard HTF clamp. Auto PDH/PDL = optional A/B soup filter — not the version that printed the Jul-week WINs.")
-i_biasShowAuto = input.bool(true, "Always show Auto PDH/PDL tag (eyes)", group = "Session", tooltip = "Plots what Auto would say even when Direction = Long & Short — eyes only, does not filter arms.")
+i_biasShowAuto = input.bool(false, "Always show Auto PDH/PDL tag (eyes)", group = "Session", tooltip = "OFF by default (Dual46). When ON, plots Auto vs Man on the live bar — eyes only, does not filter arms.")
 
 grpPb = "Path B"
 i_pathB = input.bool(true, "Enable Path B", group = grpPb)
@@ -1365,7 +1365,7 @@ if i_pathBShowState
         label.set_text(pbStateLbl, pbState)
         label.set_size(pbStateLbl, size.tiny)
 
-// Auto PDH/PDL eyes — always available to A/B vs your manual filter
+// Auto PDH/PDL eyes — optional A/B vs manual filter (OFF by default — no live-bar clutter)
 if i_biasShowAuto and nyHhmm >= 930 and nyHhmm < i_flatTime
     string autoTxt = dayDraw == -1 ? "Auto↓ short" : dayDraw == 1 ? "Auto↑ long" : "Auto —"
     string manTxt = i_biasMode == "Long & Short" ? "Man: both" : i_biasMode == "Long only" ? "Man: long" : i_biasMode == "Short only" ? "Man: short" : "Man: auto"
@@ -1375,6 +1375,9 @@ if i_biasShowAuto and nyHhmm >= 930 and nyHhmm < i_flatTime
     else
         label.set_xy(biasEyesLbl, bar_index, low)
         label.set_text(biasEyesLbl, biasTxt)
+else if not na(biasEyesLbl)
+    label.delete(biasEyesLbl)
+    biasEyesLbl := na
 
 // Fill KPI — freeze boxes when TP/STOP trades (even if limit never re-tapped)
 f_updFill(int st, int armTime, int dir, float entry, float stop, float tp) =>

@@ -104,7 +104,7 @@ export interface JournalEntry {
   /** Red-folder / CPI·NFP day — from FF or F7. */
   redFolder?: RedFolderTag;
   /** Morningstar study vs live prop account log. */
-  strategy?: "Morningstar" | "PRB";
+  strategy?: "Morningstar" | "PRB" | "ForwardDisc" | "MSv46";
   structureTf?: StructTf;
   structureTag?: string;
   /** Journal confluence count (context + LTF flags checked). */

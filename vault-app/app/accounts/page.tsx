@@ -43,6 +43,31 @@ export default function AccountsPage() {
     setActiveId(acct.id);
   };
 
+  const addApex50IntradayEval = () => {
+    const rule = ruleById("apex50-intraday");
+    if (!rule) return;
+    const existing = accounts.find(
+      (a) => a.ruleId === "apex50-intraday" && a.phase === "eval" && a.firm === rule.firm
+    );
+    if (existing) {
+      setActiveId(existing.id);
+      return;
+    }
+    const acct: Account = {
+      id: uid(),
+      firm: rule.firm,
+      label: "Apex 50K Intraday eval",
+      size: rule.size,
+      phase: "eval",
+      startDate: todayStr(),
+      ruleId: rule.id,
+      currentBalance: rule.size,
+      notes: "Intraday $2k trail · $3k target · no DLL · no eval consistency",
+    };
+    setAccounts([...accounts, acct]);
+    setActiveId(acct.id);
+  };
+
   const addAccount = () => {
     const rule = ruleById(nRule);
     if (!rule || !nLabel.trim()) return;
@@ -204,8 +229,11 @@ export default function AccountsPage() {
             <button type="button" className="btn" onClick={addPaperAccount}>
               Add paper / forward test
             </button>
+            <button type="button" className="btn" onClick={addApex50IntradayEval}>
+              Add Apex $50K Intraday eval
+            </button>
             <span className="small dim" style={{ alignSelf: "center" }}>
-              No prop fees — use for forward disc logging in Journal Live
+              Apex: $3k target · $2k intraday trail · no DLL — sets active for Journal Live
             </span>
           </div>
           <div className="frm-row mt">

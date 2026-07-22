@@ -13,9 +13,7 @@ import {
   JournalLogMode,
   MORNINGSTAR_STUDY_ID,
   MorningBias,
-  PrbFilter,
   RedFolderTag,
-  SkipReason,
   isPaperAccount,
   makePaperAccount,
   uid,
@@ -23,19 +21,6 @@ import {
 import { analyzeBiasJournal } from "@/lib/bias-journal";
 
 const MORNING_BIASES: MorningBias[] = ["long", "short", "neutral", "skip"];
-const PRB_FILTERS: PrbFilter[] = ["Both", "Long only", "Short only"];
-
-const SKIP_REASONS: { id: SkipReason; label: string }[] = [
-  { id: "no_setup", label: "No setup armed" },
-  { id: "no_poi", label: "No draw POI" },
-  { id: "counter_draw", label: "Against the draw" },
-  { id: "eqhl", label: "EQH / EQL in way" },
-  { id: "ndog", label: "NDOG / NWOG magnet" },
-  { id: "news", label: "News / red folder" },
-  { id: "gut", label: "Gut skip" },
-  { id: "low_grade", label: "Low confluence" },
-  { id: "other", label: "Other" },
-];
 
 /** Render NWOG read — new two-dim fields first, legacy single value as fallback. */
 function nwogLabel(j: JournalEntry): string {
@@ -52,17 +37,20 @@ function emptyLive() {
     date: todayStr(),
     accountId: "",
     direction: "skip" as JournalEntry["direction"],
-    morningBias: "neutral" as MorningBias,
-    prbFilter: "Both" as PrbFilter,
+    weekBias: "none" as "long" | "short" | "none",
+    dayBias: "none" as "long" | "short" | "none",
+    pathBModel: "—" as "Cont" | "Judas" | "—",
+    pathBGrade: "—" as "OTE+KO" | "OTE" | "KO" | "—",
+    stopPts: "",
+    planRr: "",
+    fillStatus: "no-arm" as "yes" | "no" | "no-arm" | "converted",
+    dualOutcome: "skipped" as "WIN" | "LOSS" | "no fill" | "skipped",
+    againstBias: false,
+    entryTime: "",
     redFolder: "no" as RedFolderTag,
     redFolderTime: "",
     redFolderEvent: "",
-    showOutcome: false,
     pnl: "",
-    r: "",
-    mfeR: "",
-    giveBack: false,
-    skipReasons: [] as SkipReason[],
     notes: "",
     chartShot: "" as string,
   };
@@ -115,15 +103,6 @@ export default function JournalPage() {
     setAccounts([...accounts, acct]);
     setActiveId(acct.id);
     return acct.id;
-  };
-
-  const toggleSkip = (id: SkipReason) => {
-    setF((prev) => ({
-      ...prev,
-      skipReasons: prev.skipReasons.includes(id)
-        ? prev.skipReasons.filter((x) => x !== id)
-        : [...prev.skipReasons, id],
-    }));
   };
 
   const onShot = async (file: File | null, target: "live" | "forward" = "live") => {
@@ -206,43 +185,81 @@ export default function JournalPage() {
   };
 
   const addLive = () => {
-    let acct = f.accountId || activeId;
+    const acct = f.accountId || activeId;
     if (!acct) {
-      setLogErr("Pick an account — or click Add paper / forward test.");
+      setLogErr("Pick an account — Apex eval or Add paper / forward test.");
       return;
     }
     if (f.redFolder === "yes" && !f.redFolderTime.trim()) {
       setLogErr("Red folder = yes needs news time (HHMM NY).");
       return;
     }
+    if (tookTrade && (f.fillStatus === "yes" || f.fillStatus === "converted")) {
+      const stopPts = f.stopPts !== "" ? parseFloat(f.stopPts) : NaN;
+      const planRr = f.planRr !== "" ? parseFloat(f.planRr) : NaN;
+      if (!Number.isFinite(stopPts) || stopPts <= 0) {
+        setLogErr("Stop pts required for a fill.");
+        return;
+      }
+      if (!Number.isFinite(planRr) || planRr <= 0) {
+        setLogErr("Plan R required for a fill (e.g. 5 or capped real R).");
+        return;
+      }
+    }
     setLogErr("");
     const paper = accounts.find((a) => a.id === acct && isPaperAccount(a));
+    const stopPts = f.stopPts !== "" ? parseFloat(f.stopPts) : undefined;
+    const planRr = f.planRr !== "" ? parseFloat(f.planRr) : undefined;
+    const rMultiple =
+      f.dualOutcome === "WIN" && planRr != null && Number.isFinite(planRr)
+        ? planRr
+        : f.dualOutcome === "LOSS"
+          ? -1
+          : 0;
+    const tag =
+      f.pathBModel !== "—"
+        ? `Powell · ${f.pathBModel} · 1RB · ${f.pathBGrade}`
+        : f.pathBGrade !== "—"
+          ? `Powell · 1RB · ${f.pathBGrade}`
+          : undefined;
     const entry: JournalEntry = {
       id: uid(),
       date: f.date,
       loggedAt: new Date().toISOString(),
       accountId: acct,
       direction: f.direction,
-      morningBias: f.morningBias,
-      prbFilter: f.prbFilter,
+      morningBias:
+        f.dayBias === "long" ? "long" : f.dayBias === "short" ? "short" : "neutral",
+      weekBias: f.weekBias,
+      dayBias: f.dayBias,
+      pathBModel: f.pathBModel,
+      pathBGrade: f.pathBGrade,
+      stopPts: stopPts != null && Number.isFinite(stopPts) ? stopPts : undefined,
+      planRr: planRr != null && Number.isFinite(planRr) ? planRr : undefined,
+      fillStatus: f.fillStatus,
+      dualOutcome: f.dualOutcome,
+      entryTime: f.entryTime.trim() || undefined,
+      entrySource: "disc",
       redFolder: f.redFolder,
       redFolderTime: f.redFolder === "yes" ? f.redFolderTime.trim() : undefined,
       redFolderEvent: f.redFolder === "yes" ? f.redFolderEvent.trim() || undefined : undefined,
-      grade: "B",
-      pnl: tookTrade && f.showOutcome ? parseFloat(f.pnl) || 0 : 0,
-      rMultiple: tookTrade && f.showOutcome ? parseFloat(f.r) || 0 : 0,
-      mfeR: tookTrade && f.showOutcome && f.mfeR !== "" ? parseFloat(f.mfeR) || 0 : undefined,
-      giveBack: tookTrade && f.showOutcome ? f.giveBack : false,
-      checklistFails: f.skipReasons.join(","),
-      skipReasons: f.skipReasons.length ? f.skipReasons : undefined,
+      grade:
+        f.pathBGrade === "OTE+KO" ? "A+" : f.pathBGrade === "OTE" || f.pathBGrade === "KO" ? "B" : "-",
+      pnl: f.pnl !== "" ? parseFloat(f.pnl) || 0 : 0,
+      rMultiple,
+      giveBack: false,
+      checklistFails: f.againstBias ? "counter_draw" : "",
+      skipReasons: f.againstBias ? ["counter_draw"] : undefined,
       notes: f.notes,
-      strategy: paper ? "ForwardDisc" : "PRB",
-      entrySource: paper ? "disc" : undefined,
+      strategy: paper ? "ForwardDisc" : "MSv46",
+      structureTag: tag,
+      structureTf: "chart",
       chartShot: f.chartShot || undefined,
     };
     setJournal([...journal, entry]);
     setF(emptyLive());
     setShotErr("");
+    setFilterAcct(acct);
   };
 
   // Newest-logged first (walk months run backwards in time, so date sort
@@ -314,7 +331,7 @@ export default function JournalPage() {
       <div className="panel">
         <div className="panel-title">
           Journal log
-          <span className="sub">Dual46 study · Live (prop or paper account)</span>
+          <span className="sub">Dual46 study · MSv46 live (prop) · Forward quick</span>
         </div>
         <div className="panel-body">
           <div className="frm-row" style={{ marginBottom: 12 }}>
@@ -328,8 +345,8 @@ export default function JournalPage() {
                 }}
               >
                 <option value="morningstar">Dual46 Path B study</option>
-                <option value="live">Live / paper account</option>
-                <option value="forward">Quick forward trade (uses paper account)</option>
+                <option value="live">MSv46 live (prop account)</option>
+                <option value="forward">Quick forward trade (paper)</option>
               </select>
             </label>
           </div>
@@ -518,6 +535,10 @@ export default function JournalPage() {
             </>
           ) : (
             <>
+              <p className="small dim" style={{ marginTop: 0, lineHeight: 1.5 }}>
+                Morningstar v46 live book on your prop account (Apex). Same fields as Path B — not
+                PRB. Run the checklist on <Link href="/">Today</Link> first.
+              </p>
               {logErr && (
                 <p className="warn small" style={{ marginTop: 0 }}>
                   {logErr}
@@ -556,39 +577,39 @@ export default function JournalPage() {
                     setLogErr("");
                   }}
                 >
-                  Add paper / forward test
+                  Add paper
                 </button>
               </div>
               {liveIsPaper && (
                 <p className="small dim" style={{ marginTop: 0 }}>
-                  Logging to a paper account — disc / forward book, not Dual46, no prop fees.
+                  Paper selected — saved as ForwardDisc. Use Apex account for MSv46 prop logs.
                 </p>
               )}
               <div className="frm-row">
                 <label className="fld">
-                  Morning bias
+                  Week bias
                   <select
-                    value={f.morningBias}
-                    onChange={(e) => setF({ ...f, morningBias: e.target.value as MorningBias })}
+                    value={f.weekBias}
+                    onChange={(e) =>
+                      setF({ ...f, weekBias: e.target.value as "long" | "short" | "none" })
+                    }
                   >
-                    {MORNING_BIASES.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
+                    <option value="none">none</option>
+                    <option value="long">long</option>
+                    <option value="short">short</option>
                   </select>
                 </label>
                 <label className="fld">
-                  Direction filter
+                  Day bias
                   <select
-                    value={f.prbFilter}
-                    onChange={(e) => setF({ ...f, prbFilter: e.target.value as PrbFilter })}
+                    value={f.dayBias}
+                    onChange={(e) =>
+                      setF({ ...f, dayBias: e.target.value as "long" | "short" | "none" })
+                    }
                   >
-                    {PRB_FILTERS.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
+                    <option value="none">none</option>
+                    <option value="long">long</option>
+                    <option value="short">short</option>
                   </select>
                 </label>
                 <label className="fld">
@@ -599,7 +620,6 @@ export default function JournalPage() {
                       setF({
                         ...f,
                         direction: e.target.value as JournalEntry["direction"],
-                        showOutcome: e.target.value !== "skip" ? f.showOutcome : false,
                       })
                     }
                   >
@@ -608,6 +628,126 @@ export default function JournalPage() {
                     <option value="short">Short</option>
                   </select>
                 </label>
+                <label className="chk" style={{ alignSelf: "end", marginBottom: 4 }}>
+                  <input
+                    type="checkbox"
+                    checked={f.againstBias}
+                    onChange={(e) => setF({ ...f, againstBias: e.target.checked })}
+                  />
+                  <span className="chk-box" aria-hidden="true" />
+                  <span className="txt">Against bias</span>
+                </label>
+              </div>
+              <div className="frm-row">
+                <label className="fld">
+                  Cont / Judas
+                  <select
+                    value={f.pathBModel}
+                    onChange={(e) =>
+                      setF({ ...f, pathBModel: e.target.value as "Cont" | "Judas" | "—" })
+                    }
+                  >
+                    <option value="—">—</option>
+                    <option value="Cont">Cont</option>
+                    <option value="Judas">Judas</option>
+                  </select>
+                </label>
+                <label className="fld">
+                  Grade
+                  <select
+                    value={f.pathBGrade}
+                    onChange={(e) =>
+                      setF({
+                        ...f,
+                        pathBGrade: e.target.value as "OTE+KO" | "OTE" | "KO" | "—",
+                      })
+                    }
+                  >
+                    <option value="—">—</option>
+                    <option value="OTE+KO">OTE+KO</option>
+                    <option value="OTE">OTE</option>
+                    <option value="KO">KO</option>
+                  </select>
+                </label>
+                <label className="fld">
+                  Fill
+                  <select
+                    value={f.fillStatus}
+                    onChange={(e) =>
+                      setF({
+                        ...f,
+                        fillStatus: e.target.value as "yes" | "no" | "no-arm" | "converted",
+                      })
+                    }
+                  >
+                    <option value="no-arm">no-arm</option>
+                    <option value="yes">yes</option>
+                    <option value="no">no fill</option>
+                    <option value="converted">converted</option>
+                  </select>
+                </label>
+                <label className="fld">
+                  Outcome
+                  <select
+                    value={f.dualOutcome}
+                    onChange={(e) =>
+                      setF({
+                        ...f,
+                        dualOutcome: e.target.value as "WIN" | "LOSS" | "no fill" | "skipped",
+                      })
+                    }
+                  >
+                    <option value="skipped">skipped</option>
+                    <option value="WIN">WIN</option>
+                    <option value="LOSS">LOSS</option>
+                    <option value="no fill">no fill</option>
+                  </select>
+                </label>
+              </div>
+              <div className="frm-row">
+                <label className="fld">
+                  Stop pts
+                  <input
+                    type="number"
+                    step="0.25"
+                    value={f.stopPts}
+                    onChange={(e) => setF({ ...f, stopPts: e.target.value })}
+                    style={{ width: 90 }}
+                    placeholder="18"
+                  />
+                </label>
+                <label className="fld">
+                  Plan R
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={f.planRr}
+                    onChange={(e) => setF({ ...f, planRr: e.target.value })}
+                    style={{ width: 90 }}
+                    placeholder="5"
+                  />
+                </label>
+                <label className="fld">
+                  Entry HH:MM
+                  <input
+                    value={f.entryTime}
+                    onChange={(e) => setF({ ...f, entryTime: e.target.value })}
+                    style={{ width: 90 }}
+                    placeholder="10:15"
+                  />
+                </label>
+                <label className="fld">
+                  P&amp;L $
+                  <input
+                    type="number"
+                    value={f.pnl}
+                    onChange={(e) => setF({ ...f, pnl: e.target.value })}
+                    style={{ width: 100 }}
+                    placeholder="0"
+                  />
+                </label>
+              </div>
+              <div className="frm-row">
                 <label className="fld">
                   Red folder
                   <select
@@ -619,39 +759,26 @@ export default function JournalPage() {
                     <option value="unknown">unknown</option>
                   </select>
                 </label>
-              </div>
-              {f.redFolder === "yes" && (
-                <div className="frm-row">
-                  <label className="fld">
-                    Time HHMM
-                    <input
-                      value={f.redFolderTime}
-                      onChange={(e) => setF({ ...f, redFolderTime: e.target.value })}
-                      style={{ width: 80 }}
-                    />
-                  </label>
-                  <label className="fld">
-                    Event
-                    <input
-                      value={f.redFolderEvent}
-                      onChange={(e) => setF({ ...f, redFolderEvent: e.target.value })}
-                      style={{ width: 100 }}
-                    />
-                  </label>
-                </div>
-              )}
-              <div className="frm-row">
-                {SKIP_REASONS.map((r) => (
-                  <label key={r.id} className="chk" style={{ marginRight: 6 }}>
-                    <input
-                      type="checkbox"
-                      checked={f.skipReasons.includes(r.id)}
-                      onChange={() => toggleSkip(r.id)}
-                    />
-                    <span className="chk-box" aria-hidden="true" />
-                    <span className="txt">{r.label}</span>
-                  </label>
-                ))}
+                {f.redFolder === "yes" && (
+                  <>
+                    <label className="fld">
+                      Time HHMM
+                      <input
+                        value={f.redFolderTime}
+                        onChange={(e) => setF({ ...f, redFolderTime: e.target.value })}
+                        style={{ width: 80 }}
+                      />
+                    </label>
+                    <label className="fld">
+                      Event
+                      <input
+                        value={f.redFolderEvent}
+                        onChange={(e) => setF({ ...f, redFolderEvent: e.target.value })}
+                        style={{ width: 100 }}
+                      />
+                    </label>
+                  </>
+                )}
               </div>
               <label className="fld" style={{ maxWidth: "100%" }}>
                 Notes
@@ -659,55 +786,32 @@ export default function JournalPage() {
                   value={f.notes}
                   onChange={(e) => setF({ ...f, notes: e.target.value })}
                   style={{ width: "100%", maxWidth: 480 }}
+                  placeholder="one-line why · Apex size · trail note"
                 />
               </label>
               <div className="frm-row">
                 <label className="fld">
                   Snapshot
-                  <input type="file" accept="image/*" onChange={(e) => onShot(e.target.files?.[0] ?? null)} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => onShot(e.target.files?.[0] ?? null)}
+                  />
                 </label>
                 {f.chartShot && (
-                  <button type="button" className="btn-ghost" onClick={() => setPreviewShot(f.chartShot)}>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={() => setPreviewShot(f.chartShot)}
+                  >
                     Preview
                   </button>
                 )}
               </div>
               {shotErr && <p className="warn small">{shotErr}</p>}
-              {tookTrade && (
-                <details
-                  className="mt"
-                  open={f.showOutcome}
-                  onToggle={(e) => setF({ ...f, showOutcome: (e.target as HTMLDetailsElement).open })}
-                >
-                  <summary className="small dim" style={{ cursor: "pointer" }}>
-                    Optional P&amp;L / R
-                  </summary>
-                  <div className="frm-row mt">
-                    <label className="fld">
-                      P&L $
-                      <input
-                        type="number"
-                        value={f.pnl}
-                        onChange={(e) => setF({ ...f, pnl: e.target.value })}
-                        style={{ width: 90 }}
-                      />
-                    </label>
-                    <label className="fld">
-                      R
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={f.r}
-                        onChange={(e) => setF({ ...f, r: e.target.value })}
-                        style={{ width: 70 }}
-                      />
-                    </label>
-                  </div>
-                </details>
-              )}
               <div className="frm-row mt">
                 <button type="button" className="btn" onClick={addLive}>
-                  Log live
+                  Log MSv46 live
                 </button>
               </div>
             </>
