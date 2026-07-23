@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Dual46StudyForm } from "@/components/Dual46StudyForm";
 import { JournalEditPanel } from "@/components/JournalEditPanel";
+import { VaultSyncPanel } from "@/components/VaultSyncPanel";
 import { compressChartShot } from "@/lib/journal-shot";
+import {
+  MSV46_LIVE_2026_07_23_END_BALANCE,
+  buildMsv46Live20260723Entries,
+  findApex50LiveAccount,
+} from "@/lib/msv46-live-2026-07-23";
 import { useLocal, fmtUsd, todayStr } from "@/lib/store";
 import {
   Account,
@@ -47,6 +53,7 @@ function emptyLive() {
     fillStatus: "no-arm" as "yes" | "no" | "no-arm" | "converted",
     dualOutcome: "skipped" as "WIN" | "LOSS" | "no fill" | "skipped",
     againstBias: false,
+    entrySource: "disc" as "script" | "disc",
     entryTime: "",
     redFolder: "no" as RedFolderTag,
     redFolderTime: "",
@@ -259,7 +266,7 @@ export default function JournalPage() {
       fillStatus: f.fillStatus,
       dualOutcome: f.dualOutcome,
       entryTime: f.entryTime.trim() || undefined,
-      entrySource: "disc",
+      entrySource: f.entrySource,
       redFolder: f.redFolder,
       redFolderTime: f.redFolder === "yes" ? f.redFolderTime.trim() : undefined,
       redFolderEvent: f.redFolder === "yes" ? f.redFolderEvent.trim() || undefined : undefined,
@@ -681,6 +688,59 @@ export default function JournalPage() {
                 This <b>is</b> the pre-trade gate — fill bias + Path B, then log. No separate
                 checklist. Apex account selected above.
               </p>
+              <div className="frm-row" style={{ marginBottom: 10 }}>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => {
+                    let acct =
+                      accounts.find((a) => a.id === (f.accountId || activeId) && !isPaperAccount(a)) ||
+                      findApex50LiveAccount(accounts);
+
+                    let nextAccounts = accounts;
+                    if (!acct) {
+                      const rule = ruleById("apex50-intraday");
+                      if (!rule) {
+                        setLogErr("Apex rule missing — add account on Accounts page.");
+                        return;
+                      }
+                      acct = {
+                        id: uid(),
+                        firm: rule.firm,
+                        label: "Apex 50K Intraday",
+                        size: rule.size,
+                        phase: "eval",
+                        startDate: todayStr(),
+                        ruleId: rule.id,
+                        currentBalance: rule.size,
+                        notes: "Auto-created on Jul 23 session import · change phase on Accounts if funded",
+                      };
+                      nextAccounts = [...accounts, acct];
+                    }
+
+                    const incoming = buildMsv46Live20260723Entries(acct.id);
+                    const byId = new Map(journal.map((j) => [j.id, j] as const));
+                    for (const row of incoming) byId.set(row.id, row);
+                    setJournal([...byId.values()]);
+                    setAccounts(
+                      nextAccounts.map((a) =>
+                        a.id === acct!.id
+                          ? { ...a, currentBalance: MSV46_LIVE_2026_07_23_END_BALANCE }
+                          : a
+                      )
+                    );
+                    setActiveId(acct.id);
+                    setF((prev) => ({ ...prev, accountId: acct!.id }));
+                    setLogErr("");
+                    setMode("live");
+                  }}
+                >
+                  Import Jul 23 Tradovate session (4 fills)
+                </button>
+                <span className="small dim" style={{ alignSelf: "center" }}>
+                  Creates Apex 50K if missing · T4 = <b>script</b> Cont/OTE · safe to re-click
+                </span>
+              </div>
               {logErr && (
                 <p className="warn small" style={{ marginTop: 0 }}>
                   {logErr}
@@ -792,6 +852,21 @@ export default function JournalPage() {
                     <option value="—">—</option>
                     <option value="Cont">Cont</option>
                     <option value="Judas">Judas</option>
+                  </select>
+                </label>
+                <label className="fld">
+                  Src
+                  <select
+                    value={f.entrySource}
+                    onChange={(e) =>
+                      setF({
+                        ...f,
+                        entrySource: e.target.value as "script" | "disc",
+                      })
+                    }
+                  >
+                    <option value="disc">disc</option>
+                    <option value="script">script</option>
                   </select>
                 </label>
                 <label className="fld">
@@ -1003,6 +1078,8 @@ export default function JournalPage() {
             />
           );
         })()}
+
+      <VaultSyncPanel />
 
       <div className="panel">
         <div className="panel-title">
