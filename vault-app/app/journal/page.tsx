@@ -1151,6 +1151,7 @@ export default function JournalPage() {
                 <th>Date</th>
                 <th>Bias</th>
                 <th>Did</th>
+                <th>P&amp;L</th>
                 <th>Tag</th>
                 <th>Src</th>
                 <th>NWOG</th>
@@ -1167,6 +1168,10 @@ export default function JournalPage() {
             <tbody>
               {rows.map((j) => {
                 const shots = j.chartShots?.length ? j.chartShots : j.chartShot ? [j.chartShot] : [];
+                const showPnl =
+                  j.direction === "long" ||
+                  j.direction === "short" ||
+                  (j.pnl != null && j.pnl !== 0);
                 return (
                   <tr key={j.id} style={editId === j.id ? { outline: "1px solid var(--matrix-dim)" } : undefined}>
                     <td>
@@ -1190,6 +1195,20 @@ export default function JournalPage() {
                       }
                     >
                       {j.direction === "skip" ? "SKIP" : j.direction.toUpperCase()}
+                    </td>
+                    <td
+                      className={
+                        !showPnl
+                          ? "dim"
+                          : (j.pnl || 0) > 0
+                            ? "pos"
+                            : (j.pnl || 0) < 0
+                              ? "neg"
+                              : "dim"
+                      }
+                      style={{ fontWeight: 700, whiteSpace: "nowrap" }}
+                    >
+                      {showPnl ? fmtUsd(j.pnl || 0, true) : "—"}
                     </td>
                     <td className="small dim">{j.structureTag ?? acctLabel(j.accountId, j.strategy)}</td>
                     <td className="small dim">{j.entrySource ?? "—"}</td>
