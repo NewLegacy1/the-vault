@@ -93,6 +93,8 @@ export default function JournalPage() {
   const [fwd, setFwd] = useState(emptyForward);
   const [logErr, setLogErr] = useState("");
   const [shotErr, setShotErr] = useState("");
+  /** MSv46 live / forward KPI sleeve filter — script arms vs disc freestyle. */
+  const [liveKpiSleeve, setLiveKpiSleeve] = useState<"all" | "script" | "disc">("all");
 
   const tookTrade = f.direction === "long" || f.direction === "short";
   const selectedLiveId = f.accountId || activeId;
@@ -345,13 +347,30 @@ export default function JournalPage() {
     });
   }, [journal, mode, liveAcctId, accounts]);
 
-  const liveTakes = liveBook.filter((j) => j.direction === "long" || j.direction === "short");
-  const liveWins = liveBook.filter((j) => j.dualOutcome === "WIN").length;
-  const liveLosses = liveBook.filter((j) => j.dualOutcome === "LOSS").length;
-  const liveTradePnl = liveBook.reduce((s, j) => s + (j.pnl || 0), 0);
+  /** Missing entrySource → disc (legacy live logs were always disc). */
+  const liveKpiBook = useMemo(() => {
+    if (liveKpiSleeve === "all") return liveBook;
+    return liveBook.filter((j) => {
+      const sleeve = j.entrySource === "script" ? "script" : "disc";
+      return sleeve === liveKpiSleeve;
+    });
+  }, [liveBook, liveKpiSleeve]);
+
+  const liveTakes = liveKpiBook.filter((j) => j.direction === "long" || j.direction === "short");
+  const liveWins = liveKpiBook.filter((j) => j.dualOutcome === "WIN").length;
+  const liveLosses = liveKpiBook.filter((j) => j.dualOutcome === "LOSS").length;
+  const liveTradePnl = liveKpiBook.reduce((s, j) => s + (j.pnl || 0), 0);
   const liveNetR = liveTakes.reduce((s, j) => s + (j.rMultiple || 0), 0);
   const liveToTarget =
     liveRule != null ? liveRule.passAt - liveTradePnl : null;
+  const liveScriptN = liveBook.filter(
+    (j) =>
+      j.entrySource === "script" && (j.direction === "long" || j.direction === "short")
+  ).length;
+  const liveDiscN = liveBook.filter(
+    (j) =>
+      j.entrySource !== "script" && (j.direction === "long" || j.direction === "short")
+  ).length;
 
   const scriptTakes = dualRows.filter((j) => j.entrySource === "script" && j.direction !== "skip");
   const discTakes = dualRows.filter((j) => j.entrySource === "disc" && j.direction !== "skip");
@@ -401,6 +420,34 @@ export default function JournalPage() {
           </>
         ) : (
           <>
+            <div className="stat" style={{ minWidth: 160 }}>
+              <div className="k">KPI sleeve</div>
+              <div className="v" style={{ display: "flex", flexWrap: "wrap", gap: 4, fontSize: 12 }}>
+                {(
+                  [
+                    { id: "all" as const, label: `All (${liveScriptN + liveDiscN})` },
+                    { id: "script" as const, label: `Arms (${liveScriptN})` },
+                    { id: "disc" as const, label: `Disc (${liveDiscN})` },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    className={"chip" + (liveKpiSleeve === opt.id ? " active-acct" : "")}
+                    onClick={() => setLiveKpiSleeve(opt.id)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <div className="d">
+                {liveKpiSleeve === "script"
+                  ? "script arms only · scorecard sleeve"
+                  : liveKpiSleeve === "disc"
+                    ? "discretionary only · not the arm"
+                    : "combined book"}
+              </div>
+            </div>
             <div className="stat">
               <div className="k">Trade P&amp;L</div>
               <div className={"v " + (liveTradePnl >= 0 ? "pos" : "neg")}>
@@ -410,7 +457,7 @@ export default function JournalPage() {
                 {mode === "forward"
                   ? "paper book · no fees"
                   : liveAcct
-                    ? `${liveAcct.label} · trading only`
+                    ? `${liveAcct.label} · ${liveKpiSleeve === "all" ? "trading only" : liveKpiSleeve}`
                     : "pick account · trading only"}
               </div>
             </div>
@@ -419,7 +466,7 @@ export default function JournalPage() {
               <div className="v">
                 <span className="pos">{liveWins}W</span> / <span className="neg">{liveLosses}L</span>
               </div>
-              <div className="d">{liveTakes.length} takes logged</div>
+              <div className="d">{liveTakes.length} takes · {liveKpiSleeve}</div>
             </div>
             <div className="stat">
               <div className="k">Net R</div>
@@ -436,12 +483,14 @@ export default function JournalPage() {
                   ? liveToTarget <= 0
                     ? "HIT"
                     : fmtUsd(liveToTarget)
-                  : liveBook.filter((j) => j.fillStatus === "yes" || j.fillStatus === "converted")
+                  : liveKpiBook.filter((j) => j.fillStatus === "yes" || j.fillStatus === "converted")
                       .length}
               </div>
               <div className="d">
                 {liveToTarget != null
-                  ? `${fmtUsd(liveRule!.passAt)} pass · trail ${fmtUsd(liveRule!.trailingDD)}`
+                  ? liveKpiSleeve === "all"
+                    ? `${fmtUsd(liveRule!.passAt)} pass · trail ${fmtUsd(liveRule!.trailingDD)}`
+                    : `${fmtUsd(liveRule!.passAt)} pass · vs ${liveKpiSleeve} P&L only`
                   : "yes + converted"}
               </div>
             </div>
