@@ -1,5 +1,5 @@
 ---
-updated: 2026-07-15
+updated: 2026-07-27
 tags: [kill-lessons, track-b, strategy-dev]
 ---
 # Kill lessons — Track B (running ledger)
@@ -9,7 +9,7 @@ tags: [kill-lessons, track-b, strategy-dev]
 ## Hard constraints (cumulative — next idea must obey all)
 
 1. **No ICT/PRB formal RB / Macro clone** as “new” Track B.  
-2. **No ORB / opening-range break** family (B0 dead — trail-hostile).  
+2. **No ORB / opening-range break** family (B0 dead — trail-hostile). **Reinforced 2026-07-27:** ORB v5 swing-stop + 2R + BE on MNQ 5m **and** 1m = Stage-0 **away** (CI covers 0 · maxL 11/15 · 1m no lift) — [[event-study-orb-v5-5m-vs-1m]]. Do not retune swing/BE/RR.  
 3. **No ER/VWAP xor multi-regime costume** (B1 dead — no xor lift).  
 4. **No PDH/PDL morning sweep-fade** family (B2 dead — EV −$76, CI excl. 0).  
 5. **No NR-day → next-day PDH/PDL expansion breakout** family (B3 dead — full EV −$18, OOS mean ≤0, BLOCK).  
@@ -51,6 +51,16 @@ tags: [kill-lessons, track-b, strategy-dev]
 | Hard constraint | No ORB / first-range breakout as Track B v0 |
 | Soft | Time/vol session ideas need stricter loss budgets |
 | Breadth | Distinct from PRB — still killed on trail math |
+
+#### B0 reinforcement — ORB v5 · 5m vs 1m (2026-07-27) · AWAY closeout
+
+| Extract | Content |
+|---|---|
+| Falsified | ORB v5 (1m swing stop in OR + 2R + BE@1R) Stage-0 toward on ~1y; 1m chart lifts 5m |
+| Structural | 5m EV +$153/ctr CI covers 0 · 1m EV +$82 · maxL 11 / **15** · maxL×avgL ≫ $2k · 1m BE scratches 88 vs 18 |
+| Hard constraint | Unchanged — no ORB family; no swing/BE/RR retune rescue |
+| Soft | Finer TF + BE converts winners → scratches; MTF 0b on dead family is diagnostic only |
+| Breadth | Same 182 day×dir events (corr 0.88) — one bet, not √N |
 
 ### B1 — ERXor · KILL
 

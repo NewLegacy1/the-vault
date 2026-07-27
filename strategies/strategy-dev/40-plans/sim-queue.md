@@ -1,5 +1,5 @@
 ---
-updated: 2026-07-15
+updated: 2026-07-27
 tags: [playbook, simulations, strategy-dev, 3y]
 ---
 # Simulations queue — 3-year reset
@@ -9,6 +9,8 @@ tags: [playbook, simulations, strategy-dev, 3y]
 ## NEXT
 
 **S2 Reaper v0 = AWAY / DESERT** (n=7). Do not salvage that CSV.
+
+**ORB v5 5m vs 1m = AWAY** (2026-07-27) — reinforces B0 kill; no further ORB exports. [[event-study-orb-v5-5m-vs-1m]]
 
 **Now:**
 
