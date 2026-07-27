@@ -1,5 +1,5 @@
 ---
-updated: 2026-07-17
+updated: 2026-07-27
 tags: [scorecard, strategy-dev, promote]
 ---
 # Strategy scorecard — success / failure
@@ -7,6 +7,14 @@ tags: [scorecard, strategy-dev, promote]
 > Every Lab cohort and Stage-0 event study ends with **toward / away / kill**.  
 > Metric hierarchy: path MC first → trade EV ± CI → risk geometry (diagnostic only).
 > **Morningstar Dual46** (manual Path B): see [[morningstar-dual46-lock]] — chart freeze, not Lab promote.
+
+## Latest Stage-0 closeouts
+
+| Study | Verdict | Note |
+|---|---|---|
+| ORB v5 MNQ **5m** (~1y) | **away** | CI covers 0 · maxL=11 · [[event-study-orb-v5-mnq-5m]] |
+| ORB v5 MNQ **1m** (~1y) | **away** | Worse EV · maxL=15 · no MTF lift · [[event-study-orb-v5-mnq-1m]] |
+| ORB v5 5m vs 1m | **away** closeout | Reinforces B0 ORB kill — [[event-study-orb-v5-5m-vs-1m]] |
 
 ## Hierarchy (do not invert)
 
