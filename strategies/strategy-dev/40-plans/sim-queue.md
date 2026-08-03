@@ -10,10 +10,11 @@ tags: [playbook, simulations, strategy-dev, 3y]
 
 **S2 Reaper v0 = AWAY / DESERT** (n=7). Do not salvage that CSV.
 
-**Now:**
+**Now (2026-08-02):**
 
-1. **Ops:** Jul STAND_DOWN / Aug–Sep gated PRB — visuals = [[Powell_Rejection_Block_gate_v0]] Manual ON — [[gated-prb-live-guide]].  
-2. **Stage-0 S3:** Reaper × Macro A → Deep BT → `matrix/lane-s-reaper-macroa-mnq-5m.csv` — [[lane-s-s3-reaper-macroa-v0]].
+1. **Ops:** Aug–Sep gated PRB / Apex sprint card — [[gated-prb-live-guide]] · [[apex-50k-intraday-eval-sprint]].  
+2. **JJ-FV clone:** **KILL** 2026-08-02 — [[jj-v2-clone-kill-2026-08-02]] · constraint **9g**. Do not re-export C-ladder.  
+3. **Stage-0 active:** **S3 Reaper×MacroA** — slot reopened — [[lane-s-s3-reaper-macroa-v0]].
 
 ---
 

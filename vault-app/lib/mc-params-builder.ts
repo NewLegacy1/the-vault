@@ -14,6 +14,8 @@ export interface BuildMcParamsOpts {
   ruleId: string;
   trades: number[];
   dates: string[];
+  /** Per-trade unrealized MFE $ (enriched ledgers) — enables intraday MFE trail (F2). */
+  mfes?: (number | undefined)[];
   sims: number;
   maxTrades: number;
   payoutBuffer: number;
@@ -108,6 +110,16 @@ export function buildRulePackForPhase(opts: {
     }
   }
 
+  // F4 (Apex 4.0): 5 qualifying days × ≥$50 per payout cycle. Eval has no
+  // minimum-day rule (1-day pass allowed) — gate the payout request only.
+  if (ruleId.startsWith("apex") && compareMode === "funded") {
+    pack.winningDays = {
+      minCount: 5,
+      minPnlUsd: 50,
+      appliesTo: "first_payout",
+    };
+  }
+
   return pack;
 }
 
@@ -142,6 +154,7 @@ export function buildMcParamsForFirm(opts: BuildMcParamsOpts): BuiltMcParams | n
       params: {
         trades: opts.trades,
         dates: opts.dates,
+        mfes: opts.mfes,
         sims: opts.sims,
         maxTrades: opts.maxTrades,
         passAt: 0,
@@ -159,6 +172,8 @@ export function buildMcParamsForFirm(opts: BuildMcParamsOpts): BuiltMcParams | n
           recycleProfitCap: rule.id === "tpt50" ? 5000 : undefined,
           accountRecycling: rule.id === "tpt50",
           payoutConsistencyPct: fundedPayoutConsistencyPct(opts.ruleId),
+          // F4 (Apex 4.0): account closes after 6 lifetime payouts.
+          maxPayouts: opts.ruleId.startsWith("apex") ? 6 : undefined,
         },
         bootstrap: "week",
         rulePack,
@@ -182,6 +197,18 @@ export function buildMcParamsForFirm(opts: BuildMcParamsOpts): BuiltMcParams | n
     accountSize,
   });
 
+  // F6: funded phase runs on a fresh account with its own trail semantics.
+  const fundedRulePack = fundedPhase
+    ? buildRulePackForPhase({
+        ruleId: opts.ruleId,
+        phase: fundedPhase,
+        compareMode: "funded",
+        passAt: 0,
+        trailingDD: fundedPhase.trailingDD,
+        accountSize,
+      })
+    : undefined;
+
   const useLegacyConsistency = !rulePack.consistency && consistencyPct > 0;
 
   return {
@@ -192,6 +219,7 @@ export function buildMcParamsForFirm(opts: BuildMcParamsOpts): BuiltMcParams | n
     params: {
       trades: opts.trades,
       dates: opts.dates,
+      mfes: opts.mfes,
       sims: opts.sims,
       maxTrades: opts.maxTrades,
       passAt,
@@ -210,9 +238,11 @@ export function buildMcParamsForFirm(opts: BuildMcParamsOpts): BuiltMcParams | n
       funded: {
         payoutProfitTarget: opts.payoutBuffer,
         payoutConsistencyPct: fundedPayoutConsistencyPct(opts.ruleId),
+        maxPayouts: opts.ruleId.startsWith("apex") ? 6 : undefined,
       },
       bootstrap: "week",
       rulePack,
+      fundedRulePack,
     },
   };
 }
@@ -223,6 +253,7 @@ export function buildMcParamsForLab(opts: {
   strategyPhase: string | undefined;
   trades: number[];
   dates: string[];
+  mfes?: (number | undefined)[];
   sims: number;
   maxTrades: number;
   payoutBuffer: number;

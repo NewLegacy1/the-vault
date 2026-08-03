@@ -131,6 +131,7 @@ function snapshotFromMc(
 export function compareFirmsForTrades(opts: {
   trades: number[];
   dates: string[];
+  mfes?: (number | undefined)[];
   sims: number;
   maxTrades: number;
   payoutBuffer: number;
@@ -149,6 +150,7 @@ export function compareFirmsForTrades(opts: {
       ruleId: id,
       trades: opts.trades,
       dates: opts.dates,
+      mfes: opts.mfes,
       sims: opts.sims,
       maxTrades: opts.maxTrades,
       payoutBuffer: opts.payoutBuffer,

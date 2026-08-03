@@ -6,6 +6,7 @@ import { ocrChartText } from "@/lib/morningstar/ocr-chart";
 import {
   parseDual46Tag,
   parsedToSummary,
+  ymdToDateStr,
   type ParsedDual46Tag,
 } from "@/lib/morningstar/parse-dual46-tag";
 import { formatPlanRr, parsePlanRr } from "@/lib/morningstar/parse-plan-rr";
@@ -97,17 +98,34 @@ function applyParsed(prev: Dual46Form, p: ParsedDual46Tag): Dual46Form {
   const next: Dual46Form = {
     ...prev,
     detected: parsedToSummary(p),
-    armed: true,
-    source: "script",
-    fillStatus: p.dualOutcome === "no fill" ? "no" : "yes",
+    armed: p.sleeve !== "none",
+    source: p.sleeve === "leave" || p.sleeve === "powell" || p.pathBGrade != null ? "script" : prev.source,
+    fillStatus:
+      p.fillStatus ??
+      (p.dualOutcome === "no fill" ? "no" : p.dualOutcome === "WIN" || p.dualOutcome === "LOSS" ? "yes" : prev.fillStatus),
   };
+  if (p.entryYmd != null) {
+    const ds = ymdToDateStr(p.entryYmd);
+    if (ds) next.date = ds;
+  }
+  if (p.entryHhmm) {
+    const h = p.entryHhmm.slice(0, 2);
+    const m = p.entryHhmm.slice(2, 4);
+    next.entryTime = `${h}:${m}`;
+  }
   if (p.direction) next.direction = p.direction;
   if (p.pathBModel) next.pathBModel = p.pathBModel;
   if (p.pathBGrade) next.pathBGrade = p.pathBGrade;
   if (p.planRr != null) next.planRr = String(p.planRr);
   if (p.stopPts != null) next.stopPts = String(p.stopPts);
   if (p.dualOutcome) next.dualOutcome = p.dualOutcome;
-  else if (p.direction) next.dualOutcome = "WIN";
+  else if (p.direction && next.dualOutcome === "skipped") next.dualOutcome = "WIN";
+  if (p.atrPts != null) next.atrPts = String(p.atrPts);
+  if (p.dailyAtrPts != null) next.dailyAtrPts = String(p.dailyAtrPts);
+  if (p.mfeR != null) next.mfeR = String(p.mfeR);
+  if (p.fiveMinConfirm != null) next.fiveMinConfirm = p.fiveMinConfirm;
+  if (p.vixPrevClose != null) next.vixPrevClose = String(p.vixPrevClose);
+  if (p.or30ratio != null) next.or30ratio = String(p.or30ratio);
   // Soft bias from side if still unset
   if (next.dayBias === "none" && p.direction) next.dayBias = p.direction;
   return next;
@@ -273,7 +291,7 @@ export function Dual46StudyForm({ onSave }: Props) {
       }
       // Plain text tag
       const text = cd.getData("text/plain");
-      if (text && /powell|LONG|SHORT|OTE/i.test(text)) {
+      if (text && /powell|LONG|SHORT|OTE|MS\s*JRN|VIX=|OR30=/i.test(text)) {
         e.preventDefault();
         ingestText(text);
         setTagPaste(text.trim().slice(0, 200));

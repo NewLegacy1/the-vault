@@ -13,6 +13,7 @@ import {
 } from "./mc-rule-pack";
 import { MC_ENGINE_VERSION } from "./mc-engine-version";
 import { rulePackFeatureIds } from "./mc-calibration";
+import { calendarSpanWeeks, tradesPerWeekFromDates } from "./time-units";
 
 export interface McFees {
   evalFee: number;
@@ -40,6 +41,8 @@ export interface McFundedRules {
   accountRecycling?: boolean;
   /** Funded payout-request consistency (e.g. Alpha Zero ~40%). 0 = none. */
   payoutConsistencyPct?: number;
+  /** F4: lifetime payout cap — account closes after this many payouts (Apex 4.0: 6). */
+  maxPayouts?: number;
 }
 
 export type McSimMode = "eval_path" | "funded_only";
@@ -47,6 +50,12 @@ export type McSimMode = "eval_path" | "funded_only";
 export interface McParams {
   trades: number[];
   dates?: string[];
+  /**
+   * Per-trade unrealized MFE in $ (aligned with `trades`, from enriched ledgers' mfeUsd).
+   * When present with ≥50% coverage and the rule pack trails intraday, the trail
+   * ratchets on eqBefore + dayMFE instead of day-close equity (Apex Intraday semantics).
+   */
+  mfes?: (number | undefined)[];
   sims: number;
   maxTrades: number;
   /** Firm-derived pass line (includes consistency buffer). */
@@ -64,10 +73,20 @@ export interface McParams {
   payoutEconomics?: FirmPayoutConfig;
   /** Optional calibrated rule pack — defaults to legacy intraday trail. */
   rulePack?: McRulePack;
+  /**
+   * F6: rule pack for the funded phase of eval_path sims. On eval pass the
+   * account state resets (fresh equity/trail/counters) and this pack takes
+   * over — models eval EOD trail vs funded intraday trail differences.
+   */
+  fundedRulePack?: McRulePack;
 }
 
 export interface McEconomics {
   tradesPerWeek: number;
+  /** Resample steps per calendar week — day steps for day/week bootstrap, trade steps for trade mode. */
+  stepsPerWeek: number;
+  /** Unit of one MC step (what weeks* fields divide by). */
+  stepUnit: "trade" | "day";
   weeksToPassP50: number | null;
   weeksToPassP90: number | null;
   weeksToPayoutP50: number | null;
@@ -77,6 +96,7 @@ export interface McEconomics {
   expectedAccounts: number;
   accountsFor90Pct: number;
   evalCostPerAttempt: number;
+  /** @deprecated F9 — now the clean per-sim mean, identical to expectedNetPerAccountUsd. */
   expectedNetPerAttempt: number;
   expectedNetUntilPass: number;
   medianNetOnPass: number;
@@ -87,6 +107,17 @@ export interface McEconomics {
   expectedNetPerAccountUsd: number;
   /** Median gross trader withdrawal before fees on payout paths. */
   medianWithdrawnUsd: number;
+  /**
+   * F5: mean calendar weeks each sim occupies the account — ALL sims, including
+   * busts and timeouts (they consume calendar time too). Payout/bust paths end
+   * at their event; timeout paths span the full window.
+   */
+  weeksOccupiedMean: number | null;
+  /**
+   * F5: honest E[$/wk] = E[net per account] / E[weeks occupied]. Replaces the
+   * biased mean-net ÷ median-payout-weeks division for ranking books.
+   */
+  expectedUsdPerWeekOccupied: number | null;
 }
 
 export interface McResult {
@@ -121,10 +152,14 @@ export interface McResult {
   /** Net EV after fees — percentile band across sims (dashboard). */
   netEvP05?: number;
   netEvP95?: number;
-  /** Approximate calendar days to terminal outcome (from trade count / tpw). */
+  /** Approximate calendar days to terminal outcome (from step count / steps-per-week). */
   avgDaysPass?: number | null;
   avgDaysBust?: number | null;
   avgDaysTimeout?: number | null;
+  /** F2: intraday trail ratcheted on unrealized MFE peaks (needs mfes + intraday trailing). */
+  mfeTrailApplied?: boolean;
+  /** Fraction of trades carrying a real mfeUsd (0–1). */
+  mfeCoveragePct?: number;
 }
 
 export interface McSamplePath {
@@ -137,26 +172,42 @@ interface DailyPnl {
   pnl: number;
 }
 
+/** One resample step: day (day/week bootstrap) or trade (trade bootstrap). */
+interface McStep {
+  pnl: number;
+  /** Intraday unrealized peak above the step's starting equity (≥ max(0, pnl)); null when unknown. */
+  mfe: number | null;
+}
+
+interface DailyStep extends DailyPnl {
+  /** Intraday peak above the day's starting equity — real MFE where present, running realized peak otherwise. */
+  mfe: number;
+  /** At least one trade in the day carried a real mfeUsd. */
+  hasMfe: boolean;
+}
+
 function percentile(sorted: number[], p: number): number {
   if (sorted.length === 0) return 0;
   const idx = Math.min(sorted.length - 1, Math.max(0, Math.floor(p * sorted.length)));
   return sorted[idx];
 }
 
-function tradesPerWeekFromDates(dates?: string[]): number {
-  if (!dates || dates.length < 2) return 5;
-  const ts = dates
-    .map((d) => Date.parse(d))
-    .filter((t) => Number.isFinite(t))
-    .sort((a, b) => a - b);
-  if (ts.length < 2) return 5;
-  const weeks = (ts[ts.length - 1] - ts[0]) / (7 * 24 * 3600 * 1000);
-  return weeks > 0.25 ? dates.length / weeks : 5;
+/**
+ * F1 fix: one MC step is a DAY under day/week bootstrap and a TRADE under trade
+ * bootstrap. Weeks/E[$/wk] must divide step counts by steps-per-week in the SAME
+ * unit — dividing day steps by trades/week understated calendar time by the
+ * trades-per-day factor for books with >1 trade per day.
+ */
+function stepsPerWeekFor(bootstrap: McBootstrap, dates: string[] | undefined, dayCount: number): number {
+  if (bootstrap === "trade") return tradesPerWeekFromDates(dates);
+  const weeks = calendarSpanWeeks(dates);
+  if (weeks == null || dayCount <= 0) return 5;
+  return dayCount / weeks;
 }
 
-function weeksFromTrades(trades: number | null, tpw: number): number | null {
-  if (trades == null || tpw <= 0) return null;
-  return Math.round((trades / tpw) * 10) / 10;
+function weeksFromSteps(steps: number | null, spw: number): number | null {
+  if (steps == null || spw <= 0) return null;
+  return Math.round((steps / spw) * 10) / 10;
 }
 
 function evalMonthsForWeeks(weeks: number | null, monthlyFee: number): number {
@@ -177,23 +228,45 @@ function weekKey(dateStr: string): string {
   return `${y}-${m}-${dd}`;
 }
 
-export function buildDailyPnls(trades: number[], dates: string[]): DailyPnl[] {
-  const byDay = new Map<string, number>();
+/**
+ * Aggregate trades into daily steps. Day MFE = the highest intraday equity
+ * excursion above the day's starting equity: for each trade (in ledger order),
+ * cumBefore + max(0, tradeMfe) when mfeUsd is present, cumBefore + max(0, pnl)
+ * (running realized peak) otherwise. Always ≥ max(0, dayPnl).
+ */
+function buildDailySteps(
+  trades: number[],
+  dates: string[],
+  mfes?: (number | undefined)[]
+): DailyStep[] {
+  const byDay = new Map<string, DailyStep & { cum: number }>();
   for (let i = 0; i < trades.length; i++) {
     const d = dates[i] ?? "";
     if (!d) continue;
-    byDay.set(d, (byDay.get(d) ?? 0) + trades[i]);
+    const row = byDay.get(d) ?? { date: d, pnl: 0, mfe: 0, hasMfe: false, cum: 0 };
+    const tradeMfe = mfes?.[i];
+    const hasTradeMfe = typeof tradeMfe === "number" && Number.isFinite(tradeMfe);
+    const excursion = row.cum + Math.max(0, hasTradeMfe ? tradeMfe : trades[i]);
+    row.mfe = Math.max(row.mfe, excursion);
+    row.cum += trades[i];
+    row.pnl = row.cum;
+    row.hasMfe = row.hasMfe || hasTradeMfe;
+    byDay.set(d, row);
   }
-  return [...byDay.entries()]
-    .map(([date, pnl]) => ({ date, pnl }))
+  return [...byDay.values()]
+    .map(({ date, pnl, mfe, hasMfe }) => ({ date, pnl, mfe: Math.max(mfe, pnl, 0), hasMfe }))
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export function buildWeekBlocks(daily: DailyPnl[]): number[][] {
+export function buildDailyPnls(trades: number[], dates: string[]): DailyPnl[] {
+  return buildDailySteps(trades, dates).map(({ date, pnl }) => ({ date, pnl }));
+}
+
+function buildWeekStepBlocks(daily: DailyStep[]): DailyStep[][] {
   if (daily.length === 0) return [];
-  const blocks: number[][] = [];
+  const blocks: DailyStep[][] = [];
   let currentKey = weekKey(daily[0].date);
-  let current: number[] = [];
+  let current: DailyStep[] = [];
   for (const row of daily) {
     const k = weekKey(row.date);
     if (k !== currentKey && current.length > 0) {
@@ -201,10 +274,15 @@ export function buildWeekBlocks(daily: DailyPnl[]): number[][] {
       current = [];
       currentKey = k;
     }
-    current.push(row.pnl);
+    current.push(row);
   }
   if (current.length > 0) blocks.push(current);
   return blocks;
+}
+
+export function buildWeekBlocks(daily: DailyPnl[]): number[][] {
+  const steps = daily.map((d) => ({ ...d, mfe: Math.max(0, d.pnl), hasMfe: false }));
+  return buildWeekStepBlocks(steps).map((block) => block.map((s) => s.pnl));
 }
 
 function hasUsableDates(trades: number[], dates?: string[]): boolean {
@@ -241,28 +319,28 @@ export function resetMcRng(): void {
 }
 
 function generateBootstrapSequence(
-  trades: number[],
-  dailyPnls: number[],
-  weekBlocks: number[][],
+  tradeSteps: McStep[],
+  daySteps: McStep[],
+  weekBlocks: McStep[][],
   maxSteps: number,
   mode: McBootstrap
-): number[] {
-  const out: number[] = [];
+): McStep[] {
+  const out: McStep[] = [];
   while (out.length < maxSteps) {
     if (mode === "week" && weekBlocks.length >= 2) {
       const block = pickRandom(weekBlocks);
-      for (const pnl of block) {
-        out.push(pnl);
+      for (const step of block) {
+        out.push(step);
         if (out.length >= maxSteps) break;
       }
-    } else if (mode === "day" && dailyPnls.length > 0) {
-      out.push(pickRandom(dailyPnls));
+    } else if (mode === "day" && daySteps.length > 0) {
+      out.push(pickRandom(daySteps));
     } else if (mode === "week" && weekBlocks.length === 1) {
       out.push(pickRandom(weekBlocks[0]));
-    } else if (dailyPnls.length > 0 && mode !== "trade") {
-      out.push(pickRandom(dailyPnls));
+    } else if (daySteps.length > 0 && mode !== "trade") {
+      out.push(pickRandom(daySteps));
     } else {
-      out.push(pickRandom(trades));
+      out.push(pickRandom(tradeSteps));
     }
   }
   return out;
@@ -333,21 +411,51 @@ export function runMonteCarlo(params: McParams): McResult {
     !fundedOnly && params.consistency && params.consistency.consistencyPct > 0
       ? params.consistency
       : undefined;
-  const daily = dates ? buildDailyPnls(trades, dates) : [];
-  const dailyPnls = daily.map((d) => d.pnl);
-  const weekBlocks = buildWeekBlocks(daily);
+  const dailySteps = dates ? buildDailySteps(trades, dates, params.mfes) : [];
+  const daySteps: McStep[] = dailySteps.map((d) => ({ pnl: d.pnl, mfe: d.mfe }));
+  const weekStepBlocks = buildWeekStepBlocks(dailySteps).map((block) =>
+    block.map((d): McStep => ({ pnl: d.pnl, mfe: d.mfe }))
+  );
+  const tradeSteps: McStep[] = trades.map((pnl, i) => {
+    const m = params.mfes?.[i];
+    const has = typeof m === "number" && Number.isFinite(m);
+    return { pnl, mfe: has ? Math.max(0, m, pnl) : null };
+  });
   const bootstrap = resolveMcBootstrap(trades, dates, params.bootstrap, consistency);
   const consistencyAware = Boolean(consistency) || Boolean(params.rulePack?.consistency);
   const payoutAt = fundedOnly
     ? (fundedRules?.payoutProfitTarget ?? fees.payoutBuffer)
     : passAt + fees.payoutBuffer;
   const tpw = tradesPerWeekFromDates(dates);
+  const spw = stepsPerWeekFor(bootstrap, dates, dailySteps.length);
+  const stepUnit: "trade" | "day" = bootstrap === "trade" ? "trade" : "day";
   const evalCost = fees.evalFee || fees.monthlyFee || 0;
   const rulePack = params.rulePack ?? legacyRulePack(trailingDD);
   const usePack = params.rulePack != null;
 
+  // F2: trail on unrealized MFE peaks — only meaningful for intraday trailing
+  // (Apex/legacy). Requires ≥50% of trades to carry a real mfeUsd.
+  const mfeCoverage =
+    trades.length > 0 && params.mfes
+      ? trades.filter((_, i) => {
+          const m = params.mfes?.[i];
+          return typeof m === "number" && Number.isFinite(m);
+        }).length / trades.length
+      : 0;
+  const mfeAvailable = mfeCoverage >= 0.5;
+  const mfeTrailApplied =
+    mfeAvailable &&
+    (rulePack.trailingMode === "intraday" ||
+      params.fundedRulePack?.trailingMode === "intraday");
+
+  // F6: funded phase of eval_path runs on a fresh account with its own pack.
+  const fundedPack = params.fundedRulePack ?? null;
+  const fundedPayoutTarget = fundedRules?.payoutProfitTarget ?? fees.payoutBuffer;
+
   const emptyEconomics: McEconomics = {
     tradesPerWeek: tpw,
+    stepsPerWeek: spw,
+    stepUnit,
     weeksToPassP50: null,
     weeksToPassP90: null,
     weeksToPayoutP50: null,
@@ -364,6 +472,8 @@ export function runMonteCarlo(params: McParams): McResult {
     medianNetPerAccountUsd: 0,
     expectedNetPerAccountUsd: 0,
     medianWithdrawnUsd: 0,
+    weeksOccupiedMean: null,
+    expectedUsdPerWeekOccupied: null,
   };
 
   if (trades.length === 0 || sims <= 0 || maxTrades <= 0) {
@@ -391,6 +501,7 @@ export function runMonteCarlo(params: McParams): McResult {
   const netOnPass: number[] = [];
   const simNetPerAccount: number[] = [];
   const grossWithdrawnPerSim: number[] = [];
+  const weeksOccupiedPerSim: number[] = [];
   const maxDDs: number[] = [];
   const samplePaths: McSamplePath[] = [];
   const finalEquities: number[] = [];
@@ -407,7 +518,7 @@ export function runMonteCarlo(params: McParams): McResult {
   const daysTimeout: number[] = [];
 
   for (let s = 0; s < sims; s++) {
-    const sequence = generateBootstrapSequence(trades, dailyPnls, weekBlocks, maxTrades, bootstrap);
+    const sequence = generateBootstrapSequence(tradeSteps, daySteps, weekStepBlocks, maxTrades, bootstrap);
     let eq = 0;
     let peak = 0;
     let maxDD = 0;
@@ -422,40 +533,49 @@ export function runMonteCarlo(params: McParams): McResult {
     let winningDays = 0;
     let cumulativeFundedProfit = 0;
     let recycleCycles = 0;
+    let simPayouts = 0;
     let hadAnyPayout = false;
     let totalWithdrawnUsd = 0;
     let eventTrades = maxTrades;
     let passAtTrade: number | null = null;
+    /** F6: cumulative equity banked in prior phases — keeps charts continuous across the reset. */
+    let eqOffset = 0;
+    let activePack = rulePack;
+    let activeUsePack = usePack;
     const pathTrace: number[] = [0];
     paths[0][s] = 0;
-    const packState = createRulePackState(rulePack);
+    const packState = createRulePackState(activePack);
 
     for (let t = 1; t <= maxTrades; t++) {
       if (phase === "eval" || phase === "funded") {
-        const rawDayPnl = sequence[t - 1];
-        const dayPnl = applyDayPnl(rawDayPnl, rulePack);
+        const step = sequence[t - 1];
+        const dayPnl = applyDayPnl(step.pnl, activePack);
+        const stepMfe =
+          mfeAvailable && activePack.trailingMode === "intraday" ? step.mfe : null;
 
-        if (usePack) {
-          updateRulePackState(packState, dayPnl, rulePack);
+        if (activeUsePack) {
+          updateRulePackState(packState, dayPnl, activePack, stepMfe);
           eq = packState.eq;
           peak = packState.peak;
         } else {
+          const eqBefore = eq;
           eq += dayPnl;
           peak = Math.max(peak, eq);
+          if (stepMfe != null && stepMfe > 0) peak = Math.max(peak, eqBefore + stepMfe);
         }
 
         cumulative += dayPnl;
         tradingDays++;
         if (dayPnl > bestDayPnl) bestDayPnl = dayPnl;
-        if (isWinningDay(dayPnl, rulePack)) winningDays++;
+        if (isWinningDay(dayPnl, activePack)) winningDays++;
 
         maxDD = Math.max(maxDD, peak - eq);
 
-        if (!fundedOnly && cumulative >= passAt) hitGrossPass = true;
+        if (!fundedOnly && phase === "eval" && cumulative >= passAt) hitGrossPass = true;
 
-        const busted = usePack
-          ? isRulePackBust(packState, rulePack)
-          : peak - eq >= trailingDD;
+        const busted = activeUsePack
+          ? isRulePackBust(packState, activePack)
+          : peak - eq >= activePack.trailingDD;
 
         if (busted) {
           phase = "bust";
@@ -470,21 +590,39 @@ export function runMonteCarlo(params: McParams): McResult {
             winningDays,
             passAt,
             consistency,
-            rulePack
+            activePack
           )
         ) {
           phase = "funded";
           passed = true;
           passAtTrade = t;
           tradesToPass.push(t);
-        } else if (phase === "funded" && eq >= payoutAt) {
+          // F6: fund a FRESH account — bank eval equity for display, reset
+          // equity/trail/counters, and swap to the funded-phase rule pack.
+          eqOffset += eq;
+          eq = 0;
+          peak = 0;
+          cumulative = 0;
+          bestDayPnl = 0;
+          tradingDays = 0;
+          winningDays = 0;
+          if (fundedPack) {
+            activePack = fundedPack;
+            activeUsePack = true;
+          }
+          const fresh = createRulePackState(activePack);
+          packState.eq = fresh.eq;
+          packState.peak = fresh.peak;
+          packState.mllFloorEq = fresh.mllFloorEq;
+          packState.mllLocked = fresh.mllLocked;
+        } else if (phase === "funded" && eq >= (fundedOnly ? payoutAt : fundedPayoutTarget)) {
           const payoutConsPct = fundedRules?.payoutConsistencyPct ?? 0;
           const payoutReady = payoutConsistencyReady(
             cumulative,
             bestDayPnl,
             winningDays,
             payoutConsPct,
-            rulePack
+            activePack
           );
 
           if (payoutReady) {
@@ -496,15 +634,19 @@ export function runMonteCarlo(params: McParams): McResult {
               : Math.max(0, eq - (fundedOnly ? fees.activationFee : fees.evalFee + fees.activationFee));
             totalWithdrawnUsd += withdrawn;
             payouts++;
+            simPayouts++;
             hadAnyPayout = true;
             gotPayout = true;
             cumulativeFundedProfit += eq;
 
             const recycleCap = fundedRules?.recycleProfitCap ?? Infinity;
+            // F4: lifetime payout cap (Apex 4.0: account closes after 6 payouts).
+            const underPayoutCap = simPayouts < (fundedRules?.maxPayouts ?? Infinity);
             const canRecycle =
               fundedOnly &&
               fundedRules?.accountRecycling &&
-              cumulativeFundedProfit < recycleCap;
+              cumulativeFundedProfit < recycleCap &&
+              underPayoutCap;
 
             if (canRecycle) {
               recycleCycles++;
@@ -515,8 +657,8 @@ export function runMonteCarlo(params: McParams): McResult {
               tradingDays = 0;
               winningDays = 0;
               gotPayout = false;
-              if (usePack) {
-                const fresh = createRulePackState(rulePack);
+              if (activeUsePack) {
+                const fresh = createRulePackState(activePack);
                 packState.eq = fresh.eq;
                 packState.peak = fresh.peak;
                 packState.mllFloorEq = fresh.mllFloorEq;
@@ -529,8 +671,8 @@ export function runMonteCarlo(params: McParams): McResult {
         }
       }
 
-      paths[t][s] = eq;
-      pathTrace.push(eq);
+      paths[t][s] = eqOffset + eq;
+      pathTrace.push(eqOffset + eq);
     }
 
     if (hitGrossPass && !passed) {
@@ -543,9 +685,9 @@ export function runMonteCarlo(params: McParams): McResult {
     if (phase === "bust") busts++;
     if (fundedOnly && recycleCycles >= 1 && phase !== "bust") recycleCompletes++;
 
-    const weeksEvent = weeksFromTrades(eventTrades, tpw);
+    const weeksEvent = weeksFromSteps(eventTrades, spw);
     const weeksInEval = passed
-      ? weeksFromTrades(passAtTrade, tpw)
+      ? weeksFromSteps(passAtTrade, spw)
       : fundedOnly
         ? null
         : weeksEvent;
@@ -563,6 +705,7 @@ export function runMonteCarlo(params: McParams): McResult {
     const simNet = totalWithdrawnUsd - pathFees;
     simNetPerAccount.push(simNet);
     grossWithdrawnPerSim.push(totalWithdrawnUsd);
+    if (weeksEvent != null) weeksOccupiedPerSim.push(weeksEvent);
     if (hadAnyPayout) {
       netOnPass.push(simNet);
     }
@@ -573,12 +716,12 @@ export function runMonteCarlo(params: McParams): McResult {
     else if (phase === "bust") outcomeCounts.bust++;
     else outcomeCounts.open++;
 
-    const daysApprox = (eventTrades / Math.max(tpw, 0.01)) * 7;
+    const daysApprox = (eventTrades / Math.max(spw, 0.01)) * 7;
     if (passed || hadAnyPayout) daysPass.push(daysApprox);
     else if (phase === "bust") daysBust.push(daysApprox);
     else daysTimeout.push(daysApprox);
 
-    finalEquities.push(eq);
+    finalEquities.push(eqOffset + eq);
     maxDDs.push(maxDD);
 
     if (s % Math.max(1, Math.floor(sims / MAX_SAMPLES)) === 0 && samplePaths.length < MAX_SAMPLES) {
@@ -626,8 +769,8 @@ export function runMonteCarlo(params: McParams): McResult {
     rateForAccounts > 0 ? Math.ceil(Math.log(0.1) / Math.log(1 - rateForAccounts)) : Infinity;
 
   const weeksPassP50 = fundedOnly
-    ? weeksFromTrades(ttpaySorted.length ? percentile(ttpaySorted, 0.5) : null, tpw)
-    : weeksFromTrades(ttpSorted.length ? percentile(ttpSorted, 0.5) : null, tpw);
+    ? weeksFromSteps(ttpaySorted.length ? percentile(ttpaySorted, 0.5) : null, spw)
+    : weeksFromSteps(ttpSorted.length ? percentile(ttpSorted, 0.5) : null, spw);
   const medianNet = payoutSimNets.length
     ? percentile([...payoutSimNets].sort((a, b) => a - b), 0.5)
     : 0;
@@ -643,7 +786,19 @@ export function runMonteCarlo(params: McParams): McResult {
     arr.length ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10 : null;
   const costOnFail = evalCost;
 
-  const expectedNetPerAttempt = payoutRate * medianNet - bustRate * costOnFail;
+  // F5: E[net] / E[weeks occupied] over ALL sims — busts and timeouts consume
+  // calendar weeks too, so they belong in the denominator.
+  const weeksOccupiedMean = weeksOccupiedPerSim.length
+    ? Math.round((weeksOccupiedPerSim.reduce((a, b) => a + b, 0) / weeksOccupiedPerSim.length) * 10) / 10
+    : null;
+  const expectedUsdPerWeekOccupied =
+    weeksOccupiedMean != null && weeksOccupiedMean > 0
+      ? Math.round(expectedNetPerAccount / weeksOccupiedMean)
+      : null;
+
+  // F9: clean per-sim mean (was payoutRate × medianNet − bustRate × fee — a
+  // mixed estimator that ignored timeout-path fees).
+  const expectedNetPerAttempt = expectedNetPerAccount;
   const expectedNetUntilPass =
     passRate > 0
       ? Math.round(medianNet - (expectedAccounts - 1) * costOnFail)
@@ -674,10 +829,12 @@ export function runMonteCarlo(params: McParams): McResult {
     worstDrawdownP95: percentile(ddSorted, 0.95),
     economics: {
       tradesPerWeek: Math.round(tpw * 10) / 10,
+      stepsPerWeek: Math.round(spw * 10) / 10,
+      stepUnit,
       weeksToPassP50: weeksPassP50,
-      weeksToPassP90: weeksFromTrades(ttpSorted.length ? percentile(ttpSorted, 0.9) : null, tpw),
-      weeksToPayoutP50: weeksFromTrades(ttpaySorted.length ? percentile(ttpaySorted, 0.5) : null, tpw),
-      weeksToPayoutP90: weeksFromTrades(ttpaySorted.length ? percentile(ttpaySorted, 0.9) : null, tpw),
+      weeksToPassP90: weeksFromSteps(ttpSorted.length ? percentile(ttpSorted, 0.9) : null, spw),
+      weeksToPayoutP50: weeksFromSteps(ttpaySorted.length ? percentile(ttpaySorted, 0.5) : null, spw),
+      weeksToPayoutP90: weeksFromSteps(ttpaySorted.length ? percentile(ttpaySorted, 0.9) : null, spw),
       tradesToPayoutP50: ttpaySorted.length ? percentile(ttpaySorted, 0.5) : null,
       payoutRate,
       expectedAccounts,
@@ -690,6 +847,8 @@ export function runMonteCarlo(params: McParams): McResult {
       medianNetPerAccountUsd: medianNetPerAccount,
       expectedNetPerAccountUsd: expectedNetPerAccount,
       medianWithdrawnUsd: medianWithdrawn,
+      weeksOccupiedMean,
+      expectedUsdPerWeekOccupied,
     },
     bands,
     samplePaths,
@@ -707,5 +866,7 @@ export function runMonteCarlo(params: McParams): McResult {
     avgDaysPass: avgDays(daysPass),
     avgDaysBust: avgDays(daysBust),
     avgDaysTimeout: avgDays(daysTimeout),
+    mfeTrailApplied,
+    mfeCoveragePct: Math.round(mfeCoverage * 100) / 100,
   };
 }

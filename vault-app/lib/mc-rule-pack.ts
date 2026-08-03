@@ -64,10 +64,21 @@ export function applyDayPnl(dayPnl: number, pack: McRulePack): number {
 export function updateRulePackState(
   state: McRulePackState,
   dayPnl: number,
-  pack: McRulePack
+  pack: McRulePack,
+  /**
+   * Intraday unrealized peak above the day's starting equity (day MFE, ≥ 0).
+   * Apex Intraday trails on unrealized peaks — when provided and the pack
+   * trails intraday, the peak ratchets on eqBefore + MFE, not just day close.
+   */
+  intradayMfe?: number | null
 ): void {
+  const eqBefore = state.eq;
   state.eq += dayPnl;
   state.peak = Math.max(state.peak, state.eq);
+
+  if (pack.trailingMode === "intraday" && intradayMfe != null && intradayMfe > 0) {
+    state.peak = Math.max(state.peak, eqBefore + intradayMfe);
+  }
 
   if (pack.trailingMode !== "eod") return;
 

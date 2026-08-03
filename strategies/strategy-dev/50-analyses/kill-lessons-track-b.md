@@ -1,5 +1,5 @@
 ---
-updated: 2026-07-15
+updated: 2026-08-02
 tags: [kill-lessons, track-b, strategy-dev]
 ---
 # Kill lessons — Track B (running ledger)
@@ -22,6 +22,7 @@ tags: [kill-lessons, track-b, strategy-dev]
 9d. **No overnight gap continuation @ loose ≥1.0×ATR** (B8 dead — n=641, EV −$1, OOS CI covers 0; rarity failed).  
 9e. **No BB pierce→reclaim + ADX chop @ 1.0R** (B11 dead — n=775, EV −$1, WR~52% but RR&lt;1; OOS CI covers 0). Do not salvage with hour/ADX/stop retunes.  
 9f. **No EMA(20) trend pullback + ADX&gt;25 @ 1.25R** (B12 dead — n=293, EV −$8, OOS −$15). Lane F TA spray paused.  
+9g. **No JJ Fair-Value mechanical clone** (open-color / body&gt;prior disp / FV magnet @ 1.5R — v0/F1–F3 away, **v2 KILL** n=1999 EV −$19 CI excl. 0). Do not retune RR / MSB / pyramid / FV-update costumes. His montage edge (if any) is not a transferable mechanical book.  
 10. **Loss shape first:** max modeled streak × $risk &lt; $2k trail before cadence claims.  
 11. **Do not retune** a killed idea’s free params to “rescue” without a **new** Stage-0 note and new event definition.  
 12. **Independence:** next book must differ from gated PRB on ≥2 of {time box, level set, regime feature, barrier geometry}.  
@@ -172,13 +173,23 @@ tags: [kill-lessons, track-b, strategy-dev]
 | Soft | **Pause Lane F** common-TA spray; return focus to selective high-RR Track A + optional sleeve research |
 | Breadth | Independent of PRB — still dead |
 
+### JJ-FV — Fair Value mechanical clone · KILL (2026-08-02)
+
+| Extract | Content |
+|---|---|
+| Falsified | JJ Simon public FV rules (open-color / body&gt;prior / FV magnet @ 1.5R) transfer as +EV mechanical MNQ book |
+| Structural | v2 n=**1999** · EV **−$19** · CI excl. 0 · WR 38.8% · year −$39k · open-color flat · rest −$25/trade · C2/C3 exports identical |
+| Hard constraint | **9g** — no JJ-FV clone retune (RR / MSB / pyramid / FV-update costumes) |
+| Soft | Montage WR / prop-factory claims ≠ single-ledger edge; stop fidelity chase |
+| Breadth | Independent of PRB — still dead · [[jj-v2-clone-kill-2026-08-02]] |
+
 ## Implication
 
 | Path | Notes |
 |---|---|
 | **Track A** | **Primary** — gated PRB / D1; loss-gap mitigation via gates + BE, not HF |
-| **Lane F** | Paused after B11–B12 |
-| **Lane S** | S2 away/desert · **S3 Reaper×MacroA active** — [[lane-s-s3-reaper-macroa-v0]] |
+| **Lane F** | Paused after B11–B12 · **JJ-FV clone killed** 2026-08-02 — [[jj-v2-clone-kill-2026-08-02]] |
+| **Lane S** | S2 away/desert · **S3 Reaper×MacroA** Stage-0 slot **reopened** after JJ kill — [[lane-s-s3-reaper-macroa-v0]] |
 | **0b on kills** | Forbidden |
 
 ## Agent use

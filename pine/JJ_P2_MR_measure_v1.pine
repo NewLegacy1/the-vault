@@ -1,0 +1,168 @@
+//@version=6
+// JJ Fair-Value MEASURE v1 — three export profiles only.
+// Spec: strategies/strategy-dev/50-analyses/jj-p2-mr-v0-frequency-diagnosis.md
+// Pick ONE profile → Deep BT → export CSV named after that profile.
+// Not Dual46. Not live authority.
+
+strategy(
+     title                   = "JJ FV measure v1",
+     shorttitle              = "JJ-FV v1",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 200,
+     max_lines_count         = 50)
+
+// ─── ONLY toggle you need ───
+grpPick = "▶ EXPORT PROFILE (pick one)"
+i_profile = input.string(
+     "F1 · MSB + disp · 5/day · P2 only",
+     "Profile",
+     options = [
+         "F1 · MSB + disp · 5/day · P2 only",
+         "F2 · Disp only · 5/day · P2 only",
+         "F3 · Disp only · 5/day · P1+P2"
+     ],
+     group = grpPick,
+     tooltip = "F1 = closer to strict structure · F2 = JJ-style displacement · F3 = adds first-15m continuation. One Deep BT export per profile.")
+
+grpRisk = "Risk (usually leave alone)"
+i_riskUsd = input.float(300.0, "Risk USD / trade", minval = 50.0, step = 50.0, group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)"], group = grpRisk)
+
+grpVis = "Chart"
+i_showFv   = input.bool(true, "Show 9:30 fair value", group = grpVis)
+i_showMark = input.bool(true, "Show entry markers", group = grpVis)
+
+// ─── Locked event / barrier (not in UI) ───
+int sessOpen = 930
+int p2From   = 945
+int p2To     = 1100
+int flatTime = 1555
+float extMult = 0.5
+int pivotL    = 5
+float wickPct = 20.0
+int atrLen    = 14
+float rr      = 1.5
+int maxCtr    = 60
+float maxStop = 50.0
+
+bool isF1 = i_profile == "F1 · MSB + disp · 5/day · P2 only"
+bool isF2 = i_profile == "F2 · Disp only · 5/day · P2 only"
+bool isF3 = i_profile == "F3 · Disp only · 5/day · P1+P2"
+bool useP1 = isF3
+bool requireMsb = isF1
+int maxDay = 5
+
+string csvHint = isF1 ? "jj-f1-mnq-1m-12m.csv" : (isF2 ? "jj-f2-mnq-1m-12m.csv" : "jj-f3-mnq-1m-12m.csv")
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool isOpenBar = nyHhmm == sessOpen
+bool inP1 = useP1 and nyHhmm >= sessOpen and nyHhmm < p2From
+bool inP2 = nyHhmm >= p2From and nyHhmm < p2To
+bool canArm = inP1 or inP2
+bool flatNow = nyHhmm >= flatTime
+
+float atr = ta.atr(atrLen)
+
+var float fairValue = na
+var int dayTrades = 0
+
+if newDay
+    fairValue := na
+    dayTrades := 0
+
+if isOpenBar
+    fairValue := open
+
+plot(i_showFv and not na(fairValue) ? fairValue : na, "FV_930", color = color.new(#fbbf24, 0), style = plot.style_linebr, linewidth = 2)
+
+float ph = ta.pivothigh(high, pivotL, pivotL)
+float pl = ta.pivotlow(low, pivotL, pivotL)
+var float lastSwingHigh = na
+var float lastSwingLow = na
+if not na(ph)
+    lastSwingHigh := ph
+if not na(pl)
+    lastSwingLow := pl
+
+f_pv() =>
+    i_pvMode == "NQ ($20/pt)" ? 20.0 : 2.0
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, maxCtr))
+
+f_tierStop(float a) =>
+    na(a) ? na : (a > 20.0 ? 50.0 : (a >= 7.0 ? 25.0 : 16.5))
+
+f_dispLong() =>
+    float span = high - open
+    float cwick = math.max(0.0, high - close)
+    span > 0 and close > open and (cwick / span) * 100.0 <= wickPct
+
+f_dispShort() =>
+    float span = open - low
+    float cwick = math.max(0.0, close - low)
+    span > 0 and close < open and (cwick / span) * 100.0 <= wickPct
+
+bool extendedUp = not na(fairValue) and not na(atr) and (close - fairValue) >= extMult * atr
+bool extendedDn = not na(fairValue) and not na(atr) and (fairValue - close) >= extMult * atr
+
+bool p2ShortDisp = inP2 and extendedUp and f_dispShort()
+bool p2LongDisp  = inP2 and extendedDn and f_dispLong()
+bool p2ShortMsb  = p2ShortDisp and not na(lastSwingLow) and close < lastSwingLow
+bool p2LongMsb   = p2LongDisp and not na(lastSwingHigh) and close > lastSwingHigh
+bool sigP2Short  = requireMsb ? p2ShortMsb : p2ShortDisp
+bool sigP2Long   = requireMsb ? p2LongMsb : p2LongDisp
+
+bool p1Long  = inP1 and close > fairValue and f_dispLong()
+bool p1Short = inP1 and close < fairValue and f_dispShort()
+
+bool goLong  = sigP2Long or p1Long
+bool goShort = sigP2Short or p1Short
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+if canArm and dayTrades < maxDay and strategy.position_size == 0 and not na(atr) and not na(fairValue)
+    float stopPts = f_tierStop(atr)
+    if not na(stopPts) and stopPts > 0 and stopPts <= maxStop
+        int q = f_qty(stopPts)
+        float tpPts = stopPts * rr
+        if q > 0 and goShort and not goLong
+            float entry = close
+            strategy.entry("JJ_S", strategy.short, qty = q)
+            strategy.exit("JJ_SX", "JJ_S", stop = entry + stopPts, limit = entry - tpPts)
+            dayTrades += 1
+            if i_showMark
+                label.new(bar_index, high, inP1 ? "P1-S" : "P2-S", style = label.style_label_down, color = color.new(#ef4444, 20), textcolor = color.white, size = size.tiny)
+        else if q > 0 and goLong and not goShort
+            float entry = close
+            strategy.entry("JJ_L", strategy.long, qty = q)
+            strategy.exit("JJ_LX", "JJ_L", stop = entry - stopPts, limit = entry + tpPts)
+            dayTrades += 1
+            if i_showMark
+                label.new(bar_index, low, inP1 ? "P1-L" : "P2-L", style = label.style_label_up, color = color.new(#22c55e, 20), textcolor = color.white, size = size.tiny)
+
+var table hud = table.new(position.top_right, 1, 3, bgcolor = color.new(#0f172a, 10), border_width = 1, border_color = color.new(#38bdf8, 40))
+if barstate.islast
+    color headCol = isF1 ? color.new(#38bdf8, 0) : (isF2 ? color.new(#a78bfa, 0) : color.new(#34d399, 0))
+    table.cell(hud, 0, 0, i_profile, text_color = headCol, text_size = size.normal)
+    table.cell(hud, 0, 1, "Save export as:", text_color = color.new(#94a3b8, 0), text_size = size.tiny)
+    table.cell(hud, 0, 2, csvHint, text_color = color.white, text_size = size.small)

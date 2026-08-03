@@ -24,11 +24,13 @@ When the user asks to develop strategies continuously, run a research cycle, sta
 
 ## One cycle
 
-1. Check `vault-app/data/tv-exports/matrix/trackb-*.csv` for new/unanalyzed files.
-2. If new: `npx tsx scripts/analyze-event-study.ts <file>` then write SCORECARD + harvest into `kill-lessons-track-b.md` on kill/away closeout.
+1. Run `npm run ingest` in `vault-app/` (inbox → matrix → Stage-0 auto), then read `vault-app/data/tv-exports/ingest-ledger.json` for new verdicts. Legacy: also check `matrix/trackb-*.csv` for unanalyzed files.
+2. If new: write SCORECARD note + harvest into `kill-lessons-track-b.md` on kill/away closeout, **and** update the entry state in `vault-app/data/registry/strategies.json` (lint via `/api/registry` or `lib/registry.ts` must stay clean).
 3. Compare to prior kill lessons (not WR/RR stories).
-4. If idle: refine **one** next Stage-0 draft (B3/B4) that obeys hard constraints; do not spawn multiple ideas.
+4. If idle: refine **one** next Stage-0 draft that obeys hard constraints; new candidates = new registry entries (state `idea`, ≥2 independence axes, no killed family tags).
 5. End with: verdict · blockers · exact human TV export steps (if any).
+
+Journal/accounts/ledger authoritative copy: `vault-app/data/vault-store/store.json` (localStorage is a cache).
 
 ## Prop math hierarchy
 

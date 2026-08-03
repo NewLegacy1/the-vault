@@ -1063,6 +1063,7 @@ export default function LabPage() {
     () => ({
       trades: activeDs.trades,
       dates: activeDs.dates,
+      mfes: activeDs.parsed?.map((t) => t.mfeUsd),
       sims: Number(sims) || 2000,
       maxTrades: Number(maxTrades) || 80,
       payoutBuffer: Number(payoutBuffer) || 1000,
@@ -1150,6 +1151,7 @@ export default function LabPage() {
         strategyPhase: preset?.phase,
         trades: activeDs.trades,
         dates: activeDs.dates,
+        mfes: activeDs.parsed?.map((t) => t.mfeUsd),
         sims: Number(sims) || 2000,
         maxTrades: Number(maxTrades) || 80,
         payoutBuffer: Number(payoutBuffer) || 1000,
@@ -1385,6 +1387,7 @@ export default function LabPage() {
       compareFirmsForTrades({
         trades: activeDs.trades,
         dates: activeDs.dates,
+        mfes: activeDs.parsed?.map((t) => t.mfeUsd),
         sims: Number(sims) || 2000,
         maxTrades: Number(maxTrades) || 80,
         payoutBuffer: Number(payoutBuffer) || 1000,
@@ -1947,6 +1950,8 @@ export default function LabPage() {
               simMode={activePreset?.phase === "funded" ? "funded_only" : "eval_path"}
               hasPayoutEconomics
               accountRecycling={activePreset?.phase === "funded"}
+              mfeTrailApplied={res.mfeTrailApplied}
+              mfeCoveragePct={res.mfeCoveragePct}
               compact
             />
           )}

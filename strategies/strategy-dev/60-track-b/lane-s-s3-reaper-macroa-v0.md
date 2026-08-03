@@ -1,6 +1,6 @@
 ---
 updated: 2026-07-16
-status: stage-0-active
+status: stage-0-deferred — JJ-P2-MR owns slot 2026-08-02
 tags: [lane-s, s3, reaper, macro-a, stage-0]
 ---
 # Lane S · S3 — Reaper × Macro A union v0

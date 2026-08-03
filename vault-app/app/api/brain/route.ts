@@ -17,6 +17,7 @@ const ALLOWED_PREFIXES = [
 
 const HUBS = [
   { id: "index", path: "strategies/knowledge/_index.md", label: "MOC" },
+  { id: "pipeline", path: "strategies/strategy-dev/00-charter/PIPELINE_REGISTRY.md", label: "PIPELINE" },
   { id: "math", path: "strategies/knowledge/hubs/hub-math.md", label: "MATH" },
   { id: "regimes", path: "strategies/knowledge/hubs/hub-regimes.md", label: "REGIMES" },
   { id: "ops", path: "strategies/knowledge/hubs/hub-ops.md", label: "OPS" },

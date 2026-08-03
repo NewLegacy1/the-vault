@@ -37,6 +37,9 @@ export function computeImplementationShortfall(opts: {
     opts.netUsdPerWeek !== undefined
       ? opts.netUsdPerWeek
       : (() => {
+          if (opts.mc.economics.expectedUsdPerWeekOccupied != null) {
+            return opts.mc.economics.expectedUsdPerWeekOccupied;
+          }
           const w =
             opts.mc.economics.weeksToPayoutP50 ?? opts.mc.economics.weeksToPassP50;
           if (w == null || w <= 0) return null;

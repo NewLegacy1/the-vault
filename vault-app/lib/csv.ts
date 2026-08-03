@@ -3,6 +3,8 @@
  * Pairs Entry/Exit rows per trade number; enriches from both rows when available.
  * Premium columns (MFE/MAE/duration/%/size value/entry time) are preserved for Lab + cohorts.
  */
+import { tradesPerWeekFromDates } from "./time-units";
+
 export interface ParsedTrade {
   num: number;
   date: string;
@@ -247,15 +249,51 @@ export function parseTvCsv(text: string): ParsedTrade[] {
   return trades.sort((a, b) => a.num - b.num);
 }
 
-/** Dedupe key: same exit day + same P&L = likely duplicate across overlapping exports. */
-export function tradeDedupeKey(t: ParsedTrade): string {
-  return `${t.date}|${t.pnl.toFixed(2)}`;
+/** Why a row was dropped during a merge / one-per-day pass. */
+export type DedupeCollisionReason =
+  | "merge_duplicate"
+  | "one_per_day_seed"
+  | "one_per_day";
+
+/** Record of a row silently removed by dedupe — surfaced via auditLabIngest. */
+export interface DedupeCollision {
+  date: string;
+  pnl: number;
+  reason: DedupeCollisionReason;
+  keptKey: string;
+  droppedKey: string;
 }
 
-/** One trade per calendar day — PRB max 1/day; resolves overlapping chunk exports. */
+/**
+ * Dedupe key precedence (strongest available identity wins):
+ *   1. date|pnl|dt:<entryDatetime>  — entry time distinguishes two identical
+ *      fixed-R stops taken the same day; identical entry time across
+ *      overlapping exports = the same trade.
+ *   2. date|pnl|n:<num>|<direction> — trade number + direction when the export
+ *      has no entry timestamps.
+ *   3. date|pnl                     — legacy fallback when nothing better exists.
+ */
+export function tradeDedupeKey(t: ParsedTrade): string {
+  const base = `${t.date}|${t.pnl.toFixed(2)}`;
+  if (t.entryDatetime) return `${base}|dt:${t.entryDatetime}`;
+  if (Number.isFinite(t.num)) return `${base}|n:${t.num}|${t.direction ?? "?"}`;
+  return base;
+}
+
+/**
+ * One trade per calendar day — PRB max 1/day; resolves overlapping chunk exports.
+ *
+ * Same-day collision rule (neutral — no P&L-size preference): prefer the seed
+ * ledger's known pnl when provided; otherwise keep the row with the most
+ * complete data (has entryDatetime, then has MFE), breaking ties by earliest
+ * entry time, then lowest trade number for determinism.
+ *
+ * Pass `collisions` to collect a record for every row this function drops.
+ */
 export function dedupeOnePerDay(
   trades: ParsedTrade[],
-  seed?: { date: string; pnl: number }[]
+  seed?: { date: string; pnl: number }[],
+  collisions?: DedupeCollision[]
 ): ParsedTrade[] {
   const seedByDate = new Map((seed ?? []).map((s) => [s.date, s.pnl]));
   const byDate = new Map<string, ParsedTrade[]>();
@@ -265,6 +303,24 @@ export function dedupeOnePerDay(
     list.push(t);
     byDate.set(t.date, list);
   }
+
+  const recordDrops = (
+    kept: ParsedTrade,
+    list: ParsedTrade[],
+    reason: DedupeCollisionReason
+  ) => {
+    if (!collisions) return;
+    for (const t of list) {
+      if (t === kept) continue;
+      collisions.push({
+        date: t.date,
+        pnl: t.pnl,
+        reason,
+        keptKey: tradeDedupeKey(kept),
+        droppedKey: tradeDedupeKey(t),
+      });
+    }
+  };
 
   const out: ParsedTrade[] = [];
   for (const [, list] of byDate) {
@@ -277,26 +333,39 @@ export function dedupeOnePerDay(
       const hit = list.find((t) => Math.abs(t.pnl - seedPnl) < 0.02);
       if (hit) {
         out.push(hit);
+        recordDrops(hit, list, "one_per_day_seed");
         continue;
       }
     }
-    const sorted = [...list].sort((a, b) => {
-      const score = (p: number) => {
-        if (p > 1200) return 3;
-        if (p < -200) return 2;
-        return 1;
-      };
-      return score(b.pnl) - score(a.pnl) || Math.abs(b.pnl) - Math.abs(a.pnl);
-    });
+    // Neutral completeness ranking — replaces the old pnl>$1200-first heuristic
+    // that biased overlap days toward large wins.
+    const completeness = (t: ParsedTrade) =>
+      (t.entryDatetime ? 2 : 0) + (t.mfeUsd != null ? 1 : 0);
+    const sorted = [...list].sort(
+      (a, b) =>
+        completeness(b) - completeness(a) ||
+        (a.entryDatetime ?? "\uffff").localeCompare(b.entryDatetime ?? "\uffff") ||
+        a.num - b.num
+    );
     out.push(sorted[0]!);
+    recordDrops(sorted[0]!, list, "one_per_day");
   }
   return out.sort((a, b) => a.date.localeCompare(b.date) || a.num - b.num);
 }
 
-/** Merge multiple TV exports chronologically; drops duplicate date+pnl rows. */
+/**
+ * Merge multiple TV exports chronologically; drops rows whose dedupe key
+ * (see tradeDedupeKey) already appeared. Pass `options.collisions` to collect
+ * a record for every dropped row instead of losing it silently.
+ */
 export function mergeTvCsvs(
   texts: string[],
-  options?: { onePerDay?: boolean; seed?: { date: string; pnl: number }[] }
+  options?: {
+    onePerDay?: boolean;
+    seed?: { date: string; pnl: number }[];
+    /** Out-param: dropped-row records are pushed here when provided. */
+    collisions?: DedupeCollision[];
+  }
 ): ParsedTrade[] {
   const all: ParsedTrade[] = [];
   for (const text of texts) {
@@ -307,13 +376,22 @@ export function mergeTvCsvs(
   for (const t of all) {
     if (!t.date) continue;
     const k = tradeDedupeKey(t);
-    if (seen.has(k)) continue;
+    if (seen.has(k)) {
+      options?.collisions?.push({
+        date: t.date,
+        pnl: t.pnl,
+        reason: "merge_duplicate",
+        keptKey: k,
+        droppedKey: k,
+      });
+      continue;
+    }
     seen.add(k);
     out.push(t);
   }
   const sorted = out.sort((a, b) => a.date.localeCompare(b.date) || a.num - b.num);
   if (options?.onePerDay) {
-    return dedupeOnePerDay(sorted, options.seed);
+    return dedupeOnePerDay(sorted, options.seed, options.collisions);
   }
   return sorted;
 }
@@ -349,13 +427,7 @@ export function enrichedTradeToCsvRow(t: ParsedTrade): string {
 
 /** Trades per calendar week inferred from date span; defaults to 5 (~1/day) if unknown. */
 export function tradesPerWeek(dates: string[]): number {
-  const ts = dates
-    .map((d) => Date.parse(d))
-    .filter((t) => Number.isFinite(t))
-    .sort((a, b) => a - b);
-  if (ts.length < 2) return 5;
-  const weeks = (ts[ts.length - 1]! - ts[0]!) / (7 * 24 * 3600 * 1000);
-  return weeks > 0.25 ? dates.length / weeks : 5;
+  return tradesPerWeekFromDates(dates);
 }
 
 function splitCsvLine(line: string): string[] {

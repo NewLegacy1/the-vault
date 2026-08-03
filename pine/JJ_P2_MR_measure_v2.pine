@@ -1,0 +1,267 @@
+//@version=6
+// JJ Fair-Value MEASURE v2 — comprehensive clone of stated public rules.
+// Fixes vs v1: body>prior displacement · wick-pref · mid-session FV update ·
+//              open-color P1 · 5m continuation then MR · 2pm FV window · optional layer.
+// Spec: strategies/strategy-dev/50-analyses/jj-simon-trade-dissection-vs-vault.md
+// Pick ONE profile → Deep BT → export CSV named in HUD.
+// Not Dual46. Not live authority until SCORECARD toward + path MC.
+
+strategy(
+     title                   = "JJ FV measure v2",
+     shorttitle              = "JJ-FV v2",
+     overlay                 = true,
+     pyramiding              = 3,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 300,
+     max_lines_count         = 50)
+
+// ─── ONLY toggle you need ───
+grpPick = "▶ EXPORT PROFILE (pick one)"
+i_profile = input.string(
+     "C1 · Full clone · no pyramid",
+     "Profile",
+     options = [
+         "C1 · Full clone · no pyramid",
+         "C2 · Full clone · pyramid 2",
+         "C3 · Clone + MSB · no pyramid"
+     ],
+     group = grpPick,
+     tooltip = "C1 = stated clone (body>prior, wick-pref, FV update, open-color, PM). C2 = + layering. C3 = C1 + MSB on MR. One Deep BT export per profile.")
+
+grpRisk = "Risk (usually leave alone)"
+i_riskUsd = input.float(300.0, "Risk USD / trade", minval = 50.0, step = 50.0, group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)"], group = grpRisk)
+
+grpVis = "Chart"
+i_showFv   = input.bool(true, "Show fair value", group = grpVis)
+i_showMark = input.bool(true, "Show entry markers", group = grpVis)
+
+// ─── Locked clone params (not free knobs) ───
+int sessOpen   = 930
+int p1End      = 935      // JJ: continuation ~first 5m, then MR
+int amEnd      = 1100
+int pmOpen     = 1400
+int pmP1End    = 1405
+int pmEnd      = 1500
+int flatTime   = 1555
+float extMult  = 0.25     // looser than v1 0.5 — he arms sooner
+int pivotL     = 5
+float wickPct  = 20.0     // quality tag on C3 only
+int atrLen     = 14
+float rr       = 1.5
+int maxCtr     = 60
+float maxStop  = 50.0
+int maxDay     = 10        // his stated aggression target class
+int consolLen  = 8
+float consolAtrMult = 1.25
+float openColorMaxStop = 25.0  // if open range > 25 → 50/76 else 25/38
+
+bool isC1 = i_profile == "C1 · Full clone · no pyramid"
+bool isC2 = i_profile == "C2 · Full clone · pyramid 2"
+bool isC3 = i_profile == "C3 · Clone + MSB · no pyramid"
+bool allowPyramid = isC2
+int maxLayers = isC2 ? 2 : 1
+bool requireMsb = isC3
+bool requireWickPct = isC3
+bool useWickPref = isC1 or isC2   // his discretionary skip, frozen ON for clone
+
+string csvHint = isC1 ? "jj-c1-clone-mnq-1m-12m.csv" : (isC2 ? "jj-c2-layer-mnq-1m-12m.csv" : "jj-c3-msb-mnq-1m-12m.csv")
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool isAmOpenBar = nyHhmm == sessOpen
+bool isPmOpenBar = nyHhmm == pmOpen
+
+bool inAmP1 = nyHhmm >= sessOpen and nyHhmm < p1End
+bool inAmP2 = nyHhmm >= p1End and nyHhmm < amEnd
+bool inPmP1 = nyHhmm >= pmOpen and nyHhmm < pmP1End
+bool inPmP2 = nyHhmm >= pmP1End and nyHhmm < pmEnd
+bool inP1 = inAmP1 or inPmP1
+bool inP2 = inAmP2 or inPmP2
+bool canArm = inP1 or inP2
+bool flatNow = nyHhmm >= flatTime
+
+float atr = ta.atr(atrLen)
+float body = math.abs(close - open)
+float bodyPrev = math.abs(close[1] - open[1])
+
+// ─── Fair value: open / 2pm + mid-session repricing ───
+var float fairValue = na
+var int dayTrades = 0
+var int layerCount = 0
+
+if newDay
+    fairValue := na
+    dayTrades := 0
+    layerCount := 0
+
+if isAmOpenBar
+    fairValue := open
+if isPmOpenBar
+    fairValue := open
+
+float rollHi = ta.highest(high, consolLen)
+float rollLo = ta.lowest(low, consolLen)
+float rollRange = rollHi - rollLo
+bool tightConsol = not na(atr) and atr > 0 and rollRange <= consolAtrMult * atr
+bool bosUpAway = tightConsol[1] and close > rollHi[1] and not na(fairValue) and close > fairValue
+bool bosDnAway = tightConsol[1] and close < rollLo[1] and not na(fairValue) and close < fairValue
+// Reprice FV to broken consolidation mid (his mid-day rewrite, mechanical)
+if bosUpAway or bosDnAway
+    fairValue := (rollHi[1] + rollLo[1]) * 0.5
+
+plot(i_showFv and not na(fairValue) ? fairValue : na, "FV", color = color.new(#fbbf24, 0), style = plot.style_linebr, linewidth = 2)
+
+// ─── Structure (MSB) ───
+float ph = ta.pivothigh(high, pivotL, pivotL)
+float pl = ta.pivotlow(low, pivotL, pivotL)
+var float lastSwingHigh = na
+var float lastSwingLow = na
+if newDay
+    lastSwingHigh := na
+    lastSwingLow := na
+if not na(ph)
+    lastSwingHigh := ph
+if not na(pl)
+    lastSwingLow := pl
+
+// ─── Helpers ───
+f_pv() =>
+    i_pvMode == "NQ ($20/pt)" ? 20.0 : 2.0
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, maxCtr))
+
+f_tierStop(float a) =>
+    na(a) ? na : (a > 20.0 ? 50.0 : (a >= 7.0 ? 25.0 : 16.5))
+
+// JJ stated displacement: body larger than previous body + directional close
+f_dispLongBody() =>
+    close > open and body > bodyPrev and bodyPrev >= 0
+
+f_dispShortBody() =>
+    close < open and body > bodyPrev and bodyPrev >= 0
+
+// FX Replay quality wick% (C3 only)
+f_wickOkLong() =>
+    float span = high - open
+    float cwick = math.max(0.0, high - close)
+    span > 0 and (cwick / span) * 100.0 <= wickPct
+
+f_wickOkShort() =>
+    float span = open - low
+    float cwick = math.max(0.0, close - low)
+    span > 0 and (cwick / span) * 100.0 <= wickPct
+
+// His skip: prefer close beyond prior extreme ("close below this wick")
+f_wickPrefLong() =>
+    close > high[1]
+
+f_wickPrefShort() =>
+    close < low[1]
+
+f_dispLong() =>
+    f_dispLongBody() and (not requireWickPct or f_wickOkLong()) and (not useWickPref or f_wickPrefLong())
+
+f_dispShort() =>
+    f_dispShortBody() and (not requireWickPct or f_wickOkShort()) and (not useWickPref or f_wickPrefShort())
+
+bool extendedUp = not na(fairValue) and not na(atr) and (close - fairValue) >= extMult * atr
+bool extendedDn = not na(fairValue) and not na(atr) and (fairValue - close) >= extMult * atr
+
+bool msbLong  = not na(lastSwingHigh) and close > lastSwingHigh
+bool msbShort = not na(lastSwingLow) and close < lastSwingLow
+
+// ─── Signals ───
+// A) Open-color continuation on the 9:30 / 2:00 bar (his Trade A)
+bool openColorLong  = (isAmOpenBar or isPmOpenBar) and close > open
+bool openColorShort = (isAmOpenBar or isPmOpenBar) and close < open
+
+// B) P1 continuation after open bar: displacement away from FV
+bool p1Long  = inP1 and not (isAmOpenBar or isPmOpenBar) and close > fairValue and f_dispLong() and (not requireMsb or msbLong)
+bool p1Short = inP1 and not (isAmOpenBar or isPmOpenBar) and close < fairValue and f_dispShort() and (not requireMsb or msbShort)
+
+// C) P2 mean reversion toward FV
+bool p2LongDisp  = inP2 and extendedDn and f_dispLong()
+bool p2ShortDisp = inP2 and extendedUp and f_dispShort()
+bool p2Long  = requireMsb ? (p2LongDisp and msbLong) : p2LongDisp
+bool p2Short = requireMsb ? (p2ShortDisp and msbShort) : p2ShortDisp
+
+bool goLong  = openColorLong or p1Long or p2Long
+bool goShort = openColorShort or p1Short or p2Short
+// Open bar: only color (don't also require disp on same bar)
+if isAmOpenBar or isPmOpenBar
+    goLong := openColorLong
+    goShort := openColorShort
+
+string tagLong = openColorLong ? "OC-L" : (p1Long ? "P1-L" : "P2-L")
+string tagShort = openColorShort ? "OC-S" : (p1Short ? "P1-S" : "P2-S")
+
+// Position / pyramid gate
+if strategy.position_size == 0
+    layerCount := 0
+
+bool inLong  = strategy.position_size > 0
+bool inShort = strategy.position_size < 0
+bool canFresh = strategy.position_size == 0
+bool canAddLong  = allowPyramid and inLong and layerCount < maxLayers and goLong
+bool canAddShort = allowPyramid and inShort and layerCount < maxLayers and goShort
+bool posOk = canFresh or canAddLong or canAddShort
+// Never reverse while in a position
+bool dirOk = (goLong and not goShort and (canFresh or canAddLong) and not inShort) or (goShort and not goLong and (canFresh or canAddShort) and not inLong)
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+if canArm and dayTrades < maxDay and posOk and dirOk and not na(atr) and not na(fairValue)
+    bool isOpenColor = openColorLong or openColorShort
+    float stopPts = na
+    if isOpenColor
+        float openRange = high - low
+        stopPts := openRange > openColorMaxStop ? 50.0 : 25.0
+    else
+        stopPts := f_tierStop(atr)
+    if not na(stopPts) and stopPts > 0 and stopPts <= maxStop
+        int q = f_qty(stopPts)
+        float tpPts = stopPts * rr
+        if q > 0 and goShort and not goLong
+            string eid = "S" + str.tostring(bar_index)
+            float entry = close
+            strategy.entry(eid, strategy.short, qty = q)
+            strategy.exit(eid + "X", from_entry = eid, stop = entry + stopPts, limit = entry - tpPts)
+            dayTrades += 1
+            layerCount := layerCount + 1
+            if i_showMark
+                label.new(bar_index, high, tagShort, style = label.style_label_down, color = color.new(#ef4444, 20), textcolor = color.white, size = size.tiny)
+        else if q > 0 and goLong and not goShort
+            string eid = "L" + str.tostring(bar_index)
+            float entry = close
+            strategy.entry(eid, strategy.long, qty = q)
+            strategy.exit(eid + "X", from_entry = eid, stop = entry - stopPts, limit = entry + tpPts)
+            dayTrades += 1
+            layerCount := layerCount + 1
+            if i_showMark
+                label.new(bar_index, low, tagLong, style = label.style_label_up, color = color.new(#22c55e, 20), textcolor = color.white, size = size.tiny)
+
+var table hud = table.new(position.top_right, 1, 4, bgcolor = color.new(#0f172a, 10), border_width = 1, border_color = color.new(#38bdf8, 40))
+if barstate.islast
+    color headCol = isC1 ? color.new(#38bdf8, 0) : (isC2 ? color.new(#a78bfa, 0) : color.new(#34d399, 0))
+    table.cell(hud, 0, 0, i_profile, text_color = headCol, text_size = size.normal)
+    table.cell(hud, 0, 1, "body>prior · FV update · OC+PM", text_color = color.new(#94a3b8, 0), text_size = size.tiny)
+    table.cell(hud, 0, 2, "Save export as:", text_color = color.new(#94a3b8, 0), text_size = size.tiny)
+    table.cell(hud, 0, 3, csvHint, text_color = color.white, text_size = size.small)

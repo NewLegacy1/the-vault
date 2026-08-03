@@ -111,6 +111,6 @@ Detailed phases in `vault-app/lib/prop-firms.ts` — expand Obsidian when those 
 | Firm | Eval consistency | Funded DD | Funded payout quirk |
 |---|---|---|---|
 | Topstep $50K | None (5 winning days ≥$150) | EOD MLL + $1k DLL | Path choice at activation (Standard vs 40% consistency) |
-| Apex $50K EOD | None | EOD + DLL | ~30% payout consistency on many tiers |
+| Apex $50K EOD | None | EOD $2,500 + DLL | 50% payout consistency (Apex 4.0, Mar 2026) · 5×$50 qualifying days/cycle · 6-payout lifetime cap |
 | Alpha Premium | 50% (2 min days) | EOD | No funded consistency on Premium |
 | Alpha Zero | None | EOD + DLL | ~40% payout consistency on funded |

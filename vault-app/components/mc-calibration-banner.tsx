@@ -11,6 +11,10 @@ export interface McCalibrationBannerProps {
   accountRecycling?: boolean;
   cohortEngineVersion?: number;
   compact?: boolean;
+  /** From McResult — intraday trail ratcheted on unrealized MFE peaks (F2). */
+  mfeTrailApplied?: boolean;
+  /** Fraction of trades carrying mfeUsd (0–1). */
+  mfeCoveragePct?: number;
 }
 
 export function McCalibrationBanner({
@@ -20,6 +24,8 @@ export function McCalibrationBanner({
   accountRecycling,
   cohortEngineVersion,
   compact = false,
+  mfeTrailApplied,
+  mfeCoveragePct,
 }: McCalibrationBannerProps) {
   const compactJoin = " · ";
   const report: McCalibrationReport = describeMcCalibration({
@@ -31,6 +37,13 @@ export function McCalibrationBanner({
 
   const stale =
     cohortEngineVersion != null && cohortEngineVersion < MC_ENGINE_VERSION;
+
+  const intradayTrail = rulePack?.trailingMode === "intraday";
+  const mfeWarn =
+    intradayTrail && mfeTrailApplied === false
+      ? `Intraday trail on day-close equity only — ledger lacks MFE (${Math.round((mfeCoveragePct ?? 0) * 100)}% coverage, need ≥50%). Pass rates optimistic for Apex-style trails; export an enriched CSV with mfe_usd.`
+      : null;
+  const mfeOk = intradayTrail && mfeTrailApplied === true;
 
   if (compact) {
     return (
@@ -49,6 +62,8 @@ export function McCalibrationBanner({
             {report.notModeled.length > 2 ? "…" : ""}
           </>
         )}
+        {mfeOk && <span> · MFE trail ON</span>}
+        {mfeWarn && <span className="warn"> · trail ignores unrealized MFE (no mfe_usd)</span>}
         {stale && <span className="warn"> · Re-RUN in Lab for calibrated rates</span>}
       </p>
     );
@@ -94,6 +109,15 @@ export function McCalibrationBanner({
           <span className="dim">Not modeled: </span>
           <span className="subtext">{report.notModeled.join(compactJoin)}</span>
         </div>
+      )}
+      {mfeOk && (
+        <div>
+          <span className="dim">MFE trail: </span>
+          ON — peak ratchets on unrealized intraday MFE ({Math.round((mfeCoveragePct ?? 0) * 100)}% of trades carry mfe_usd)
+        </div>
+      )}
+      {mfeWarn && (
+        <div className="warn">{mfeWarn}</div>
       )}
     </div>
   );

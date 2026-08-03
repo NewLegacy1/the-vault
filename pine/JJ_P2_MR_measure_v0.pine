@@ -1,0 +1,147 @@
+//@version=6
+// JJ Fair-Value · Phase-2 mean reversion MEASURE — Deep BT only.
+// Spec: strategies/strategy-dev/60-track-b/jj-p2-mr-fair-value-v0.md
+// Save CSV: vault-app/data/tv-exports/matrix/jj-p2-mr-mnq-1m.csv
+// NOT Dual46 · NOT ORB · P2 toward 9:30 FV only · 1 trade/day.
+
+strategy(
+     title                   = "JJ P2-MR FairValue measure v0",
+     shorttitle              = "JJ-P2-MR measure",
+     overlay                 = true,
+     pyramiding              = 0,
+     process_orders_on_close = true,
+     calc_on_every_tick      = false,
+     max_bars_back           = 5000,
+     initial_capital         = 50000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     commission_type         = strategy.commission.cash_per_contract,
+     commission_value        = 0.62,
+     slippage                = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     max_labels_count        = 100,
+     max_lines_count         = 100)
+
+grpEvt = "Event (locked — do not sweep)"
+i_sessOpen = input.int(930, "RTH open (HHMM)", group = grpEvt)
+i_armFrom  = input.int(945, "Arm from (HHMM) — P2 start", group = grpEvt)
+i_armTo    = input.int(1100, "Last entry (HHMM) — P2 end", group = grpEvt)
+i_flatTime = input.int(1555, "Flat by (HHMM)", group = grpEvt)
+i_extMult  = input.float(0.5, "Min |price−FV| = ATR ×", minval = 0.1, step = 0.1, group = grpEvt, tooltip = "One free param. Pre-registered 0.5.")
+i_pivotL   = input.int(5, "Pivot left/right bars", minval = 2, maxval = 10, group = grpEvt)
+i_wickPct  = input.float(20.0, "Max counter-wick % of body span", minval = 5.0, maxval = 40.0, group = grpEvt)
+
+grpRisk = "Risk (ATR tiers from FX Replay / JJ public)"
+i_useTier = input.bool(true, "Use ATR point tiers (else ATR×stop)", group = grpRisk)
+i_atrLen  = input.int(14, "ATR length", minval = 5, group = grpRisk)
+i_atrStop = input.float(1.0, "Stop = ATR × (tier OFF)", group = grpRisk)
+i_rr      = input.float(1.5, "Target R", group = grpRisk)
+i_riskUsd = input.float(300.0, "Risk USD", group = grpRisk)
+i_maxCtr  = input.int(60, "Max contracts", group = grpRisk)
+i_maxStop = input.float(50.0, "Max stop (pts)", group = grpRisk)
+i_pvMode  = input.string("MNQ ($2/pt)", "Point value", options = ["MNQ ($2/pt)", "NQ ($20/pt)", "Auto"], group = grpRisk)
+
+grpVis = "Visuals"
+i_showFv   = input.bool(true, "Fair value (9:30 open)", group = grpVis)
+i_showMark = input.bool(true, "Entry markers", group = grpVis)
+
+int nyHhmm = hour(time, "America/New_York") * 100 + minute(time, "America/New_York")
+bool newDay = ta.change(time("D", "America/New_York")) != 0
+bool canArm = nyHhmm >= i_armFrom and nyHhmm < i_armTo
+bool flatNow = nyHhmm >= i_flatTime
+bool isOpenBar = nyHhmm == i_sessOpen
+
+float atr = ta.atr(i_atrLen)
+
+var float fairValue = na
+var int dayTrades = 0
+
+if newDay
+    fairValue := na
+    dayTrades := 0
+
+if isOpenBar
+    fairValue := open
+
+plot(i_showFv and not na(fairValue) ? fairValue : na, "FV_930", color = color.new(#fbbf24, 0), style = plot.style_linebr, linewidth = 2)
+
+// Pivots confirmed i_pivotL bars ago
+float ph = ta.pivothigh(high, i_pivotL, i_pivotL)
+float pl = ta.pivotlow(low, i_pivotL, i_pivotL)
+var float lastSwingHigh = na
+var float lastSwingLow = na
+if not na(ph)
+    lastSwingHigh := ph
+if not na(pl)
+    lastSwingLow := pl
+
+f_pv() =>
+    if i_pvMode == "MNQ ($2/pt)"
+        2.0
+    else if i_pvMode == "NQ ($20/pt)"
+        20.0
+    else
+        float raw = syminfo.pointvalue
+        string t = str.upper(syminfo.ticker)
+        str.contains(t, "MNQ") ? 2.0 : (str.contains(t, "NQ") ? 20.0 : (raw > 0 ? raw : 2.0))
+
+f_qty(float stopPts) =>
+    float pv = f_pv()
+    if stopPts <= 0 or stopPts > i_maxStop
+        0
+    else
+        int q = int(math.floor(i_riskUsd / (stopPts * pv)))
+        math.max(0, math.min(q, i_maxCtr))
+
+// ATR-tier stops (pts) — FX Replay formalization of JJ public sizes
+f_tierStop(float a) =>
+    if na(a)
+        na
+    else if a > 20.0
+        50.0
+    else if a >= 7.0
+        25.0
+    else
+        16.5
+
+// Displacement: decisive close — counter-wick ≤ wickPct of open→extreme span
+f_dispLong() =>
+    float span = high - open
+    float cwick = math.max(0.0, high - close)
+    span > 0 and close > open and (cwick / span) * 100.0 <= i_wickPct
+
+f_dispShort() =>
+    float span = open - low
+    float cwick = math.max(0.0, close - low)
+    span > 0 and close < open and (cwick / span) * 100.0 <= i_wickPct
+
+bool extendedUp = not na(fairValue) and not na(atr) and (close - fairValue) >= i_extMult * atr
+bool extendedDn = not na(fairValue) and not na(atr) and (fairValue - close) >= i_extMult * atr
+
+// MSB toward FV: after extension up → bearish close below last swing low; after ext down → bullish close above last swing high
+bool msbShort = extendedUp and not na(lastSwingLow) and close < lastSwingLow and f_dispShort()
+bool msbLong  = extendedDn and not na(lastSwingHigh) and close > lastSwingHigh and f_dispLong()
+
+if flatNow and strategy.position_size != 0
+    strategy.close_all(comment = "flat 15:55")
+
+if canArm and dayTrades == 0 and strategy.position_size == 0 and not na(atr) and not na(fairValue)
+    float stopPts = i_useTier ? f_tierStop(atr) : i_atrStop * atr
+    if not na(stopPts) and stopPts > 0 and stopPts <= i_maxStop
+        int q = f_qty(stopPts)
+        float tpPts = stopPts * i_rr
+        if q > 0 and msbShort
+            float entry = close
+            strategy.entry("JJ_S", strategy.short, qty = q)
+            strategy.exit("JJ_SX", "JJ_S", stop = entry + stopPts, limit = entry - tpPts)
+            dayTrades += 1
+            if i_showMark
+                label.new(bar_index, high, "JJ-S", style = label.style_label_down, color = color.new(#ef4444, 20), textcolor = color.white, size = size.tiny)
+        else if q > 0 and msbLong
+            float entry = close
+            strategy.entry("JJ_L", strategy.long, qty = q)
+            strategy.exit("JJ_LX", "JJ_L", stop = entry - stopPts, limit = entry + tpPts)
+            dayTrades += 1
+            if i_showMark
+                label.new(bar_index, low, "JJ-L", style = label.style_label_up, color = color.new(#22c55e, 20), textcolor = color.white, size = size.tiny)

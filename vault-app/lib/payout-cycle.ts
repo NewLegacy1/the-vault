@@ -16,8 +16,13 @@ export interface PayoutCycleMetrics {
   expectedNetPerAccountUsd: number;
   weeksToPassP50: number | null;
   weeksToPayoutP50: number | null;
-  /** expectedNetPerAccountUsd / weeksToPayout (or weeksToPass fallback) */
+  /**
+   * F5-honest E[$/wk]: E[net] / E[weeks occupied] over ALL sims when the engine
+   * provides it (v3+); legacy mean-net ÷ median-payout-weeks as fallback only.
+   */
   expectedUsdPerCalendarWeek: number | null;
+  /** Pre-F5 estimator (mean net ÷ median payout weeks) — kept for continuity, do not rank on it. */
+  expectedUsdPerCalendarWeekLegacy?: number | null;
   expectedAccounts: number;
 }
 
@@ -31,10 +36,11 @@ export function derivePayoutCycle(res: McResult): PayoutCycleMetrics {
       ? Math.round((eco.payoutRate / res.passRate) * 1000) / 10
       : null;
   const weeks = eco.weeksToPayoutP50 ?? eco.weeksToPassP50;
-  const expectedUsdPerCalendarWeek =
+  const legacyEstimate =
     weeks != null && weeks > 0
       ? Math.round(eco.expectedNetPerAccountUsd / weeks)
       : null;
+  const expectedUsdPerCalendarWeek = eco.expectedUsdPerWeekOccupied ?? legacyEstimate;
 
   return {
     passPct,
@@ -49,6 +55,7 @@ export function derivePayoutCycle(res: McResult): PayoutCycleMetrics {
     weeksToPassP50: eco.weeksToPassP50,
     weeksToPayoutP50: eco.weeksToPayoutP50,
     expectedUsdPerCalendarWeek,
+    expectedUsdPerCalendarWeekLegacy: legacyEstimate,
     expectedAccounts: eco.expectedAccounts,
   };
 }

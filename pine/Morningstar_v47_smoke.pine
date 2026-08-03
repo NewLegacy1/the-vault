@@ -1,0 +1,25 @@
+//@version=6
+// Tiny smoke strategy — proves Strategy Tester works on this chart.
+// If THIS has 0 trades, the problem is TV setup (not Dual47 logic).
+// Chart: MNQ 1m → Pine Editor → paste → Add to chart → open Strategy Tester.
+strategy(
+     title                   = "MSv47 SMOKE (Tester check)",
+     shorttitle              = "MSv47 SMOKE",
+     overlay                 = true,
+     process_orders_on_close = true,
+     pyramiding              = 0,
+     initial_capital         = 1000000,
+     default_qty_type        = strategy.fixed,
+     default_qty_value       = 1,
+     margin_long             = 0,
+     margin_short            = 0,
+     currency                = currency.USD)
+
+if barstate.isconfirmed and bar_index % 50 == 0 and strategy.position_size == 0
+    strategy.entry("Smoke", strategy.long, qty = 1, comment = "SMOKE")
+    strategy.exit("SmokeX", from_entry = "Smoke", profit = 40, loss = 20)
+
+plotshape(barstate.isconfirmed and bar_index % 50 == 0, title = "smoke", style = shape.triangleup, location = location.belowbar, color = color.yellow, size = size.small)
+
+if barstate.islast
+    label.new(bar_index, high, "SMOKE closed=" + str.tostring(strategy.closedtrades), style = label.style_label_down, color = color.maroon, textcolor = color.yellow, size = size.normal)

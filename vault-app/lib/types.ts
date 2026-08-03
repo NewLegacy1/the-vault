@@ -184,6 +184,16 @@ export interface JournalEntry {
   or30Band?: Or30Band;
   /** High-impact calendar print in 09:50–10:10 NY (Dual46 arm window). */
   release10?: boolean;
+
+  // ── Apex sprint ops fields (playbook §4 data architecture · additive) ──
+  /** Planned $ risk on the take (qty × stopPts × $2 for MNQ). */
+  riskUsd?: number;
+  /** Stop moved to BE at +1R (mandatory on Apex intraday). */
+  beMoved?: boolean;
+  /** Equity − trail floor at entry click ($). */
+  trailRoomAtEntry?: number;
+  /** script = armed take · disc = discretionary · shadow = journal-only. */
+  sleeve?: "script" | "disc" | "shadow";
 }
 
 /** Map journal confluence count → letter suggestion. 0 = empty stack (no setup) → "-". */

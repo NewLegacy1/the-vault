@@ -10,9 +10,9 @@ import { useEffect, useState } from "react";
  * Bare F-keys are still attempted where the browser allows.
  */
 const TABS = [
-  { href: "/", digit: "1", fkey: "F1", label: "TODAY" },
+  { href: "/", digit: "1", fkey: "F1", label: "OPS" },
   { href: "/accounts", digit: "2", fkey: "F2", label: "ACCOUNTS" },
-  { href: "/strategies", digit: "3", fkey: "F3", label: "STRATEGY" },
+  { href: "/pipeline", digit: "3", fkey: "F3", label: "PIPELINE" },
   { href: "/lab", digit: "4", fkey: "F4", label: "LAB" },
   { href: "/journal", digit: "5", fkey: "F5", label: "JOURNAL" },
   { href: "/data", digit: "6", fkey: "F6", label: "DATA" },
@@ -92,7 +92,7 @@ export default function Nav() {
         ))}
       </nav>
       <div className="ticker">
-        <b>PRB v1</b> LOCKED · Dual46 May walk · path MC first ·{" "}
+        <b>PRB v1</b> LOCKED · Apex sprint live · one open Stage-0 · path MC first ·{" "}
         <b>NAV</b> Alt+1…9 (F-keys unreliable in Chrome)
       </div>
     </>

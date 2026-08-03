@@ -17,6 +17,13 @@ export type RiskGeometry = {
   tradePnlSd: number;
   tradeEv: number;
   medianPnl: number;
+  /** |pnl| at or below this counted as scratch (derived or supplied). */
+  scratchThreshold: number;
+};
+
+export type RiskGeometryOptions = {
+  /** Override the scratch threshold in $; default derives 10% of modal risk. */
+  scratchThreshold?: number;
 };
 
 export type BootstrapEvCi = {
@@ -26,10 +33,44 @@ export type BootstrapEvCi = {
   nBoot: number;
 };
 
-const SCRATCH = 50; // |pnl| below this ≈ scratch for geometry
+/** Fallback scratch threshold ($) when modal risk is not computable. */
+const SCRATCH_FALLBACK = 50;
+/** Losses are bucketed to this granularity ($) when finding modal risk. */
+const RISK_BUCKET = 25;
+/** Minimum losing trades needed before modal risk is trusted. */
+const MIN_LOSSES_FOR_MODE = 5;
 
-export function computeRiskGeometry(pnls: number[]): RiskGeometry {
+/**
+ * Derive the scratch threshold as 10% of modal risk: the mode of |pnl|
+ * over losing trades, rounded to $25 buckets. Falls back to $50 when
+ * there are too few losses (< 5) or the modal bucket is $0.
+ */
+export function deriveScratchThreshold(pnls: number[]): number {
+  const lossMagnitudes = pnls.filter((p) => p < 0).map((p) => Math.abs(p));
+  if (lossMagnitudes.length < MIN_LOSSES_FOR_MODE) return SCRATCH_FALLBACK;
+  const counts = new Map<number, number>();
+  for (const a of lossMagnitudes) {
+    const bucket = Math.round(a / RISK_BUCKET) * RISK_BUCKET;
+    counts.set(bucket, (counts.get(bucket) ?? 0) + 1);
+  }
+  let modalRisk = 0;
+  let modalCount = 0;
+  for (const [bucket, count] of counts) {
+    if (count > modalCount || (count === modalCount && bucket < modalRisk)) {
+      modalRisk = bucket;
+      modalCount = count;
+    }
+  }
+  if (modalRisk <= 0) return SCRATCH_FALLBACK;
+  return round2(modalRisk * 0.1);
+}
+
+export function computeRiskGeometry(
+  pnls: number[],
+  options?: RiskGeometryOptions
+): RiskGeometry {
   const n = pnls.length;
+  const scratch = options?.scratchThreshold ?? deriveScratchThreshold(pnls);
   if (n === 0) {
     return {
       n: 0,
@@ -43,6 +84,7 @@ export function computeRiskGeometry(pnls: number[]): RiskGeometry {
       tradePnlSd: 0,
       tradeEv: 0,
       medianPnl: 0,
+      scratchThreshold: scratch,
     };
   }
   let wins = 0;
@@ -53,10 +95,10 @@ export function computeRiskGeometry(pnls: number[]): RiskGeometry {
   let sum = 0;
   for (const p of pnls) {
     sum += p;
-    if (p > SCRATCH) {
+    if (p > scratch) {
       wins++;
       winSum += p;
-    } else if (p < -SCRATCH) {
+    } else if (p < -scratch) {
       losses++;
       lossSum += p;
     } else {
@@ -89,6 +131,7 @@ export function computeRiskGeometry(pnls: number[]): RiskGeometry {
     tradePnlSd: round2(tradePnlSd),
     tradeEv: round2(tradeEv),
     medianPnl: round2(medianPnl),
+    scratchThreshold: round2(scratch),
   };
 }
 

@@ -18,10 +18,18 @@ export default function StrategiesPage() {
 
   return (
     <>
+      <div className="panel">
+        <div className="panel-body small dim">
+          This page moved out of the nav — it is the <b>TV replay recipe book</b>,
+          linked from <Link href="/pipeline" className="accent">PIPELINE</Link> when a card
+          is waiting on an export.
+        </div>
+      </div>
+
       <div className="panel" style={{ borderColor: "var(--accent)" }}>
         <div className="panel-title">
           Matrix replay
-          <span className="sub">F3 — what to run in TradingView · same rows as F4 Lab</span>
+          <span className="sub">what to run in TradingView · same rows as F4 Lab</span>
         </div>
         <div className="panel-body">
           <p className="small dim" style={{ marginTop: 0, lineHeight: 1.65 }}>
@@ -76,7 +84,8 @@ export default function StrategiesPage() {
           </div>
           {activePreset?.seriesId === "macro-income" && (
             <p className="small warn mt">
-              Income track: run profiles M0 → M1 first (same entries, BE is the A/B). M2 only after M1 settles.
+              Income track is in the <b>graveyard</b> (M2 volume Macro killed — see sim-queue).
+              Do not re-run M-series without a new Stage-0 note.
             </p>
           )}
           {activePreset?.family === "datahl" && (

@@ -21,17 +21,25 @@ tags: [charter, research-agent, loop, strategy-dev]
 
 **MTF / TF compare:** HTF bias **is** codable (`request.security`). Stage-0 default = one measure Pine → MNQ **5m** then **1m** under [[stage-0-mtf-breadth]]. Prop path MC only after SCORECARD toward. Do not expand to 4 symbols × 2 TFs before a toward.
 
-## Continuous loop (one cycle)
+## Continuous loop (one cycle) — updated 2026-08-02 (see [[PIPELINE_REGISTRY]])
 
 ```text
-1. INGEST    — new matrix/trackb-*.csv or empty queue?
-2. ANALYZE   — npx tsx scripts/analyze-event-study.ts <file>
-3. SCORECARD — toward | away | kill (write note)
-4. HARVEST   — update kill-lessons-track-b (if kill/away closeout)
+1. INGEST    — npm run ingest (vault-app/) — inbox → matrix/ → Stage-0 auto;
+               then check data/tv-exports/ingest-ledger.json for new verdicts
+2. ANALYZE   — read the auto-run event-study JSON (manual analyze-event-study.ts
+               only for re-runs / custom windows)
+3. SCORECARD — toward | away | kill (write note) + update the entry state in
+               vault-app/data/registry/strategies.json
+4. HARVEST   — update kill-lessons-track-b + registry familyTags (if kill/away closeout)
 5. COMPARE   — vs last study + gated PRB baseline (EV, n, loss shape — not WR)
-6. PROPOSE   — next Stage-0 note OR “waiting on CSV: <filename>”
+6. PROPOSE   — next Stage-0 = new registry entry (state: idea) — /api/registry
+               lint must be clean (kill families · one Stage-0 · independence ≥2)
 7. STOP GATE — never Lab-promote; never edit locked PRB v1; never retune kills
 ```
+
+**Journal reads:** `vault-app/data/vault-store/store.json` is the authoritative
+journal/accounts/ledger copy (localStorage is a cache) — agents read the file,
+no browser pull required.
 
 ## Authority stack (prop / “alternate” math)
 

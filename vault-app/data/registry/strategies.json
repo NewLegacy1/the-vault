@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "updated": "2026-08-02",
+  "entries": [
+    {
+      "id": "gated-prb-a0a",
+      "name": "Gated PRB v1 · A0a (eval control)",
+      "lane": "track_a",
+      "state": "live_sprint",
+      "updated": "2026-08-02",
+      "summary": "Primary Track A eval book. Locked Pine, BE@1R, RR5, $400 risk. Aug–Sep live PRB month per gated-prb-live-guide.",
+      "familyTags": ["prb-rejection-block", "morning-window"],
+      "artifacts": [
+        { "label": "Pine (LOCKED)", "path": "pine/Powell_Rejection_Block_v1.pine" },
+        { "label": "Live guide", "path": "strategies/strategy-dev/20-playbooks/gated-prb-live-guide.md" },
+        { "label": "Sim queue", "path": "strategies/strategy-dev/40-plans/sim-queue.md" }
+      ],
+      "metrics": "MC pass ~79% · P(pay|pass) ~91% · E[$/wk] ~$104 (TPT $50K, Jul 2026)"
+    },
+    {
+      "id": "prb-d1",
+      "name": "PRB D1 · RR6 (funded recycle)",
+      "lane": "track_a",
+      "state": "toward",
+      "updated": "2026-07-15",
+      "summary": "Funded-phase geometry candidate — recycle before PRO+. Awaiting 3y Tier-0 control CSV per sim-queue.",
+      "familyTags": ["prb-rejection-block", "morning-window"],
+      "artifacts": [
+        { "label": "Sim queue Tier 0", "path": "strategies/strategy-dev/40-plans/sim-queue.md" }
+      ],
+      "metrics": "Funded recycle E[$/wk] ~$116 (1y premium — 3y OOS pending)"
+    },
+    {
+      "id": "hybrid-h0a-h0b",
+      "name": "Hybrid Sleeve · H0a eval / H0b funded",
+      "lane": "track_a",
+      "state": "analyzed",
+      "updated": "2026-07-15",
+      "summary": "Macro∥PRB chain-EV breadth book. 1y-premium results settled; 3y Tier-0 controls still owed before promote language.",
+      "familyTags": ["prb-rejection-block", "macro-window", "hybrid-sleeve"],
+      "artifacts": [
+        { "label": "Sim queue Tier 0", "path": "strategies/strategy-dev/40-plans/sim-queue.md" }
+      ],
+      "metrics": "H0a E[$/wk] ~$120 · H0b funded ~$136 (1y premium)"
+    },
+    {
+      "id": "morningstar-dual46",
+      "name": "Morningstar Dual46 (chart freeze study)",
+      "lane": "study",
+      "state": "toward",
+      "updated": "2026-07-23",
+      "summary": "Manual Path B study — geometry locked, multi-month journal walk in progress. Extract identity (~0.5 fills/wk), never the Apex pass engine.",
+      "familyTags": ["morningstar-dual46", "fib-geometry"],
+      "artifacts": [
+        { "label": "Freeze Pine", "path": "pine/Morningstar_v46.pine" },
+        { "label": "July harvest", "path": "strategies/strategy-dev/50-analyses/msv47-v13-july-harvest-2026-07-23.md" }
+      ],
+      "metrics": "Chart harvest only — no Lab E[$/wk] claimed (per lock note)"
+    },
+    {
+      "id": "apex50-intraday-sprint",
+      "name": "Apex $50K Intraday eval sprint",
+      "lane": "track_a",
+      "state": "live_sprint",
+      "updated": "2026-08-02",
+      "summary": "Live week card: script arms only (Dual46/v47 or gated PRB), $300 risk, BE@1R mandatory, 1 take/day, personal DLL −$600 / lock +$1,200.",
+      "familyTags": ["prb-rejection-block", "morningstar-dual46"],
+      "artifacts": [
+        { "label": "Sprint playbook", "path": "strategies/strategy-dev/20-playbooks/apex-50k-intraday-eval-sprint.md" }
+      ],
+      "metrics": "Target $3,000 · trail $2,000 intraday (incl. open P&L) · no eval consistency"
+    },
+    {
+      "id": "lane-s-s3-reaper-macroa",
+      "name": "S3 · Reaper × Macro A (Lane S)",
+      "lane": "lane_s",
+      "state": "waiting_csv",
+      "updated": "2026-08-02",
+      "summary": "Active Stage-0 slot (reopened after JJ-FV kill). Macro A window ∪ widened Reaper predicate — measure Pine drafted, waiting on Deep BT export.",
+      "familyTags": ["reaper-scalp", "macro-window-union"],
+      "independenceAxes": ["time_box", "regime_feature"],
+      "artifacts": [
+        { "label": "Stage-0 note", "path": "strategies/strategy-dev/60-track-b/lane-s-s3-reaper-macroa-v0.md" },
+        { "label": "Measure Pine", "path": "pine/LaneS_ReaperMacroA_measure_v0.pine" }
+      ],
+      "metrics": "Waiting on export: matrix/trackb-s3-reaper-macroa CSV"
+    },
+    {
+      "id": "jj-p2-mr",
+      "name": "JJ P2 mean-reversion (queued)",
+      "lane": "lane_f",
+      "state": "idea",
+      "updated": "2026-08-02",
+      "summary": "Queued behind S3 (one open Stage-0 at a time). HF cadence candidate for pass-speed — needs its own study; meta-15 does not auto-kill it.",
+      "familyTags": ["jj-p2-mean-reversion"],
+      "independenceAxes": ["barrier_geometry", "level_set"],
+      "artifacts": [
+        { "label": "Frequency diagnosis", "path": "strategies/strategy-dev/50-analyses/jj-p2-mr-v0-frequency-diagnosis.md" },
+        { "label": "Fair-value v0 note", "path": "strategies/strategy-dev/60-track-b/jj-p2-mr-fair-value-v0.md" }
+      ]
+    },
+    {
+      "id": "b0-orbreak",
+      "name": "B0 · ORBreak",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "Opening-range break + hard stop. Trail-hostile streaks (maxL=11), negative expectancy.",
+      "familyTags": ["orb", "opening-range-break"],
+      "killConstraint": "2"
+    },
+    {
+      "id": "b1-erxor",
+      "name": "B1 · ERXor",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "Kaufman ER TREND/CHOP xor (VWAP reclaim vs σ fade). No xor lift, OOS negative.",
+      "familyTags": ["vwap-xor", "er-regime"],
+      "killConstraint": "3"
+    },
+    {
+      "id": "b2-mpsf",
+      "name": "B2 · MPSF morning sweep-fade",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "9:30–10:00 PDH/PDL sweep+reclaim fade. EV −$76, CI excl. 0.",
+      "familyTags": ["pdh-pdl-sweep-fade", "morning-fade"],
+      "killConstraint": "4"
+    },
+    {
+      "id": "b3-nrexp",
+      "name": "B3 · NR expansion break",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "NR day → next-day PDH/PDL breakout. Full EV −$18, OOS mean ≤0 (thin but dead).",
+      "familyTags": ["nr-expansion", "pdh-pdl-break"],
+      "killConstraint": "5"
+    },
+    {
+      "id": "b4-vwapz",
+      "name": "B4 · VWAP ±zσ fade",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "z=2 session-VWAP band fade. EV −$15, maxL=19 trail-hostile.",
+      "familyTags": ["vwap-z-fade"],
+      "killConstraint": "6"
+    },
+    {
+      "id": "b5-1005impulse",
+      "name": "B5 · 10:05 impulse",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "Fixed 10:05 morning-mid impulse. EV −$5, OOS −$36.",
+      "familyTags": ["1005-impulse", "morning-mid-impulse"],
+      "killConstraint": "7"
+    },
+    {
+      "id": "b6-gapfade",
+      "name": "B6 · Gap fade",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "Overnight gap fade → prior close. n=340 stable drain, EV −$9.",
+      "familyTags": ["gap-fade"],
+      "killConstraint": "8"
+    },
+    {
+      "id": "b7-pmcont",
+      "name": "B7 · AM→PM continuation",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "12:05 continuation @1.5R. n=516, EV −$8 — settled soft-drain geometry.",
+      "familyTags": ["am-pm-continuation"],
+      "killConstraint": "9"
+    },
+    {
+      "id": "b8-gapcont",
+      "name": "B8 · Gap continuation",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "≥1.0×ATR gap continuation. n=641 rarity fail, EV −$1, OOS CI covers 0.",
+      "familyTags": ["gap-continuation"],
+      "killConstraint": "9d"
+    },
+    {
+      "id": "b9-mtf-pmcont",
+      "name": "B9 · MTF AM→PM continuation",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "15m-gated PM continuation. n=425, EV −$9 — MTF wrapper insufficient.",
+      "familyTags": ["am-pm-continuation", "mtf-wrapper"],
+      "killConstraint": "9b"
+    },
+    {
+      "id": "b10-lom",
+      "name": "B10 · Late open-magnet fade",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "14:30 fade to RTH open. n=465, EV −$5, 26%/2.5R trap.",
+      "familyTags": ["open-magnet-fade", "late-fade"],
+      "killConstraint": "9c"
+    },
+    {
+      "id": "b11-bb-reclaim",
+      "name": "B11 · BB pierce→reclaim + ADX chop",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "n=775, EV −$1, WR 52% but RR<1. No hour/ADX/stop rescue.",
+      "familyTags": ["bb-reclaim", "adx-chop"],
+      "killConstraint": "9e"
+    },
+    {
+      "id": "b12-ema-pullback",
+      "name": "B12 · EMA pullback + ADX trend",
+      "lane": "track_b",
+      "state": "killed",
+      "updated": "2026-07-15",
+      "summary": "n=293, EV −$8 — returned to soft-drain package. Lane F spray paused.",
+      "familyTags": ["ema-pullback", "adx-trend"],
+      "killConstraint": "9f"
+    },
+    {
+      "id": "jj-fv-clone",
+      "name": "JJ Fair-Value mechanical clone",
+      "lane": "lane_f",
+      "state": "killed",
+      "updated": "2026-08-02",
+      "summary": "Open-color / body>prior / FV magnet @1.5R. v2 n=1999, EV −$19, CI excl. 0. No RR/MSB/pyramid costume retunes.",
+      "familyTags": ["jj-fv-clone", "fair-value-magnet", "open-color"],
+      "killConstraint": "9g"
+    }
+  ]
+}

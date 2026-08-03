@@ -1,20 +1,48 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  fetchServerValue,
+  isVaultServerKey,
+  mergeWithServer,
+  pushServerValue,
+} from "./vault-store-client";
 
-/** localStorage-backed state, hydration-safe for Next.js. */
+/**
+ * localStorage-backed state, hydration-safe for Next.js.
+ * The four vault.* keys are additionally synced with /api/vault-store —
+ * server file is the durable source of truth, localStorage is the cache.
+ */
 export function useLocal<T>(key: string, initial: T) {
   const [val, setVal] = useState<T>(initial);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    let local: T | undefined;
     try {
       const raw = localStorage.getItem(key);
-      if (raw !== null) setVal(JSON.parse(raw) as T);
+      if (raw !== null) {
+        local = JSON.parse(raw) as T;
+        setVal(local);
+      }
     } catch {
       // corrupted entry — fall back to initial
     }
     setReady(true);
+
+    // Reconcile with the server store (vault.* keys only). Adopting the merge
+    // triggers the write effect below, which caches it and pushes it back.
+    if (isVaultServerKey(key)) {
+      let cancelled = false;
+      void fetchServerValue(key).then((server) => {
+        if (cancelled || server === undefined) return;
+        const merged = mergeWithServer(key, local ?? initial, server) as T;
+        setVal(merged);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
@@ -34,7 +62,9 @@ export function useLocal<T>(key: string, initial: T) {
   }, [key]);
 
   useEffect(() => {
-    if (ready) localStorage.setItem(key, JSON.stringify(val));
+    if (!ready) return;
+    localStorage.setItem(key, JSON.stringify(val));
+    if (isVaultServerKey(key)) pushServerValue(key, val);
   }, [key, val, ready]);
 
   return [val, setVal, ready] as const;

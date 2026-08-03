@@ -63,6 +63,10 @@ describe("implementation-shortfall", () => {
     const mc = emptyMc({
       economics: {
         tradesPerWeek: 1,
+        stepsPerWeek: 1,
+        stepUnit: "day",
+        weeksOccupiedMean: 12,
+        expectedUsdPerWeekOccupied: 20,
         weeksToPassP50: 10,
         weeksToPassP90: 20,
         weeksToPayoutP50: 12,

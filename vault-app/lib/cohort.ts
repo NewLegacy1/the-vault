@@ -245,9 +245,10 @@ export function buildCohortMarkdown(input: CohortSaveInput): string {
     weeksToPassP50: input.mc.economics.weeksToPassP50,
     weeksToPayoutP50: input.mc.economics.weeksToPayoutP50,
     expectedUsdPerCalendarWeek:
-      weeksCycle != null && weeksCycle > 0
+      input.mc.economics.expectedUsdPerWeekOccupied ??
+      (weeksCycle != null && weeksCycle > 0
         ? Math.round(input.mc.economics.expectedNetPerAccountUsd / weeksCycle)
-        : null,
+        : null),
     expectedAccounts: input.mc.economics.expectedAccounts,
   };
   const cycleYaml =

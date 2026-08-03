@@ -29,6 +29,8 @@ export interface FirmPayoutConfig {
   /** TPT recycle: new test fee when restarting after withdraw. */
   recycleEvalFeeUsd?: number;
   source: string;
+  /** F4: date the numbers were last checked against the firm's help center. */
+  rulesVerified?: string;
 }
 
 /** Funded-phase payout consistency % (official, Jul 2026). Topstep Standard XFA = 0; Consistency path = 40. */
@@ -114,12 +116,15 @@ const ALPHA_ZERO_FUNDED: FirmPayoutConfig = {
 
 const APEX_FUNDED: FirmPayoutConfig = {
   traderKeepPct: 1,
-  profitBufferUsd: 2100,
+  // F4 (Apex 4.0): EOD 50K safety net = $2,500 drawdown + $100 = $2,600.
+  // ($2,100 is the INTRADAY 50K number: $2,000 DD + $100 — was wrongly used here.)
+  profitBufferUsd: 2600,
   maxPayoutPerRequestUsd: 1500,
   evalFeeUsd: 197,
   activationFeeUsd: 99,
   monthlyFeeUsd: 0,
   source: "apextraderfunding.com — EOD PA payouts (4.0, 50% consistency)",
+  rulesVerified: "2026-08-02",
 };
 
 /** XFA Standard path — Apr 2026 $50K cap; 50% of balance per request. */
@@ -163,10 +168,7 @@ const MATRIX_PAYOUT_CONFIG: Record<
     funded: ALPHA_ZERO_FUNDED,
   },
   "apex50-eod": {
-    eval: {
-      ...APEX_FUNDED,
-      profitBufferUsd: 2100,
-    },
+    eval: APEX_FUNDED,
     funded: APEX_FUNDED,
   },
 };
@@ -192,7 +194,7 @@ export function payoutConfigForFirm(
 
   return {
     traderKeepPct: parseTraderKeepPct(payout?.profitSplit, 0.8),
-    profitBufferUsd: compareMode === "funded" && ruleId === "apex50-eod" ? 2100 : 2000,
+    profitBufferUsd: compareMode === "funded" && ruleId === "apex50-eod" ? 2600 : 2000,
     maxPayoutPerRequestUsd: undefined,
     evalFeeUsd: rule.evalFee ?? 0,
     activationFeeUsd: rule.activationFee ?? phase?.activationFee ?? 0,
@@ -235,7 +237,9 @@ export function pathFeesUsd(opts: {
       fees += evalMonths * opts.config.monthlyFeeUsd;
     }
   } else if (evalMonths > 0 && opts.config.monthlyFeeUsd > 0) {
-    fees += Math.min(evalMonths, 2) * opts.config.monthlyFeeUsd;
+    // F10: charge the actual months occupied (weeks are honest post-F1).
+    // Previously clamped at 2 months regardless of path length.
+    fees += evalMonths * opts.config.monthlyFeeUsd;
   }
 
   if (opts.recycleCycles > 0) {

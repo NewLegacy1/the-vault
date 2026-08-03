@@ -1,4 +1,4 @@
-import type { ParsedTrade } from "./csv";
+import type { DedupeCollision, ParsedTrade } from "./csv";
 
 export type IngestAuditSeverity = "ok" | "warn" | "block";
 
@@ -15,6 +15,8 @@ export type IngestAuditReport = {
   gapCount: number;
   enrichmentCoveragePct: number;
   duplicateDateHits: number;
+  /** Rows removed by mergeTvCsvs / dedupeOnePerDay (when caller passed the collision log). */
+  dedupeDroppedRows: number;
   unsorted: boolean;
   severity: IngestAuditSeverity;
   findings: IngestAuditFinding[];
@@ -41,6 +43,8 @@ export function auditLabIngest(opts: {
   gapBlockDays?: number;
   /** Enrichment coverage below this % → warn (when parsed present). */
   enrichmentWarnPct?: number;
+  /** Rows dropped by mergeTvCsvs / dedupeOnePerDay — collect via their `collisions` out-param. */
+  dedupeCollisions?: DedupeCollision[];
 }): IngestAuditReport {
   const gapWarn = opts.gapWarnDays ?? 45;
   const gapBlock = opts.gapBlockDays ?? 120;
@@ -56,6 +60,7 @@ export function auditLabIngest(opts: {
       gapCount: 0,
       enrichmentCoveragePct: 0,
       duplicateDateHits: 0,
+      dedupeDroppedRows: (opts.dedupeCollisions ?? []).length,
       unsorted: false,
       severity: "block",
       findings: [{ id: "empty", severity: "block", message: "No trades — upload a TV export." }],
@@ -135,6 +140,17 @@ export function auditLabIngest(opts: {
     });
   }
 
+  const dedupeCollisions = opts.dedupeCollisions ?? [];
+  if (dedupeCollisions.length > 0) {
+    const mergeDrops = dedupeCollisions.filter((c) => c.reason === "merge_duplicate").length;
+    const onePerDayDrops = dedupeCollisions.length - mergeDrops;
+    findings.push({
+      id: "dedupe_drops",
+      severity: "warn",
+      message: `${dedupeCollisions.length} rows dropped in dedupe (${mergeDrops} merge duplicates, ${onePerDayDrops} one-per-day) — review collision log before trusting frequency stats.`,
+    });
+  }
+
   let enrichmentCoveragePct = 0;
   if (opts.parsed && opts.parsed.length > 0) {
     const enriched = opts.parsed.filter(
@@ -196,6 +212,7 @@ export function auditLabIngest(opts: {
     gapCount,
     enrichmentCoveragePct,
     duplicateDateHits,
+    dedupeDroppedRows: dedupeCollisions.length,
     unsorted,
     severity,
     findings,

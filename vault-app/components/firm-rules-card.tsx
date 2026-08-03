@@ -48,6 +48,9 @@ export function FirmRulesCard({ rule }: { rule: PropRule }) {
       <p className="small subtext mt">{rule.passAtNote}</p>
       <p className="small dim" style={{ marginTop: 4 }}>
         Source: {rule.source}
+        {rule.lastReviewed && (
+          <span> · rules verified {rule.lastReviewed}</span>
+        )}
       </p>
     </div>
   );
