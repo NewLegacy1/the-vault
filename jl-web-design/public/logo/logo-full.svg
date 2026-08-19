@@ -1,38 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" fill="none" role="img" aria-label="JL Web Design">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 340" fill="none" role="img" aria-label="JL Web Design">
   <defs>
-    <linearGradient id="jlBlueDeep" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#1e3a8a"/>
-      <stop offset="45%" stop-color="#2563eb"/>
-      <stop offset="100%" stop-color="#60a5fa"/>
+    <linearGradient id="wingGradLeft" x1="100%" y1="50%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#007BFF"/>
+      <stop offset="100%" stop-color="#001B3A"/>
     </linearGradient>
-    <linearGradient id="jlBlueBright" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#3b82f6"/>
-      <stop offset="100%" stop-color="#60a5fa"/>
+    <linearGradient id="wingGradRight" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#007BFF"/>
+      <stop offset="100%" stop-color="#001B3A"/>
     </linearGradient>
-    <linearGradient id="jlBlueShadow" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#1d4ed8"/>
-      <stop offset="100%" stop-color="#1e3a8a"/>
+    <linearGradient id="pillarSide" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#007BFF"/>
+      <stop offset="100%" stop-color="#0056b3"/>
     </linearGradient>
   </defs>
 
-  <!-- 3D JL monogram -->
-  <g transform="translate(210 95)">
-    <!-- J base and pillar -->
-    <path d="M-52 38 C-52 -10 -18 -42 14 -42 C36 -42 52 -28 52 -6 C52 14 36 28 14 28 L-18 28 L-18 38 Z" fill="url(#jlBlueDeep)"/>
-    <path d="M-44 30 C-44 -2 -20 -24 4 -24 C18 -24 28 -16 28 -4 C28 8 18 16 4 16 L-10 16 L-10 30 Z" fill="#ffffff" opacity="0.95"/>
-
-    <!-- L vertical ribbon over J -->
-    <path d="M-4 -42 L34 -42 L34 -24 L14 -24 L14 38 L-4 38 Z" fill="url(#jlBlueBright)"/>
-    <path d="M2 -34 L26 -34 L26 -18 L10 -18 L10 30 L2 30 Z" fill="#ffffff" opacity="0.92"/>
-
-    <!-- L horizontal base -->
-    <path d="M14 20 L58 20 L58 38 L14 38 Z" fill="url(#jlBlueBright)"/>
-    <path d="M14 30 L58 30 L58 38 L14 38 Z" fill="url(#jlBlueShadow)"/>
+  <!-- Icon -->
+  <g transform="translate(240 108)">
+    <!-- Left J wing -->
+    <path d="M-72 36 C-88 20 -88 -8 -68 -28 C-48 -44 -24 -40 -8 -20 C8 0 8 20 -4 36 Z" fill="url(#wingGradLeft)"/>
+    <!-- Right L wing -->
+    <path d="M72 36 C88 20 88 -8 68 -28 C48 -44 24 -40 8 -20 C-8 0 -8 20 4 36 Z" fill="url(#wingGradRight)"/>
+    <!-- Pillar side (3D depth) -->
+    <path d="M12 -52 L36 -52 L36 36 L12 36 Z" fill="url(#pillarSide)"/>
+    <!-- Pillar front -->
+    <path d="M-12 -52 L12 -52 L12 36 L-12 36 Z" fill="#ffffff"/>
+    <!-- Pillar top -->
+    <path d="M-12 -52 L12 -52 L36 -52 L12 -60 Z" fill="#007BFF" opacity="0.85"/>
   </g>
 
-  <!-- Brand name -->
-  <text x="210" y="210" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="6">
-    <tspan fill="#60a5fa">JL</tspan>
-    <tspan fill="#ffffff"> WEB DESIGN</tspan>
+  <!-- Wordmark -->
+  <text x="240" y="228" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="300" letter-spacing="10">
+    <tspan fill="#007BFF">JL</tspan>
+    <tspan fill="#ffffff" dx="8"> WEB DESIGN</tspan>
   </text>
 </svg>
