@@ -1,34 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 280" fill="none" role="img" aria-label="JL Web Design">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 300" fill="none" role="img" aria-label="JL Web Design">
   <defs>
-    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3b82f6"/>
-      <stop offset="100%" stop-color="#1d4ed8"/>
+    <linearGradient id="jlBlueDeep" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="45%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
     </linearGradient>
-    <linearGradient id="blueLight" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#60a5fa"/>
-      <stop offset="100%" stop-color="#2563eb"/>
+    <linearGradient id="jlBlueBright" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
+    </linearGradient>
+    <linearGradient id="jlBlueShadow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
     </linearGradient>
   </defs>
 
-  <!-- JL monogram -->
-  <g transform="translate(160 72)">
-    <path d="M-42 34 C-42 -8 -8 -34 18 -34 C34 -34 46 -24 46 -8 C46 8 34 18 18 18 L-8 18 L-8 34 Z" fill="url(#blueGrad)"/>
-    <path d="M-34 26 C-34 0 -14 -18 8 -18 C20 -18 28 -12 28 -2 C28 8 20 14 8 14 L-8 14 L-8 26 Z" fill="#ffffff" opacity="0.92"/>
-    <path d="M-2 -34 L34 -34 L34 -18 L18 -18 L18 34 L2 34 L2 -18 L-2 -18 Z" fill="url(#blueLight)"/>
-    <path d="M6 -26 L26 -26 L26 -14 L14 -14 L14 26 L6 26 L6 -14 L6 -26 Z" fill="#ffffff" opacity="0.88"/>
-    <path d="M18 18 L46 18 L46 34 L18 34 Z" fill="url(#blueGrad)"/>
+  <!-- 3D JL monogram -->
+  <g transform="translate(210 95)">
+    <!-- J base and pillar -->
+    <path d="M-52 38 C-52 -10 -18 -42 14 -42 C36 -42 52 -28 52 -6 C52 14 36 28 14 28 L-18 28 L-18 38 Z" fill="url(#jlBlueDeep)"/>
+    <path d="M-44 30 C-44 -2 -20 -24 4 -24 C18 -24 28 -16 28 -4 C28 8 18 16 4 16 L-10 16 L-10 30 Z" fill="#ffffff" opacity="0.95"/>
+
+    <!-- L vertical ribbon over J -->
+    <path d="M-4 -42 L34 -42 L34 -24 L14 -24 L14 38 L-4 38 Z" fill="url(#jlBlueBright)"/>
+    <path d="M2 -34 L26 -34 L26 -18 L10 -18 L10 30 L2 30 Z" fill="#ffffff" opacity="0.92"/>
+
+    <!-- L horizontal base -->
+    <path d="M14 20 L58 20 L58 38 L14 38 Z" fill="url(#jlBlueBright)"/>
+    <path d="M14 30 L58 30 L58 38 L14 38 Z" fill="url(#jlBlueShadow)"/>
   </g>
 
   <!-- Brand name -->
-  <text x="160" y="148" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="2">
-    <tspan fill="#3b82f6">JL</tspan>
+  <text x="210" y="210" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="6">
+    <tspan fill="#60a5fa">JL</tspan>
     <tspan fill="#ffffff"> WEB DESIGN</tspan>
-  </text>
-
-  <!-- Tagline lines + text -->
-  <line x1="44" y1="178" x2="92" y2="178" stroke="#3b82f6" stroke-width="2"/>
-  <line x1="228" y1="178" x2="276" y2="178" stroke="#3b82f6" stroke-width="2"/>
-  <text x="160" y="184" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600" fill="#3b82f6" letter-spacing="2.5">
-    DESIGN. DEVELOP. ELEVATE.
   </text>
 </svg>

@@ -33,10 +33,15 @@ Place project images in the `public/portfolio/` folder.
 
 The site uses two logo variants in `public/logo/`:
 
-- `logo-full.svg` — full logo with text (homepage hero)
-- `logo-icon.svg` — JL monogram only (header and footer)
+- **Full logo** (`logo-full`) — emblem + "JL WEB DESIGN" on the homepage hero
+- **Icon** (`logo-icon`) — JL monogram only in the header and footer
 
-To swap in your exact PNG files, add `logo-full.png` and `logo-icon.png` to `public/logo/` and update the paths in `src/components/Logo.tsx`.
+SVG fallbacks are included. To use your exact PNG files, add these to `public/logo/`:
+
+- `logo-full.png` — your full logo image
+- `logo-icon.png` — cropped JL monogram only (top of the logo)
+
+The site will automatically prefer the PNG files when present.
 
 ## Deploy
 
