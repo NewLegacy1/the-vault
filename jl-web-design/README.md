@@ -29,6 +29,15 @@ When you have work to showcase, edit `src/data/portfolio.ts`:
 
 Place project images in the `public/portfolio/` folder.
 
+## Logo files
+
+The site uses two logo variants in `public/logo/`:
+
+- `logo-full.svg` — full logo with text (homepage hero)
+- `logo-icon.svg` — JL monogram only (header and footer)
+
+To swap in your exact PNG files, add `logo-full.png` and `logo-icon.png` to `public/logo/` and update the paths in `src/components/Logo.tsx`.
+
 ## Deploy
 
 This is a standard Next.js app and can be deployed to [Vercel](https://vercel.com) or any platform that supports Next.js.
