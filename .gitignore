@@ -6,6 +6,8 @@ scripts/node_modules/
 # Next.js
 vault-app/.next/
 vault-app/out/
+jl-web-design/.next/
+jl-web-design/out/
 
 # Build / cache
 vault-app/tsconfig.tsbuildinfo
