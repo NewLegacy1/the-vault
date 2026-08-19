@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LogoPlaceholder } from "@/components/LogoPlaceholder";
+import { Logo } from "@/components/Logo";
 
 const menuLinks = [
   { label: "Meet our Team", href: "#team" },
-  { label: "Some of our work", href: "#work" },
+  { label: "Our Work", href: "#work" },
 ];
 
 export function Header() {
@@ -30,7 +30,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-blue-900/50 bg-[#0a1628]/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <a href="#" className="transition opacity-90 hover:opacity-100">
-          <LogoPlaceholder size="sm" />
+          <Logo variant="icon" className="h-12 w-12" />
         </a>
 
         <div className="relative" ref={menuRef}>

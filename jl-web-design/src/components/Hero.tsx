@@ -1,4 +1,4 @@
-import { LogoPlaceholder } from "@/components/LogoPlaceholder";
+import { Logo } from "@/components/Logo";
 
 export function Hero() {
   return (
@@ -7,7 +7,11 @@ export function Hero() {
       <div className="pointer-events-none absolute -left-20 bottom-0 h-64 w-64 rounded-full bg-sky-500/10 blur-3xl" />
 
       <div className="relative mx-auto flex max-w-6xl flex-col items-center px-6 py-20 text-center md:py-28">
-        <LogoPlaceholder size="lg" className="mb-10" />
+        <Logo
+          variant="full"
+          priority
+          className="mb-10 h-auto w-full max-w-[280px] md:max-w-[320px]"
+        />
 
         <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-sky-400">
           Web Design Studio

@@ -1,21 +1,13 @@
 const teamMembers = [
   {
-    id: "member-1",
-    name: "Team Member",
-    role: "Founder & Designer",
-    comingSoon: true,
+    id: "landon",
+    name: "Landon",
+    role: "Founder",
   },
   {
-    id: "member-2",
-    name: "Team Member",
-    role: "Developer",
-    comingSoon: true,
-  },
-  {
-    id: "member-3",
-    name: "Team Member",
-    role: "Project Manager",
-    comingSoon: true,
+    id: "jude",
+    name: "Jude",
+    role: "Business Partner",
   },
 ];
 
@@ -31,12 +23,12 @@ export function Team() {
             Meet our Team
           </h2>
           <p className="mt-5 text-lg text-slate-300">
-            We&apos;re a small, dedicated team — profiles will be added here as we
-            grow. Stop by again soon to meet the people behind JL Web Design.
+            JL Web Design is built by a small team focused on quality work and
+            clear communication. Meet the people behind the studio.
           </p>
         </div>
 
-        <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-14 grid gap-8 sm:grid-cols-2">
           {teamMembers.map((member) => (
             <article
               key={member.id}
@@ -58,12 +50,7 @@ export function Team() {
                   />
                 </svg>
               </div>
-              {member.comingSoon ? (
-                <span className="mt-5 inline-flex rounded-full bg-sky-400/10 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-sky-300">
-                  Coming Soon
-                </span>
-              ) : null}
-              <h3 className="mt-4 text-xl font-semibold text-white">
+              <h3 className="mt-5 text-xl font-semibold text-white">
                 {member.name}
               </h3>
               <p className="mt-1 text-sky-400">{member.role}</p>
