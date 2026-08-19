@@ -1,9 +1,9 @@
 export function Contact() {
   return (
-    <section id="contact" className="border-t border-slate-200 bg-white py-24">
+    <section id="contact" className="border-t border-blue-900/50 bg-[#0a1628] py-24">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-2xl rounded-3xl bg-slate-900 px-8 py-14 text-center md:px-16">
-          <p className="text-sm font-semibold uppercase tracking-widest text-teal-400">
+        <div className="mx-auto max-w-2xl rounded-3xl border border-blue-800/50 bg-[#0f2744] px-8 py-14 text-center md:px-16">
+          <p className="text-sm font-semibold uppercase tracking-widest text-sky-400">
             Contact
           </p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-white md:text-4xl">
@@ -16,7 +16,7 @@ export function Contact() {
           </p>
           <a
             href="mailto:hello@jlwebdesign.com"
-            className="mt-8 inline-flex items-center justify-center rounded-full bg-teal-500 px-8 py-3.5 text-sm font-semibold text-white transition hover:bg-teal-400"
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-sky-500 px-8 py-3.5 text-sm font-semibold text-[#0a1628] transition hover:bg-sky-400"
           >
             hello@jlwebdesign.com
           </a>

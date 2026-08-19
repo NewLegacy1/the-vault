@@ -2,16 +2,16 @@ import { portfolioProjects } from "@/data/portfolio";
 
 export function Portfolio() {
   return (
-    <section id="work" className="border-t border-slate-200 bg-slate-50 py-24">
+    <section id="work" className="border-t border-blue-900/50 bg-[#0f2744] py-24">
       <div className="mx-auto max-w-6xl px-6">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-widest text-teal-600">
+          <p className="text-sm font-semibold uppercase tracking-widest text-sky-400">
             Portfolio
           </p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-white md:text-4xl">
             Some of our work
           </h2>
-          <p className="mt-5 text-lg text-slate-600">
+          <p className="mt-5 text-lg text-slate-300">
             We&apos;re just getting started — new projects will appear here as we
             launch them. Check back soon to see what we&apos;ve been building.
           </p>
@@ -21,12 +21,12 @@ export function Portfolio() {
           {portfolioProjects.map((project) => (
             <article
               key={project.id}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              className="group flex flex-col overflow-hidden rounded-2xl border border-blue-800/50 bg-[#0a1628]/60 shadow-sm transition hover:-translate-y-1 hover:border-sky-400/30 hover:shadow-lg hover:shadow-sky-900/20"
             >
-              <div className="relative flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+              <div className="relative flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-[#0f2744] to-[#0a1628]">
                 {project.comingSoon ? (
                   <div className="text-center">
-                    <span className="inline-flex rounded-full bg-white/80 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    <span className="inline-flex rounded-full bg-sky-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-sky-300">
                       Coming Soon
                     </span>
                   </div>
@@ -41,17 +41,17 @@ export function Portfolio() {
               </div>
 
               <div className="flex flex-1 flex-col p-6">
-                <h3 className="text-xl font-semibold text-slate-900">
+                <h3 className="text-xl font-semibold text-white">
                   {project.title}
                 </h3>
-                <p className="mt-2 flex-1 text-slate-600">
+                <p className="mt-2 flex-1 text-slate-400">
                   {project.description}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {project.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-full bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700"
+                      className="rounded-full bg-sky-400/10 px-3 py-1 text-xs font-medium text-sky-300"
                     >
                       {tag}
                     </span>
@@ -62,7 +62,7 @@ export function Portfolio() {
                     href={project.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-5 inline-flex items-center text-sm font-semibold text-teal-600 hover:text-teal-700"
+                    className="mt-5 inline-flex items-center text-sm font-semibold text-sky-400 hover:text-sky-300"
                   >
                     View project
                     <svg
