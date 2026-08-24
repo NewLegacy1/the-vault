@@ -28,7 +28,3 @@ npm-debug.log*
 
 # Vercel
 vault-app/.vercel/
-
-# Paid Origins classroom notes — keep on Obsidian Sync, do not push to GitHub
-Origins Brain/
-Origins Brain.md
