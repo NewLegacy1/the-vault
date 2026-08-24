@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 340" fill="none" role="img" aria-label="JL Web Design">
+  <defs>
+    <linearGradient id="wingGradLeft" x1="100%" y1="50%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#007BFF"/>
+      <stop offset="100%" stop-color="#001B3A"/>
+    </linearGradient>
+    <linearGradient id="wingGradRight" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#007BFF"/>
+      <stop offset="100%" stop-color="#001B3A"/>
+    </linearGradient>
+    <linearGradient id="pillarSide" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#007BFF"/>
+      <stop offset="100%" stop-color="#0056b3"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon -->
+  <g transform="translate(240 108)">
+    <!-- Left J wing -->
+    <path d="M-72 36 C-88 20 -88 -8 -68 -28 C-48 -44 -24 -40 -8 -20 C8 0 8 20 -4 36 Z" fill="url(#wingGradLeft)"/>
+    <!-- Right L wing -->
+    <path d="M72 36 C88 20 88 -8 68 -28 C48 -44 24 -40 8 -20 C-8 0 -8 20 4 36 Z" fill="url(#wingGradRight)"/>
+    <!-- Pillar side (3D depth) -->
+    <path d="M12 -52 L36 -52 L36 36 L12 36 Z" fill="url(#pillarSide)"/>
+    <!-- Pillar front -->
+    <path d="M-12 -52 L12 -52 L12 36 L-12 36 Z" fill="#ffffff"/>
+    <!-- Pillar top -->
+    <path d="M-12 -52 L12 -52 L36 -52 L12 -60 Z" fill="#007BFF" opacity="0.85"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="240" y="228" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="300" letter-spacing="10">
+    <tspan fill="#007BFF">JL</tspan>
+    <tspan fill="#ffffff" dx="8"> WEB DESIGN</tspan>
+  </text>
+</svg>

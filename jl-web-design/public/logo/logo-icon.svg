@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none" role="img" aria-label="JL">
+  <defs>
+    <linearGradient id="iconWingLeft" x1="100%" y1="50%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#007BFF"/>
+      <stop offset="100%" stop-color="#001B3A"/>
+    </linearGradient>
+    <linearGradient id="iconWingRight" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#007BFF"/>
+      <stop offset="100%" stop-color="#001B3A"/>
+    </linearGradient>
+    <linearGradient id="iconPillarSide" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#007BFF"/>
+      <stop offset="100%" stop-color="#0056b3"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(60 62)">
+    <path d="M-36 18 C-44 10 -44 -4 -34 -14 C-24 -22 -12 -20 -4 -10 C4 0 4 10 -2 18 Z" fill="url(#iconWingLeft)"/>
+    <path d="M36 18 C44 10 44 -4 34 -14 C24 -22 12 -20 4 -10 C-4 0 -4 10 2 18 Z" fill="url(#iconWingRight)"/>
+    <path d="M6 -26 L18 -26 L18 18 L6 18 Z" fill="url(#iconPillarSide)"/>
+    <path d="M-6 -26 L6 -26 L6 18 L-6 18 Z" fill="#ffffff"/>
+    <path d="M-6 -26 L6 -26 L18 -26 L6 -30 Z" fill="#007BFF" opacity="0.85"/>
+  </g>
+</svg>
